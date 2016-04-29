@@ -16,7 +16,7 @@ var _scope_check = wtfCreateScope(`AppView#check(ascii id)`);
  *
  */
 export class AppView {
-    constructor(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode, staticNodeDebugInfos) {
+    constructor(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode) {
         this.clazz = clazz;
         this.componentType = componentType;
         this.type = type;
@@ -24,7 +24,6 @@ export class AppView {
         this.parentInjector = parentInjector;
         this.declarationAppElement = declarationAppElement;
         this.cdMode = cdMode;
-        this.staticNodeDebugInfos = staticNodeDebugInfos;
         this.contentChildren = [];
         this.viewChildren = [];
         this.viewContainerElement = null;
@@ -32,7 +31,6 @@ export class AppView {
         // change detection will fail.
         this.cdState = ChangeDetectorState.NeverChecked;
         this.destroyed = false;
-        this._currentDebugContext = null;
         this.ref = new ViewRef_(this);
         if (type === ViewType.COMPONENT || type === ViewType.HOST) {
             this.renderer = viewUtils.renderComponent(componentType);
@@ -59,19 +57,7 @@ export class AppView {
         }
         this._hasExternalHostElement = isPresent(rootSelectorOrNode);
         this.projectableNodes = projectableNodes;
-        if (this.debugMode) {
-            this._resetDebug();
-            try {
-                return this.createInternal(rootSelectorOrNode);
-            }
-            catch (e) {
-                this._rethrowWithContext(e, e.stack);
-                throw e;
-            }
-        }
-        else {
-            return this.createInternal(rootSelectorOrNode);
-        }
+        return this.createInternal(rootSelectorOrNode);
     }
     /**
      * Overwritten by implementations.
@@ -91,30 +77,18 @@ export class AppView {
             this.dirtyParentQueriesInternal();
         }
     }
-    selectOrCreateHostElement(elementName, rootSelectorOrNode, debugCtx) {
+    selectOrCreateHostElement(elementName, rootSelectorOrNode, debugInfo) {
         var hostElement;
         if (isPresent(rootSelectorOrNode)) {
-            hostElement = this.renderer.selectRootElement(rootSelectorOrNode, debugCtx);
+            hostElement = this.renderer.selectRootElement(rootSelectorOrNode, debugInfo);
         }
         else {
-            hostElement = this.renderer.createElement(null, elementName, debugCtx);
+            hostElement = this.renderer.createElement(null, elementName, debugInfo);
         }
         return hostElement;
     }
     injectorGet(token, nodeIndex, notFoundResult) {
-        if (this.debugMode) {
-            this._resetDebug();
-            try {
-                return this.injectorGetInternal(token, nodeIndex, notFoundResult);
-            }
-            catch (e) {
-                this._rethrowWithContext(e, e.stack);
-                throw e;
-            }
-        }
-        else {
-            return this.injectorGetInternal(token, nodeIndex, notFoundResult);
-        }
+        return this.injectorGetInternal(token, nodeIndex, notFoundResult);
     }
     /**
      * Overwritten by implementations
@@ -151,22 +125,10 @@ export class AppView {
         for (var i = 0; i < children.length; i++) {
             children[i]._destroyRecurse();
         }
-        if (this.debugMode) {
-            this._resetDebug();
-            try {
-                this._destroyLocal();
-            }
-            catch (e) {
-                this._rethrowWithContext(e, e.stack);
-                throw e;
-            }
-        }
-        else {
-            this._destroyLocal();
-        }
+        this.destroyLocal();
         this.destroyed = true;
     }
-    _destroyLocal() {
+    destroyLocal() {
         var hostElement = this.type === ViewType.COMPONENT ? this.declarationAppElement.nativeElement : null;
         for (var i = 0; i < this.disposables.length; i++) {
             this.disposables[i]();
@@ -190,7 +152,6 @@ export class AppView {
      * Overwritten by implementations
      */
     destroyInternal() { }
-    get debugMode() { return isPresent(this.staticNodeDebugInfos); }
     get changeDetectorRef() { return this.ref; }
     get parent() {
         return isPresent(this.declarationAppElement) ? this.declarationAppElement.parentView : null;
@@ -225,19 +186,7 @@ export class AppView {
         if (this.destroyed) {
             this.throwDestroyedError('detectChanges');
         }
-        if (this.debugMode) {
-            this._resetDebug();
-            try {
-                this.detectChangesInternal(throwOnChange);
-            }
-            catch (e) {
-                this._rethrowWithContext(e, e.stack);
-                throw e;
-            }
-        }
-        else {
-            this.detectChangesInternal(throwOnChange);
-        }
+        this.detectChangesInternal(throwOnChange);
         if (this.cdMode === ChangeDetectionStrategy.CheckOnce)
             this.cdMode = ChangeDetectionStrategy.Checked;
         this.cdState = ChangeDetectorState.CheckedBefore;
@@ -280,6 +229,55 @@ export class AppView {
             c = c.renderParent;
         }
     }
+    eventHandler(cb) { return cb; }
+    throwDestroyedError(details) { throw new ViewDestroyedException(details); }
+}
+export class DebugAppView extends AppView {
+    constructor(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode, staticNodeDebugInfos) {
+        super(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode);
+        this.staticNodeDebugInfos = staticNodeDebugInfos;
+        this._currentDebugContext = null;
+    }
+    create(context, givenProjectableNodes, rootSelectorOrNode) {
+        this._resetDebug();
+        try {
+            return super.create(context, givenProjectableNodes, rootSelectorOrNode);
+        }
+        catch (e) {
+            this._rethrowWithContext(e, e.stack);
+            throw e;
+        }
+    }
+    injectorGet(token, nodeIndex, notFoundResult) {
+        this._resetDebug();
+        try {
+            return super.injectorGet(token, nodeIndex, notFoundResult);
+        }
+        catch (e) {
+            this._rethrowWithContext(e, e.stack);
+            throw e;
+        }
+    }
+    destroyLocal() {
+        this._resetDebug();
+        try {
+            super.destroyLocal();
+        }
+        catch (e) {
+            this._rethrowWithContext(e, e.stack);
+            throw e;
+        }
+    }
+    detectChanges(throwOnChange) {
+        this._resetDebug();
+        try {
+            super.detectChanges(throwOnChange);
+        }
+        catch (e) {
+            this._rethrowWithContext(e, e.stack);
+            throw e;
+        }
+    }
     _resetDebug() { this._currentDebugContext = null; }
     debug(nodeIndex, rowNum, colNum) {
         return this._currentDebugContext = new DebugContext(this, nodeIndex, rowNum, colNum);
@@ -295,23 +293,18 @@ export class AppView {
         }
     }
     eventHandler(cb) {
-        if (this.debugMode) {
-            return (event) => {
-                this._resetDebug();
-                try {
-                    return cb(event);
-                }
-                catch (e) {
-                    this._rethrowWithContext(e, e.stack);
-                    throw e;
-                }
-            };
-        }
-        else {
-            return cb;
-        }
+        var superHandler = super.eventHandler(cb);
+        return (event) => {
+            this._resetDebug();
+            try {
+                return superHandler(event);
+            }
+            catch (e) {
+                this._rethrowWithContext(e, e.stack);
+                throw e;
+            }
+        };
     }
-    throwDestroyedError(details) { throw new ViewDestroyedException(details); }
 }
 function _findLastRenderNode(node) {
     var lastNode;

@@ -1,6 +1,6 @@
 import { Injector } from 'angular2/src/core/di';
 import { RenderDebugInfo } from 'angular2/src/core/render/api';
-import { AppView } from './view';
+import { DebugAppView } from './view';
 export declare class StaticNodeDebugInfo {
     providerTokens: any[];
     componentToken: any;
@@ -16,7 +16,7 @@ export declare class DebugContext implements RenderDebugInfo {
     private _nodeIndex;
     private _tplRow;
     private _tplCol;
-    constructor(_view: AppView<any>, _nodeIndex: number, _tplRow: number, _tplCol: number);
+    constructor(_view: DebugAppView<any>, _nodeIndex: number, _tplRow: number, _tplCol: number);
     private _staticNodeInfo;
     context: any;
     component: any;

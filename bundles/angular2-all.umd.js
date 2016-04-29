@@ -22504,6 +22504,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// (only needed for Dart).
 	var impViewUtils = view_utils_1.ViewUtils;
 	var impAppView = view_1.AppView;
+	var impDebugAppView = view_1.DebugAppView;
 	var impDebugContext = debug_context_1.DebugContext;
 	var impAppElement = element_1.AppElement;
 	var impElementRef = element_ref_1.ElementRef;
@@ -22537,6 +22538,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        runtime: impViewUtils
 	    });
 	    Identifiers.AppView = new compile_metadata_1.CompileIdentifierMetadata({ name: 'AppView', moduleUrl: APP_VIEW_MODULE_URL, runtime: impAppView });
+	    Identifiers.DebugAppView = new compile_metadata_1.CompileIdentifierMetadata({ name: 'DebugAppView', moduleUrl: APP_VIEW_MODULE_URL, runtime: impDebugAppView });
 	    Identifiers.AppElement = new compile_metadata_1.CompileIdentifierMetadata({
 	        name: 'AppElement',
 	        moduleUrl: 'asset:angular2/lib/src/core/linker/element' + util_1.MODULE_SUFFIX,
@@ -23684,6 +23686,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
 	var collection_1 = __webpack_require__(15);
 	var element_1 = __webpack_require__(68);
 	var lang_1 = __webpack_require__(5);
@@ -23702,7 +23709,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 */
 	var AppView = (function () {
-	    function AppView(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode, staticNodeDebugInfos) {
+	    function AppView(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode) {
 	        this.clazz = clazz;
 	        this.componentType = componentType;
 	        this.type = type;
@@ -23710,7 +23717,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.parentInjector = parentInjector;
 	        this.declarationAppElement = declarationAppElement;
 	        this.cdMode = cdMode;
-	        this.staticNodeDebugInfos = staticNodeDebugInfos;
 	        this.contentChildren = [];
 	        this.viewChildren = [];
 	        this.viewContainerElement = null;
@@ -23718,7 +23724,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // change detection will fail.
 	        this.cdState = change_detection_1.ChangeDetectorState.NeverChecked;
 	        this.destroyed = false;
-	        this._currentDebugContext = null;
 	        this.ref = new view_ref_1.ViewRef_(this);
 	        if (type === view_type_1.ViewType.COMPONENT || type === view_type_1.ViewType.HOST) {
 	            this.renderer = viewUtils.renderComponent(componentType);
@@ -23745,19 +23750,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        this._hasExternalHostElement = lang_1.isPresent(rootSelectorOrNode);
 	        this.projectableNodes = projectableNodes;
-	        if (this.debugMode) {
-	            this._resetDebug();
-	            try {
-	                return this.createInternal(rootSelectorOrNode);
-	            }
-	            catch (e) {
-	                this._rethrowWithContext(e, e.stack);
-	                throw e;
-	            }
-	        }
-	        else {
-	            return this.createInternal(rootSelectorOrNode);
-	        }
+	        return this.createInternal(rootSelectorOrNode);
 	    };
 	    /**
 	     * Overwritten by implementations.
@@ -23777,30 +23770,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.dirtyParentQueriesInternal();
 	        }
 	    };
-	    AppView.prototype.selectOrCreateHostElement = function (elementName, rootSelectorOrNode, debugCtx) {
+	    AppView.prototype.selectOrCreateHostElement = function (elementName, rootSelectorOrNode, debugInfo) {
 	        var hostElement;
 	        if (lang_1.isPresent(rootSelectorOrNode)) {
-	            hostElement = this.renderer.selectRootElement(rootSelectorOrNode, debugCtx);
+	            hostElement = this.renderer.selectRootElement(rootSelectorOrNode, debugInfo);
 	        }
 	        else {
-	            hostElement = this.renderer.createElement(null, elementName, debugCtx);
+	            hostElement = this.renderer.createElement(null, elementName, debugInfo);
 	        }
 	        return hostElement;
 	    };
 	    AppView.prototype.injectorGet = function (token, nodeIndex, notFoundResult) {
-	        if (this.debugMode) {
-	            this._resetDebug();
-	            try {
-	                return this.injectorGetInternal(token, nodeIndex, notFoundResult);
-	            }
-	            catch (e) {
-	                this._rethrowWithContext(e, e.stack);
-	                throw e;
-	            }
-	        }
-	        else {
-	            return this.injectorGetInternal(token, nodeIndex, notFoundResult);
-	        }
+	        return this.injectorGetInternal(token, nodeIndex, notFoundResult);
 	    };
 	    /**
 	     * Overwritten by implementations
@@ -23837,22 +23818,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (var i = 0; i < children.length; i++) {
 	            children[i]._destroyRecurse();
 	        }
-	        if (this.debugMode) {
-	            this._resetDebug();
-	            try {
-	                this._destroyLocal();
-	            }
-	            catch (e) {
-	                this._rethrowWithContext(e, e.stack);
-	                throw e;
-	            }
-	        }
-	        else {
-	            this._destroyLocal();
-	        }
+	        this.destroyLocal();
 	        this.destroyed = true;
 	    };
-	    AppView.prototype._destroyLocal = function () {
+	    AppView.prototype.destroyLocal = function () {
 	        var hostElement = this.type === view_type_1.ViewType.COMPONENT ? this.declarationAppElement.nativeElement : null;
 	        for (var i = 0; i < this.disposables.length; i++) {
 	            this.disposables[i]();
@@ -23876,11 +23845,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Overwritten by implementations
 	     */
 	    AppView.prototype.destroyInternal = function () { };
-	    Object.defineProperty(AppView.prototype, "debugMode", {
-	        get: function () { return lang_1.isPresent(this.staticNodeDebugInfos); },
-	        enumerable: true,
-	        configurable: true
-	    });
 	    Object.defineProperty(AppView.prototype, "changeDetectorRef", {
 	        get: function () { return this.ref; },
 	        enumerable: true,
@@ -23931,19 +23895,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.destroyed) {
 	            this.throwDestroyedError('detectChanges');
 	        }
-	        if (this.debugMode) {
-	            this._resetDebug();
-	            try {
-	                this.detectChangesInternal(throwOnChange);
-	            }
-	            catch (e) {
-	                this._rethrowWithContext(e, e.stack);
-	                throw e;
-	            }
-	        }
-	        else {
-	            this.detectChangesInternal(throwOnChange);
-	        }
+	        this.detectChangesInternal(throwOnChange);
 	        if (this.cdMode === change_detection_1.ChangeDetectionStrategy.CheckOnce)
 	            this.cdMode = change_detection_1.ChangeDetectionStrategy.Checked;
 	        this.cdState = change_detection_1.ChangeDetectorState.CheckedBefore;
@@ -23986,11 +23938,63 @@ return /******/ (function(modules) { // webpackBootstrap
 	            c = c.renderParent;
 	        }
 	    };
-	    AppView.prototype._resetDebug = function () { this._currentDebugContext = null; };
-	    AppView.prototype.debug = function (nodeIndex, rowNum, colNum) {
+	    AppView.prototype.eventHandler = function (cb) { return cb; };
+	    AppView.prototype.throwDestroyedError = function (details) { throw new exceptions_1.ViewDestroyedException(details); };
+	    return AppView;
+	}());
+	exports.AppView = AppView;
+	var DebugAppView = (function (_super) {
+	    __extends(DebugAppView, _super);
+	    function DebugAppView(clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode, staticNodeDebugInfos) {
+	        _super.call(this, clazz, componentType, type, viewUtils, parentInjector, declarationAppElement, cdMode);
+	        this.staticNodeDebugInfos = staticNodeDebugInfos;
+	        this._currentDebugContext = null;
+	    }
+	    DebugAppView.prototype.create = function (context, givenProjectableNodes, rootSelectorOrNode) {
+	        this._resetDebug();
+	        try {
+	            return _super.prototype.create.call(this, context, givenProjectableNodes, rootSelectorOrNode);
+	        }
+	        catch (e) {
+	            this._rethrowWithContext(e, e.stack);
+	            throw e;
+	        }
+	    };
+	    DebugAppView.prototype.injectorGet = function (token, nodeIndex, notFoundResult) {
+	        this._resetDebug();
+	        try {
+	            return _super.prototype.injectorGet.call(this, token, nodeIndex, notFoundResult);
+	        }
+	        catch (e) {
+	            this._rethrowWithContext(e, e.stack);
+	            throw e;
+	        }
+	    };
+	    DebugAppView.prototype.destroyLocal = function () {
+	        this._resetDebug();
+	        try {
+	            _super.prototype.destroyLocal.call(this);
+	        }
+	        catch (e) {
+	            this._rethrowWithContext(e, e.stack);
+	            throw e;
+	        }
+	    };
+	    DebugAppView.prototype.detectChanges = function (throwOnChange) {
+	        this._resetDebug();
+	        try {
+	            _super.prototype.detectChanges.call(this, throwOnChange);
+	        }
+	        catch (e) {
+	            this._rethrowWithContext(e, e.stack);
+	            throw e;
+	        }
+	    };
+	    DebugAppView.prototype._resetDebug = function () { this._currentDebugContext = null; };
+	    DebugAppView.prototype.debug = function (nodeIndex, rowNum, colNum) {
 	        return this._currentDebugContext = new debug_context_1.DebugContext(this, nodeIndex, rowNum, colNum);
 	    };
-	    AppView.prototype._rethrowWithContext = function (e, stack) {
+	    DebugAppView.prototype._rethrowWithContext = function (e, stack) {
 	        if (!(e instanceof exceptions_1.ViewWrappedException)) {
 	            if (!(e instanceof exceptions_1.ExpressionChangedAfterItHasBeenCheckedException)) {
 	                this.cdState = change_detection_1.ChangeDetectorState.Errored;
@@ -24000,28 +24004,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    };
-	    AppView.prototype.eventHandler = function (cb) {
+	    DebugAppView.prototype.eventHandler = function (cb) {
 	        var _this = this;
-	        if (this.debugMode) {
-	            return function (event) {
-	                _this._resetDebug();
-	                try {
-	                    return cb(event);
-	                }
-	                catch (e) {
-	                    _this._rethrowWithContext(e, e.stack);
-	                    throw e;
-	                }
-	            };
-	        }
-	        else {
-	            return cb;
-	        }
+	        var superHandler = _super.prototype.eventHandler.call(this, cb);
+	        return function (event) {
+	            _this._resetDebug();
+	            try {
+	                return superHandler(event);
+	            }
+	            catch (e) {
+	                _this._rethrowWithContext(e, e.stack);
+	                throw e;
+	            }
+	        };
 	    };
-	    AppView.prototype.throwDestroyedError = function (details) { throw new exceptions_1.ViewDestroyedException(details); };
-	    return AppView;
-	}());
-	exports.AppView = AppView;
+	    return DebugAppView;
+	}(AppView));
+	exports.DebugAppView = DebugAppView;
 	function _findLastRenderNode(node) {
 	    var lastNode;
 	    if (node instanceof element_1.AppElement) {
@@ -27903,19 +27902,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        new o.FnParam(constants_1.ViewConstructorVars.parentInjector.name, o.importType(identifiers_1.Identifiers.Injector)),
 	        new o.FnParam(constants_1.ViewConstructorVars.declarationEl.name, o.importType(identifiers_1.Identifiers.AppElement))
 	    ];
-	    var viewConstructor = new o.ClassMethod(null, viewConstructorArgs, [
-	        o.SUPER_EXPR.callFn([
-	            o.variable(view.className),
-	            renderCompTypeVar,
-	            constants_1.ViewTypeEnum.fromValue(view.viewType),
-	            constants_1.ViewConstructorVars.viewUtils,
-	            constants_1.ViewConstructorVars.parentInjector,
-	            constants_1.ViewConstructorVars.declarationEl,
-	            constants_1.ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view)),
-	            nodeDebugInfosVar
-	        ])
-	            .toStmt()
-	    ]);
+	    var superConstructorArgs = [
+	        o.variable(view.className),
+	        renderCompTypeVar,
+	        constants_1.ViewTypeEnum.fromValue(view.viewType),
+	        constants_1.ViewConstructorVars.viewUtils,
+	        constants_1.ViewConstructorVars.parentInjector,
+	        constants_1.ViewConstructorVars.declarationEl,
+	        constants_1.ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view))
+	    ];
+	    if (view.genConfig.genDebugInfo) {
+	        superConstructorArgs.push(nodeDebugInfosVar);
+	    }
+	    var viewConstructor = new o.ClassMethod(null, viewConstructorArgs, [o.SUPER_EXPR.callFn(superConstructorArgs).toStmt()]);
 	    var viewMethods = [
 	        new o.ClassMethod('createInternal', [new o.FnParam(rootSelectorVar.name, o.STRING_TYPE)], generateCreateMethod(view), o.importType(identifiers_1.Identifiers.AppElement)),
 	        new o.ClassMethod('injectorGetInternal', [
@@ -27928,7 +27927,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        new o.ClassMethod('dirtyParentQueriesInternal', [], view.dirtyParentQueriesMethod.finish()),
 	        new o.ClassMethod('destroyInternal', [], view.destroyMethod.finish())
 	    ].concat(view.eventHandlerMethods);
-	    var viewClass = new o.ClassStmt(view.className, o.importExpr(identifiers_1.Identifiers.AppView, [getContextType(view)]), view.fields, view.getters, viewConstructor, viewMethods.filter(function (method) { return method.body.length > 0; }));
+	    var superClass = view.genConfig.genDebugInfo ? identifiers_1.Identifiers.DebugAppView : identifiers_1.Identifiers.AppView;
+	    var viewClass = new o.ClassStmt(view.className, o.importExpr(superClass, [getContextType(view)]), view.fields, view.getters, viewConstructor, viewMethods.filter(function (method) { return method.body.length > 0; }));
 	    return viewClass;
 	}
 	function createViewFactory(view, viewClass, renderCompTypeVar) {
@@ -31659,6 +31659,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    InterpretiveAppViewInstanceFactory.prototype.createInstance = function (superClass, clazz, args, props, getters, methods) {
 	        if (superClass === view_1.AppView) {
+	            // We are always using DebugAppView as parent.
+	            // However, in prod mode we generate a constructor call that does
+	            // not have the argument for the debugNodeInfos.
+	            args = args.concat([null]);
+	            return new _InterpretiveAppView(args, props, getters, methods);
+	        }
+	        else if (superClass === view_1.DebugAppView) {
 	            return new _InterpretiveAppView(args, props, getters, methods);
 	        }
 	        throw new exceptions_1.BaseException("Can't instantiate class " + superClass + " in interpretative mode");
@@ -31720,7 +31727,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	    return _InterpretiveAppView;
-	}(view_1.AppView));
+	}(view_1.DebugAppView));
 
 
 /***/ },

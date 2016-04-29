@@ -2,6 +2,7 @@ import { CompileIdentifierMetadata, CompileTokenMetadata } from './compile_metad
 export declare class Identifiers {
     static ViewUtils: CompileIdentifierMetadata;
     static AppView: CompileIdentifierMetadata;
+    static DebugAppView: CompileIdentifierMetadata;
     static AppElement: CompileIdentifierMetadata;
     static ElementRef: CompileIdentifierMetadata;
     static ViewContainerRef: CompileIdentifierMetadata;

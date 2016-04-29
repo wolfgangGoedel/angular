@@ -1,6 +1,6 @@
 import { Injector } from 'angular2/src/core/di';
 import { AppElement } from './element';
-import { Renderer, RenderComponentType } from 'angular2/src/core/render/api';
+import { Renderer, RenderComponentType, RenderDebugInfo } from 'angular2/src/core/render/api';
 import { ViewRef_ } from './view_ref';
 import { ViewType } from './view_type';
 import { ViewUtils } from './view_utils';
@@ -18,7 +18,6 @@ export declare abstract class AppView<T> {
     parentInjector: Injector;
     declarationAppElement: AppElement;
     cdMode: ChangeDetectionStrategy;
-    staticNodeDebugInfos: StaticNodeDebugInfo[];
     ref: ViewRef_<T>;
     rootNodesOrAppElements: any[];
     allNodes: any[];
@@ -32,10 +31,9 @@ export declare abstract class AppView<T> {
     projectableNodes: Array<any | any[]>;
     destroyed: boolean;
     renderer: Renderer;
-    private _currentDebugContext;
     private _hasExternalHostElement;
     context: T;
-    constructor(clazz: any, componentType: RenderComponentType, type: ViewType, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, staticNodeDebugInfos: StaticNodeDebugInfo[]);
+    constructor(clazz: any, componentType: RenderComponentType, type: ViewType, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy);
     create(context: T, givenProjectableNodes: Array<any | any[]>, rootSelectorOrNode: string | any): AppElement;
     /**
      * Overwritten by implementations.
@@ -43,7 +41,7 @@ export declare abstract class AppView<T> {
      */
     createInternal(rootSelectorOrNode: string | any): AppElement;
     init(rootNodesOrAppElements: any[], allNodes: any[], disposables: Function[], subscriptions: any[]): void;
-    selectOrCreateHostElement(elementName: string, rootSelectorOrNode: string | any, debugCtx: DebugContext): any;
+    selectOrCreateHostElement(elementName: string, rootSelectorOrNode: string | any, debugInfo: RenderDebugInfo): any;
     injectorGet(token: any, nodeIndex: number, notFoundResult: any): any;
     /**
      * Overwritten by implementations
@@ -52,12 +50,11 @@ export declare abstract class AppView<T> {
     injector(nodeIndex: number): Injector;
     destroy(): void;
     private _destroyRecurse();
-    private _destroyLocal();
+    destroyLocal(): void;
     /**
      * Overwritten by implementations
      */
     destroyInternal(): void;
-    debugMode: boolean;
     changeDetectorRef: ChangeDetectorRef;
     parent: AppView<any>;
     flatRootNodes: any[];
@@ -79,9 +76,19 @@ export declare abstract class AppView<T> {
     removeFromContentChildren(renderAppElement: AppElement): void;
     markAsCheckOnce(): void;
     markPathToRootAsCheckOnce(): void;
+    eventHandler(cb: Function): Function;
+    throwDestroyedError(details: string): void;
+}
+export declare class DebugAppView<T> extends AppView<T> {
+    staticNodeDebugInfos: StaticNodeDebugInfo[];
+    private _currentDebugContext;
+    constructor(clazz: any, componentType: RenderComponentType, type: ViewType, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, staticNodeDebugInfos: StaticNodeDebugInfo[]);
+    create(context: T, givenProjectableNodes: Array<any | any[]>, rootSelectorOrNode: string | any): AppElement;
+    injectorGet(token: any, nodeIndex: number, notFoundResult: any): any;
+    destroyLocal(): void;
+    detectChanges(throwOnChange: boolean): void;
     private _resetDebug();
     debug(nodeIndex: number, rowNum: number, colNum: number): DebugContext;
     private _rethrowWithContext(e, stack);
     eventHandler(cb: Function): Function;
-    throwDestroyedError(details: string): void;
 }
