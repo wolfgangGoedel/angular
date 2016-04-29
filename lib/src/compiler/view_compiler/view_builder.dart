@@ -481,18 +481,20 @@ o.ClassStmt createViewClass(CompileView view, o.ReadVarExpr renderCompTypeVar,
     new o.FnParam(ViewConstructorVars.declarationEl.name,
         o.importType(Identifiers.AppElement))
   ];
-  var viewConstructor = new o.ClassMethod(null, viewConstructorArgs, [
-    o.SUPER_EXPR.callFn([
-      o.variable(view.className),
-      renderCompTypeVar,
-      ViewTypeEnum.fromValue(view.viewType),
-      ViewConstructorVars.viewUtils,
-      ViewConstructorVars.parentInjector,
-      ViewConstructorVars.declarationEl,
-      ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view)),
-      nodeDebugInfosVar
-    ]).toStmt()
-  ]);
+  var superConstructorArgs = [
+    o.variable(view.className),
+    renderCompTypeVar,
+    ViewTypeEnum.fromValue(view.viewType),
+    ViewConstructorVars.viewUtils,
+    ViewConstructorVars.parentInjector,
+    ViewConstructorVars.declarationEl,
+    ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view))
+  ];
+  if (view.genConfig.genDebugInfo) {
+    superConstructorArgs.add(nodeDebugInfosVar);
+  }
+  var viewConstructor = new o.ClassMethod(null, viewConstructorArgs,
+      [o.SUPER_EXPR.callFn(superConstructorArgs).toStmt()]);
   var viewMethods = (new List.from([
     new o.ClassMethod(
         "createInternal",
@@ -518,9 +520,12 @@ o.ClassStmt createViewClass(CompileView view, o.ReadVarExpr renderCompTypeVar,
         view.dirtyParentQueriesMethod.finish()),
     new o.ClassMethod("destroyInternal", [], view.destroyMethod.finish())
   ])..addAll(view.eventHandlerMethods));
+  var superClass = view.genConfig.genDebugInfo
+      ? Identifiers.DebugAppView
+      : Identifiers.AppView;
   var viewClass = new o.ClassStmt(
       view.className,
-      o.importExpr(Identifiers.AppView, [getContextType(view)]),
+      o.importExpr(superClass, [getContextType(view)]),
       view.fields,
       view.getters,
       viewConstructor,

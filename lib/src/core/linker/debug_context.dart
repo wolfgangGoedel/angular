@@ -5,7 +5,7 @@ import "package:angular2/src/facade/collection.dart"
     show ListWrapper, StringMapWrapper;
 import "package:angular2/src/core/di.dart" show Injector;
 import "package:angular2/src/core/render/api.dart" show RenderDebugInfo;
-import "view.dart" show AppView;
+import "view.dart" show DebugAppView;
 import "view_type.dart" show ViewType;
 
 class StaticNodeDebugInfo {
@@ -17,7 +17,7 @@ class StaticNodeDebugInfo {
 }
 
 class DebugContext implements RenderDebugInfo {
-  AppView<dynamic> _view;
+  DebugAppView<dynamic> _view;
   num _nodeIndex;
   num _tplRow;
   num _tplCol;
@@ -44,7 +44,8 @@ class DebugContext implements RenderDebugInfo {
     var componentView = this._view;
     while (isPresent(componentView.declarationAppElement) &&
         !identical(componentView.type, ViewType.COMPONENT)) {
-      componentView = componentView.declarationAppElement.parentView;
+      componentView = (componentView.declarationAppElement.parentView
+          as DebugAppView<dynamic>);
     }
     return isPresent(componentView.declarationAppElement)
         ? componentView.declarationAppElement.nativeElement

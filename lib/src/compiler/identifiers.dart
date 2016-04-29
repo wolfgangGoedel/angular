@@ -2,7 +2,7 @@ library angular2.src.compiler.identifiers;
 
 import "compile_metadata.dart"
     show CompileIdentifierMetadata, CompileTokenMetadata;
-import "package:angular2/src/core/linker/view.dart" show AppView;
+import "package:angular2/src/core/linker/view.dart" show AppView, DebugAppView;
 import "package:angular2/src/core/linker/debug_context.dart"
     show StaticNodeDebugInfo, DebugContext;
 import "package:angular2/src/core/linker/view_utils.dart"
@@ -59,6 +59,7 @@ var CD_MODULE_URL =
 // (only needed for Dart).
 var impViewUtils = ViewUtils;
 var impAppView = AppView;
+var impDebugAppView = DebugAppView;
 var impDebugContext = DebugContext;
 var impAppElement = AppElement;
 var impElementRef = ElementRef;
@@ -92,6 +93,10 @@ class Identifiers {
       runtime: impViewUtils);
   static var AppView = new CompileIdentifierMetadata(
       name: "AppView", moduleUrl: APP_VIEW_MODULE_URL, runtime: impAppView);
+  static var DebugAppView = new CompileIdentifierMetadata(
+      name: "DebugAppView",
+      moduleUrl: APP_VIEW_MODULE_URL,
+      runtime: impDebugAppView);
   static var AppElement = new CompileIdentifierMetadata(
       name: "AppElement",
       moduleUrl: "asset:angular2/lib/src/core/linker/element" + MODULE_SUFFIX,

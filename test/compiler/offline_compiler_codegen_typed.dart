@@ -21,7 +21,7 @@ const List<import1.StaticNodeDebugInfo> nodeDebugInfos_CompA0 = const [
 ];
 import2.RenderComponentType renderType_CompA = null;
 
-class _View_CompA0 extends import3.AppView<import4.CompA> {
+class _View_CompA0 extends import3.DebugAppView<import4.CompA> {
   var _text_0;
   var _expr_0;
   _View_CompA0(import5.ViewUtils viewUtils, import6.Injector parentInjector,
@@ -77,7 +77,7 @@ const List<import1.StaticNodeDebugInfo> nodeDebugInfos_CompA_Host0 = const [
 ];
 import2.RenderComponentType renderType_CompA_Host = null;
 
-class _View_CompA_Host0 extends import3.AppView<dynamic> {
+class _View_CompA_Host0 extends import3.DebugAppView<dynamic> {
   var _el_0;
   import7.AppElement _appEl_0;
   import4.CompA _CompA_0_4;

@@ -1,7 +1,7 @@
 library angular2.src.compiler.output.interpretive_view;
 
 import "package:angular2/src/facade/lang.dart" show isPresent;
-import "package:angular2/src/core/linker/view.dart" show AppView;
+import "package:angular2/src/core/linker/view.dart" show AppView, DebugAppView;
 import "package:angular2/src/core/linker/element.dart" show AppElement;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "output_interpreter.dart" show InstanceFactory, DynamicInstance;
@@ -15,6 +15,14 @@ class InterpretiveAppViewInstanceFactory implements InstanceFactory {
       Map<String, Function> getters,
       Map<String, Function> methods) {
     if (identical(superClass, AppView)) {
+      // We are always using DebugAppView as parent.
+
+      // However, in prod mode we generate a constructor call that does
+
+      // not have the argument for the debugNodeInfos.
+      args = (new List.from(args)..addAll([null]));
+      return new _InterpretiveAppView(args, props, getters, methods);
+    } else if (identical(superClass, DebugAppView)) {
       return new _InterpretiveAppView(args, props, getters, methods);
     }
     throw new BaseException(
@@ -22,7 +30,8 @@ class InterpretiveAppViewInstanceFactory implements InstanceFactory {
   }
 }
 
-class _InterpretiveAppView extends AppView<dynamic> implements DynamicInstance {
+class _InterpretiveAppView extends DebugAppView<dynamic>
+    implements DynamicInstance {
   Map<String, dynamic> props;
   Map<String, Function> getters;
   Map<String, Function> methods;
