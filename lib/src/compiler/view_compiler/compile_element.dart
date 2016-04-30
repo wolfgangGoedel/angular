@@ -388,7 +388,8 @@ class CompileElement extends CompileNode {
           if (identical(requestingProviderType, ProviderAstType.Component)) {
             return this._compViewExpr.prop("ref");
           } else {
-            return o.THIS_EXPR.prop("ref");
+            return getPropertyInView(
+                o.THIS_EXPR.prop("ref"), this.view, this.view.componentView);
           }
         }
       }

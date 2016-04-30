@@ -92,7 +92,7 @@ class ComponentRef_ extends ComponentRef {
   }
 
   ChangeDetectorRef get changeDetectorRef {
-    return this.hostView;
+    return this._hostElement.parentView.ref;
   }
 
   Type get componentType {

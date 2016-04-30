@@ -70,7 +70,6 @@ abstract class AppView<T> {
   List<dynamic> subscriptions;
   List<AppView<dynamic>> contentChildren = [];
   List<AppView<dynamic>> viewChildren = [];
-  AppView<dynamic> renderParent;
   AppElement viewContainerElement = null;
   // The names of the below fields must be kept in sync with codegen_name_util.ts or
 
@@ -136,7 +135,6 @@ abstract class AppView<T> {
 
       // in the ViewFactory already.
       this.declarationAppElement.parentView.viewChildren.add(this);
-      this.renderParent = this.declarationAppElement.parentView;
       this.dirtyParentQueriesInternal();
     }
   }
@@ -254,18 +252,6 @@ abstract class AppView<T> {
    * Overwritten by implementations
    */
   void dirtyParentQueriesInternal() {}
-  void addRenderContentChild(AppView<dynamic> view) {
-    this.contentChildren.add(view);
-    view.renderParent = this;
-    view.dirtyParentQueriesInternal();
-  }
-
-  void removeContentChild(AppView<dynamic> view) {
-    ListWrapper.remove(this.contentChildren, view);
-    view.dirtyParentQueriesInternal();
-    view.renderParent = null;
-  }
-
   void detectChanges(bool throwOnChange) {
     var s = _scope_check(this.clazz);
     if (identical(this.cdMode, ChangeDetectionStrategy.Detached) ||
@@ -324,7 +310,10 @@ abstract class AppView<T> {
       if (identical(c.cdMode, ChangeDetectionStrategy.Checked)) {
         c.cdMode = ChangeDetectionStrategy.CheckOnce;
       }
-      c = c.renderParent;
+      var parentEl = identical(c.type, ViewType.COMPONENT)
+          ? c.declarationAppElement
+          : c.viewContainerElement;
+      c = isPresent(parentEl) ? parentEl.parentView : null;
     }
   }
 

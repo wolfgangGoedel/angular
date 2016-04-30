@@ -7,14 +7,7 @@ import "view.dart" show AppView;
 import "package:angular2/src/core/change_detection/constants.dart"
     show ChangeDetectionStrategy;
 
-abstract class ViewRef extends ChangeDetectorRef {
-  /**
-   * @internal
-   */
-  ChangeDetectorRef get changeDetectorRef {
-    return (unimplemented() as ChangeDetectorRef);
-  }
-
+abstract class ViewRef {
   bool get destroyed {
     return (unimplemented() as bool);
   }
@@ -90,20 +83,13 @@ abstract class EmbeddedViewRef<C> extends ViewRef {
   destroy();
 }
 
-class ViewRef_<C> implements EmbeddedViewRef<C> {
+class ViewRef_<C> implements EmbeddedViewRef<C>, ChangeDetectorRef {
   AppView<C> _view;
   ViewRef_(this._view) {
     this._view = _view;
   }
   AppView<C> get internalView {
     return this._view;
-  }
-
-  /**
-   * Return `ChangeDetectorRef`
-   */
-  ChangeDetectorRef get changeDetectorRef {
-    return this;
   }
 
   List<dynamic> get rootNodes {

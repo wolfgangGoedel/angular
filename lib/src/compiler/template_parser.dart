@@ -1011,9 +1011,11 @@ class ElementContext {
       List<DirectiveAst> directives, ProviderElementContext providerContext) {
     var matcher = new SelectorMatcher();
     var wildcardNgContentIndex = null;
-    if (directives.length > 0 && directives[0].directive.isComponent) {
-      var ngContentSelectors =
-          directives[0].directive.template.ngContentSelectors;
+    var component = directives.firstWhere(
+        (directive) => directive.directive.isComponent,
+        orElse: () => null);
+    if (isPresent(component)) {
+      var ngContentSelectors = component.directive.template.ngContentSelectors;
       for (var i = 0; i < ngContentSelectors.length; i++) {
         var selector = ngContentSelectors[i];
         if (StringWrapper.equals(selector, "*")) {

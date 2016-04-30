@@ -256,6 +256,8 @@ dynamic/*= T */ castByValue/*< T >*/(dynamic input, dynamic/*= T */ value) {
   return (input as dynamic/*= T */);
 }
 
+const EMPTY_ARRAY = const [];
+const EMPTY_MAP = const {};
 dynamic /* (p0: P0) => R */ pureProxy1/*< P0, R >*/(
     dynamic/*= R */ fn(dynamic/*= P0 */ p0)) {
   dynamic/*= R */ result;

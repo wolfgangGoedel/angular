@@ -34,6 +34,7 @@ import "package:angular2/core.dart"
         PLATFORM_PIPES,
         OpaqueToken,
         Injector;
+import "package:angular2/common.dart" show NgIf, NgClass;
 import "package:angular2/compiler.dart" show CompilerConfig;
 
 main() {
@@ -192,6 +193,24 @@ declareTests(bool isJit) {
             async.done();
           });
         }));
+    it(
+        "should support ngClass before a component and content projection inside of an ngIf",
+        inject([TestComponentBuilder, AsyncTestCompleter],
+            (TestComponentBuilder tcb, async) {
+          tcb
+              .overrideView(
+                  MyComp,
+                  new ViewMetadata(
+                      template:
+                          '''A<cmp-content *ngIf="true" [ngClass]="\'red\'">B</cmp-content>C''',
+                      directives: [NgClass, NgIf, CmpWithNgContent]))
+              .createAsync(MyComp)
+              .then((fixture) {
+            fixture.detectChanges();
+            expect(fixture.nativeElement).toHaveText("ABC");
+            async.done();
+          });
+        }));
   });
 }
 
@@ -214,3 +233,6 @@ class CustomPipe implements PipeTransform {
     return "someCustomPipe";
   }
 }
+
+@Component(selector: "cmp-content", template: '''<ng-content></ng-content>''')
+class CmpWithNgContent {}

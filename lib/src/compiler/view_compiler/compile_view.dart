@@ -27,6 +27,7 @@ import "util.dart"
         createPureProxy;
 import "../config.dart" show CompilerConfig;
 import "compile_binding.dart" show CompileBinding;
+import "../identifiers.dart" show Identifiers;
 
 class CompileView implements NameResolver {
   CompileDirectiveMetadata component;
@@ -159,6 +160,9 @@ class CompileView implements NameResolver {
   }
 
   o.Expression createLiteralArray(List<o.Expression> values) {
+    if (identical(values.length, 0)) {
+      return o.importExpr(Identifiers.EMPTY_ARRAY);
+    }
     var proxyExpr =
         o.THIS_EXPR.prop('''_arr_${ this . literalArrayCount ++}''');
     List<o.FnParam> proxyParams = [];
@@ -179,6 +183,9 @@ class CompileView implements NameResolver {
 
   o.Expression createLiteralMap(
       List<List<dynamic /* String | o . Expression */ >> entries) {
+    if (identical(entries.length, 0)) {
+      return o.importExpr(Identifiers.EMPTY_MAP);
+    }
     var proxyExpr = o.THIS_EXPR.prop('''_map_${ this . literalMapCount ++}''');
     List<o.FnParam> proxyParams = [];
     List<List<dynamic /* String | o . Expression */ >> proxyReturnEntries = [];

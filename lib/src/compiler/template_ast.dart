@@ -158,19 +158,6 @@ class ElementAst implements TemplateAst {
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitElement(this, context);
   }
-
-  /**
-   * Get the component associated with this element, if any.
-   */
-  CompileDirectiveMetadata getComponent() {
-    for (var i = 0; i < this.directives.length; i++) {
-      var dirAst = this.directives[i];
-      if (dirAst.directive.isComponent) {
-        return dirAst.directive;
-      }
-    }
-    return null;
-  }
 }
 
 /**

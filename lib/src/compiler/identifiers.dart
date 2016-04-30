@@ -12,6 +12,8 @@ import "package:angular2/src/core/linker/view_utils.dart"
         interpolate,
         checkBinding,
         castByValue,
+        EMPTY_ARRAY,
+        EMPTY_MAP,
         pureProxy1,
         pureProxy2,
         pureProxy3,
@@ -84,6 +86,8 @@ var impDevModeEqual = devModeEqual;
 var impInterpolate = interpolate;
 var impCheckBinding = checkBinding;
 var impCastByValue = castByValue;
+var impEMPTY_ARRAY = EMPTY_ARRAY;
+var impEMPTY_MAP = EMPTY_MAP;
 
 class Identifiers {
   static var ViewUtils = new CompileIdentifierMetadata(
@@ -199,6 +203,14 @@ class Identifiers {
       name: "castByValue",
       moduleUrl: VIEW_UTILS_MODULE_URL,
       runtime: impCastByValue);
+  static var EMPTY_ARRAY = new CompileIdentifierMetadata(
+      name: "EMPTY_ARRAY",
+      moduleUrl: VIEW_UTILS_MODULE_URL,
+      runtime: impEMPTY_ARRAY);
+  static var EMPTY_MAP = new CompileIdentifierMetadata(
+      name: "EMPTY_MAP",
+      moduleUrl: VIEW_UTILS_MODULE_URL,
+      runtime: impEMPTY_MAP);
   static var pureProxies = [
     null,
     new CompileIdentifierMetadata(

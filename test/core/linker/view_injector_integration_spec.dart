@@ -631,17 +631,23 @@ No provider for SimpleDirective ("[ERROR ->]<div needsDirectiveFromHost></div>")
         var cf = createCompFixture(
             "<div componentNeedsChangeDetectorRef></div>",
             tcb.overrideTemplate(PushComponentNeedsChangeDetectorRef,
-                "{{counter}}<div directiveNeedsChangeDetectorRef></div>"));
+                "{{counter}}<div directiveNeedsChangeDetectorRef></div><div *ngIf=\"true\" directiveNeedsChangeDetectorRef></div>"));
         cf.detectChanges();
         var compEl = cf.debugElement.children[0];
-        var comp = compEl.inject(PushComponentNeedsChangeDetectorRef);
+        PushComponentNeedsChangeDetectorRef comp =
+            compEl.inject(PushComponentNeedsChangeDetectorRef);
         comp.counter = 1;
         cf.detectChanges();
         expect(compEl.nativeElement).toHaveText("0");
-        compEl.children[0]
-            .inject(DirectiveNeedsChangeDetectorRef)
-            .changeDetectorRef
-            .markForCheck();
+        expect(compEl.children[0]
+                .inject(DirectiveNeedsChangeDetectorRef)
+                .changeDetectorRef)
+            .toBe(comp.changeDetectorRef);
+        expect(compEl.children[1]
+                .inject(DirectiveNeedsChangeDetectorRef)
+                .changeDetectorRef)
+            .toBe(comp.changeDetectorRef);
+        comp.changeDetectorRef.markForCheck();
         cf.detectChanges();
         expect(compEl.nativeElement).toHaveText("1");
       }));
