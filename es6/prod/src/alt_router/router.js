@@ -40,10 +40,12 @@ export class Router {
             .then(currTree => {
             return new _LoadSegments(currTree, this._prevTree)
                 .load(this._routerOutletMap, this._rootComponent)
-                .then(_ => {
-                this._prevTree = currTree;
-                this._location.go(this._urlSerializer.serialize(this._urlTree));
-                this._changes.emit(null);
+                .then(updated => {
+                if (updated) {
+                    this._prevTree = currTree;
+                    this._location.go(this._urlSerializer.serialize(this._urlTree));
+                    this._changes.emit(null);
+                }
             });
         });
     }
@@ -76,6 +78,7 @@ class _LoadSegments {
             if (res) {
                 this.loadChildSegments(currRoot, prevRoot, parentOutletMap, [rootComponent]);
             }
+            return res;
         });
     }
     canDeactivate(currRoot, prevRoot, outletMap, rootComponent) {
@@ -148,7 +151,7 @@ class _LoadSegments {
         return outlet;
     }
     unloadOutlet(outlet, components) {
-        if (outlet.isLoaded) {
+        if (isPresent(outlet) && outlet.isLoaded) {
             StringMapWrapper.forEach(outlet.outletMap._outlets, (v, k) => this.unloadOutlet(v, components));
             if (this.performMutation) {
                 outlet.unload();

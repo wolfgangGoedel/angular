@@ -1477,10 +1477,12 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
       var _this = this;
       this._urlTree = url;
       return recognize_1.recognize(this._componentResolver, this._rootComponentType, url).then(function(currTree) {
-        return new _LoadSegments(currTree, _this._prevTree).load(_this._routerOutletMap, _this._rootComponent).then(function(_) {
-          _this._prevTree = currTree;
-          _this._location.go(_this._urlSerializer.serialize(_this._urlTree));
-          _this._changes.emit(null);
+        return new _LoadSegments(currTree, _this._prevTree).load(_this._routerOutletMap, _this._rootComponent).then(function(updated) {
+          if (updated) {
+            _this._prevTree = currTree;
+            _this._location.go(_this._urlSerializer.serialize(_this._urlTree));
+            _this._changes.emit(null);
+          }
         });
       });
     };
@@ -1528,6 +1530,7 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
         if (res) {
           _this.loadChildSegments(currRoot, prevRoot, parentOutletMap, [rootComponent]);
         }
+        return res;
       });
     };
     _LoadSegments.prototype.canDeactivate = function(currRoot, prevRoot, outletMap, rootComponent) {
@@ -1612,7 +1615,7 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
     };
     _LoadSegments.prototype.unloadOutlet = function(outlet, components) {
       var _this = this;
-      if (outlet.isLoaded) {
+      if (lang_1.isPresent(outlet) && outlet.isLoaded) {
         collection_2.StringMapWrapper.forEach(outlet.outletMap._outlets, function(v, k) {
           return _this.unloadOutlet(v, components);
         });
