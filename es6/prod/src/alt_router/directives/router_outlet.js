@@ -23,10 +23,9 @@ export let RouterOutlet = class RouterOutlet {
         this._loaded.destroy();
         this._loaded = null;
     }
+    get loadedComponent() { return isPresent(this._loaded) ? this._loaded.instance : null; }
+    get isLoaded() { return isPresent(this._loaded); }
     load(factory, providers, outletMap) {
-        if (isPresent(this._loaded)) {
-            this.unload();
-        }
         this.outletMap = outletMap;
         let inj = ReflectiveInjector.fromResolvedProviders(providers, this._location.parentInjector);
         this._loaded = this._location.createComponent(factory, this._location.length, inj, []);

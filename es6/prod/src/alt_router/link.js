@@ -1,11 +1,57 @@
 import { Tree, TreeNode, UrlSegment, rootNode } from './segments';
-import { isBlank, isString, isStringMap } from 'angular2/src/facade/lang';
+import { isBlank, isPresent, isString, isStringMap } from 'angular2/src/facade/lang';
 import { ListWrapper } from 'angular2/src/facade/collection';
-export function link(segment, tree, change) {
+export function link(segment, routeTree, urlTree, change) {
     if (change.length === 0)
-        return tree;
-    let normalizedChange = (change.length === 1 && change[0] == "/") ? change : ["/"].concat(change);
-    return new Tree(_update(rootNode(tree), normalizedChange));
+        return urlTree;
+    let startingNode;
+    let normalizedChange;
+    if (isString(change[0]) && change[0].startsWith("./")) {
+        normalizedChange = ["/", change[0].substring(2)].concat(change.slice(1));
+        startingNode = _findStartingNode(_findUrlSegment(segment, routeTree), rootNode(urlTree));
+    }
+    else if (isString(change[0]) && change.length === 1 && change[0] == "/") {
+        normalizedChange = change;
+        startingNode = rootNode(urlTree);
+    }
+    else if (isString(change[0]) && !change[0].startsWith("/")) {
+        normalizedChange = ["/"].concat(change);
+        startingNode = _findStartingNode(_findUrlSegment(segment, routeTree), rootNode(urlTree));
+    }
+    else {
+        normalizedChange = ["/"].concat(change);
+        startingNode = rootNode(urlTree);
+    }
+    let updated = _update(startingNode, normalizedChange);
+    let newRoot = _constructNewTree(rootNode(urlTree), startingNode, updated);
+    return new Tree(newRoot);
+}
+function _findUrlSegment(segment, routeTree) {
+    let s = segment;
+    let res = null;
+    while (isBlank(res)) {
+        res = ListWrapper.last(s.urlSegments);
+        s = routeTree.parent(s);
+    }
+    return res;
+}
+function _findStartingNode(segment, node) {
+    if (node.value === segment)
+        return node;
+    for (var c of node.children) {
+        let r = _findStartingNode(segment, c);
+        if (isPresent(r))
+            return r;
+    }
+    return null;
+}
+function _constructNewTree(node, original, updated) {
+    if (node === original) {
+        return new TreeNode(node.value, updated.children);
+    }
+    else {
+        return new TreeNode(node.value, node.children.map(c => _constructNewTree(c, original, updated)));
+    }
 }
 function _update(node, changes) {
     let rest = changes.slice(1);

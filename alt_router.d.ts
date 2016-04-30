@@ -8,6 +8,6 @@ export { RouteSegment, UrlSegment, Tree } from './src/alt_router/segments';
 export { Routes } from './src/alt_router/metadata/decorators';
 export { Route } from './src/alt_router/metadata/metadata';
 export { RouterUrlSerializer, DefaultRouterUrlSerializer } from './src/alt_router/router_url_serializer';
-export { OnActivate } from './src/alt_router/interfaces';
+export { OnActivate, CanDeactivate } from './src/alt_router/interfaces';
 export { ROUTER_PROVIDERS } from './src/alt_router/router_providers';
 export declare const ROUTER_DIRECTIVES: any[];

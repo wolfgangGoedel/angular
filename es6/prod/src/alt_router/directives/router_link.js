@@ -7,19 +7,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Directive, HostListener, HostBinding, Input } from 'angular2/core';
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+import { Directive, HostListener, HostBinding, Input, Optional } from 'angular2/core';
 import { Router } from '../router';
-import { link } from '../link';
-import { isString } from 'angular2/src/facade/lang';
+import { RouteSegment } from '../segments';
+import { isString, isPresent } from 'angular2/src/facade/lang';
 import { ObservableWrapper } from 'angular2/src/facade/async';
 export let RouterLink = class RouterLink {
-    constructor(_router) {
+    constructor(_routeSegment, _router) {
+        this._routeSegment = _routeSegment;
         this._router = _router;
         this._changes = [];
-        this._subscription = ObservableWrapper.subscribe(_router.changes, (_) => {
-            this._targetUrl = _router.urlTree;
-            this._updateTargetUrlAndHref();
-        });
+        this._subscription =
+            ObservableWrapper.subscribe(_router.changes, (_) => { this._updateTargetUrlAndHref(); });
     }
     ngOnDestroy() { ObservableWrapper.dispose(this._subscription); }
     set routerLink(data) {
@@ -28,14 +30,16 @@ export let RouterLink = class RouterLink {
     }
     onClick() {
         if (!isString(this.target) || this.target == '_self') {
-            this._router.navigate(this._targetUrl);
+            this._router.navigate(this._changes, this._routeSegment);
             return false;
         }
         return true;
     }
     _updateTargetUrlAndHref() {
-        this._targetUrl = link(null, this._router.urlTree, this._changes);
-        this.href = this._router.serializeUrl(this._targetUrl);
+        let tree = this._router.createUrlTree(this._changes, this._routeSegment);
+        if (isPresent(tree)) {
+            this.href = this._router.serializeUrl(tree);
+        }
     }
 };
 __decorate([
@@ -58,6 +62,7 @@ __decorate([
     __metadata('design:returntype', Boolean)
 ], RouterLink.prototype, "onClick", null);
 RouterLink = __decorate([
-    Directive({ selector: '[routerLink]' }), 
-    __metadata('design:paramtypes', [Router])
+    Directive({ selector: '[routerLink]' }),
+    __param(0, Optional()), 
+    __metadata('design:paramtypes', [RouteSegment, Router])
 ], RouterLink);

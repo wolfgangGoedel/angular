@@ -18,5 +18,6 @@ function routerFactory(app, componentResolver, urlSerializer, routerOutletMap, l
     if (app.componentTypes.length == 0) {
         throw new BaseException("Bootstrap at least one component before injecting Router.");
     }
-    return new Router(app.componentTypes[0], componentResolver, urlSerializer, routerOutletMap, location);
+    // TODO: vsavkin this should not be null
+    return new Router(null, app.componentTypes[0], componentResolver, urlSerializer, routerOutletMap, location);
 }

@@ -6,6 +6,7 @@ import { PromiseWrapper } from 'angular2/src/facade/promise';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { DEFAULT_OUTLET_NAME } from './constants';
 import { reflector } from 'angular2/src/core/reflection/reflection';
+// TODO: vsavkin: recognize should take the old tree and merge it
 export function recognize(componentResolver, type, url) {
     let matched = new _MatchResult(type, [url.root], null, rootNode(url).children, []);
     return _constructSegment(componentResolver, matched)

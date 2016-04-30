@@ -23,6 +23,9 @@ export function rootNode(tree) {
     return tree._root;
 }
 function _findNode(expected, c) {
+    // TODO: vsavkin remove it once recognize is fixed
+    if (expected instanceof RouteSegment && equalSegments(expected, c.value))
+        return c;
     if (expected === c.value)
         return c;
     for (let cc of c.children) {
@@ -34,6 +37,9 @@ function _findNode(expected, c) {
 }
 function _findPath(expected, c, collected) {
     collected.push(c);
+    // TODO: vsavkin remove it once recognize is fixed
+    if (expected instanceof RouteSegment && equalSegments(expected, c.value))
+        return collected;
     if (expected === c.value)
         return collected;
     for (let cc of c.children) {
@@ -101,6 +107,8 @@ export function equalSegments(a, b) {
         return false;
     if (!isBlank(a.parameters) && isBlank(b.parameters))
         return false;
+    if (isBlank(a.parameters) && isBlank(b.parameters))
+        return true;
     return StringMapWrapper.equals(a.parameters, b.parameters);
 }
 export function routeSegmentComponentFactory(a) {

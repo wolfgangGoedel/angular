@@ -6,5 +6,7 @@ export declare class RouterOutlet {
     outletMap: RouterOutletMap;
     constructor(parentOutletMap: RouterOutletMap, _location: ViewContainerRef, name: string);
     unload(): void;
+    loadedComponent: Object;
+    isLoaded: boolean;
     load(factory: ComponentFactory, providers: ResolvedReflectiveProvider[], outletMap: RouterOutletMap): ComponentRef;
 }
