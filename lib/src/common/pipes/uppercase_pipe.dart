@@ -22,6 +22,4 @@ class UpperCasePipe implements PipeTransform {
     }
     return value.toUpperCase();
   }
-
-  const UpperCasePipe();
 }

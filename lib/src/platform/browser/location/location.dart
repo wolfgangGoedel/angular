@@ -124,9 +124,8 @@ class Location {
   /**
    * Subscribe to the platform's `popState` events.
    */
-  Object subscribe(dynamic /* (value: any) => void */ onNext,
-      [dynamic /* (exception: any) => void */ onThrow = null,
-      dynamic /* () => void */ onReturn = null]) {
+  Object subscribe(void onNext(dynamic value),
+      [void onThrow(dynamic exception) = null, void onReturn() = null]) {
     return ObservableWrapper.subscribe(
         this._subject, onNext, onThrow, onReturn);
   }

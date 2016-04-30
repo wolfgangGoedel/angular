@@ -5,14 +5,14 @@ import "package:angular2/testing_internal.dart"
 import "package:angular2/src/facade/lang.dart" show IS_DART, isBlank;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "package:angular2/src/compiler/static_reflector.dart"
-    show StaticReflector, StaticReflectorHost, StaticSymbol, ModuleContext;
+    show StaticReflector, StaticReflectorHost, StaticSymbol;
 
 main() {
   // Static reflector is not supported in Dart
 
   // as we use reflection to create objects.
   if (IS_DART) return;
-  var noContext = new ModuleContext("", "");
+  var noContext = new StaticSymbol("", "", "");
   describe("StaticReflector", () {
     StaticReflectorHost host;
     StaticReflector reflector;
@@ -20,11 +20,8 @@ main() {
       host = new MockReflectorHost();
       reflector = new StaticReflector(host);
     });
-    singleModuleSimplify(ModuleContext moduleContext, dynamic value) {
-      return reflector.simplify(moduleContext, value, false);
-    }
-    crossModuleSimplify(ModuleContext moduleContext, dynamic value) {
-      return reflector.simplify(moduleContext, value, true);
+    simplify(StaticSymbol context, dynamic value) {
+      return reflector.simplify(context, value);
     }
     it("should get annotations for NgFor", () {
       var NgFor = host.findDeclaration(
@@ -93,19 +90,19 @@ main() {
       expect(parameters).toEqual([]);
     });
     it("should simplify primitive into itself", () {
-      expect(singleModuleSimplify(noContext, 1)).toBe(1);
-      expect(singleModuleSimplify(noContext, true)).toBe(true);
-      expect(singleModuleSimplify(noContext, "some value")).toBe("some value");
+      expect(simplify(noContext, 1)).toBe(1);
+      expect(simplify(noContext, true)).toBe(true);
+      expect(simplify(noContext, "some value")).toBe("some value");
     });
     it("should simplify an array into a copy of the array", () {
-      expect(singleModuleSimplify(noContext, [1, 2, 3])).toEqual([1, 2, 3]);
+      expect(simplify(noContext, [1, 2, 3])).toEqual([1, 2, 3]);
     });
     it("should simplify an object to a copy of the object", () {
       var expr = {"a": 1, "b": 2, "c": 3};
-      expect(singleModuleSimplify(noContext, expr)).toEqual(expr);
+      expect(simplify(noContext, expr)).toEqual(expr);
     });
     it("should simplify &&", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -114,7 +111,7 @@ main() {
                 "right": true
               })))
           .toBe(true);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -123,7 +120,7 @@ main() {
                 "right": false
               })))
           .toBe(false);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -132,7 +129,7 @@ main() {
                 "right": true
               })))
           .toBe(false);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -143,7 +140,7 @@ main() {
           .toBe(false);
     });
     it("should simplify ||", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -152,7 +149,7 @@ main() {
                 "right": true
               })))
           .toBe(true);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -161,7 +158,7 @@ main() {
                 "right": false
               })))
           .toBe(true);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -170,7 +167,7 @@ main() {
                 "right": true
               })))
           .toBe(true);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -181,7 +178,7 @@ main() {
           .toBe(false);
     });
     it("should simplify &", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -190,7 +187,7 @@ main() {
                 "right": 0x0F
               })))
           .toBe(0x22 & 0x0F);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -201,7 +198,7 @@ main() {
           .toBe(0x22 & 0xF0);
     });
     it("should simplify |", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -210,7 +207,7 @@ main() {
                 "right": 0x0F
               })))
           .toBe(0x22 | 0x0F);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -221,7 +218,7 @@ main() {
           .toBe(0x22 | 0xF0);
     });
     it("should simplify ^", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -230,7 +227,7 @@ main() {
                 "right": 0x0F
               })))
           .toBe(0x22 | 0x0F);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -241,7 +238,7 @@ main() {
           .toBe(0x22 | 0xF0);
     });
     it("should simplify ==", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -250,7 +247,7 @@ main() {
                 "right": 0x22
               })))
           .toBe(0x22 == 0x22);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -261,7 +258,7 @@ main() {
           .toBe(0x22 == 0xF0);
     });
     it("should simplify !=", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -270,7 +267,7 @@ main() {
                 "right": 0x22
               })))
           .toBe(0x22 != 0x22);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -281,7 +278,7 @@ main() {
           .toBe(0x22 != 0xF0);
     });
     it("should simplify ===", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -290,7 +287,7 @@ main() {
                 "right": 0x22
               })))
           .toBe(identical(0x22, 0x22));
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -301,7 +298,7 @@ main() {
           .toBe(identical(0x22, 0xF0));
     });
     it("should simplify !==", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -310,7 +307,7 @@ main() {
                 "right": 0x22
               })))
           .toBe(!identical(0x22, 0x22));
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -321,7 +318,7 @@ main() {
           .toBe(!identical(0x22, 0xF0));
     });
     it("should simplify >", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -330,7 +327,7 @@ main() {
                 "right": 1
               })))
           .toBe(1 > 1);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -339,7 +336,7 @@ main() {
                 "right": 0
               })))
           .toBe(1 > 0);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -350,7 +347,7 @@ main() {
           .toBe(0 > 1);
     });
     it("should simplify >=", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -359,7 +356,7 @@ main() {
                 "right": 1
               })))
           .toBe(1 >= 1);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -368,7 +365,7 @@ main() {
                 "right": 0
               })))
           .toBe(1 >= 0);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -379,7 +376,7 @@ main() {
           .toBe(0 >= 1);
     });
     it("should simplify <=", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -388,7 +385,7 @@ main() {
                 "right": 1
               })))
           .toBe(1 <= 1);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -397,7 +394,7 @@ main() {
                 "right": 0
               })))
           .toBe(1 <= 0);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -408,7 +405,7 @@ main() {
           .toBe(0 <= 1);
     });
     it("should simplify <", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -417,7 +414,7 @@ main() {
                 "right": 1
               })))
           .toBe(1 < 1);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -426,7 +423,7 @@ main() {
                 "right": 0
               })))
           .toBe(1 < 0);
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -437,7 +434,7 @@ main() {
           .toBe(0 < 1);
     });
     it("should simplify <<", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -448,7 +445,7 @@ main() {
           .toBe(0x55 << 2);
     });
     it("should simplify >>", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -459,7 +456,7 @@ main() {
           .toBe(0x55 >> 2);
     });
     it("should simplify +", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -470,7 +467,7 @@ main() {
           .toBe(0x55 + 2);
     });
     it("should simplify -", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -481,7 +478,7 @@ main() {
           .toBe(0x55 - 2);
     });
     it("should simplify *", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -492,7 +489,7 @@ main() {
           .toBe(0x55 * 2);
     });
     it("should simplify /", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -503,7 +500,7 @@ main() {
           .toBe(0x55 / 2);
     });
     it("should simplify %", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "binop",
@@ -514,25 +511,25 @@ main() {
           .toBe(0x55 % 2);
     });
     it("should simplify prefix -", () {
-      expect(singleModuleSimplify(noContext,
+      expect(simplify(noContext,
               ({"___symbolic": "pre", "operator": "-", "operand": 2})))
           .toBe(-2);
     });
     it("should simplify prefix ~", () {
-      expect(singleModuleSimplify(noContext,
+      expect(simplify(noContext,
               ({"___symbolic": "pre", "operator": "~", "operand": 2})))
           .toBe(~2);
     });
     it("should simplify prefix !", () {
-      expect(singleModuleSimplify(noContext,
+      expect(simplify(noContext,
               ({"___symbolic": "pre", "operator": "!", "operand": true})))
           .toBe(!true);
-      expect(singleModuleSimplify(noContext,
+      expect(simplify(noContext,
               ({"___symbolic": "pre", "operator": "!", "operand": false})))
           .toBe(!false);
     });
     it("should simplify an array index", () {
-      expect(singleModuleSimplify(
+      expect(simplify(
               noContext,
               ({
                 "___symbolic": "index",
@@ -547,11 +544,11 @@ main() {
         "expression": {"a": 1, "b": 2, "c": 3},
         "member": "b"
       };
-      expect(singleModuleSimplify(noContext, expr)).toBe(2);
+      expect(simplify(noContext, expr)).toBe(2);
     });
-    it("should simplify a module reference across modules", () {
-      expect(crossModuleSimplify(
-              new ModuleContext("", "/src/cases"),
+    it("should simplify a module reference", () {
+      expect(simplify(
+              new StaticSymbol("", "/src/cases", ""),
               ({
                 "___symbolic": "reference",
                 "module": "./extern",
@@ -559,15 +556,15 @@ main() {
               })))
           .toEqual("s");
     });
-    it("should simplify a module reference without crossing modules", () {
-      expect(singleModuleSimplify(
-              new ModuleContext("", "/src/cases"),
+    it("should simplify a non existing reference as a static symbol", () {
+      expect(simplify(
+              new StaticSymbol("", "/src/cases", ""),
               ({
                 "___symbolic": "reference",
                 "module": "./extern",
-                "name": "s"
+                "name": "nonExisting"
               })))
-          .toEqual(host.getStaticSymbol("", "/src/extern.d.ts", "s"));
+          .toEqual(host.getStaticSymbol("", "/src/extern.d.ts", "nonExisting"));
     });
   });
 }

@@ -9,7 +9,7 @@ import "package:angular2/core.dart"
 const WORKER_RENDER_ROUTER = const [
   MessageBasedPlatformLocation,
   BrowserPlatformLocation,
-  const Provider(APP_INITIALIZER,
+  /* @ts2dart_Provider */ const Provider(APP_INITIALIZER,
       useFactory: initRouterListeners, multi: true, deps: const [Injector])
 ];
 dynamic /* () => void */ initRouterListeners(Injector injector) {

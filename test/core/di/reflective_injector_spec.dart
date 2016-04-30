@@ -256,8 +256,10 @@ main() {
       it("should support multiProviders", () {
         var injector = createInjector([
           Engine,
-          new Provider(Car, useClass: SportsCar, multi: true),
-          new Provider(Car, useClass: CarWithOptionalEngine, multi: true)
+          /* @ts2dart_Provider */ const Provider(Car,
+              useClass: SportsCar, multi: true),
+          /* @ts2dart_Provider */ const Provider(Car,
+              useClass: CarWithOptionalEngine, multi: true)
         ]);
         var cars = injector.get(Car);
         expect(cars.length).toEqual(2);
@@ -269,7 +271,8 @@ main() {
         var injector = createInjector([
           Engine,
           SportsCar,
-          new Provider(Car, useExisting: SportsCar, multi: true)
+          /* @ts2dart_Provider */ const Provider(Car,
+              useExisting: SportsCar, multi: true)
         ]);
         var cars = injector.get(Car);
         expect(cars.length).toEqual(1);
@@ -494,16 +497,31 @@ main() {
       });
       it("should support multi providers", () {
         var provider = ReflectiveInjector.resolve([
-          new Provider(Engine, useClass: BrokenEngine, multi: true),
-          new Provider(Engine, useClass: TurboEngine, multi: true)
+          /* @ts2dart_Provider */ const Provider(Engine,
+              useClass: BrokenEngine, multi: true),
+          /* @ts2dart_Provider */ const Provider(Engine,
+              useClass: TurboEngine, multi: true)
+        ])[0];
+        expect(provider.key.token).toBe(Engine);
+        expect(provider.multiProvider).toEqual(true);
+        expect(provider.resolvedFactories.length).toEqual(2);
+      });
+      it("should support providers as hash", () {
+        var provider = ReflectiveInjector.resolve([
+          /* @ts2dart_Provider */ const Provider(Engine,
+              useClass: BrokenEngine, multi: true),
+          /* @ts2dart_Provider */ const Provider(Engine,
+              useClass: TurboEngine, multi: true)
         ])[0];
         expect(provider.key.token).toBe(Engine);
         expect(provider.multiProvider).toEqual(true);
         expect(provider.resolvedFactories.length).toEqual(2);
       });
       it("should support multi providers with only one provider", () {
-        var provider = ReflectiveInjector.resolve(
-            [new Provider(Engine, useClass: BrokenEngine, multi: true)])[0];
+        var provider = ReflectiveInjector.resolve([
+          /* @ts2dart_Provider */ const Provider(Engine,
+              useClass: BrokenEngine, multi: true)
+        ])[0];
         expect(provider.key.token).toBe(Engine);
         expect(provider.multiProvider).toEqual(true);
         expect(provider.resolvedFactories.length).toEqual(1);
@@ -511,14 +529,15 @@ main() {
       it("should throw when mixing multi providers with regular providers", () {
         expect(() {
           ReflectiveInjector.resolve([
-            new Provider(Engine, useClass: BrokenEngine, multi: true),
+            /* @ts2dart_Provider */ const Provider(Engine,
+                useClass: BrokenEngine, multi: true),
             Engine
           ]);
         }).toThrowErrorWith("Cannot mix multi providers and regular providers");
         expect(() {
           ReflectiveInjector.resolve([
             Engine,
-            new Provider(Engine, useClass: BrokenEngine, multi: true)
+            const Provider(Engine, useClass: BrokenEngine, multi: true)
           ]);
         }).toThrowErrorWith("Cannot mix multi providers and regular providers");
       });

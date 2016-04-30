@@ -7,10 +7,11 @@ abstract class RouteMetadata {
   Type get component;
 }
 
+/* @ts2dart_const */
 class Route implements RouteMetadata {
   final String path;
   final Type component;
-  const Route({path, component})
+  const Route({String path, Type component})
       : path = path,
         component = component;
   String toString() {
@@ -18,6 +19,7 @@ class Route implements RouteMetadata {
   }
 }
 
+/* @ts2dart_const */
 class RoutesMetadata {
   final List<RouteMetadata> routes;
   const RoutesMetadata(this.routes);

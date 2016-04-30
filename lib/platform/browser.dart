@@ -1,5 +1,6 @@
 library angular2.platform.browser;
 
+import "package:angular2/core.dart" show Provider;
 import "dart:async";
 export "package:angular2/src/core/angular_entrypoint.dart";
 export "package:angular2/src/platform/browser_common.dart"
@@ -37,7 +38,6 @@ import "package:angular2/src/core/reflection/reflection_capabilities.dart"
     show ReflectionCapabilities;
 import "package:angular2/src/platform/browser/xhr_impl.dart" show XHRImpl;
 import "package:angular2/compiler.dart" show XHR;
-import "package:angular2/src/core/di.dart" show Provider;
 
 /**
  * An array of providers that should be passed into `application()` when bootstrapping a component.
@@ -45,7 +45,7 @@ import "package:angular2/src/core/di.dart" show Provider;
 const List<dynamic> BROWSER_APP_PROVIDERS = const [
   BROWSER_APP_COMMON_PROVIDERS,
   COMPILER_PROVIDERS,
-  const Provider(XHR, useClass: XHRImpl)
+  /*@ts2dart_Provider*/ const Provider(XHR, useClass: XHRImpl)
 ];
 PlatformRef browserPlatform() {
   if (isBlank(getPlatform())) {

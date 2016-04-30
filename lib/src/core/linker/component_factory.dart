@@ -110,6 +110,7 @@ class ComponentRef_ extends ComponentRef {
 
 const EMPTY_CONTEXT = const Object();
 
+/*@ts2dart_const*/
 class ComponentFactory {
   final String selector;
   final Function _viewFactory;

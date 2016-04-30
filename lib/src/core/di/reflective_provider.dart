@@ -3,7 +3,7 @@ library angular2.src.core.di.reflective_provider;
 import "package:angular2/src/facade/lang.dart"
     show Type, isBlank, isPresent, isArray, isType;
 import "package:angular2/src/facade/collection.dart"
-    show MapWrapper, ListWrapper;
+    show MapWrapper, ListWrapper, StringMapWrapper;
 import "package:angular2/src/core/reflection/reflection.dart" show reflector;
 import "reflective_key.dart" show ReflectiveKey;
 import "metadata.dart"
@@ -22,6 +22,7 @@ import "reflective_exceptions.dart"
         InvalidProviderError;
 import "forward_ref.dart" show resolveForwardRef;
 import "provider.dart" show Provider, ProviderBuilder, provide;
+import "provider_util.dart" show isProviderLiteral, createProvider;
 
 /**
  * `Dependency` is used by the framework to extend DI.
@@ -150,7 +151,8 @@ ResolvedReflectiveProvider resolveReflectiveProvider(Provider provider) {
  * Resolve a list of Providers.
  */
 List<ResolvedReflectiveProvider> resolveReflectiveProviders(
-    List<dynamic /* Type | Provider | List < dynamic > */ > providers) {
+    List<
+        dynamic /* Type | Provider | Map < String , dynamic > | List < dynamic > */ > providers) {
   var normalized = _normalizeProviders(providers, []);
   var resolved = normalized.map(resolveReflectiveProvider).toList();
   return MapWrapper.values(mergeResolvedReflectiveProviders(
@@ -198,13 +200,15 @@ Map<num, ResolvedReflectiveProvider> mergeResolvedReflectiveProviders(
 
 List<Provider> _normalizeProviders(
     List<
-        dynamic /* Type | Provider | ProviderBuilder | List < dynamic > */ > providers,
+        dynamic /* Type | Provider | Map < String , dynamic > | ProviderBuilder | List < dynamic > */ > providers,
     List<Provider> res) {
   providers.forEach((b) {
     if (b is Type) {
       res.add(provide(b, useClass: b));
     } else if (b is Provider) {
       res.add(b);
+    } else if (isProviderLiteral(b)) {
+      res.add(createProvider(b));
     } else if (b is List) {
       _normalizeProviders(b, res);
     } else if (b is ProviderBuilder) {

@@ -14,16 +14,24 @@ import "package:angular2/src/facade/exceptions.dart" show BaseException;
  */
 const List<dynamic> ROUTER_PROVIDERS_COMMON = const [
   RouteRegistry,
-  const Provider(LocationStrategy, useClass: PathLocationStrategy),
+  /* @ts2dart_Provider */ const Provider(LocationStrategy,
+      useClass: PathLocationStrategy),
   Location,
-  const Provider(Router, useFactory: routerFactory, deps: const [
-    RouteRegistry,
-    Location,
-    ROUTER_PRIMARY_COMPONENT,
-    ApplicationRef
-  ]),
-  const Provider(ROUTER_PRIMARY_COMPONENT,
-      useFactory: routerPrimaryComponentFactory, deps: const [ApplicationRef])
+  const {
+    "provide": Router,
+    "useFactory": routerFactory,
+    "deps": const [
+      RouteRegistry,
+      Location,
+      ROUTER_PRIMARY_COMPONENT,
+      ApplicationRef
+    ]
+  },
+  const {
+    "provide": ROUTER_PRIMARY_COMPONENT,
+    "useFactory": routerPrimaryComponentFactory,
+    "deps": (const [ApplicationRef])
+  }
 ];
 RootRouter routerFactory(RouteRegistry registry, Location location,
     Type primaryComponent, ApplicationRef appRef) {

@@ -82,7 +82,7 @@ var _resolveToNull = PromiseWrapper.resolve/*< Instruction >*/(null);
  * ```
  */
 const OpaqueToken ROUTER_PRIMARY_COMPONENT =
-    const OpaqueToken("RouterPrimaryComponent");
+    /*@ts2dart_const*/ const OpaqueToken("RouterPrimaryComponent");
 
 /**
  * The RouteRegistry holds route configurations for each component in an Angular app.

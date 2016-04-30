@@ -161,15 +161,8 @@ const $RBRACKET = 93;
 const $CARET = 94;
 const $_ = 95;
 const $BT = 96;
-const $a = 97,
-    $e = 101,
-    $f = 102,
-    $n = 110,
-    $r = 114,
-    $t = 116,
-    $u = 117,
-    $v = 118,
-    $z = 122;
+const $a = 97, $e = 101, $f = 102;
+const $n = 110, $r = 114, $t = 116, $u = 117, $v = 118, $z = 122;
 const $LBRACE = 123;
 const $BAR = 124;
 const $RBRACE = 125;

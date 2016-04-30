@@ -43,6 +43,7 @@ import "package:angular2/src/core/metadata/di.dart"
     show AttributeMetadata, QueryMetadata;
 import "package:angular2/src/core/reflection/reflector_reader.dart"
     show ReflectorReader;
+import "../core/di/provider_util.dart" show isProviderLiteral, createProvider;
 
 @Injectable()
 class CompileMetadataResolver {
@@ -301,6 +302,8 @@ class CompileMetadataResolver {
         return this.getProvidersMetadata(provider);
       } else if (provider is Provider) {
         return this.getProviderMetadata(provider);
+      } else if (isProviderLiteral(provider)) {
+        return this.getProviderMetadata(createProvider(provider));
       } else {
         return this.getTypeMetadata(provider, staticTypeModuleUrl(provider));
       }

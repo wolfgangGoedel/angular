@@ -52,6 +52,4 @@ class I18nPluralPipe implements PipeTransform {
     valueStr = isPresent(value) ? value.toString() : "";
     return StringWrapper.replaceAll(pluralMap[key], interpolationExp, valueStr);
   }
-
-  const I18nPluralPipe();
 }

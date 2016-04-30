@@ -110,7 +110,7 @@ var TEXT_CSS_SELECTOR = CssSelector.parse("*")[0];
  *
  * This is currently an internal-only feature and not meant for general use.
  */
-const TEMPLATE_TRANSFORMS = const OpaqueToken("TemplateTransforms");
+const dynamic TEMPLATE_TRANSFORMS = const OpaqueToken("TemplateTransforms");
 
 class TemplateParseError extends ParseError {
   TemplateParseError(

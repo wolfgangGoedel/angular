@@ -1,6 +1,7 @@
 library angular2.src.core.application_ref;
 
 import "dart:async";
+import "package:angular2/core.dart" show Provider;
 import "package:angular2/src/core/zone/ng_zone.dart" show NgZone, NgZoneError;
 import "package:angular2/src/facade/lang.dart"
     show
@@ -135,7 +136,7 @@ abstract class PlatformRef {
   /**
    * Register a listener to be called when the platform is disposed.
    */
-  void registerDisposeListener(dynamic /* () => void */ dispose);
+  void registerDisposeListener(void dispose());
   /**
    * Retrieve the platform [Injector], which is the parent injector for
    * every Angular application on the page and provides singleton providers.
@@ -171,7 +172,7 @@ class PlatformRef_ extends PlatformRef {
         (_injector.get(PLATFORM_INITIALIZER, null) as List<Function>);
     if (isPresent(inits)) inits.forEach((init) => init());
   }
-  void registerDisposeListener(dynamic /* () => void */ dispose) {
+  void registerDisposeListener(void dispose()) {
     this._disposeListeners.add(dispose);
   }
 
@@ -209,12 +210,11 @@ abstract class ApplicationRef {
    * Register a listener to be called each time `bootstrap()` is called to bootstrap
    * a new root component.
    */
-  void registerBootstrapListener(
-      dynamic /* (ref: ComponentRef) => void */ listener);
+  void registerBootstrapListener(void listener(ComponentRef ref));
   /**
    * Register a listener to be called when the application is disposed.
    */
-  void registerDisposeListener(dynamic /* () => void */ dispose);
+  void registerDisposeListener(void dispose());
   /**
    * Returns a promise that resolves when all asynchronous application initializers
    * are done.
@@ -338,12 +338,11 @@ class ApplicationRef_ extends ApplicationRef {
       });
     });
   }
-  void registerBootstrapListener(
-      dynamic /* (ref: ComponentRef) => void */ listener) {
+  void registerBootstrapListener(void listener(ComponentRef ref)) {
     this._bootstrapListeners.add(listener);
   }
 
-  void registerDisposeListener(dynamic /* () => void */ dispose) {
+  void registerDisposeListener(void dispose()) {
     this._disposeListeners.add(dispose);
   }
 
@@ -410,7 +409,7 @@ class ApplicationRef_ extends ApplicationRef {
             .registerApplication(compRef.location.nativeElement, testability);
       }
       this._loadComponent(compRef);
-      var c = this._injector.get(Console);
+      Console c = this._injector.get(Console);
       if (assertionsEnabled()) {
         c.log(
             "Angular 2 is running in the development mode. Call enableProdMode() to enable the production mode.");
@@ -478,15 +477,20 @@ class ApplicationRef_ extends ApplicationRef {
 /**
  * @internal
  */
-const PLATFORM_CORE_PROVIDERS = const [
+const PLATFORM_CORE_PROVIDERS =
+    /*@ts2dart_const*/ const [
   PlatformRef_,
-  const Provider(PlatformRef, useExisting: PlatformRef_)
+  /*@ts2dart_const*/ (
+      /* @ts2dart_Provider */ const Provider(PlatformRef,
+          useExisting: PlatformRef_))
 ];
 /**
  * @internal
  */
 const APPLICATION_CORE_PROVIDERS = const [
-  const Provider(NgZone, useFactory: createNgZone, deps: const []),
+  /* @ts2dart_Provider */ const Provider(NgZone,
+      useFactory: createNgZone, deps: const []),
   ApplicationRef_,
-  const Provider(ApplicationRef, useExisting: ApplicationRef_)
+  /* @ts2dart_Provider */ const Provider(ApplicationRef,
+      useExisting: ApplicationRef_)
 ];

@@ -89,7 +89,7 @@ String defaultLocale = "en-US";
 @Injectable()
 class DatePipe implements PipeTransform {
   /** @internal */
-  static final Map<String, String> _ALIASES = {
+  static Map<String, String> _ALIASES = {
     "medium": "yMMMdjms",
     "short": "yMdjm",
     "fullDate": "yMMMMEEEEd",
@@ -116,6 +116,4 @@ class DatePipe implements PipeTransform {
   bool supports(dynamic obj) {
     return isDate(obj) || isNumber(obj);
   }
-
-  const DatePipe();
 }

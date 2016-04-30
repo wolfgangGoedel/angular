@@ -9,7 +9,9 @@ import "../change_detector_ref.dart" show ChangeDetectorRef;
 import "../differs/keyvalue_differs.dart"
     show KeyValueDiffer, KeyValueDifferFactory;
 
+/* @ts2dart_const */
 class DefaultKeyValueDifferFactory implements KeyValueDifferFactory {
+  const DefaultKeyValueDifferFactory();
   bool supports(dynamic obj) {
     return obj is Map || isJsObject(obj);
   }
@@ -17,8 +19,6 @@ class DefaultKeyValueDifferFactory implements KeyValueDifferFactory {
   KeyValueDiffer create(ChangeDetectorRef cdRef) {
     return new DefaultKeyValueDiffer();
   }
-
-  const DefaultKeyValueDifferFactory();
 }
 
 class DefaultKeyValueDiffer implements KeyValueDiffer {

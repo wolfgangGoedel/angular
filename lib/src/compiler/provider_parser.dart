@@ -335,7 +335,9 @@ class ProviderElementContext {
 }
 
 _transformProvider(CompileProviderMetadata provider,
-    {useExisting, useValue, deps}) {
+    {CompileTokenMetadata useExisting,
+    dynamic useValue,
+    List<CompileDiDependencyMetadata> deps}) {
   return new CompileProviderMetadata(
       token: provider.token,
       useClass: provider.useClass,
@@ -346,7 +348,8 @@ _transformProvider(CompileProviderMetadata provider,
       multi: provider.multi);
 }
 
-ProviderAst _transformProviderAst(ProviderAst provider, {eager, providers}) {
+ProviderAst _transformProviderAst(ProviderAst provider,
+    {bool eager, List<CompileProviderMetadata> providers}) {
   return new ProviderAst(
       provider.token,
       provider.multiProvider,

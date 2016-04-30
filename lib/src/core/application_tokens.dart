@@ -1,5 +1,6 @@
 library angular2.src.core.application_tokens;
 
+import "package:angular2/core.dart" show Provider;
 import "package:angular2/src/core/di.dart" show OpaqueToken, Provider;
 import "package:angular2/src/facade/lang.dart" show Math, StringWrapper;
 
@@ -12,7 +13,7 @@ import "package:angular2/src/facade/lang.dart" show Math, StringWrapper;
  * a custom value via a DI provider <!-- TODO: provider --> configuring the root [Injector]
  * using this token.
  */
-const OpaqueToken APP_ID = const OpaqueToken("AppId");
+const dynamic APP_ID = const OpaqueToken("AppId");
 _appIdRandomProviderFactory() {
   return '''${ _randomChar ( )}${ _randomChar ( )}${ _randomChar ( )}''';
 }
@@ -20,8 +21,10 @@ _appIdRandomProviderFactory() {
 /**
  * Providers that will generate a random APP_ID_TOKEN.
  */
-const Provider APP_ID_RANDOM_PROVIDER = const Provider(APP_ID,
-    useFactory: _appIdRandomProviderFactory, deps: const []);
+const APP_ID_RANDOM_PROVIDER =
+    /*@ts2dart_const*/
+    /* @ts2dart_Provider */ const Provider(APP_ID,
+        useFactory: _appIdRandomProviderFactory, deps: const []);
 String _randomChar() {
   return StringWrapper.fromCharCode(97 + Math.floor(Math.random() * 25));
 }
@@ -29,15 +32,15 @@ String _randomChar() {
 /**
  * A function that will be executed when a platform is initialized.
  */
-const OpaqueToken PLATFORM_INITIALIZER =
-    const OpaqueToken("Platform Initializer");
+const dynamic PLATFORM_INITIALIZER =
+    /*@ts2dart_const*/ const OpaqueToken("Platform Initializer");
 /**
  * A function that will be executed when an application is initialized.
  */
-const OpaqueToken APP_INITIALIZER =
-    const OpaqueToken("Application Initializer");
+const dynamic APP_INITIALIZER =
+    /*@ts2dart_const*/ const OpaqueToken("Application Initializer");
 /**
  * A token which indicates the root directory of the application
  */
-const OpaqueToken PACKAGE_ROOT_URL =
-    const OpaqueToken("Application Packages Root URL");
+const dynamic PACKAGE_ROOT_URL =
+    /*@ts2dart_const*/ const OpaqueToken("Application Packages Root URL");

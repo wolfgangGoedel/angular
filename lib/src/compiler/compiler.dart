@@ -1,5 +1,6 @@
 library angular2.src.compiler.compiler;
 
+import "package:angular2/core.dart" show Provider;
 export "package:angular2/src/core/platform_directives_and_pipes.dart"
     show PLATFORM_DIRECTIVES, PLATFORM_PIPES;
 export "package:angular2/src/compiler/template_ast.dart";
@@ -15,7 +16,6 @@ export "view_resolver.dart" show ViewResolver;
 export "directive_resolver.dart" show DirectiveResolver;
 export "pipe_resolver.dart" show PipeResolver;
 import "package:angular2/src/facade/lang.dart" show assertionsEnabled, Type;
-import "package:angular2/src/core/di.dart" show provide, Provider;
 import "package:angular2/src/compiler/template_parser.dart" show TemplateParser;
 import "package:angular2/src/compiler/html_parser.dart" show HtmlParser;
 import "package:angular2/src/compiler/directive_normalizer.dart"
@@ -50,8 +50,10 @@ _createCompilerConfig() {
  * A set of providers that provide `RuntimeCompiler` and its dependencies to use for
  * template compilation.
  */
-const List<dynamic /* Type | Provider | List < dynamic > */ >
-    COMPILER_PROVIDERS = const [
+const List<
+        dynamic /* dynamic | Type | Map < String , dynamic > | List < dynamic > */ >
+    COMPILER_PROVIDERS =
+    /*@ts2dart_const*/ const [
   Lexer,
   Parser,
   HtmlParser,
@@ -61,12 +63,14 @@ const List<dynamic /* Type | Provider | List < dynamic > */ >
   DEFAULT_PACKAGE_URL_PROVIDER,
   StyleCompiler,
   ViewCompiler,
-  const Provider(CompilerConfig,
+  /*@ts2dart_Provider*/ const Provider(CompilerConfig,
       useFactory: _createCompilerConfig, deps: const []),
   RuntimeCompiler,
-  const Provider(ComponentResolver, useExisting: RuntimeCompiler),
+  /*@ts2dart_Provider*/ const Provider(ComponentResolver,
+      useExisting: RuntimeCompiler),
   DomElementSchemaRegistry,
-  const Provider(ElementSchemaRegistry, useExisting: DomElementSchemaRegistry),
+  /*@ts2dart_Provider*/ const Provider(ElementSchemaRegistry,
+      useExisting: DomElementSchemaRegistry),
   UrlResolver,
   ViewResolver,
   DirectiveResolver,

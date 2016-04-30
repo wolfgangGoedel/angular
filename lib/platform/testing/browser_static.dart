@@ -48,26 +48,34 @@ NgZone createNgZone() {
 /**
  * Default platform providers for testing without a compiler.
  */
-const List<dynamic> TEST_BROWSER_STATIC_PLATFORM_PROVIDERS = const [
+const List<dynamic> TEST_BROWSER_STATIC_PLATFORM_PROVIDERS =
+    /*@ts2dart_const*/ const [
   PLATFORM_COMMON_PROVIDERS,
-  const Provider(PLATFORM_INITIALIZER, useValue: initBrowserTests, multi: true)
+  /*@ts2dart_Provider*/ const Provider(PLATFORM_INITIALIZER,
+      useValue: initBrowserTests, multi: true)
 ];
-const List<dynamic> ADDITIONAL_TEST_BROWSER_PROVIDERS = const [
-  const Provider(APP_ID, useValue: "a"),
+const List<dynamic> ADDITIONAL_TEST_BROWSER_PROVIDERS =
+    /*@ts2dart_const*/ const [
+  /*@ts2dart_Provider*/ const Provider(APP_ID, useValue: "a"),
   ELEMENT_PROBE_PROVIDERS,
-  const Provider(DirectiveResolver, useClass: MockDirectiveResolver),
-  const Provider(ViewResolver, useClass: MockViewResolver),
+  /*@ts2dart_Provider*/ const Provider(DirectiveResolver,
+      useClass: MockDirectiveResolver),
+  /*@ts2dart_Provider*/ const Provider(ViewResolver,
+      useClass: MockViewResolver),
   Log,
   TestComponentBuilder,
-  const Provider(NgZone, useFactory: createNgZone),
-  const Provider(LocationStrategy, useClass: MockLocationStrategy),
-  const Provider(AnimationBuilder, useClass: MockAnimationBuilder)
+  /*@ts2dart_Provider*/ const Provider(NgZone, useFactory: createNgZone),
+  /*@ts2dart_Provider*/ const Provider(LocationStrategy,
+      useClass: MockLocationStrategy),
+  /*@ts2dart_Provider*/ const Provider(AnimationBuilder,
+      useClass: MockAnimationBuilder)
 ];
 /**
  * Default application providers for testing without a compiler.
  */
-const List<dynamic> TEST_BROWSER_STATIC_APPLICATION_PROVIDERS = const [
+const List<dynamic> TEST_BROWSER_STATIC_APPLICATION_PROVIDERS =
+    /*@ts2dart_const*/ const [
   BROWSER_APP_COMMON_PROVIDERS,
-  const Provider(XHR, useClass: XHRImpl),
+  /*@ts2dart_Provider*/ const Provider(XHR, useClass: XHRImpl),
   ADDITIONAL_TEST_BROWSER_PROVIDERS
 ];

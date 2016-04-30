@@ -33,9 +33,11 @@ abstract class IterableDifferFactory {
 
 /**
  * A repository of different iterable diffing strategies used by NgFor, NgClass, and others.
+ * @ts2dart_const
  */
 class IterableDiffers {
   final List<IterableDifferFactory> factories;
+  /*@ts2dart_const*/
   const IterableDiffers(this.factories);
   static IterableDiffers create(List<IterableDifferFactory> factories,
       [IterableDiffers parent]) {

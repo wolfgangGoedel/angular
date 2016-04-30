@@ -109,7 +109,7 @@ main() {
      */
 
     // TODO(mlaval): timeout is fragile, test to be rewritten
-    flushMessages(dynamic /* () => void */ fn) {
+    flushMessages(void fn()) {
       TimerWrapper.setTimeout(fn, 50);
     }
     it(

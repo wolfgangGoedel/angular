@@ -66,8 +66,7 @@ abstract class DynamicComponentLoader {
    */
   Future<ComponentRef> loadAsRoot(Type type,
       dynamic /* String | dynamic */ overrideSelectorOrNode, Injector injector,
-      [dynamic /* () => void */ onDispose,
-      List<List<dynamic>> projectableNodes]);
+      [void onDispose(), List<List<dynamic>> projectableNodes]);
   /**
    * Creates an instance of a Component and attaches it to the View Container found at the
    * `location` specified as [ViewContainerRef].
@@ -121,8 +120,7 @@ class DynamicComponentLoader_ extends DynamicComponentLoader {
   }
   Future<ComponentRef> loadAsRoot(Type type,
       dynamic /* String | dynamic */ overrideSelectorOrNode, Injector injector,
-      [dynamic /* () => void */ onDispose,
-      List<List<dynamic>> projectableNodes]) {
+      [void onDispose(), List<List<dynamic>> projectableNodes]) {
     return this._compiler.resolveComponent(type).then((componentFactory) {
       var componentRef = componentFactory.create(
           injector,

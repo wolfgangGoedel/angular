@@ -34,7 +34,8 @@ import "package:angular2/core.dart"
  * when all templates
  * have been precompiled offline.
  */
-const List<dynamic> BROWSER_APP_PROVIDERS = BROWSER_APP_COMMON_PROVIDERS;
+const List<dynamic> BROWSER_APP_PROVIDERS =
+    /*@ts2dart_const*/ BROWSER_APP_COMMON_PROVIDERS;
 PlatformRef browserStaticPlatform() {
   if (isBlank(getPlatform())) {
     createPlatform(ReflectiveInjector.resolveAndCreate(BROWSER_PROVIDERS));

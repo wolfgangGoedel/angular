@@ -56,8 +56,6 @@ class NumberPipe {
         currency: currency,
         currencyAsSymbol: currencyAsSymbol);
   }
-
-  const NumberPipe();
 }
 
 /**
@@ -92,8 +90,6 @@ class DecimalPipe extends NumberPipe implements PipeTransform {
   String transform(dynamic value, [String digits = null]) {
     return NumberPipe._format(value, NumberFormatStyle.Decimal, digits);
   }
-
-  const DecimalPipe();
 }
 
 /**
@@ -118,8 +114,6 @@ class PercentPipe extends NumberPipe implements PipeTransform {
   String transform(dynamic value, [String digits = null]) {
     return NumberPipe._format(value, NumberFormatStyle.Percent, digits);
   }
-
-  const PercentPipe();
 }
 
 /**
@@ -152,6 +146,4 @@ class CurrencyPipe extends NumberPipe implements PipeTransform {
     return NumberPipe._format(
         value, NumberFormatStyle.Currency, digits, currencyCode, symbolDisplay);
   }
-
-  const CurrencyPipe();
 }

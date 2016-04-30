@@ -22,6 +22,4 @@ class LowerCasePipe implements PipeTransform {
     }
     return value.toLowerCase();
   }
-
-  const LowerCasePipe();
 }

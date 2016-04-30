@@ -8,6 +8,7 @@ import "package:angular2/src/core/render/api.dart" show RenderDebugInfo;
 import "view.dart" show DebugAppView;
 import "view_type.dart" show ViewType;
 
+/* @ts2dart_const */
 class StaticNodeDebugInfo {
   final List<dynamic> providerTokens;
   final dynamic componentToken;

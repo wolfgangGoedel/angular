@@ -59,7 +59,12 @@ class CompileIdentifierMetadata implements CompileMetadataWithIdentifier {
   String prefix;
   String moduleUrl;
   dynamic value;
-  CompileIdentifierMetadata({runtime, name, moduleUrl, prefix, value}) {
+  CompileIdentifierMetadata(
+      {dynamic runtime,
+      String name,
+      String moduleUrl,
+      String prefix,
+      dynamic value}) {
     this.runtime = runtime;
     this.name = name;
     this.prefix = prefix;
@@ -104,16 +109,16 @@ class CompileDiDependencyMetadata {
   CompileTokenMetadata token;
   dynamic value;
   CompileDiDependencyMetadata(
-      {isAttribute,
-      isSelf,
-      isHost,
-      isSkipSelf,
-      isOptional,
-      isValue,
-      query,
-      viewQuery,
-      token,
-      value}) {
+      {bool isAttribute,
+      bool isSelf,
+      bool isHost,
+      bool isSkipSelf,
+      bool isOptional,
+      bool isValue,
+      CompileQueryMetadata query,
+      CompileQueryMetadata viewQuery,
+      CompileTokenMetadata token,
+      dynamic value}) {
     this.isAttribute = normalizeBool(isAttribute);
     this.isSelf = normalizeBool(isSelf);
     this.isHost = normalizeBool(isHost);
@@ -165,7 +170,13 @@ class CompileProviderMetadata {
   List<CompileDiDependencyMetadata> deps;
   bool multi;
   CompileProviderMetadata(
-      {token, useClass, useValue, useExisting, useFactory, deps, multi}) {
+      {CompileTokenMetadata token,
+      CompileTypeMetadata useClass,
+      dynamic useValue,
+      CompileTokenMetadata useExisting,
+      CompileFactoryMetadata useFactory,
+      List<CompileDiDependencyMetadata> deps,
+      bool multi}) {
     this.token = token;
     this.useClass = useClass;
     this.useValue = useValue;
@@ -212,7 +223,13 @@ class CompileFactoryMetadata
   String moduleUrl;
   dynamic value;
   List<CompileDiDependencyMetadata> diDeps;
-  CompileFactoryMetadata({runtime, name, moduleUrl, prefix, diDeps, value}) {
+  CompileFactoryMetadata(
+      {Function runtime,
+      String name,
+      String moduleUrl,
+      String prefix,
+      List<CompileDiDependencyMetadata> diDeps,
+      bool value}) {
     this.runtime = runtime;
     this.name = name;
     this.prefix = prefix;
@@ -250,7 +267,10 @@ class CompileTokenMetadata implements CompileMetadataWithIdentifier {
   dynamic value;
   CompileIdentifierMetadata identifier;
   bool identifierIsInstance;
-  CompileTokenMetadata({value, identifier, identifierIsInstance}) {
+  CompileTokenMetadata(
+      {dynamic value,
+      CompileIdentifierMetadata identifier,
+      bool identifierIsInstance}) {
     this.value = value;
     this.identifier = identifier;
     this.identifierIsInstance = normalizeBool(identifierIsInstance);
@@ -359,7 +379,13 @@ class CompileTypeMetadata
   dynamic value;
   List<CompileDiDependencyMetadata> diDeps;
   CompileTypeMetadata(
-      {runtime, name, moduleUrl, prefix, isHost, value, diDeps}) {
+      {Type runtime,
+      String name,
+      String moduleUrl,
+      String prefix,
+      bool isHost,
+      dynamic value,
+      List<CompileDiDependencyMetadata> diDeps}) {
     this.runtime = runtime;
     this.name = name;
     this.moduleUrl = moduleUrl;
@@ -407,7 +433,12 @@ class CompileQueryMetadata {
   bool first;
   String propertyName;
   CompileTokenMetadata read;
-  CompileQueryMetadata({selectors, descendants, first, propertyName, read}) {
+  CompileQueryMetadata(
+      {List<CompileTokenMetadata> selectors,
+      bool descendants,
+      bool first,
+      String propertyName,
+      CompileTokenMetadata read}) {
     this.selectors = selectors;
     this.descendants = normalizeBool(descendants);
     this.first = normalizeBool(first);
@@ -447,13 +478,13 @@ class CompileTemplateMetadata {
   List<String> ngContentSelectors;
   String baseUrl;
   CompileTemplateMetadata(
-      {encapsulation,
-      template,
-      templateUrl,
-      styles,
-      styleUrls,
-      ngContentSelectors,
-      baseUrl}) {
+      {ViewEncapsulation encapsulation,
+      String template,
+      String templateUrl,
+      List<String> styles,
+      List<String> styleUrls,
+      List<String> ngContentSelectors,
+      String baseUrl}) {
     this.encapsulation =
         isPresent(encapsulation) ? encapsulation : ViewEncapsulation.Emulated;
     this.template = template;
@@ -497,20 +528,22 @@ class CompileTemplateMetadata {
  */
 class CompileDirectiveMetadata implements CompileMetadataWithType {
   static CompileDirectiveMetadata create(
-      {type,
-      isComponent,
-      selector,
-      exportAs,
-      changeDetection,
-      inputs,
-      outputs,
-      host,
-      lifecycleHooks,
-      providers,
-      viewProviders,
-      queries,
-      viewQueries,
-      template}) {
+      {CompileTypeMetadata type,
+      bool isComponent,
+      String selector,
+      String exportAs,
+      ChangeDetectionStrategy changeDetection,
+      List<String> inputs,
+      List<String> outputs,
+      Map<String, String> host,
+      List<LifecycleHooks> lifecycleHooks,
+      List<
+          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > providers,
+      List<
+          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > viewProviders,
+      List<CompileQueryMetadata> queries,
+      List<CompileQueryMetadata> viewQueries,
+      CompileTemplateMetadata template}) {
     Map<String, String> hostListeners = {};
     Map<String, String> hostProperties = {};
     Map<String, String> hostAttributes = {};
@@ -582,22 +615,24 @@ class CompileDirectiveMetadata implements CompileMetadataWithType {
   List<CompileQueryMetadata> viewQueries;
   CompileTemplateMetadata template;
   CompileDirectiveMetadata(
-      {type,
-      isComponent,
-      selector,
-      exportAs,
-      changeDetection,
-      inputs,
-      outputs,
-      hostListeners,
-      hostProperties,
-      hostAttributes,
-      lifecycleHooks,
-      providers,
-      viewProviders,
-      queries,
-      viewQueries,
-      template}) {
+      {CompileTypeMetadata type,
+      bool isComponent,
+      String selector,
+      String exportAs,
+      ChangeDetectionStrategy changeDetection,
+      Map<String, String> inputs,
+      Map<String, String> outputs,
+      Map<String, String> hostListeners,
+      Map<String, String> hostProperties,
+      Map<String, String> hostAttributes,
+      List<LifecycleHooks> lifecycleHooks,
+      List<
+          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > providers,
+      List<
+          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > viewProviders,
+      List<CompileQueryMetadata> queries,
+      List<CompileQueryMetadata> viewQueries,
+      CompileTemplateMetadata template}) {
     this.type = type;
     this.isComponent = isComponent;
     this.selector = selector;
@@ -712,7 +747,11 @@ class CompilePipeMetadata implements CompileMetadataWithType {
   String name;
   bool pure;
   List<LifecycleHooks> lifecycleHooks;
-  CompilePipeMetadata({type, name, pure, lifecycleHooks}) {
+  CompilePipeMetadata(
+      {CompileTypeMetadata type,
+      String name,
+      bool pure,
+      List<LifecycleHooks> lifecycleHooks}) {
     this.type = type;
     this.name = name;
     this.pure = normalizeBool(pure);
@@ -749,8 +788,7 @@ var _COMPILE_METADATA_FROM_JSON = {
   "Identifier": CompileIdentifierMetadata.fromJson,
   "Factory": CompileFactoryMetadata.fromJson
 };
-dynamic _arrayFromJson(
-    List<dynamic> obj, dynamic /* (a: {[key: string]: any}) => any */ fn) {
+dynamic _arrayFromJson(List<dynamic> obj, dynamic fn(Map<String, dynamic> a)) {
   return isBlank(obj) ? null : obj.map((o) => _objFromJson(o, fn)).toList();
 }
 
@@ -759,8 +797,7 @@ dynamic /* String | Map < String , dynamic > */ _arrayToJson(
   return isBlank(obj) ? null : obj.map(_objToJson).toList();
 }
 
-dynamic _objFromJson(
-    dynamic obj, dynamic /* (a: {[key: string]: any}) => any */ fn) {
+dynamic _objFromJson(dynamic obj, dynamic fn(Map<String, dynamic> a)) {
   if (isArray(obj)) return _arrayFromJson(obj, fn);
   if (isString(obj) || isBlank(obj) || isBoolean(obj) || isNumber(obj))
     return obj;

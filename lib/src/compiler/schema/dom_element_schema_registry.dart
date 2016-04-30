@@ -7,7 +7,9 @@ import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 import "package:angular2/src/compiler/html_tags.dart" show splitNsName;
 import "element_schema_registry.dart" show ElementSchemaRegistry;
 
-const NAMESPACE_URIS = const {
+const NAMESPACE_URIS =
+    /*@ts2dart_const*/
+    const {
   "xlink": "http://www.w3.org/1999/xlink",
   "svg": "http://www.w3.org/2000/svg"
 };

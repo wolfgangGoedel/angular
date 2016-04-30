@@ -32,7 +32,9 @@ import "package:angular2/platform/common.dart" show PlatformLocation;
  */
 const List<dynamic> ROUTER_PROVIDERS = const [
   ROUTER_PROVIDERS_COMMON,
-  const Provider(PlatformLocation, useClass: BrowserPlatformLocation)
+  /*@ts2dart_const*/ (
+      /* @ts2dart_Provider */ const Provider(PlatformLocation,
+          useClass: BrowserPlatformLocation))
 ];
 /**
  * Use [ROUTER_PROVIDERS] instead.

@@ -19,8 +19,10 @@ import "form_interface.dart" show Form;
 import "../validators.dart" show NG_VALIDATORS, NG_ASYNC_VALIDATORS;
 import "validators.dart" show AsyncValidatorFn, ValidatorFn;
 
-const controlGroupProvider =
-    const Provider(ControlContainer, useExisting: NgControlGroup);
+const dynamic controlGroupProvider =
+    /*@ts2dart_const*/
+    /* @ts2dart_Provider */ const Provider(ControlContainer,
+        useExisting: NgControlGroup);
 
 /**
  * Creates and binds a control group to a DOM element.

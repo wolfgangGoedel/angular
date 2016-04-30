@@ -51,8 +51,7 @@ XmbDeserializationResult deserializeXmb(String content, String url) {
   _createMessages(bundleEl.children, messages, errors);
   return (errors.length == 0)
       ? new XmbDeserializationResult(normalizedContent, messages, [])
-      : new XmbDeserializationResult(
-          null, ({} as Map<String, List<HtmlAst>>), errors);
+      : new XmbDeserializationResult(null, <String, List<HtmlAst>>{}, errors);
 }
 
 bool _checkRootElement(List<HtmlAst> nodes) {

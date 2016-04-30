@@ -20,8 +20,10 @@ import "shared.dart"
         composeAsyncValidators;
 import "../validators.dart" show Validators, NG_VALIDATORS, NG_ASYNC_VALIDATORS;
 
-const formDirectiveProvider =
-    const Provider(ControlContainer, useExisting: NgForm);
+const dynamic formDirectiveProvider =
+    /*@ts2dart_const*/
+    /* @ts2dart_Provider */ const Provider(ControlContainer,
+        useExisting: NgForm);
 
 /**
  * If `NgForm` is bound in a component, `<form>` elements in that component will be

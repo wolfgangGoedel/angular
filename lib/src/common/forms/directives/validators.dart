@@ -1,6 +1,7 @@
 library angular2.src.common.forms.directives.validators;
 
-import "package:angular2/core.dart" show Provider, Attribute, Directive;
+import "package:angular2/core.dart" show Provider;
+import "package:angular2/core.dart" show Attribute, Directive;
 import "package:angular2/src/facade/lang.dart" show NumberWrapper;
 import "../validators.dart" show Validators, NG_VALIDATORS;
 import "../model.dart" show AbstractControl;
@@ -28,7 +29,7 @@ abstract class Validator {
 }
 
 const REQUIRED = Validators.required;
-const REQUIRED_VALIDATOR =
+const dynamic REQUIRED_VALIDATOR =
     const Provider(NG_VALIDATORS, useValue: REQUIRED, multi: true);
 
 /**
@@ -56,7 +57,7 @@ typedef dynamic AsyncValidatorFn(AbstractControl c);
  *
  * {@example common/forms/ts/validators/validators.ts region='min'}
  */
-const MIN_LENGTH_VALIDATOR =
+const dynamic MIN_LENGTH_VALIDATOR =
     const Provider(NG_VALIDATORS, useExisting: MinLengthValidator, multi: true);
 
 /**
@@ -85,7 +86,7 @@ class MinLengthValidator implements Validator {
  *
  * {@example common/forms/ts/validators/validators.ts region='max'}
  */
-const MAX_LENGTH_VALIDATOR =
+const dynamic MAX_LENGTH_VALIDATOR =
     const Provider(NG_VALIDATORS, useExisting: MaxLengthValidator, multi: true);
 
 /**
@@ -119,7 +120,7 @@ class MaxLengthValidator implements Validator {
  * <input [ngControl]="fullName" pattern="[a-zA-Z ]*">
  * ```
  */
-const PATTERN_VALIDATOR =
+const dynamic PATTERN_VALIDATOR =
     const Provider(NG_VALIDATORS, useExisting: PatternValidator, multi: true);
 
 @Directive(

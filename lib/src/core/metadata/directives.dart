@@ -383,6 +383,7 @@ import "package:angular2/src/core/metadata/view.dart" show ViewEncapsulation;
  * Note also that although the `<li></li>` template still exists inside the `<template></template>`,
  * the instantiated
  * view occurs on the second `<li></li>` which is a sibling to the `<template>` element.
+ * @ts2dart_const
  */
 class DirectiveMetadata extends InjectableMetadata {
   /**
@@ -744,16 +745,16 @@ class DirectiveMetadata extends InjectableMetadata {
    */
   final Map<String, dynamic> queries;
   const DirectiveMetadata(
-      {selector,
-      inputs,
-      outputs,
-      properties,
-      events,
-      host,
-      bindings,
-      providers,
-      exportAs,
-      queries})
+      {String selector,
+      List<String> inputs,
+      List<String> outputs,
+      List<String> properties,
+      List<String> events,
+      Map<String, String> host,
+      List<dynamic> bindings,
+      List<dynamic> providers,
+      String exportAs,
+      Map<String, dynamic> queries})
       : selector = selector,
         _inputs = inputs,
         _properties = properties,
@@ -792,6 +793,7 @@ class DirectiveMetadata extends InjectableMetadata {
  * ### Example
  *
  * {@example core/ts/metadata/metadata.ts region='component'}
+ * @ts2dart_const
  */
 class ComponentMetadata extends DirectiveMetadata {
   /**
@@ -881,27 +883,27 @@ class ComponentMetadata extends DirectiveMetadata {
   final List<dynamic /* Type | List < dynamic > */ > pipes;
   final ViewEncapsulation encapsulation;
   const ComponentMetadata(
-      {selector,
-      inputs,
-      outputs,
-      properties,
-      events,
-      host,
-      exportAs,
-      moduleId,
-      bindings,
-      providers,
-      viewBindings,
-      viewProviders,
-      changeDetection: ChangeDetectionStrategy.Default,
-      queries,
-      templateUrl,
-      template,
-      styleUrls,
-      styles,
-      directives,
-      pipes,
-      encapsulation})
+      {String selector,
+      List<String> inputs,
+      List<String> outputs,
+      List<String> properties,
+      List<String> events,
+      Map<String, String> host,
+      String exportAs,
+      String moduleId,
+      List<dynamic> bindings,
+      List<dynamic> providers,
+      List<dynamic> viewBindings,
+      List<dynamic> viewProviders,
+      ChangeDetectionStrategy changeDetection: ChangeDetectionStrategy.Default,
+      Map<String, dynamic> queries,
+      String templateUrl,
+      String template,
+      List<String> styleUrls,
+      List<String> styles,
+      List<dynamic /* Type | List < dynamic > */ > directives,
+      List<dynamic /* Type | List < dynamic > */ > pipes,
+      ViewEncapsulation encapsulation})
       : changeDetection = changeDetection,
         _viewProviders = viewProviders,
         _viewBindings = viewBindings,
@@ -936,12 +938,13 @@ class ComponentMetadata extends DirectiveMetadata {
  * ### Example
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
+ * @ts2dart_const
  */
 class PipeMetadata extends InjectableMetadata {
   final String name;
   /** @internal */
   final bool _pure;
-  const PipeMetadata({name, pure})
+  const PipeMetadata({String name, bool pure})
       : name = name,
         _pure = pure,
         super();
@@ -990,6 +993,7 @@ class PipeMetadata extends InjectableMetadata {
  *
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
 class InputMetadata {
   final String bindingPropertyName;
@@ -1041,6 +1045,7 @@ class InputMetadata {
  * }
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
 class OutputMetadata {
   final String bindingPropertyName;
@@ -1081,6 +1086,7 @@ class OutputMetadata {
  *
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
 class HostBindingMetadata {
   final String hostPropertyName;
@@ -1120,6 +1126,7 @@ class HostBindingMetadata {
  *
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
 class HostListenerMetadata {
   final String eventName;

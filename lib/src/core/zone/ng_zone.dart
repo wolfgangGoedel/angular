@@ -217,7 +217,7 @@ class NgZone {
    *
    * If a synchronous error happens it will be rethrown and not reported via `onError`.
    */
-  dynamic run(dynamic /* () => any */ fn) {
+  dynamic run(dynamic fn()) {
     return this._zoneImpl.runInner(fn);
   }
 
@@ -225,7 +225,7 @@ class NgZone {
    * Same as #run, except that synchronous errors are caught and forwarded
    * via `onError` and not rethrown.
    */
-  dynamic runGuarded(dynamic /* () => any */ fn) {
+  dynamic runGuarded(dynamic fn()) {
     return this._zoneImpl.runInnerGuarded(fn);
   }
 
@@ -241,7 +241,7 @@ class NgZone {
    *
    * Use [#run] to reenter the Angular zone and do work that updates the application model.
    */
-  dynamic runOutsideAngular(dynamic /* () => any */ fn) {
+  dynamic runOutsideAngular(dynamic fn()) {
     return this._zoneImpl.runOuter(fn);
   }
 }

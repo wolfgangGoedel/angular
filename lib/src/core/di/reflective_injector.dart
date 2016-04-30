@@ -388,7 +388,8 @@ abstract class ReflectiveInjector implements Injector {
    * See [ReflectiveInjector#fromResolvedProviders] for more info.
    */
   static List<ResolvedReflectiveProvider> resolve(
-      List<dynamic /* Type | Provider | List < dynamic > */ > providers) {
+      List<
+          dynamic /* Type | Provider | Map < String , dynamic > | List < dynamic > */ > providers) {
     return resolveReflectiveProviders(providers);
   }
 
@@ -419,7 +420,8 @@ abstract class ReflectiveInjector implements Injector {
    * See [Injector#resolve] and [Injector#fromResolvedProviders].
    */
   static ReflectiveInjector resolveAndCreate(
-      List<dynamic /* Type | Provider | List < dynamic > */ > providers,
+      List<
+          dynamic /* Type | Provider | Map < String , dynamic > | List < dynamic > */ > providers,
       [Injector parent = null]) {
     var ResolvedReflectiveProviders = ReflectiveInjector.resolve(providers);
     return ReflectiveInjector.fromResolvedProviders(
@@ -516,7 +518,8 @@ abstract class ReflectiveInjector implements Injector {
    * See [Injector#resolve] and [Injector#createChildFromResolved].
    */
   ReflectiveInjector resolveAndCreateChild(
-      List<dynamic /* Type | Provider | List < dynamic > */ > providers) {
+      List<
+          dynamic /* Type | Provider | Map < String , dynamic > | List < dynamic > */ > providers) {
     return unimplemented();
   }
 

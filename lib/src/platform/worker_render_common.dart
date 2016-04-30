@@ -1,5 +1,6 @@
 library angular2.src.platform.worker_render_common;
 
+import "package:angular2/core.dart" show Provider;
 import "package:angular2/src/facade/lang.dart" show IS_DART;
 import "package:angular2/src/web_workers/shared/message_bus.dart"
     show MessageBus;
@@ -63,48 +64,56 @@ import "package:angular2/src/platform/dom/events/hammer_gestures.dart"
 
 const OpaqueToken WORKER_SCRIPT = const OpaqueToken("WebWorkerScript");
 // Message based Worker classes that listen on the MessageBus
-const List<dynamic> WORKER_RENDER_MESSAGING_PROVIDERS = const [
-  MessageBasedRenderer,
-  MessageBasedXHRImpl
-];
+const List<dynamic> WORKER_RENDER_MESSAGING_PROVIDERS =
+    /*@ts2dart_const*/ const [MessageBasedRenderer, MessageBasedXHRImpl];
 const WORKER_RENDER_PLATFORM_MARKER =
-    const OpaqueToken("WorkerRenderPlatformMarker");
+    /*@ts2dart_const*/ const OpaqueToken("WorkerRenderPlatformMarker");
 const List<dynamic> WORKER_RENDER_PLATFORM = const [
   PLATFORM_COMMON_PROVIDERS,
-  const Provider(WORKER_RENDER_PLATFORM_MARKER, useValue: true),
-  const Provider(PLATFORM_INITIALIZER,
+  /*@ts2dart_const*/ (const Provider(WORKER_RENDER_PLATFORM_MARKER,
+      useValue: true)),
+  /* @ts2dart_Provider */ const Provider(PLATFORM_INITIALIZER,
       useValue: initWebWorkerRenderPlatform, multi: true)
 ];
 /**
  * A list of [Provider]s. To use the router in a Worker enabled application you must
  * include these providers when setting up the render thread.
  */
-const List<dynamic> WORKER_RENDER_ROUTER = const [BrowserPlatformLocation];
-const List<dynamic> WORKER_RENDER_APPLICATION_COMMON = const [
-  APPLICATION_COMMON_PROVIDERS,
-  WORKER_RENDER_MESSAGING_PROVIDERS,
-  const Provider(ExceptionHandler,
+const List<dynamic> WORKER_RENDER_ROUTER =
+    /*@ts2dart_const*/ const [BrowserPlatformLocation];
+const List<dynamic> WORKER_RENDER_APPLICATION_COMMON =
+    /*@ts2dart_const*/ const [
+  APPLICATION_COMMON_PROVIDERS, WORKER_RENDER_MESSAGING_PROVIDERS,
+  /* @ts2dart_Provider */ const Provider(ExceptionHandler,
       useFactory: _exceptionHandler, deps: const []),
-  const Provider(DOCUMENT, useFactory: _document, deps: const []),
+  /* @ts2dart_Provider */ const Provider(DOCUMENT,
+      useFactory: _document, deps: const []),
   // TODO(jteplitz602): Investigate if we definitely need EVENT_MANAGER on the render thread
 
   // #5298
-  const Provider(EVENT_MANAGER_PLUGINS, useClass: DomEventsPlugin, multi: true),
-  const Provider(EVENT_MANAGER_PLUGINS, useClass: KeyEventsPlugin, multi: true),
-  const Provider(EVENT_MANAGER_PLUGINS,
+
+  /* @ts2dart_Provider */ const Provider(EVENT_MANAGER_PLUGINS,
+      useClass: DomEventsPlugin, multi: true),
+  /* @ts2dart_Provider */ const Provider(EVENT_MANAGER_PLUGINS,
+      useClass: KeyEventsPlugin, multi: true),
+  /* @ts2dart_Provider */ const Provider(EVENT_MANAGER_PLUGINS,
       useClass: HammerGesturesPlugin, multi: true),
-  const Provider(HAMMER_GESTURE_CONFIG, useClass: HammerGestureConfig),
-  const Provider(DomRootRenderer, useClass: DomRootRenderer_),
-  const Provider(RootRenderer, useExisting: DomRootRenderer),
-  const Provider(SharedStylesHost, useExisting: DomSharedStylesHost),
-  const Provider(XHR, useClass: XHRImpl),
+  /* @ts2dart_Provider */ const Provider(HAMMER_GESTURE_CONFIG,
+      useClass: HammerGestureConfig),
+  /* @ts2dart_Provider */ const Provider(DomRootRenderer,
+      useClass: DomRootRenderer_),
+  /* @ts2dart_Provider */ const Provider(RootRenderer,
+      useExisting: DomRootRenderer),
+  /* @ts2dart_Provider */ const Provider(SharedStylesHost,
+      useExisting: DomSharedStylesHost),
+  /* @ts2dart_Provider */ const Provider(XHR, useClass: XHRImpl),
   MessageBasedXHRImpl,
-  const Provider(ServiceMessageBrokerFactory,
+  /* @ts2dart_Provider */ const Provider(ServiceMessageBrokerFactory,
       useClass: ServiceMessageBrokerFactory_),
-  const Provider(ClientMessageBrokerFactory,
+  /* @ts2dart_Provider */ const Provider(ClientMessageBrokerFactory,
       useClass: ClientMessageBrokerFactory_),
   Serializer,
-  const Provider(ON_WEB_WORKER, useValue: false),
+  /* @ts2dart_Provider */ const Provider(ON_WEB_WORKER, useValue: false),
   RenderStore,
   DomSharedStylesHost,
   Testability,

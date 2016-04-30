@@ -568,7 +568,7 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
               isHost: isHost);
         }
         CompileProviderMetadata createProvider(String token,
-            {multi: false, deps: const []}) {
+            {bool multi: false, List<String> deps: const []}) {
           return new CompileProviderMetadata(
               token: createToken(token),
               multi: multi,
@@ -577,10 +577,10 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
               deps: deps.map(createDep).toList());
         }
         CompileDirectiveMetadata createDir(String selector,
-            {providers: null,
-            viewProviders: null,
-            deps: const [],
-            queries: const []}) {
+            {List<CompileProviderMetadata> providers: null,
+            List<CompileProviderMetadata> viewProviders: null,
+            List<String> deps: const [],
+            List<String> queries: const []}) {
           var isComponent = !selector.startsWith("[");
           return CompileDirectiveMetadata.create(
               selector: selector,

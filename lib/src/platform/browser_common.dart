@@ -1,8 +1,8 @@
 library angular2.src.platform.browser_common;
 
+import "package:angular2/core.dart" show Provider;
 import "package:angular2/src/facade/lang.dart" show IS_DART;
-import "package:angular2/src/core/di.dart"
-    show provide, Provider, Injector, OpaqueToken;
+import "package:angular2/src/core/di.dart" show provide, Injector, OpaqueToken;
 import "package:angular2/src/compiler/xhr.dart" show XHR;
 import "package:angular2/core.dart"
     show
@@ -57,16 +57,18 @@ export "package:angular2/src/platform/browser/tools/tools.dart"
 export "dom/events/hammer_gestures.dart"
     show HAMMER_GESTURE_CONFIG, HammerGestureConfig;
 
-const BROWSER_PLATFORM_MARKER = const OpaqueToken("BrowserPlatformMarker");
+const BROWSER_PLATFORM_MARKER =
+    /*@ts2dart_const*/ const OpaqueToken("BrowserPlatformMarker");
 /**
  * A set of providers to initialize the Angular platform in a web browser.
  *
  * Used automatically by `bootstrap`, or can be passed to [platform].
  */
 const List<dynamic> BROWSER_PROVIDERS = const [
-  const Provider(BROWSER_PLATFORM_MARKER, useValue: true),
+  /*@ts2dart_Provider*/ const Provider(BROWSER_PLATFORM_MARKER, useValue: true),
   PLATFORM_COMMON_PROVIDERS,
-  const Provider(PLATFORM_INITIALIZER, useValue: initDomAdapter, multi: true)
+  /*@ts2dart_Provider*/ const Provider(PLATFORM_INITIALIZER,
+      useValue: initDomAdapter, multi: true)
 ];
 ExceptionHandler _exceptionHandler() {
   // !IS_DART is required because we must rethrow exceptions in JS,
@@ -84,22 +86,32 @@ dynamic _document() {
  *
  * Used automatically by `bootstrap`, or can be passed to [PlatformRef.application].
  */
-const List<dynamic> BROWSER_APP_COMMON_PROVIDERS = const [
+const List<dynamic> BROWSER_APP_COMMON_PROVIDERS =
+    /*@ts2dart_const*/ const [
   APPLICATION_COMMON_PROVIDERS,
   FORM_PROVIDERS,
-  const Provider(PLATFORM_PIPES, useValue: COMMON_PIPES, multi: true),
-  const Provider(PLATFORM_DIRECTIVES, useValue: COMMON_DIRECTIVES, multi: true),
-  const Provider(ExceptionHandler,
+  /* @ts2dart_Provider */ const Provider(PLATFORM_PIPES,
+      useValue: COMMON_PIPES, multi: true),
+  /* @ts2dart_Provider */ const Provider(PLATFORM_DIRECTIVES,
+      useValue: COMMON_DIRECTIVES, multi: true),
+  /* @ts2dart_Provider */ const Provider(ExceptionHandler,
       useFactory: _exceptionHandler, deps: const []),
-  const Provider(DOCUMENT, useFactory: _document, deps: const []),
-  const Provider(EVENT_MANAGER_PLUGINS, useClass: DomEventsPlugin, multi: true),
-  const Provider(EVENT_MANAGER_PLUGINS, useClass: KeyEventsPlugin, multi: true),
-  const Provider(EVENT_MANAGER_PLUGINS,
+  /* @ts2dart_Provider */ const Provider(DOCUMENT,
+      useFactory: _document, deps: const []),
+  /* @ts2dart_Provider */ const Provider(EVENT_MANAGER_PLUGINS,
+      useClass: DomEventsPlugin, multi: true),
+  /* @ts2dart_Provider */ const Provider(EVENT_MANAGER_PLUGINS,
+      useClass: KeyEventsPlugin, multi: true),
+  /* @ts2dart_Provider */ const Provider(EVENT_MANAGER_PLUGINS,
       useClass: HammerGesturesPlugin, multi: true),
-  const Provider(HAMMER_GESTURE_CONFIG, useClass: HammerGestureConfig),
-  const Provider(DomRootRenderer, useClass: DomRootRenderer_),
-  const Provider(RootRenderer, useExisting: DomRootRenderer),
-  const Provider(SharedStylesHost, useExisting: DomSharedStylesHost),
+  /* @ts2dart_Provider */ const Provider(HAMMER_GESTURE_CONFIG,
+      useClass: HammerGestureConfig),
+  /* @ts2dart_Provider */ const Provider(DomRootRenderer,
+      useClass: DomRootRenderer_),
+  /* @ts2dart_Provider */ const Provider(RootRenderer,
+      useExisting: DomRootRenderer),
+  /* @ts2dart_Provider */ const Provider(SharedStylesHost,
+      useExisting: DomSharedStylesHost),
   DomSharedStylesHost,
   Testability,
   BrowserDetails,
@@ -107,9 +119,8 @@ const List<dynamic> BROWSER_APP_COMMON_PROVIDERS = const [
   EventManager,
   ELEMENT_PROBE_PROVIDERS
 ];
-const List<dynamic> CACHED_TEMPLATE_PROVIDER = const [
-  const Provider(XHR, useClass: CachedXHR)
-];
+const List<dynamic> CACHED_TEMPLATE_PROVIDER =
+    /*@ts2dart_const*/ const [const Provider(XHR, useClass: CachedXHR)];
 initDomAdapter() {
   BrowserDomAdapter.makeCurrent();
   wtfInit();

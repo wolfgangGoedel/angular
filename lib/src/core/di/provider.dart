@@ -18,6 +18,7 @@ import "package:angular2/src/facade/exceptions.dart" show BaseException;
  *
  * expect(injector.get("message")).toEqual('Hello');
  * ```
+ * @ts2dart_const
  */
 class Provider {
   /**
@@ -39,11 +40,11 @@ class Provider {
    *
    * var injectorClass = Injector.resolveAndCreate([
    *   Car,
-   *   new Provider(Vehicle, { useClass: Car })
+   *   {provide: Vehicle,  useClass: Car }
    * ]);
    * var injectorAlias = Injector.resolveAndCreate([
    *   Car,
-   *   new Provider(Vehicle, { useExisting: Car })
+   *   {provide: Vehicle,  useExisting: Car }
    * ]);
    *
    * expect(injectorClass.get(Vehicle)).not.toBe(injectorClass.get(Car));
@@ -86,11 +87,11 @@ class Provider {
    *
    * var injectorAlias = Injector.resolveAndCreate([
    *   Car,
-   *   new Provider(Vehicle, { useExisting: Car })
+   *   {provide: Vehicle,  useExisting: Car }
    * ]);
    * var injectorClass = Injector.resolveAndCreate([
    *   Car,
-   *   new Provider(Vehicle, { useClass: Car })
+   *   {provide: Vehicle,  useClass: Car }
    * ]);
    *
    * expect(injectorAlias.get(Vehicle)).toBe(injectorAlias.get(Car));
@@ -108,7 +109,7 @@ class Provider {
    *
    * ```typescript
    * var injector = Injector.resolveAndCreate([
-   *   new Provider(Number, { useFactory: () => { return 1+2; }}),
+   *   {provide: Number,  useFactory: () => { return 1+2; }},
    *   new Provider(String, { useFactory: (value) => { return "Value: " + value; },
    *                       deps: [Number] })
    * ]);
@@ -128,7 +129,7 @@ class Provider {
    *
    * ```typescript
    * var injector = Injector.resolveAndCreate([
-   *   new Provider(Number, { useFactory: () => { return 1+2; }}),
+   *   {provide: Number,  useFactory: () => { return 1+2; }},
    *   new Provider(String, { useFactory: (value) => { return "Value: " + value; },
    *                       deps: [Number] })
    * ]);
@@ -143,7 +144,12 @@ class Provider {
   /** @internal */
   final bool _multi;
   const Provider(token,
-      {useClass, useValue, useExisting, useFactory, deps, multi})
+      {Type useClass,
+      dynamic useValue,
+      dynamic useExisting,
+      Function useFactory,
+      List<Object> deps,
+      bool multi})
       : token = token,
         useClass = useClass,
         useValue = useValue,
@@ -191,9 +197,16 @@ class Provider {
  * See [Provider] instead.
  *
  * 
+ * @ts2dart_const
  */
 class Binding extends Provider {
-  const Binding(token, {toClass, toValue, toAlias, toFactory, deps, multi})
+  const Binding(token,
+      {Type toClass,
+      dynamic toValue,
+      dynamic toAlias,
+      Function toFactory,
+      List<Object> deps,
+      bool multi})
       : super(token,
             useClass: toClass,
             useValue: toValue,
@@ -378,7 +391,12 @@ class ProviderBuilder {
  * <!-- TODO: improve the docs -->
  */
 Provider provide(token,
-    {useClass, useValue, useExisting, useFactory, deps, multi}) {
+    {Type useClass,
+    dynamic useValue,
+    dynamic useExisting,
+    Function useFactory,
+    List<Object> deps,
+    bool multi}) {
   return new Provider(token,
       useClass: useClass,
       useValue: useValue,

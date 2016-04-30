@@ -75,9 +75,8 @@ class AngularProfiler {
       ((window.console.profileEnd as dynamic))(profileName);
     }
     var msPerTick = (end - start) / numTicks;
-    window.console.log('''ran ${ numTicks} change detection cycles''');
-    window.console
-        .log('''${ NumberWrapper . toFixed ( msPerTick , 2 )} ms per check''');
+    print('''ran ${ numTicks} change detection cycles''');
+    print('''${ NumberWrapper . toFixed ( msPerTick , 2 )} ms per check''');
     return new ChangeDetectionPerfRecord(msPerTick, numTicks);
   }
 }

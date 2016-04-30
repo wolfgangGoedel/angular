@@ -36,14 +36,12 @@ export "change_detection_util.dart"
 /**
  * Structural diffing for `Object`s and `Map`s.
  */
-const List<KeyValueDifferFactory> keyValDiff = const [
-  const DefaultKeyValueDifferFactory()
-];
+const List<KeyValueDifferFactory> keyValDiff =
+    /*@ts2dart_const*/ const [const DefaultKeyValueDifferFactory()];
 /**
  * Structural diffing for `Iterable` types such as `Array`s.
  */
-const List<IterableDifferFactory> iterableDiff = const [
-  const DefaultIterableDifferFactory()
-];
+const List<IterableDifferFactory> iterableDiff =
+    /*@ts2dart_const*/ const [const DefaultIterableDifferFactory()];
 const defaultIterableDiffers = const IterableDiffers(iterableDiff);
 const defaultKeyValueDiffers = const KeyValueDiffers(keyValDiff);

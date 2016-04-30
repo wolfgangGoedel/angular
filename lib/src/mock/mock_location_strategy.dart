@@ -53,7 +53,7 @@ class MockLocationStrategy extends LocationStrategy {
     this.urlChanges.add("replace: " + externalUrl);
   }
 
-  void onPopState(dynamic /* (value: any) => void */ fn) {
+  void onPopState(void fn(dynamic value)) {
     ObservableWrapper.subscribe(this._subject, fn);
   }
 

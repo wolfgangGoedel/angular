@@ -2449,7 +2449,8 @@ class NeedsAttribute {
 class PublicApi {}
 
 @Directive(selector: "[public-api]", providers: const [
-  const Provider(PublicApi, useExisting: PrivateImpl, deps: const [])
+  /* @ts2dart_Provider */ const Provider(PublicApi,
+      useExisting: PrivateImpl, deps: const [])
 ])
 @Injectable()
 class PrivateImpl extends PublicApi {}
@@ -2528,7 +2529,7 @@ createInjectableWithLogging(Injector inj) {
 @Component(
     selector: "component-providing-logging-injectable",
     providers: const [
-      const Provider(InjectableService,
+      /* @ts2dart_Provider */ const Provider(InjectableService,
           useFactory: createInjectableWithLogging, deps: const [Injector])
     ],
     template: "")
@@ -2586,6 +2587,7 @@ class DirectiveConsumingInjectableUnbounded {
   }
 }
 
+/* @ts2dart_const */
 class EventBus {
   final EventBus parentEventBus;
   final String name;
@@ -2595,7 +2597,8 @@ class EventBus {
 }
 
 @Directive(selector: "grand-parent-providing-event-bus", providers: const [
-  const Provider(EventBus, useValue: const EventBus(null, "grandparent"))
+  /* @ts2dart_Provider */ const Provider(EventBus,
+      useValue: const EventBus(null, "grandparent"))
 ])
 class GrandParentProvidingEventBus {
   EventBus bus;

@@ -24,7 +24,9 @@ import "package:angular2/src/core/metadata.dart" show ViewEncapsulation;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 import "util.dart" show camelCaseToDashCase;
 
-const NAMESPACE_URIS = const {
+const NAMESPACE_URIS =
+    /*@ts2dart_const*/
+    const {
   "xlink": "http://www.w3.org/1999/xlink",
   "svg": "http://www.w3.org/2000/svg"
 };

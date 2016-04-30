@@ -117,7 +117,7 @@ abstract class AbstractControl {
     this._touched = true;
   }
 
-  void markAsDirty({onlySelf}) {
+  void markAsDirty({bool onlySelf}) {
     onlySelf = normalizeBool(onlySelf);
     this._pristine = false;
     if (isPresent(this._parent) && !onlySelf) {
@@ -125,7 +125,7 @@ abstract class AbstractControl {
     }
   }
 
-  void markAsPending({onlySelf}) {
+  void markAsPending({bool onlySelf}) {
     onlySelf = normalizeBool(onlySelf);
     this._status = PENDING;
     if (isPresent(this._parent) && !onlySelf) {
@@ -137,7 +137,7 @@ abstract class AbstractControl {
     this._parent = parent;
   }
 
-  void updateValueAndValidity({onlySelf, emitEvent}) {
+  void updateValueAndValidity({bool onlySelf, bool emitEvent}) {
     onlySelf = normalizeBool(onlySelf);
     emitEvent = isPresent(emitEvent) ? emitEvent : true;
     this._updateValue();
@@ -202,7 +202,7 @@ abstract class AbstractControl {
    * expect(login.valid).toEqual(true);
    * ```
    */
-  void setErrors(Map<String, dynamic> errors, {emitEvent}) {
+  void setErrors(Map<String, dynamic> errors, {bool emitEvent}) {
     emitEvent = isPresent(emitEvent) ? emitEvent : true;
     this._errors = errors;
     this._status = this._calculateStatus();
@@ -310,7 +310,7 @@ class Control extends AbstractControl {
    * specified.
    */
   void updateValue(dynamic value,
-      {onlySelf, emitEvent, emitModelToViewChange}) {
+      {bool onlySelf, bool emitEvent, bool emitModelToViewChange}) {
     emitModelToViewChange =
         isPresent(emitModelToViewChange) ? emitModelToViewChange : true;
     this._value = value;

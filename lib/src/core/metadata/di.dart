@@ -21,6 +21,7 @@ import "package:angular2/src/core/di/metadata.dart" show DependencyMetadata;
  * A decorator can inject string literal `text` like so:
  *
  * {@example core/ts/metadata/metadata.ts region='attributeMetadata'}
+ * @ts2dart_const
  */
 class AttributeMetadata extends DependencyMetadata {
   final String attributeName;
@@ -149,6 +150,7 @@ class AttributeMetadata extends DependencyMetadata {
  *
  * The injected object is an unmodifiable live list.
  * See [QueryList] for more details.
+ * @ts2dart_const
  */
 class QueryMetadata extends DependencyMetadata {
   final dynamic /* Type | String */ _selector;
@@ -163,7 +165,7 @@ class QueryMetadata extends DependencyMetadata {
    */
   final dynamic read;
   const QueryMetadata(this._selector,
-      {descendants: false, first: false, read: null})
+      {bool descendants: false, bool first: false, dynamic read: null})
       : descendants = descendants,
         first = first,
         read = read,
@@ -222,10 +224,11 @@ class QueryMetadata extends DependencyMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 class ContentChildrenMetadata extends QueryMetadata {
   const ContentChildrenMetadata(dynamic /* Type | String */ _selector,
-      {descendants: false, read: null})
+      {bool descendants: false, dynamic read: null})
       : super(_selector, descendants: descendants, read: read);
 }
 // TODO: add an example after ContentChild and ViewChild are in master
@@ -249,10 +252,11 @@ class ContentChildrenMetadata extends QueryMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 class ContentChildMetadata extends QueryMetadata {
   const ContentChildMetadata(dynamic /* Type | String */ _selector,
-      {read: null})
+      {dynamic read: null})
       : super(_selector, descendants: true, first: true, read: read);
 }
 
@@ -290,10 +294,11 @@ class ContentChildMetadata extends QueryMetadata {
  *
  * The injected object is an iterable and observable live list.
  * See [QueryList] for more details.
+ * @ts2dart_const
  */
 class ViewQueryMetadata extends QueryMetadata {
   const ViewQueryMetadata(dynamic /* Type | String */ _selector,
-      {descendants: false, first: false, read: null})
+      {bool descendants: false, bool first: false, dynamic read: null})
       : super(_selector, descendants: descendants, first: first, read: read);
   /**
    * always `true` to differentiate it with [QueryMetadata].
@@ -383,10 +388,11 @@ class ViewQueryMetadata extends QueryMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 class ViewChildrenMetadata extends ViewQueryMetadata {
   const ViewChildrenMetadata(dynamic /* Type | String */ _selector,
-      {read: null})
+      {dynamic read: null})
       : super(_selector, descendants: true, read: read);
 }
 
@@ -459,8 +465,10 @@ class ViewChildrenMetadata extends ViewQueryMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 class ViewChildMetadata extends ViewQueryMetadata {
-  const ViewChildMetadata(dynamic /* Type | String */ _selector, {read: null})
+  const ViewChildMetadata(dynamic /* Type | String */ _selector,
+      {dynamic read: null})
       : super(_selector, descendants: true, first: true, read: read);
 }

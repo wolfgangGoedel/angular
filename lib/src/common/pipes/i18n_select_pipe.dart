@@ -45,6 +45,4 @@ class I18nSelectPipe implements PipeTransform {
         ? mapping[value]
         : mapping["other"];
   }
-
-  const I18nSelectPipe();
 }
