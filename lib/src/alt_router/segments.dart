@@ -101,9 +101,9 @@ class RouteSegment {
   /** @internal */
   Type _type;
   /** @internal */
-  ComponentFactory _componentFactory;
+  ComponentFactory<dynamic> _componentFactory;
   RouteSegment(this.urlSegments, this.parameters, this.outlet, Type type,
-      ComponentFactory componentFactory) {
+      ComponentFactory<dynamic> componentFactory) {
     this._type = type;
     this._componentFactory = componentFactory;
   }
@@ -143,6 +143,6 @@ bool equalSegments(RouteSegment a, RouteSegment b) {
   return StringMapWrapper.equals(a.parameters, b.parameters);
 }
 
-ComponentFactory routeSegmentComponentFactory(RouteSegment a) {
+ComponentFactory<dynamic> routeSegmentComponentFactory(RouteSegment a) {
   return a._componentFactory;
 }

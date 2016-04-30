@@ -26,13 +26,13 @@ import "package:angular2/src/router/route_config/route_config_decorator.dart"
 import "../util.dart" show specs, compile, clickOnElement, getHref;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 
-getLinkElement(ComponentFixture rtc, [num linkIndex = 0]) {
+getLinkElement(ComponentFixture<dynamic> rtc, [num linkIndex = 0]) {
   return rtc.debugElement.queryAll(By.css("a"))[linkIndex].nativeElement;
 }
 
 auxRoutes() {
   TestComponentBuilder tcb;
-  ComponentFixture fixture;
+  ComponentFixture<dynamic> fixture;
   var rtr;
   beforeEach(inject([TestComponentBuilder, Router], (tcBuilder, router) {
     tcb = tcBuilder;
@@ -154,7 +154,7 @@ auxRoutes() {
 
 auxRoutesWithAPrimaryRoute() {
   TestComponentBuilder tcb;
-  ComponentFixture fixture;
+  ComponentFixture<dynamic> fixture;
   var rtr;
   beforeEach(inject([TestComponentBuilder, Router], (tcBuilder, router) {
     tcb = tcBuilder;

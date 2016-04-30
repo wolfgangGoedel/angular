@@ -59,6 +59,7 @@ abstract class ViewContainerRef {
   num get length {
     return (unimplemented() as num);
   }
+
   /**
    * Instantiates an Embedded View based on the [TemplateRef `templateRef`] and inserts it
    * into this container at the specified `index`.
@@ -67,10 +68,10 @@ abstract class ViewContainerRef {
    *
    * Returns the [ViewRef] for the newly created View.
    */
-
-  // TODO(tbosch): Use a generic once ts2dart supports it.
-  EmbeddedViewRef<dynamic> createEmbeddedView(TemplateRef<dynamic> templateRef,
-      [dynamic context, num index]);
+  EmbeddedViewRef<dynamic/*= C */ > createEmbeddedView/*< C >*/(
+      TemplateRef<dynamic/*= C */ > templateRef,
+      [dynamic/*= C */ context,
+      num index]);
   /**
    * Instantiates a single [Component] and inserts its Host View into this container at the
    * specified `index`.
@@ -84,8 +85,11 @@ abstract class ViewContainerRef {
    *
    * Returns the [ComponentRef] of the Host View created for the newly instantiated Component.
    */
-  ComponentRef createComponent(ComponentFactory componentFactory,
-      [num index, Injector injector, List<List<dynamic>> projectableNodes]);
+  ComponentRef<dynamic/*= C */ > createComponent/*< C >*/(
+      ComponentFactory<dynamic/*= C */ > componentFactory,
+      [num index,
+      Injector injector,
+      List<List<dynamic>> projectableNodes]);
   /**
    * Inserts a View identified by a [ViewRef] into the container at the specified `index`.
    *
@@ -139,10 +143,10 @@ class ViewContainerRef_ implements ViewContainerRef {
   // TODO(rado): profile and decide whether bounds checks should be added
 
   // to the methods below.
-
-  // TODO(tbosch): use a generic C once ts2dart supports it.
-  EmbeddedViewRef<dynamic> createEmbeddedView(TemplateRef<dynamic> templateRef,
-      [dynamic context = null, num index = -1]) {
+  EmbeddedViewRef<dynamic/*= C */ > createEmbeddedView/*< C >*/(
+      TemplateRef<dynamic/*= C */ > templateRef,
+      [dynamic/*= C */ context = null,
+      num index = -1]) {
     EmbeddedViewRef<dynamic> viewRef = templateRef.createEmbeddedView(context);
     this.insert(viewRef, index);
     return viewRef;
@@ -151,7 +155,8 @@ class ViewContainerRef_ implements ViewContainerRef {
   /** @internal */
   WtfScopeFn _createComponentInContainerScope =
       wtfCreateScope("ViewContainerRef#createComponent()");
-  ComponentRef createComponent(ComponentFactory componentFactory,
+  ComponentRef<dynamic/*= C */ > createComponent/*< C >*/(
+      ComponentFactory<dynamic/*= C */ > componentFactory,
       [num index = -1,
       Injector injector = null,
       List<List<dynamic>> projectableNodes = null]) {

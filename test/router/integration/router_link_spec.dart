@@ -46,7 +46,7 @@ import "package:angular2/src/router/directives/router_link_transform.dart"
 main() {
   describe("routerLink directive", () {
     TestComponentBuilder tcb;
-    ComponentFixture fixture;
+    ComponentFixture<dynamic> fixture;
     Router router;
     Location location;
     beforeEachProviders(() => [
@@ -398,7 +398,7 @@ main() {
   });
 }
 
-getHref(ComponentFixture tc) {
+getHref(ComponentFixture<dynamic> tc) {
   return DOM.getAttribute(
       tc.debugElement.query(By.css("a")).nativeElement, "href");
 }

@@ -22,7 +22,7 @@ import "package:angular2/core.dart" show Component, provide;
 import "package:angular2/common.dart" show NgFor;
 import "package:angular2/src/common/directives/ng_class.dart" show NgClass;
 
-detectChangesAndCheck(ComponentFixture fixture, String classes) {
+detectChangesAndCheck(ComponentFixture<dynamic> fixture, String classes) {
   fixture.detectChanges();
   expect(fixture.debugElement.children[0].nativeElement.className)
       .toEqual(classes);

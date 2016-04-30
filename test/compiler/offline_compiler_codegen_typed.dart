@@ -123,6 +123,6 @@ import3.AppView<dynamic> viewFactory_CompA_Host0(import5.ViewUtils viewUtils,
   return new _View_CompA_Host0(viewUtils, parentInjector, declarationEl);
 }
 
-const import11.ComponentFactory CompANgFactory =
-    const import11.ComponentFactory(
+const import11.ComponentFactory<import4.CompA> CompANgFactory =
+    const import11.ComponentFactory<import4.CompA>(
         'comp-a', viewFactory_CompA_Host0, import4.CompA);

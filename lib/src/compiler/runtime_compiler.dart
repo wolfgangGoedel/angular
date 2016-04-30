@@ -75,7 +75,7 @@ class RuntimeCompiler implements ComponentResolver {
       this._viewCompiler,
       this._xhr,
       this._genConfig) {}
-  Future<ComponentFactory> resolveComponent(Type componentType) {
+  Future<ComponentFactory<dynamic>> resolveComponent(Type componentType) {
     CompileDirectiveMetadata compMeta =
         this._metadataResolver.getDirectiveMetadata(componentType);
     var hostCacheKey = this._hostCacheKeys[componentType];

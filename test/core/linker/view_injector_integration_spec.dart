@@ -321,7 +321,8 @@ class TestComp {}
 
 main() {
   TestComponentBuilder tcb;
-  ComponentFixture createCompFixture(String template, TestComponentBuilder tcb,
+  ComponentFixture<dynamic> createCompFixture(
+      String template, TestComponentBuilder tcb,
       [Type comp = null]) {
     if (isBlank(comp)) {
       comp = TestComp;

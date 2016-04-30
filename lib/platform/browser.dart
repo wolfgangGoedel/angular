@@ -122,7 +122,7 @@ PlatformRef browserPlatform() {
  *
  * Returns a `Promise` of [ComponentRef].
  */
-Future<ComponentRef> bootstrap(Type appComponentType,
+Future<ComponentRef<dynamic>> bootstrap(Type appComponentType,
     [List<dynamic> customProviders]) {
   reflector.reflectionCapabilities = new ReflectionCapabilities();
   var appInjector = ReflectiveInjector.resolveAndCreate([

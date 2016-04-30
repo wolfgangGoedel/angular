@@ -7,8 +7,9 @@ import "package:angular2/src/compiler/output/js_emitter.dart"
 import "offline_compiler_util.dart" show compileComp, compAMetadata;
 import "package:angular2/src/core/linker/component_factory.dart"
     show ComponentFactory;
+import "offline_compiler_util.dart" show CompA;
 
-final ComponentFactory CompANgFactory = null;
+final ComponentFactory<CompA> CompANgFactory = null;
 // Generator
 main(List<String> args) {
   var emitter = new JavaScriptEmitter();

@@ -18,7 +18,7 @@ import "package:angular2/testing_internal.dart"
         TestComponentBuilder,
         ComponentFixtureAutoDetect,
         ComponentFixtureNoNgZone;
-import "package:angular2/core.dart" show Injectable, provide;
+import "package:angular2/core.dart" show Injectable, provide, ComponentResolver;
 import "package:angular2/common.dart" show NgIf;
 import "package:angular2/src/core/metadata.dart"
     show Directive, Component, ViewMetadata, Input;
@@ -443,6 +443,24 @@ main() {
               inject([TestComponentBuilder, AsyncTestCompleter],
                   (TestComponentBuilder tcb, async) {
                 tcb.createAsync(MyIfComp).then((componentFixture) {
+                  componentFixture.detectChanges();
+                  expect(componentFixture.nativeElement).toHaveText("MyIf()");
+                  componentFixture.componentInstance.showMore = true;
+                  componentFixture.detectChanges();
+                  expect(componentFixture.nativeElement)
+                      .toHaveText("MyIf(More)");
+                  async.done();
+                });
+              }));
+        });
+        describe("createSync", () {
+          it(
+              "should create components",
+              inject(
+                  [ComponentResolver, TestComponentBuilder, AsyncTestCompleter],
+                  (ComponentResolver cr, TestComponentBuilder tcb, async) {
+                cr.resolveComponent(MyIfComp).then((cmpFactory) {
+                  var componentFixture = tcb.createSync(cmpFactory);
                   componentFixture.detectChanges();
                   expect(componentFixture.nativeElement).toHaveText("MyIf()");
                   componentFixture.componentInstance.showMore = true;

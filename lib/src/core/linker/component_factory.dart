@@ -16,7 +16,7 @@ import "../change_detection/change_detection.dart" show ChangeDetectorRef;
  * Component Instance and allows you to destroy the Component Instance via the [#destroy]
  * method.
  */
-abstract class ComponentRef {
+abstract class ComponentRef<C> {
   /**
    * Location of the Host Element of this Component Instance.
    */
@@ -34,7 +34,7 @@ abstract class ComponentRef {
   /**
    * The instance of the Component.
    */
-  dynamic get instance {
+  C get instance {
     return unimplemented();
   }
 
@@ -69,7 +69,7 @@ abstract class ComponentRef {
   void onDestroy(Function callback);
 }
 
-class ComponentRef_ extends ComponentRef {
+class ComponentRef_<C> extends ComponentRef<C> {
   AppElement _hostElement;
   Type _componentType;
   ComponentRef_(this._hostElement, this._componentType) : super() {
@@ -83,7 +83,7 @@ class ComponentRef_ extends ComponentRef {
     return this._hostElement.injector;
   }
 
-  dynamic get instance {
+  C get instance {
     return this._hostElement.component;
   }
 
@@ -111,7 +111,7 @@ class ComponentRef_ extends ComponentRef {
 const EMPTY_CONTEXT = const Object();
 
 /*@ts2dart_const*/
-class ComponentFactory {
+class ComponentFactory<C> {
   final String selector;
   final Function _viewFactory;
   final Type _componentType;
@@ -123,7 +123,7 @@ class ComponentFactory {
   /**
    * Creates a new component.
    */
-  ComponentRef create(Injector injector,
+  ComponentRef<C> create(Injector injector,
       [List<List<dynamic>> projectableNodes = null,
       dynamic /* String | dynamic */ rootSelectorOrNode = null]) {
     ViewUtils vu = injector.get(ViewUtils);
@@ -134,6 +134,6 @@ class ComponentFactory {
     var hostView = this._viewFactory(vu, injector, null);
     var hostElement =
         hostView.create(EMPTY_CONTEXT, projectableNodes, rootSelectorOrNode);
-    return new ComponentRef_(hostElement, this._componentType);
+    return new ComponentRef_<C>(hostElement, this._componentType);
   }
 }

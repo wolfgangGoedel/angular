@@ -17,8 +17,6 @@ import "package:angular2/testing_internal.dart"
         el;
 import "package:angular2/src/facade/lang.dart" show IS_DART;
 import "package:angular2/core.dart" show Injector;
-import "package:angular2/src/core/debug/debug_node.dart"
-    show DebugNode, DebugElement, getDebugNode;
 import "package:angular2/src/core/linker/component_factory.dart"
     show ComponentFactory;
 import "offline_compiler_codegen_typed.dart" as typed;
@@ -29,21 +27,17 @@ import "package:angular2/src/platform/dom/shared_styles_host.dart"
 import "offline_compiler_util.dart" show CompA;
 
 main() {
-  var outputDefs = [];
   var typedComponentFactory = typed.CompANgFactory;
   var untypedComponentFactory = untyped.CompANgFactory;
+  List<TestFixture> fixtures = [];
   if (IS_DART || !DOM.supportsDOMEvents()) {
     // Our generator only works on node.js and Dart...
-    outputDefs.add(
-        {"compAHostComponentFactory": typedComponentFactory, "name": "typed"});
+    fixtures.add(new TestFixture(typedComponentFactory, "typed"));
   }
   if (!IS_DART) {
     // Our generator only works on node.js and Dart...
     if (!DOM.supportsDOMEvents()) {
-      outputDefs.add({
-        "compAHostComponentFactory": untypedComponentFactory,
-        "name": "untyped"
-      });
+      fixtures.add(new TestFixture(untypedComponentFactory, "untyped"));
     }
   }
   describe("OfflineCompiler", () {
@@ -54,15 +48,11 @@ main() {
       injector = _injector;
       sharedStylesHost = _sharedStylesHost;
     }));
-    DebugElement createHostComp(ComponentFactory cf) {
-      var compRef = cf.create(injector);
-      return (getDebugNode(compRef.location.nativeElement) as DebugElement);
-    }
-    outputDefs.forEach((outputDef) {
-      describe('''${ outputDef [ "name" ]}''', () {
+    fixtures.forEach((fixture) {
+      describe('''${ fixture . name}''', () {
         it("should compile components", () {
-          var hostEl = createHostComp(outputDef["compAHostComponentFactory"]);
-          expect(hostEl.componentInstance).toBeAnInstanceOf(CompA);
+          var hostEl = fixture.compFactory.create(injector);
+          expect(hostEl.instance).toBeAnInstanceOf(CompA);
           var styles = sharedStylesHost.getAllStyles();
           expect(styles[0]).toContain(".redStyle[_ngcontent");
           expect(styles[1]).toContain(".greenStyle[_ngcontent");
@@ -70,4 +60,10 @@ main() {
       });
     });
   });
+}
+
+class TestFixture {
+  ComponentFactory<CompA> compFactory;
+  String name;
+  TestFixture(this.compFactory, this.name) {}
 }

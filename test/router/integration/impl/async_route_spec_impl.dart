@@ -34,7 +34,7 @@ import "fixture_components.dart"
         parentWithDefaultCmpLoader,
         asyncRouteDataCmp;
 
-getLinkElement(ComponentFixture rtc) {
+getLinkElement(ComponentFixture<dynamic> rtc) {
   return rtc.debugElement.query(By.css("a")).nativeElement;
 }
 

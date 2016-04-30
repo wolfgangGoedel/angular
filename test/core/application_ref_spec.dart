@@ -52,7 +52,7 @@ main() {
   describe("bootstrap", () {
     PlatformRef platform;
     _ArrayLogger errorLogger;
-    ComponentFactory someCompFactory;
+    ComponentFactory<dynamic> someCompFactory;
     beforeEach(() {
       errorLogger = new _ArrayLogger();
       disposePlatform();
@@ -165,12 +165,12 @@ class _ArrayLogger {
   logGroupEnd() {}
 }
 
-class _MockComponentFactory extends ComponentFactory {
-  ComponentRef _compRef;
+class _MockComponentFactory extends ComponentFactory<dynamic> {
+  ComponentRef<dynamic> _compRef;
   _MockComponentFactory(this._compRef) : super(null, null, null) {
     /* super call moved to initializer */;
   }
-  ComponentRef create(Injector injector,
+  ComponentRef<dynamic> create(Injector injector,
       [List<List<dynamic>> projectableNodes = null,
       dynamic /* String | dynamic */ rootSelectorOrNode = null]) {
     return this._compRef;
@@ -178,16 +178,16 @@ class _MockComponentFactory extends ComponentFactory {
 }
 
 class _MockComponentResolver implements ComponentResolver {
-  ComponentFactory _compFactory;
+  ComponentFactory<dynamic> _compFactory;
   _MockComponentResolver(this._compFactory) {}
-  Future<ComponentFactory> resolveComponent(Type type) {
+  Future<ComponentFactory<dynamic>> resolveComponent(Type type) {
     return PromiseWrapper.resolve(this._compFactory);
   }
 
   clearCache() {}
 }
 
-class _MockComponentRef extends ComponentRef_ {
+class _MockComponentRef extends ComponentRef_<dynamic> {
   Injector _injector;
   _MockComponentRef(this._injector) : super(null, null) {
     /* super call moved to initializer */;

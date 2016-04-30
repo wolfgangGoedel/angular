@@ -101,8 +101,8 @@ PlatformRef getPlatform() {
  * Shortcut for ApplicationRef.bootstrap.
  * Requires a platform the be created first.
  */
-ComponentRef coreBootstrap(
-    Injector injector, ComponentFactory componentFactory) {
+ComponentRef<dynamic/*= C */ > coreBootstrap/*< C >*/(
+    Injector injector, ComponentFactory<dynamic/*= C */ > componentFactory) {
   ApplicationRef appRef = injector.get(ApplicationRef);
   return appRef.bootstrap(componentFactory);
 }
@@ -112,7 +112,7 @@ ComponentRef coreBootstrap(
  * waits for asynchronous initializers and bootstraps the component.
  * Requires a platform the be created first.
  */
-Future<ComponentRef> coreLoadAndBootstrap(
+Future<ComponentRef<dynamic>> coreLoadAndBootstrap(
     Injector injector, Type componentType) {
   ApplicationRef appRef = injector.get(ApplicationRef);
   return appRef.run(() {
@@ -210,7 +210,7 @@ abstract class ApplicationRef {
    * Register a listener to be called each time `bootstrap()` is called to bootstrap
    * a new root component.
    */
-  void registerBootstrapListener(void listener(ComponentRef ref));
+  void registerBootstrapListener(void listener(ComponentRef<dynamic> ref));
   /**
    * Register a listener to be called when the application is disposed.
    */
@@ -237,7 +237,8 @@ abstract class ApplicationRef {
    * ### Example
    * {@example core/ts/platform/platform.ts region='longform'}
    */
-  ComponentRef bootstrap(ComponentFactory componentFactory);
+  ComponentRef<dynamic/*= C */ > bootstrap/*< C >*/(
+      ComponentFactory<dynamic/*= C */ > componentFactory);
   /**
    * Retrieve the application [Injector].
    */
@@ -287,7 +288,7 @@ class ApplicationRef_ extends ApplicationRef {
   /** @internal */
   List<Function> _disposeListeners = [];
   /** @internal */
-  List<ComponentRef> _rootComponents = [];
+  List<ComponentRef<dynamic>> _rootComponents = [];
   /** @internal */
   List<Type> _rootComponentTypes = [];
   /** @internal */
@@ -338,7 +339,7 @@ class ApplicationRef_ extends ApplicationRef {
       });
     });
   }
-  void registerBootstrapListener(void listener(ComponentRef ref)) {
+  void registerBootstrapListener(void listener(ComponentRef<dynamic> ref)) {
     this._bootstrapListeners.add(listener);
   }
 
@@ -390,7 +391,8 @@ class ApplicationRef_ extends ApplicationRef {
     return isPromise(result) ? completer.promise : result;
   }
 
-  ComponentRef bootstrap(ComponentFactory componentFactory) {
+  ComponentRef<dynamic/*= C */ > bootstrap/*< C >*/(
+      ComponentFactory<dynamic/*= C */ > componentFactory) {
     if (!this._asyncInitDone) {
       throw new BaseException(
           "Cannot bootstrap as there are still asynchronous initializers running. Wait for them using waitForAsyncInitializers().");
@@ -419,7 +421,7 @@ class ApplicationRef_ extends ApplicationRef {
   }
 
   /** @internal */
-  void _loadComponent(ComponentRef componentRef) {
+  void _loadComponent(ComponentRef<dynamic> componentRef) {
     this._changeDetectorRefs.add(componentRef.changeDetectorRef);
     this.tick();
     this._rootComponents.add(componentRef);
@@ -427,7 +429,7 @@ class ApplicationRef_ extends ApplicationRef {
   }
 
   /** @internal */
-  void _unloadComponent(ComponentRef componentRef) {
+  void _unloadComponent(ComponentRef<dynamic> componentRef) {
     if (!ListWrapper.contains(this._rootComponents, componentRef)) {
       return;
     }

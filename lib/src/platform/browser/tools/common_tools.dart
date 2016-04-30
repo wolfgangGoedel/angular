@@ -19,7 +19,7 @@ class ChangeDetectionPerfRecord {
  */
 class AngularTools {
   AngularProfiler profiler;
-  AngularTools(ComponentRef ref) {
+  AngularTools(ComponentRef<dynamic> ref) {
     this.profiler = new AngularProfiler(ref);
   }
 }
@@ -30,7 +30,7 @@ class AngularTools {
  */
 class AngularProfiler {
   ApplicationRef appRef;
-  AngularProfiler(ComponentRef ref) {
+  AngularProfiler(ComponentRef<dynamic> ref) {
     this.appRef = ref.injector.get(ApplicationRef);
   }
   /**

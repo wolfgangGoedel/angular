@@ -121,7 +121,7 @@ main() {
       var id = workerRenderStore.serialize(workerEl);
       return uiRenderStore.deserialize(id);
     }
-    getRenderer(ComponentRef componentRef) {
+    getRenderer(ComponentRef<dynamic> componentRef) {
       return ((componentRef.hostView as dynamic)).internalView.renderer;
     }
     it(

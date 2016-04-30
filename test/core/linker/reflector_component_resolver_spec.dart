@@ -38,7 +38,7 @@ main() {
             (async, ComponentResolver compiler) {
           compiler
               .resolveComponent(SomeComponent)
-              .then((ComponentFactory compFactory) {
+              .then((ComponentFactory<dynamic> compFactory) {
             expect(compFactory).toBe(someCompFactory);
             async.done();
             return null;

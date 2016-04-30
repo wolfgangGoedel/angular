@@ -108,7 +108,7 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb.createAsync(MyComp).then((ComponentFixture tc) {
+            tcb.createAsync(MyComp).then((ComponentFixture<dynamic> tc) {
               tc.detectChanges();
               PromiseWrapper.catchError(
                   loader.loadNextToLocation(DynamicallyLoadedThrows,
@@ -166,7 +166,7 @@ main() {
             var rootEl = createRootElement(doc, "child-cmp");
             DOM.appendChild(doc.body, rootEl);
             loader.loadAsRoot(ChildComp, null, injector).then((componentRef) {
-              var el = new ComponentFixture(componentRef, null, false);
+              var el = new ComponentFixture<dynamic>(componentRef, null, false);
               expect(rootEl.parentNode).toBe(doc.body);
               el.detectChanges();
               expect(rootEl).toHaveText("hello");

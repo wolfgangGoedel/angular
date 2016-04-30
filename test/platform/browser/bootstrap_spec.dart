@@ -287,12 +287,12 @@ main() {
     it(
         "should register each application with the testability registry",
         inject([AsyncTestCompleter], (async) {
-          Future<ComponentRef> refPromise1 =
+          Future<ComponentRef<dynamic>> refPromise1 =
               bootstrap(HelloRootCmp, testProviders);
-          Future<ComponentRef> refPromise2 =
+          Future<ComponentRef<dynamic>> refPromise2 =
               bootstrap(HelloRootCmp2, testProviders);
-          PromiseWrapper
-              .all([refPromise1, refPromise2]).then((List<ComponentRef> refs) {
+          PromiseWrapper.all([refPromise1, refPromise2]).then(
+              (List<ComponentRef<dynamic>> refs) {
             var registry = refs[0].injector.get(TestabilityRegistry);
             var testabilities = [
               refs[0].injector.get(Testability),

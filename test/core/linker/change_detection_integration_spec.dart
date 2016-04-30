@@ -77,7 +77,7 @@ main() {
   MockSchemaRegistry elSchema;
   RenderLog renderLog;
   DirectiveLog directiveLog;
-  ComponentFixture createCompFixture(String template,
+  ComponentFixture<dynamic> createCompFixture(String template,
       [Type compType = TestComponent, TestComponentBuilder _tcb = null]) {
     if (isBlank(_tcb)) {
       _tcb = tcb;
@@ -95,12 +95,12 @@ main() {
     var nodes = el.queryAllNodes(By.directive(dirType));
     return nodes.map((node) => node.inject(dirType)).toList();
   }
-  ComponentFixture _bindSimpleProp(String bindAttr,
+  ComponentFixture<dynamic> _bindSimpleProp(String bindAttr,
       [Type compType = TestComponent]) {
     var template = '''<div ${ bindAttr}></div>''';
     return createCompFixture(template, compType);
   }
-  ComponentFixture _bindSimpleValue(dynamic expression,
+  ComponentFixture<dynamic> _bindSimpleValue(dynamic expression,
       [Type compType = TestComponent]) {
     return _bindSimpleProp('''[someProp]=\'${ expression}\'''', compType);
   }
@@ -582,7 +582,7 @@ main() {
       });
     });
     describe("lifecycle", () {
-      ComponentFixture createCompWithContentAndViewChild() {
+      ComponentFixture<dynamic> createCompWithContentAndViewChild() {
         return createCompFixture(
             "<div testDirective=\"parent\"><div *ngIf=\"true\" testDirective=\"contentChild\"></div><other-cmp></other-cmp></div>",
             TestComponent,

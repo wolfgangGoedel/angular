@@ -13,7 +13,7 @@ import "component_factory.dart" show ComponentFactory;
  * can later be used to create and render a Component instance.
  */
 abstract class ComponentResolver {
-  Future<ComponentFactory> resolveComponent(Type componentType);
+  Future<ComponentFactory<dynamic>> resolveComponent(Type componentType);
   clearCache();
 }
 
@@ -23,7 +23,7 @@ bool _isComponentFactory(dynamic type) {
 
 @Injectable()
 class ReflectorComponentResolver extends ComponentResolver {
-  Future<ComponentFactory> resolveComponent(Type componentType) {
+  Future<ComponentFactory<dynamic>> resolveComponent(Type componentType) {
     var metadatas = reflector.annotations(componentType);
     var componentFactory =
         metadatas.firstWhere(_isComponentFactory, orElse: () => null);

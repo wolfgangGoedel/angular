@@ -827,8 +827,7 @@ declareTests(bool isJit) {
               "should allow to destroy a component from within a host event handler",
               fakeAsync(
                   inject([TestComponentBuilder], (TestComponentBuilder tcb) {
-                ComponentFixture fixture;
-                tcb
+                var fixture = tcb
                     .overrideView(
                         MyComp,
                         new ViewMetadata(
@@ -839,10 +838,7 @@ declareTests(bool isJit) {
                                 [PushCmpWithHostEvent]
                               ]
                             ]))
-                    .createAsync(MyComp)
-                    .then((root) {
-                  fixture = root;
-                });
+                    .createFakeAsync(MyComp);
                 tick();
                 fixture.detectChanges();
                 var cmpEl = fixture.debugElement.children[0];
@@ -937,10 +933,7 @@ declareTests(bool isJit) {
                             [PushCmpWithAsyncPipe]
                           ]
                         ]));
-                ComponentFixture fixture;
-                tcb.createAsync(MyComp).then((root) {
-                  fixture = root;
-                });
+                var fixture = tcb.createFakeAsync(MyComp);
                 tick();
                 PushCmpWithAsyncPipe cmp =
                     fixture.debugElement.children[0].references["cmp"];
@@ -1601,10 +1594,7 @@ declareTests(bool isJit) {
                         DirectiveEmittingEvent,
                         DirectiveListeningEvent
                       ]));
-              ComponentFixture fixture;
-              tcb.createAsync(MyComp).then((root) {
-                fixture = root;
-              });
+              var fixture = tcb.createFakeAsync(MyComp);
               tick();
               var tc = fixture.debugElement.children[0];
               tc.inject(DirectiveEmittingEvent).fireEvent("boom");
@@ -1715,7 +1705,7 @@ declareTests(bool isJit) {
                           "<div><div *someImpvp=\"ctxBoolProp\">hello</div></div>",
                       directives: [SomeImperativeViewport]))
               .createAsync(MyComp)
-              .then((ComponentFixture fixture) {
+              .then((ComponentFixture<dynamic> fixture) {
             fixture.detectChanges();
             expect(anchorElement).toHaveText("");
             fixture.debugElement.componentInstance.ctxBoolProp = true;
@@ -1957,10 +1947,7 @@ Can\'t bind to \'unknown\' since it isn\'t a known native property ("<div [ERROR
                       template:
                           '''<with-prop-decorators (elEvent)="ctxProp=\'called\'">''',
                       directives: [DirectiveWithPropDecorators]));
-              ComponentFixture fixture;
-              tcb.createAsync(MyComp).then((root) {
-                fixture = root;
-              });
+              var fixture = tcb.createFakeAsync(MyComp);
               tick();
               var emitter = fixture.debugElement.children[0]
                   .inject(DirectiveWithPropDecorators);

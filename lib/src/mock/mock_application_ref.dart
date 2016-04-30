@@ -13,9 +13,10 @@ import "package:angular2/src/core/zone/ng_zone.dart" show NgZone;
  */
 @Injectable()
 class MockApplicationRef extends ApplicationRef {
-  void registerBootstrapListener(void listener(ComponentRef ref)) {}
+  void registerBootstrapListener(void listener(ComponentRef<dynamic> ref)) {}
   void registerDisposeListener(void dispose()) {}
-  ComponentRef bootstrap(ComponentFactory componentFactory) {
+  ComponentRef<dynamic/*= C */ > bootstrap/*< C >*/(
+      ComponentFactory<dynamic/*= C */ > componentFactory) {
     return null;
   }
 

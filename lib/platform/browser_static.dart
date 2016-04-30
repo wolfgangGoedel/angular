@@ -46,7 +46,7 @@ PlatformRef browserStaticPlatform() {
 /**
  * See [bootstrap] for more information.
  */
-Future<ComponentRef> bootstrapStatic(Type appComponentType,
+Future<ComponentRef<dynamic>> bootstrapStatic(Type appComponentType,
     [List<dynamic> customProviders, Function initReflector]) {
   if (isPresent(initReflector)) {
     initReflector();

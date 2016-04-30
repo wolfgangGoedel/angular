@@ -31,7 +31,7 @@ var childCmpInstanceCount;
 main() {
   describe("navigation", () {
     TestComponentBuilder tcb;
-    ComponentFixture fixture;
+    ComponentFixture<dynamic> fixture;
     var rtr;
     beforeEachProviders(() => TEST_ROUTER_PROVIDERS);
     beforeEach(inject([TestComponentBuilder, Router], (tcBuilder, router) {

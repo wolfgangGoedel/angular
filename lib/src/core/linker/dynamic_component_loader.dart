@@ -64,7 +64,7 @@ abstract class DynamicComponentLoader {
    * </my-app>
    * ```
    */
-  Future<ComponentRef> loadAsRoot(Type type,
+  Future<ComponentRef<dynamic>> loadAsRoot(Type type,
       dynamic /* String | dynamic */ overrideSelectorOrNode, Injector injector,
       [void onDispose(), List<List<dynamic>> projectableNodes]);
   /**
@@ -107,7 +107,8 @@ abstract class DynamicComponentLoader {
    * <child-component>Child</child-component>
    * ```
    */
-  Future<ComponentRef> loadNextToLocation(Type type, ViewContainerRef location,
+  Future<ComponentRef<dynamic>> loadNextToLocation(
+      Type type, ViewContainerRef location,
       [List<ResolvedReflectiveProvider> providers,
       List<List<dynamic>> projectableNodes]);
 }
@@ -118,7 +119,7 @@ class DynamicComponentLoader_ extends DynamicComponentLoader {
   DynamicComponentLoader_(this._compiler) : super() {
     /* super call moved to initializer */;
   }
-  Future<ComponentRef> loadAsRoot(Type type,
+  Future<ComponentRef<dynamic>> loadAsRoot(Type type,
       dynamic /* String | dynamic */ overrideSelectorOrNode, Injector injector,
       [void onDispose(), List<List<dynamic>> projectableNodes]) {
     return this._compiler.resolveComponent(type).then((componentFactory) {
@@ -135,7 +136,8 @@ class DynamicComponentLoader_ extends DynamicComponentLoader {
     });
   }
 
-  Future<ComponentRef> loadNextToLocation(Type type, ViewContainerRef location,
+  Future<ComponentRef<dynamic>> loadNextToLocation(
+      Type type, ViewContainerRef location,
       [List<ResolvedReflectiveProvider> providers = null,
       List<List<dynamic>> projectableNodes = null]) {
     return this._compiler.resolveComponent(type).then((componentFactory) {

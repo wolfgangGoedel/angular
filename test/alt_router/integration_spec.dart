@@ -202,12 +202,12 @@ main() {
   });
 }
 
-void advance(ComponentFixture fixture) {
+void advance(ComponentFixture<dynamic> fixture) {
   tick();
   fixture.detectChanges();
 }
 
-Future<ComponentFixture> compileRoot(TestComponentBuilder tcb) {
+Future<ComponentFixture<dynamic>> compileRoot(TestComponentBuilder tcb) {
   return tcb.createAsync(RootCmp);
 }
 

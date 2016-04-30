@@ -18,7 +18,7 @@ import "package:angular2/src/facade/lang.dart" show isPresent, isBlank;
 @Directive(selector: "router-outlet")
 class RouterOutlet {
   ViewContainerRef _location;
-  ComponentRef _loaded;
+  ComponentRef<dynamic> _loaded;
   RouterOutletMap outletMap;
   RouterOutlet(RouterOutletMap parentOutletMap, this._location,
       @Attribute("name") String name) {
@@ -38,7 +38,7 @@ class RouterOutlet {
     return isPresent(this._loaded);
   }
 
-  ComponentRef load(ComponentFactory factory,
+  ComponentRef<dynamic> load(ComponentFactory<dynamic> factory,
       List<ResolvedReflectiveProvider> providers, RouterOutletMap outletMap) {
     this.outletMap = outletMap;
     var inj = ReflectiveInjector.fromResolvedProviders(

@@ -323,7 +323,7 @@ main() {
               .overrideTemplate(
                   Simple, "<ng-content></ng-content><p>P,</p>{{stringProp}}")
               .createAsync(MainComp)
-              .then((ComponentFixture main) {
+              .then((ComponentFixture<dynamic> main) {
             main.detectChanges();
             expect(main.debugElement.nativeElement).toHaveText("P,text");
             async.done();
@@ -345,7 +345,7 @@ main() {
               .overrideTemplate(
                   Simple, "<style></style><p>P,</p>{{stringProp}}")
               .createAsync(MainComp)
-              .then((ComponentFixture main) {
+              .then((ComponentFixture<dynamic> main) {
             main.detectChanges();
             expect(main.debugElement.nativeElement).toHaveText("P,text");
             async.done();
