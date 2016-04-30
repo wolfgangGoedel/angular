@@ -68,10 +68,12 @@ class Router {
         .then((currTree) {
       return new _LoadSegments(currTree, this._prevTree)
           .load(this._routerOutletMap, this._rootComponent)
-          .then((_) {
-        this._prevTree = currTree;
-        this._location.go(this._urlSerializer.serialize(this._urlTree));
-        this._changes.emit(null);
+          .then((updated) {
+        if (updated) {
+          this._prevTree = currTree;
+          this._location.go(this._urlSerializer.serialize(this._urlTree));
+          this._changes.emit(null);
+        }
       });
     });
   }
@@ -105,7 +107,7 @@ class _LoadSegments {
   List<List<Object>> deactivations = [];
   bool performMutation = true;
   _LoadSegments(this.currTree, this.prevTree) {}
-  Future load(RouterOutletMap parentOutletMap, Object rootComponent) {
+  Future<bool> load(RouterOutletMap parentOutletMap, Object rootComponent) {
     var prevRoot = isPresent(this.prevTree) ? rootNode(this.prevTree) : null;
     var currRoot = rootNode(this.currTree);
     return this
@@ -116,6 +118,7 @@ class _LoadSegments {
         this.loadChildSegments(
             currRoot, prevRoot, parentOutletMap, [rootComponent]);
       }
+      return res;
     });
   }
 
@@ -217,7 +220,7 @@ class _LoadSegments {
   }
 
   void unloadOutlet(RouterOutlet outlet, List<Object> components) {
-    if (outlet.isLoaded) {
+    if (isPresent(outlet) && outlet.isLoaded) {
       StringMapWrapper.forEach(outlet.outletMap._outlets,
           (v, k) => this.unloadOutlet(v, components));
       if (this.performMutation) {
