@@ -1,12 +1,6 @@
 import { unimplemented } from 'angular2/src/facade/exceptions';
-import { ChangeDetectorRef } from '../change_detection/change_detector_ref';
 import { ChangeDetectionStrategy } from 'angular2/src/core/change_detection/constants';
-export class ViewRef extends ChangeDetectorRef {
-    /**
-     * @internal
-     */
-    get changeDetectorRef() { return unimplemented(); }
-    ;
+export class ViewRef {
     get destroyed() { return unimplemented(); }
 }
 /**
@@ -73,10 +67,6 @@ export class ViewRef_ {
         this._view = _view;
     }
     get internalView() { return this._view; }
-    /**
-     * Return `ChangeDetectorRef`
-     */
-    get changeDetectorRef() { return this; }
     get rootNodes() { return this._view.flatRootNodes; }
     get context() { return this._view.context; }
     get destroyed() { return this._view.destroyed; }

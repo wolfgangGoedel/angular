@@ -27,6 +27,8 @@ export declare class Identifiers {
     static devModeEqual: CompileIdentifierMetadata;
     static interpolate: CompileIdentifierMetadata;
     static castByValue: CompileIdentifierMetadata;
+    static EMPTY_ARRAY: CompileIdentifierMetadata;
+    static EMPTY_MAP: CompileIdentifierMetadata;
     static pureProxies: CompileIdentifierMetadata[];
 }
 export declare function identifierToken(identifier: CompileIdentifierMetadata): CompileTokenMetadata;

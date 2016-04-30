@@ -8,6 +8,7 @@ import { CompilePipe } from './compile_pipe';
 import { ViewType } from 'angular2/src/core/linker/view_type';
 import { CompileIdentifierMetadata, CompileTokenMap } from '../compile_metadata';
 import { getViewFactoryName, getPropertyInView, createPureProxy } from './util';
+import { Identifiers } from '../identifiers';
 export class CompileView {
     constructor(component, genConfig, pipeMetas, styles, viewIndex, declarationElement, templateVariableBindings) {
         this.component = component;
@@ -111,6 +112,9 @@ export class CompileView {
         }
     }
     createLiteralArray(values) {
+        if (values.length === 0) {
+            return o.importExpr(Identifiers.EMPTY_ARRAY);
+        }
         var proxyExpr = o.THIS_EXPR.prop(`_arr_${this.literalArrayCount++}`);
         var proxyParams = [];
         var proxyReturnEntries = [];
@@ -123,6 +127,9 @@ export class CompileView {
         return proxyExpr.callFn(values);
     }
     createLiteralMap(entries) {
+        if (entries.length === 0) {
+            return o.importExpr(Identifiers.EMPTY_MAP);
+        }
         var proxyExpr = o.THIS_EXPR.prop(`_map_${this.literalMapCount++}`);
         var proxyParams = [];
         var proxyReturnEntries = [];

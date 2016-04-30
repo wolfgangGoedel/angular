@@ -158,6 +158,8 @@ export function mapLooseIdentical(m1, m2) {
 export function castByValue(input, value) {
     return input;
 }
+export const EMPTY_ARRAY = [];
+export const EMPTY_MAP = {};
 export function pureProxy1(fn) {
     var result;
     var v0;

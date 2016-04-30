@@ -73,7 +73,6 @@ export class AppView {
             // Note: the render nodes have been attached to their host element
             // in the ViewFactory already.
             this.declarationAppElement.parentView.viewChildren.push(this);
-            this.renderParent = this.declarationAppElement.parentView;
             this.dirtyParentQueriesInternal();
         }
     }
@@ -167,16 +166,6 @@ export class AppView {
      * Overwritten by implementations
      */
     dirtyParentQueriesInternal() { }
-    addRenderContentChild(view) {
-        this.contentChildren.push(view);
-        view.renderParent = this;
-        view.dirtyParentQueriesInternal();
-    }
-    removeContentChild(view) {
-        ListWrapper.remove(this.contentChildren, view);
-        view.dirtyParentQueriesInternal();
-        view.renderParent = null;
-    }
     detectChanges(throwOnChange) {
         var s = _scope_check(this.clazz);
         if (this.cdMode === ChangeDetectionStrategy.Detached ||
@@ -221,12 +210,13 @@ export class AppView {
     }
     markAsCheckOnce() { this.cdMode = ChangeDetectionStrategy.CheckOnce; }
     markPathToRootAsCheckOnce() {
-        var c = this;
+        let c = this;
         while (isPresent(c) && c.cdMode !== ChangeDetectionStrategy.Detached) {
             if (c.cdMode === ChangeDetectionStrategy.Checked) {
                 c.cdMode = ChangeDetectionStrategy.CheckOnce;
             }
-            c = c.renderParent;
+            let parentEl = c.type === ViewType.COMPONENT ? c.declarationAppElement : c.viewContainerElement;
+            c = isPresent(parentEl) ? parentEl.parentView : null;
         }
     }
     eventHandler(cb) { return cb; }

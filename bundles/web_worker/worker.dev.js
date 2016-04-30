@@ -4124,7 +4124,7 @@ System.register("angular2/src/core/linker/template_ref", ["angular2/src/facade/l
   return module.exports;
 });
 
-System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/exceptions", "angular2/src/core/change_detection/change_detector_ref", "angular2/src/core/change_detection/constants"], true, function(require, exports, module) {
+System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/exceptions", "angular2/src/core/change_detection/constants"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -4139,21 +4139,9 @@ System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/excep
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var exceptions_1 = require("angular2/src/facade/exceptions");
-  var change_detector_ref_1 = require("angular2/src/core/change_detection/change_detector_ref");
   var constants_1 = require("angular2/src/core/change_detection/constants");
-  var ViewRef = (function(_super) {
-    __extends(ViewRef, _super);
-    function ViewRef() {
-      _super.apply(this, arguments);
-    }
-    Object.defineProperty(ViewRef.prototype, "changeDetectorRef", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
+  var ViewRef = (function() {
+    function ViewRef() {}
     Object.defineProperty(ViewRef.prototype, "destroyed", {
       get: function() {
         return exceptions_1.unimplemented();
@@ -4162,7 +4150,7 @@ System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/excep
       configurable: true
     });
     return ViewRef;
-  }(change_detector_ref_1.ChangeDetectorRef));
+  }());
   exports.ViewRef = ViewRef;
   var EmbeddedViewRef = (function(_super) {
     __extends(EmbeddedViewRef, _super);
@@ -4195,13 +4183,6 @@ System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/excep
     Object.defineProperty(ViewRef_.prototype, "internalView", {
       get: function() {
         return this._view;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ViewRef_.prototype, "changeDetectorRef", {
-      get: function() {
-        return this;
       },
       enumerable: true,
       configurable: true
@@ -15072,15 +15053,6 @@ System.register("angular2/src/compiler/template_ast", ["angular2/src/facade/lang
     ElementAst.prototype.visit = function(visitor, context) {
       return visitor.visitElement(this, context);
     };
-    ElementAst.prototype.getComponent = function() {
-      for (var i = 0; i < this.directives.length; i++) {
-        var dirAst = this.directives[i];
-        if (dirAst.directive.isComponent) {
-          return dirAst.directive;
-        }
-      }
-      return null;
-    };
     return ElementAst;
   }());
   exports.ElementAst = ElementAst;
@@ -19666,7 +19638,7 @@ System.register("angular2/src/compiler/view_compiler/compile_pipe", ["angular2/s
       var _this = this;
       var deps = this.meta.type.diDeps.map(function(diDep) {
         if (diDep.token.equalsTo(identifiers_1.identifierToken(identifiers_1.Identifiers.ChangeDetectorRef))) {
-          return o.THIS_EXPR.prop('ref');
+          return util_1.getPropertyInView(o.THIS_EXPR.prop('ref'), _this.view, _this.view.componentView);
         }
         return util_1.injectFromViewParentInjector(diDep.token, false);
       });
@@ -19831,9 +19803,11 @@ System.register("angular2/src/compiler/view_compiler/view_builder", ["angular2/s
       this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement), [o.StmtModifier.Private]));
       this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
       var renderNode = o.THIS_EXPR.prop(fieldName);
-      var component = ast.getComponent();
       var directives = ast.directives.map(function(directiveAst) {
         return directiveAst.directive;
+      });
+      var component = directives.find(function(directive) {
+        return directive.isComponent;
       });
       var htmlAttrs = _readHtmlAttrs(ast.attrs);
       var attrNameAndValues = _mergeHtmlAndDirectiveAttrs(htmlAttrs, directives);
@@ -20413,7 +20387,7 @@ System.register("angular2/src/compiler/view_compiler/event_binder", ["angular2/s
     };
     CompileEventListener.prototype.listenToRenderer = function() {
       var listenExpr;
-      var eventListener = o.THIS_EXPR.callMethod('eventHandler', [o.fn([this._eventParam], [new o.ReturnStatement(o.THIS_EXPR.callMethod(this._methodName, [constants_1.EventHandlerVars.event]))], o.BOOL_TYPE)]);
+      var eventListener = o.THIS_EXPR.callMethod('eventHandler', [o.THIS_EXPR.prop(this._methodName).callMethod(o.BuiltinMethod.bind, [o.THIS_EXPR])]);
       if (lang_1.isPresent(this.eventTarget)) {
         listenExpr = constants_1.ViewProperties.renderer.callMethod('listenGlobal', [o.literal(this.eventTarget), o.literal(this.eventName), eventListener]);
       } else {
@@ -20426,7 +20400,7 @@ System.register("angular2/src/compiler/view_compiler/event_binder", ["angular2/s
     CompileEventListener.prototype.listenToDirective = function(directiveInstance, observablePropName) {
       var subscription = o.variable("subscription_" + this.compileElement.view.subscriptions.length);
       this.compileElement.view.subscriptions.push(subscription);
-      var eventListener = o.THIS_EXPR.callMethod('eventHandler', [o.fn([this._eventParam], [o.THIS_EXPR.callMethod(this._methodName, [constants_1.EventHandlerVars.event]).toStmt()])]);
+      var eventListener = o.THIS_EXPR.callMethod('eventHandler', [o.THIS_EXPR.prop(this._methodName).callMethod(o.BuiltinMethod.bind, [o.THIS_EXPR])]);
       this.compileElement.view.createMethod.addStmt(subscription.set(directiveInstance.prop(observablePropName).callMethod(o.BuiltinMethod.SubscribeObservable, [eventListener])).toDeclStmt(null, [o.StmtModifier.Final]));
     };
     return CompileEventListener;
@@ -27835,7 +27809,6 @@ System.register("angular2/src/core/linker/view", ["angular2/src/facade/collectio
       this.subscriptions = subscriptions;
       if (this.type === view_type_1.ViewType.COMPONENT) {
         this.declarationAppElement.parentView.viewChildren.push(this);
-        this.renderParent = this.declarationAppElement.parentView;
         this.dirtyParentQueriesInternal();
       }
     };
@@ -27933,16 +27906,6 @@ System.register("angular2/src/core/linker/view", ["angular2/src/facade/collectio
       configurable: true
     });
     AppView.prototype.dirtyParentQueriesInternal = function() {};
-    AppView.prototype.addRenderContentChild = function(view) {
-      this.contentChildren.push(view);
-      view.renderParent = this;
-      view.dirtyParentQueriesInternal();
-    };
-    AppView.prototype.removeContentChild = function(view) {
-      collection_1.ListWrapper.remove(this.contentChildren, view);
-      view.dirtyParentQueriesInternal();
-      view.renderParent = null;
-    };
     AppView.prototype.detectChanges = function(throwOnChange) {
       var s = _scope_check(this.clazz);
       if (this.cdMode === change_detection_1.ChangeDetectionStrategy.Detached || this.cdMode === change_detection_1.ChangeDetectionStrategy.Checked || this.cdState === change_detection_1.ChangeDetectorState.Errored)
@@ -27989,7 +27952,8 @@ System.register("angular2/src/core/linker/view", ["angular2/src/facade/collectio
         if (c.cdMode === change_detection_1.ChangeDetectionStrategy.Checked) {
           c.cdMode = change_detection_1.ChangeDetectionStrategy.CheckOnce;
         }
-        c = c.renderParent;
+        var parentEl = c.type === view_type_1.ViewType.COMPONENT ? c.declarationAppElement : c.viewContainerElement;
+        c = lang_1.isPresent(parentEl) ? parentEl.parentView : null;
       }
     };
     AppView.prototype.eventHandler = function(cb) {
@@ -28567,7 +28531,7 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
             if (requestingProviderType === template_ast_1.ProviderAstType.Component) {
               return this._compViewExpr.prop('ref');
             } else {
-              return o.THIS_EXPR.prop('ref');
+              return util_1.getPropertyInView(o.THIS_EXPR.prop('ref'), this.view, this.view.componentView);
             }
           }
         }
@@ -28649,7 +28613,7 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
   return module.exports;
 });
 
-System.register("angular2/src/compiler/view_compiler/compile_view", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/view_compiler/constants", "angular2/src/compiler/view_compiler/compile_query", "angular2/src/compiler/view_compiler/compile_method", "angular2/src/compiler/view_compiler/compile_pipe", "angular2/src/core/linker/view_type", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/view_compiler/util"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/view_compiler/compile_view", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/view_compiler/constants", "angular2/src/compiler/view_compiler/compile_query", "angular2/src/compiler/view_compiler/compile_method", "angular2/src/compiler/view_compiler/compile_pipe", "angular2/src/core/linker/view_type", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/view_compiler/util", "angular2/src/compiler/identifiers"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -28664,6 +28628,7 @@ System.register("angular2/src/compiler/view_compiler/compile_view", ["angular2/s
   var view_type_1 = require("angular2/src/core/linker/view_type");
   var compile_metadata_1 = require("angular2/src/compiler/compile_metadata");
   var util_1 = require("angular2/src/compiler/view_compiler/util");
+  var identifiers_1 = require("angular2/src/compiler/identifiers");
   var CompileView = (function() {
     function CompileView(component, genConfig, pipeMetas, styles, viewIndex, declarationElement, templateVariableBindings) {
       var _this = this;
@@ -28764,6 +28729,9 @@ System.register("angular2/src/compiler/view_compiler/compile_view", ["angular2/s
       }
     };
     CompileView.prototype.createLiteralArray = function(values) {
+      if (values.length === 0) {
+        return o.importExpr(identifiers_1.Identifiers.EMPTY_ARRAY);
+      }
       var proxyExpr = o.THIS_EXPR.prop("_arr_" + this.literalArrayCount++);
       var proxyParams = [];
       var proxyReturnEntries = [];
@@ -28776,6 +28744,9 @@ System.register("angular2/src/compiler/view_compiler/compile_view", ["angular2/s
       return proxyExpr.callFn(values);
     };
     CompileView.prototype.createLiteralMap = function(entries) {
+      if (entries.length === 0) {
+        return o.importExpr(identifiers_1.Identifiers.EMPTY_MAP);
+      }
       var proxyExpr = o.THIS_EXPR.prop("_map_" + this.literalMapCount++);
       var proxyParams = [];
       var proxyReturnEntries = [];
@@ -33048,6 +33019,8 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
   var impInterpolate = view_utils_1.interpolate;
   var impCheckBinding = view_utils_1.checkBinding;
   var impCastByValue = view_utils_1.castByValue;
+  var impEMPTY_ARRAY = view_utils_1.EMPTY_ARRAY;
+  var impEMPTY_MAP = view_utils_1.EMPTY_MAP;
   var Identifiers = (function() {
     function Identifiers() {}
     Identifiers.ViewUtils = new compile_metadata_1.CompileIdentifierMetadata({
@@ -33184,6 +33157,16 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
       name: 'castByValue',
       moduleUrl: VIEW_UTILS_MODULE_URL,
       runtime: impCastByValue
+    });
+    Identifiers.EMPTY_ARRAY = new compile_metadata_1.CompileIdentifierMetadata({
+      name: 'EMPTY_ARRAY',
+      moduleUrl: VIEW_UTILS_MODULE_URL,
+      runtime: impEMPTY_ARRAY
+    });
+    Identifiers.EMPTY_MAP = new compile_metadata_1.CompileIdentifierMetadata({
+      name: 'EMPTY_MAP',
+      moduleUrl: VIEW_UTILS_MODULE_URL,
+      runtime: impEMPTY_MAP
     });
     Identifiers.pureProxies = [null, new compile_metadata_1.CompileIdentifierMetadata({
       name: 'pureProxy1',
@@ -37468,8 +37451,11 @@ System.register("angular2/src/compiler/template_parser", ["angular2/src/facade/c
     ElementContext.create = function(isTemplateElement, directives, providerContext) {
       var matcher = new selector_1.SelectorMatcher();
       var wildcardNgContentIndex = null;
-      if (directives.length > 0 && directives[0].directive.isComponent) {
-        var ngContentSelectors = directives[0].directive.template.ngContentSelectors;
+      var component = directives.find(function(directive) {
+        return directive.directive.isComponent;
+      });
+      if (lang_1.isPresent(component)) {
+        var ngContentSelectors = component.directive.template.ngContentSelectors;
         for (var i = 0; i < ngContentSelectors.length; i++) {
           var selector = ngContentSelectors[i];
           if (lang_1.StringWrapper.equals(selector, '*')) {
@@ -38790,6 +38776,8 @@ System.register("angular2/src/core/linker/view_utils", ["angular2/src/facade/lan
     return input;
   }
   exports.castByValue = castByValue;
+  exports.EMPTY_ARRAY = [];
+  exports.EMPTY_MAP = {};
   function pureProxy1(fn) {
     var result;
     var v0;
@@ -40287,7 +40275,7 @@ System.register("angular2/src/core/linker/component_factory", ["angular2/src/fac
     ;
     Object.defineProperty(ComponentRef_.prototype, "changeDetectorRef", {
       get: function() {
-        return this.hostView;
+        return this._hostElement.parentView.ref;
       },
       enumerable: true,
       configurable: true

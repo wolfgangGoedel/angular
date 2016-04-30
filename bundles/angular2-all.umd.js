@@ -10277,7 +10277,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	    ;
 	    Object.defineProperty(ComponentRef_.prototype, "changeDetectorRef", {
-	        get: function () { return this.hostView; },
+	        get: function () { return this._hostElement.parentView.ref; },
 	        enumerable: true,
 	        configurable: true
 	    });
@@ -10499,6 +10499,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return input;
 	}
 	exports.castByValue = castByValue;
+	exports.EMPTY_ARRAY = [];
+	exports.EMPTY_MAP = {};
 	function pureProxy1(fn) {
 	    var result;
 	    var v0;
@@ -11604,29 +11606,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var exceptions_1 = __webpack_require__(12);
-	var change_detector_ref_1 = __webpack_require__(35);
 	var constants_1 = __webpack_require__(34);
-	var ViewRef = (function (_super) {
-	    __extends(ViewRef, _super);
+	var ViewRef = (function () {
 	    function ViewRef() {
-	        _super.apply(this, arguments);
 	    }
-	    Object.defineProperty(ViewRef.prototype, "changeDetectorRef", {
-	        /**
-	         * @internal
-	         */
-	        get: function () { return exceptions_1.unimplemented(); },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    ;
 	    Object.defineProperty(ViewRef.prototype, "destroyed", {
 	        get: function () { return exceptions_1.unimplemented(); },
 	        enumerable: true,
 	        configurable: true
 	    });
 	    return ViewRef;
-	}(change_detector_ref_1.ChangeDetectorRef));
+	}());
 	exports.ViewRef = ViewRef;
 	/**
 	 * Represents an Angular View.
@@ -11707,14 +11697,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    Object.defineProperty(ViewRef_.prototype, "internalView", {
 	        get: function () { return this._view; },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(ViewRef_.prototype, "changeDetectorRef", {
-	        /**
-	         * Return `ChangeDetectorRef`
-	         */
-	        get: function () { return this; },
 	        enumerable: true,
 	        configurable: true
 	    });
@@ -17614,18 +17596,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ElementAst.prototype.visit = function (visitor, context) {
 	        return visitor.visitElement(this, context);
 	    };
-	    /**
-	     * Get the component associated with this element, if any.
-	     */
-	    ElementAst.prototype.getComponent = function () {
-	        for (var i = 0; i < this.directives.length; i++) {
-	            var dirAst = this.directives[i];
-	            if (dirAst.directive.isComponent) {
-	                return dirAst.directive;
-	            }
-	        }
-	        return null;
-	    };
 	    return ElementAst;
 	}());
 	exports.ElementAst = ElementAst;
@@ -18475,8 +18445,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ElementContext.create = function (isTemplateElement, directives, providerContext) {
 	        var matcher = new selector_1.SelectorMatcher();
 	        var wildcardNgContentIndex = null;
-	        if (directives.length > 0 && directives[0].directive.isComponent) {
-	            var ngContentSelectors = directives[0].directive.template.ngContentSelectors;
+	        var component = directives.find(function (directive) { return directive.directive.isComponent; });
+	        if (lang_1.isPresent(component)) {
+	            var ngContentSelectors = component.directive.template.ngContentSelectors;
 	            for (var i = 0; i < ngContentSelectors.length; i++) {
 	                var selector = ngContentSelectors[i];
 	                if (lang_1.StringWrapper.equals(selector, '*')) {
@@ -22401,6 +22372,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var impInterpolate = view_utils_1.interpolate;
 	var impCheckBinding = view_utils_1.checkBinding;
 	var impCastByValue = view_utils_1.castByValue;
+	var impEMPTY_ARRAY = view_utils_1.EMPTY_ARRAY;
+	var impEMPTY_MAP = view_utils_1.EMPTY_MAP;
 	var Identifiers = (function () {
 	    function Identifiers() {
 	    }
@@ -22499,6 +22472,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    Identifiers.devModeEqual = new compile_metadata_1.CompileIdentifierMetadata({ name: 'devModeEqual', moduleUrl: CD_MODULE_URL, runtime: impDevModeEqual });
 	    Identifiers.interpolate = new compile_metadata_1.CompileIdentifierMetadata({ name: 'interpolate', moduleUrl: VIEW_UTILS_MODULE_URL, runtime: impInterpolate });
 	    Identifiers.castByValue = new compile_metadata_1.CompileIdentifierMetadata({ name: 'castByValue', moduleUrl: VIEW_UTILS_MODULE_URL, runtime: impCastByValue });
+	    Identifiers.EMPTY_ARRAY = new compile_metadata_1.CompileIdentifierMetadata({ name: 'EMPTY_ARRAY', moduleUrl: VIEW_UTILS_MODULE_URL, runtime: impEMPTY_ARRAY });
+	    Identifiers.EMPTY_MAP = new compile_metadata_1.CompileIdentifierMetadata({ name: 'EMPTY_MAP', moduleUrl: VIEW_UTILS_MODULE_URL, runtime: impEMPTY_MAP });
 	    Identifiers.pureProxies = [
 	        null,
 	        new compile_metadata_1.CompileIdentifierMetadata({ name: 'pureProxy1', moduleUrl: VIEW_UTILS_MODULE_URL, runtime: view_utils_1.pureProxy1 }),
@@ -23641,7 +23616,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // Note: the render nodes have been attached to their host element
 	            // in the ViewFactory already.
 	            this.declarationAppElement.parentView.viewChildren.push(this);
-	            this.renderParent = this.declarationAppElement.parentView;
 	            this.dirtyParentQueriesInternal();
 	        }
 	    };
@@ -23751,16 +23725,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Overwritten by implementations
 	     */
 	    AppView.prototype.dirtyParentQueriesInternal = function () { };
-	    AppView.prototype.addRenderContentChild = function (view) {
-	        this.contentChildren.push(view);
-	        view.renderParent = this;
-	        view.dirtyParentQueriesInternal();
-	    };
-	    AppView.prototype.removeContentChild = function (view) {
-	        collection_1.ListWrapper.remove(this.contentChildren, view);
-	        view.dirtyParentQueriesInternal();
-	        view.renderParent = null;
-	    };
 	    AppView.prototype.detectChanges = function (throwOnChange) {
 	        var s = _scope_check(this.clazz);
 	        if (this.cdMode === change_detection_1.ChangeDetectionStrategy.Detached ||
@@ -23810,7 +23774,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (c.cdMode === change_detection_1.ChangeDetectionStrategy.Checked) {
 	                c.cdMode = change_detection_1.ChangeDetectionStrategy.CheckOnce;
 	            }
-	            c = c.renderParent;
+	            var parentEl = c.type === view_type_1.ViewType.COMPONENT ? c.declarationAppElement : c.viewContainerElement;
+	            c = lang_1.isPresent(parentEl) ? parentEl.parentView : null;
 	        }
 	    };
 	    AppView.prototype.eventHandler = function (cb) { return cb; };
@@ -26740,7 +26705,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        return this._compViewExpr.prop('ref');
 	                    }
 	                    else {
-	                        return o.THIS_EXPR.prop('ref');
+	                        return util_1.getPropertyInView(o.THIS_EXPR.prop('ref'), this.view, this.view.componentView);
 	                    }
 	                }
 	            }
@@ -27233,6 +27198,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var view_type_1 = __webpack_require__(70);
 	var compile_metadata_1 = __webpack_require__(157);
 	var util_1 = __webpack_require__(173);
+	var identifiers_1 = __webpack_require__(156);
 	var CompileView = (function () {
 	    function CompileView(component, genConfig, pipeMetas, styles, viewIndex, declarationElement, templateVariableBindings) {
 	        var _this = this;
@@ -27337,6 +27303,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	    CompileView.prototype.createLiteralArray = function (values) {
+	        if (values.length === 0) {
+	            return o.importExpr(identifiers_1.Identifiers.EMPTY_ARRAY);
+	        }
 	        var proxyExpr = o.THIS_EXPR.prop("_arr_" + this.literalArrayCount++);
 	        var proxyParams = [];
 	        var proxyReturnEntries = [];
@@ -27349,6 +27318,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return proxyExpr.callFn(values);
 	    };
 	    CompileView.prototype.createLiteralMap = function (entries) {
+	        if (entries.length === 0) {
+	            return o.importExpr(identifiers_1.Identifiers.EMPTY_MAP);
+	        }
 	        var proxyExpr = o.THIS_EXPR.prop("_map_" + this.literalMapCount++);
 	        var proxyParams = [];
 	        var proxyReturnEntries = [];
@@ -27416,7 +27388,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 	        var deps = this.meta.type.diDeps.map(function (diDep) {
 	            if (diDep.token.equalsTo(identifiers_1.identifierToken(identifiers_1.Identifiers.ChangeDetectorRef))) {
-	                return o.THIS_EXPR.prop('ref');
+	                return util_1.getPropertyInView(o.THIS_EXPR.prop('ref'), _this.view, _this.view.componentView);
 	            }
 	            return util_1.injectFromViewParentInjector(diDep.token, false);
 	        });
@@ -27609,8 +27581,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement), [o.StmtModifier.Private]));
 	        this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
 	        var renderNode = o.THIS_EXPR.prop(fieldName);
-	        var component = ast.getComponent();
 	        var directives = ast.directives.map(function (directiveAst) { return directiveAst.directive; });
+	        var component = directives.find(function (directive) { return directive.isComponent; });
 	        var htmlAttrs = _readHtmlAttrs(ast.attrs);
 	        var attrNameAndValues = _mergeHtmlAndDirectiveAttrs(htmlAttrs, directives);
 	        for (var i = 0; i < attrNameAndValues.length; i++) {
@@ -28500,11 +28472,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    CompileEventListener.prototype.listenToRenderer = function () {
 	        var listenExpr;
-	        var eventListener = o.THIS_EXPR.callMethod('eventHandler', [
-	            o.fn([this._eventParam], [
-	                new o.ReturnStatement(o.THIS_EXPR.callMethod(this._methodName, [constants_1.EventHandlerVars.event]))
-	            ], o.BOOL_TYPE)
-	        ]);
+	        var eventListener = o.THIS_EXPR.callMethod('eventHandler', [o.THIS_EXPR.prop(this._methodName).callMethod(o.BuiltinMethod.bind, [o.THIS_EXPR])]);
 	        if (lang_1.isPresent(this.eventTarget)) {
 	            listenExpr = constants_1.ViewProperties.renderer.callMethod('listenGlobal', [o.literal(this.eventTarget), o.literal(this.eventName), eventListener]);
 	        }
@@ -28518,9 +28486,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CompileEventListener.prototype.listenToDirective = function (directiveInstance, observablePropName) {
 	        var subscription = o.variable("subscription_" + this.compileElement.view.subscriptions.length);
 	        this.compileElement.view.subscriptions.push(subscription);
-	        var eventListener = o.THIS_EXPR.callMethod('eventHandler', [
-	            o.fn([this._eventParam], [o.THIS_EXPR.callMethod(this._methodName, [constants_1.EventHandlerVars.event]).toStmt()])
-	        ]);
+	        var eventListener = o.THIS_EXPR.callMethod('eventHandler', [o.THIS_EXPR.prop(this._methodName).callMethod(o.BuiltinMethod.bind, [o.THIS_EXPR])]);
 	        this.compileElement.view.createMethod.addStmt(subscription.set(directiveInstance.prop(observablePropName)
 	            .callMethod(o.BuiltinMethod.SubscribeObservable, [eventListener]))
 	            .toDeclStmt(null, [o.StmtModifier.Final]));

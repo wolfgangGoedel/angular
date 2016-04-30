@@ -138,8 +138,8 @@ class ViewBuilderVisitor {
         this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement), [o.StmtModifier.Private]));
         this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
         var renderNode = o.THIS_EXPR.prop(fieldName);
-        var component = ast.getComponent();
         var directives = ast.directives.map(directiveAst => directiveAst.directive);
+        var component = directives.find(directive => directive.isComponent);
         var htmlAttrs = _readHtmlAttrs(ast.attrs);
         var attrNameAndValues = _mergeHtmlAndDirectiveAttrs(htmlAttrs, directives);
         for (var i = 0; i < attrNameAndValues.length; i++) {

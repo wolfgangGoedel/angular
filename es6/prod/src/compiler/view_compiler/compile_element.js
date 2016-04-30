@@ -248,7 +248,7 @@ export class CompileElement extends CompileNode {
                         return this._compViewExpr.prop('ref');
                     }
                     else {
-                        return o.THIS_EXPR.prop('ref');
+                        return getPropertyInView(o.THIS_EXPR.prop('ref'), this.view, this.view.componentView);
                     }
                 }
             }

@@ -25,7 +25,6 @@ export declare abstract class AppView<T> {
     subscriptions: any[];
     contentChildren: AppView<any>[];
     viewChildren: AppView<any>[];
-    renderParent: AppView<any>;
     viewContainerElement: AppElement;
     cdState: ChangeDetectorState;
     projectableNodes: Array<any | any[]>;
@@ -63,8 +62,6 @@ export declare abstract class AppView<T> {
      * Overwritten by implementations
      */
     dirtyParentQueriesInternal(): void;
-    addRenderContentChild(view: AppView<any>): void;
-    removeContentChild(view: AppView<any>): void;
     detectChanges(throwOnChange: boolean): void;
     /**
      * Overwritten by implementations

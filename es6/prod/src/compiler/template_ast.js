@@ -117,18 +117,6 @@ export class ElementAst {
     visit(visitor, context) {
         return visitor.visitElement(this, context);
     }
-    /**
-     * Get the component associated with this element, if any.
-     */
-    getComponent() {
-        for (var i = 0; i < this.directives.length; i++) {
-            var dirAst = this.directives[i];
-            if (dirAst.directive.isComponent) {
-                return dirAst.directive;
-            }
-        }
-        return null;
-    }
 }
 /**
  * A `<template>` element included in an Angular template.

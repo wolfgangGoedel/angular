@@ -105,10 +105,6 @@ export declare class ElementAst implements TemplateAst {
     sourceSpan: ParseSourceSpan;
     constructor(name: string, attrs: AttrAst[], inputs: BoundElementPropertyAst[], outputs: BoundEventAst[], references: ReferenceAst[], directives: DirectiveAst[], providers: ProviderAst[], hasViewContainer: boolean, children: TemplateAst[], ngContentIndex: number, sourceSpan: ParseSourceSpan);
     visit(visitor: TemplateAstVisitor, context: any): any;
-    /**
-     * Get the component associated with this element, if any.
-     */
-    getComponent(): CompileDirectiveMetadata;
 }
 /**
  * A `<template>` element included in an Angular template.

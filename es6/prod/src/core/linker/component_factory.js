@@ -48,7 +48,7 @@ export class ComponentRef_ extends ComponentRef {
     ;
     get hostView() { return this._hostElement.parentView.ref; }
     ;
-    get changeDetectorRef() { return this.hostView; }
+    get changeDetectorRef() { return this._hostElement.parentView.ref; }
     ;
     get componentType() { return this._componentType; }
     destroy() { this._hostElement.parentView.destroy(); }

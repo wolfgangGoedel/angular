@@ -1,6 +1,6 @@
 import { ChangeDetectorRef } from '../change_detection/change_detector_ref';
 import { AppView } from './view';
-export declare abstract class ViewRef extends ChangeDetectorRef {
+export declare abstract class ViewRef {
     destroyed: boolean;
     abstract onDestroy(callback: Function): any;
 }
@@ -65,14 +65,10 @@ export declare abstract class EmbeddedViewRef<C> extends ViewRef {
      */
     abstract destroy(): any;
 }
-export declare class ViewRef_<C> implements EmbeddedViewRef<C> {
+export declare class ViewRef_<C> implements EmbeddedViewRef<C>, ChangeDetectorRef {
     private _view;
     constructor(_view: AppView<C>);
     internalView: AppView<C>;
-    /**
-     * Return `ChangeDetectorRef`
-     */
-    changeDetectorRef: ChangeDetectorRef;
     rootNodes: any[];
     context: C;
     destroyed: boolean;

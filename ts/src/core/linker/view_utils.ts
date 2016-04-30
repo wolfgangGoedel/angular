@@ -156,6 +156,9 @@ export function castByValue<T>(input: any, value: T): T {
   return <T>input;
 }
 
+export const EMPTY_ARRAY = /*@ts2dart_const*/[];
+export const EMPTY_MAP = /*@ts2dart_const*/ {};
+
 export function pureProxy1<P0, R>(fn: (p0: P0) => R): (p0: P0) => R {
   var result: R;
   var v0;

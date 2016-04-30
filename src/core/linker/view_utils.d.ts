@@ -22,6 +22,8 @@ export declare function mapLooseIdentical<V>(m1: {
     [key: string]: V;
 }): boolean;
 export declare function castByValue<T>(input: any, value: T): T;
+export declare const EMPTY_ARRAY: any[];
+export declare const EMPTY_MAP: {};
 export declare function pureProxy1<P0, R>(fn: (p0: P0) => R): (p0: P0) => R;
 export declare function pureProxy2<P0, P1, R>(fn: (p0: P0, p1: P1) => R): (p0: P0, p1: P1) => R;
 export declare function pureProxy3<P0, P1, P2, R>(fn: (p0: P0, p1: P1, p2: P2) => R): (p0: P0, p1: P1, p2: P2) => R;
