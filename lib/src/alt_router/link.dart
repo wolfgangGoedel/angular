@@ -2,16 +2,68 @@ library angular2.src.alt_router.link;
 
 import "segments.dart" show Tree, TreeNode, UrlSegment, RouteSegment, rootNode;
 import "package:angular2/src/facade/lang.dart"
-    show isBlank, isString, isStringMap;
+    show isBlank, isPresent, isString, isStringMap;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 
-Tree<UrlSegment> link(
-    RouteSegment segment, Tree<UrlSegment> tree, List<dynamic> change) {
-  if (identical(change.length, 0)) return tree;
-  var normalizedChange = (identical(change.length, 1) && change[0] == "/")
-      ? change
-      : (new List.from(["/"])..addAll(change));
-  return new Tree<UrlSegment>(_update(rootNode(tree), normalizedChange));
+Tree<UrlSegment> link(RouteSegment segment, Tree<RouteSegment> routeTree,
+    Tree<UrlSegment> urlTree, List<dynamic> change) {
+  if (identical(change.length, 0)) return urlTree;
+  var startingNode;
+  var normalizedChange;
+  if (isString(change[0]) && change[0].startsWith("./")) {
+    normalizedChange = (new List.from(["/", change[0].substring(2)])
+      ..addAll(ListWrapper.slice(change, 1)));
+    startingNode = _findStartingNode(
+        _findUrlSegment(segment, routeTree), rootNode(urlTree));
+  } else if (isString(change[0]) &&
+      identical(change.length, 1) &&
+      change[0] == "/") {
+    normalizedChange = change;
+    startingNode = rootNode(urlTree);
+  } else if (isString(change[0]) && !change[0].startsWith("/")) {
+    normalizedChange = (new List.from(["/"])..addAll(change));
+    startingNode = _findStartingNode(
+        _findUrlSegment(segment, routeTree), rootNode(urlTree));
+  } else {
+    normalizedChange = (new List.from(["/"])..addAll(change));
+    startingNode = rootNode(urlTree);
+  }
+  var updated = _update(startingNode, normalizedChange);
+  var newRoot = _constructNewTree(rootNode(urlTree), startingNode, updated);
+  return new Tree<UrlSegment>(newRoot);
+}
+
+UrlSegment _findUrlSegment(RouteSegment segment, Tree<RouteSegment> routeTree) {
+  var s = segment;
+  var res = null;
+  while (isBlank(res)) {
+    res = ListWrapper.last(s.urlSegments);
+    s = routeTree.parent(s);
+  }
+  return res;
+}
+
+TreeNode<UrlSegment> _findStartingNode(
+    UrlSegment segment, TreeNode<UrlSegment> node) {
+  if (identical(node.value, segment)) return node;
+  for (var c in node.children) {
+    var r = _findStartingNode(segment, c);
+    if (isPresent(r)) return r;
+  }
+  return null;
+}
+
+TreeNode<UrlSegment> _constructNewTree(TreeNode<UrlSegment> node,
+    TreeNode<UrlSegment> original, TreeNode<UrlSegment> updated) {
+  if (identical(node, original)) {
+    return new TreeNode<UrlSegment>(node.value, updated.children);
+  } else {
+    return new TreeNode<UrlSegment>(
+        node.value,
+        node.children
+            .map((c) => _constructNewTree(c, original, updated))
+            .toList());
+  }
 }
 
 TreeNode<UrlSegment> _update(TreeNode<UrlSegment> node, List<dynamic> changes) {

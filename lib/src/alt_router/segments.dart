@@ -42,6 +42,9 @@ TreeNode<dynamic/*= T */ > rootNode/*< T >*/(Tree<dynamic/*= T */ > tree) {
 
 TreeNode<dynamic/*= T */ > _findNode/*< T >*/(
     dynamic/*= T */ expected, TreeNode<dynamic/*= T */ > c) {
+  // TODO: vsavkin remove it once recognize is fixed
+  if (expected is RouteSegment &&
+      equalSegments((expected as dynamic), (c.value as dynamic))) return c;
   if (identical(expected, c.value)) return c;
   for (var cc in c.children) {
     var r = _findNode(expected, cc);
@@ -53,6 +56,10 @@ TreeNode<dynamic/*= T */ > _findNode/*< T >*/(
 List<TreeNode<dynamic/*= T */ >> _findPath/*< T >*/(dynamic/*= T */ expected,
     TreeNode<dynamic/*= T */ > c, List<TreeNode<dynamic/*= T */ >> collected) {
   collected.add(c);
+  // TODO: vsavkin remove it once recognize is fixed
+  if (expected is RouteSegment &&
+      equalSegments((expected as dynamic), (c.value as dynamic)))
+    return collected;
   if (identical(expected, c.value)) return collected;
   for (var cc in c.children) {
     var r = _findPath(expected, cc, ListWrapper.clone(collected));
@@ -132,6 +139,7 @@ bool equalSegments(RouteSegment a, RouteSegment b) {
   if (!identical(a._type, b._type)) return false;
   if (isBlank(a.parameters) && !isBlank(b.parameters)) return false;
   if (!isBlank(a.parameters) && isBlank(b.parameters)) return false;
+  if (isBlank(a.parameters) && isBlank(b.parameters)) return true;
   return StringMapWrapper.equals(a.parameters, b.parameters);
 }
 

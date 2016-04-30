@@ -14,26 +14,25 @@ import "package:angular2/core.dart"
         HostListener,
         HostBinding,
         Input,
-        OnDestroy;
+        OnDestroy,
+        Optional;
 import "../router.dart" show RouterOutletMap, Router;
 import "../segments.dart" show RouteSegment, UrlSegment, Tree;
-import "../link.dart" show link;
-import "package:angular2/src/facade/lang.dart" show isString;
+import "package:angular2/src/facade/lang.dart" show isString, isPresent;
 import "package:angular2/src/facade/async.dart" show ObservableWrapper;
 
 @Directive(selector: "[routerLink]")
 class RouterLink implements OnDestroy {
+  RouteSegment _routeSegment;
   Router _router;
   @Input()
   String target;
   List<dynamic> _changes = [];
-  Tree<UrlSegment> _targetUrl;
   dynamic _subscription;
   @HostBinding()
   String href;
-  RouterLink(this._router) {
+  RouterLink(@Optional() this._routeSegment, this._router) {
     this._subscription = ObservableWrapper.subscribe(_router.changes, (_) {
-      this._targetUrl = _router.urlTree;
       this._updateTargetUrlAndHref();
     });
   }
@@ -50,14 +49,16 @@ class RouterLink implements OnDestroy {
   @HostListener("click")
   bool onClick() {
     if (!isString(this.target) || this.target == "_self") {
-      this._router.navigate(this._targetUrl);
+      this._router.navigate(this._changes, this._routeSegment);
       return false;
     }
     return true;
   }
 
   void _updateTargetUrlAndHref() {
-    this._targetUrl = link(null, this._router.urlTree, this._changes);
-    this.href = this._router.serializeUrl(this._targetUrl);
+    var tree = this._router.createUrlTree(this._changes, this._routeSegment);
+    if (isPresent(tree)) {
+      this.href = this._router.serializeUrl(tree);
+    }
   }
 }

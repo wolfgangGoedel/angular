@@ -13,6 +13,7 @@ import "package:angular2/core.dart" show ComponentResolver;
 import "constants.dart" show DEFAULT_OUTLET_NAME;
 import "package:angular2/src/core/reflection/reflection.dart" show reflector;
 
+// TODO: vsavkin: recognize should take the old tree and merge it
 Future<Tree<RouteSegment>> recognize(
     ComponentResolver componentResolver, Type type, Tree<UrlSegment> url) {
   var matched =
