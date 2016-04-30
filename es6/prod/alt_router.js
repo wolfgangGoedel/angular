@@ -11,5 +11,4 @@ export { RouterUrlSerializer, DefaultRouterUrlSerializer } from './src/alt_route
 export { ROUTER_PROVIDERS } from './src/alt_router/router_providers';
 import { RouterOutlet } from './src/alt_router/directives/router_outlet';
 import { RouterLink } from './src/alt_router/directives/router_link';
-import { CONST_EXPR } from './src/facade/lang';
-export const ROUTER_DIRECTIVES = CONST_EXPR([RouterOutlet, RouterLink]);
+export const ROUTER_DIRECTIVES = [RouterOutlet, RouterLink];

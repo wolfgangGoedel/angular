@@ -52,8 +52,6 @@ export declare function lockMode(): void;
  */
 export declare function enableProdMode(): void;
 export declare function assertionsEnabled(): boolean;
-export declare function CONST_EXPR<T>(expr: T): T;
-export declare function CONST(): ClassDecorator & PropertyDecorator;
 export declare function isPresent(obj: any): boolean;
 export declare function isBlank(obj: any): boolean;
 export declare function isBoolean(obj: any): boolean;

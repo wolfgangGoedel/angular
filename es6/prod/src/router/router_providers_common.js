@@ -1,22 +1,26 @@
 import { LocationStrategy, PathLocationStrategy, Location } from 'angular2/platform/common';
 import { Router, RootRouter } from 'angular2/src/router/router';
 import { RouteRegistry, ROUTER_PRIMARY_COMPONENT } from 'angular2/src/router/route_registry';
-import { CONST_EXPR } from 'angular2/src/facade/lang';
-import { ApplicationRef, Provider } from 'angular2/core';
+import { ApplicationRef } from 'angular2/core';
 import { BaseException } from 'angular2/src/facade/exceptions';
 /**
  * The Platform agnostic ROUTER PROVIDERS
  */
-export const ROUTER_PROVIDERS_COMMON = CONST_EXPR([
+export const ROUTER_PROVIDERS_COMMON = [
     RouteRegistry,
-    CONST_EXPR(new Provider(LocationStrategy, { useClass: PathLocationStrategy })),
+    /* @ts2dart_Provider */ { provide: LocationStrategy, useClass: PathLocationStrategy },
     Location,
-    CONST_EXPR(new Provider(Router, {
+    {
+        provide: Router,
         useFactory: routerFactory,
-        deps: CONST_EXPR([RouteRegistry, Location, ROUTER_PRIMARY_COMPONENT, ApplicationRef])
-    })),
-    CONST_EXPR(new Provider(ROUTER_PRIMARY_COMPONENT, { useFactory: routerPrimaryComponentFactory, deps: CONST_EXPR([ApplicationRef]) }))
-]);
+        deps: [RouteRegistry, Location, ROUTER_PRIMARY_COMPONENT, ApplicationRef]
+    },
+    {
+        provide: ROUTER_PRIMARY_COMPONENT,
+        useFactory: routerPrimaryComponentFactory,
+        deps: /*@ts2dart_const*/ ([ApplicationRef])
+    }
+];
 function routerFactory(registry, location, primaryComponent, appRef) {
     var rootRouter = new RootRouter(registry, location, primaryComponent);
     appRef.registerDisposeListener(() => rootRouter.dispose());

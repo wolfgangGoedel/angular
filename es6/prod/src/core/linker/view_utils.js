@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { isBlank, isPresent, CONST_EXPR, looseIdentical } from 'angular2/src/facade/lang';
+import { isBlank, isPresent, looseIdentical } from 'angular2/src/facade/lang';
 import { ListWrapper, StringMapWrapper } from 'angular2/src/facade/collection';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { AppElement } from './element';
@@ -62,7 +62,7 @@ function _flattenNestedViewRenderNodes(nodes, renderNodes) {
     }
     return renderNodes;
 }
-const EMPTY_ARR = CONST_EXPR([]);
+const EMPTY_ARR = [];
 export function ensureSlotCount(projectableNodes, expectedSlotCount) {
     var res;
     if (isBlank(projectableNodes)) {

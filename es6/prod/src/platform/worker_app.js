@@ -1,5 +1,4 @@
 import { NgZone } from 'angular2/src/core/zone/ng_zone';
-import { Provider } from 'angular2/src/core/di';
 import { Parse5DomAdapter } from 'angular2/src/platform/server/parse5_adapter';
 import { PostMessageBus, PostMessageBusSink, PostMessageBusSource } from 'angular2/src/web_workers/shared/post_message_bus';
 import { WORKER_APP_APPLICATION_COMMON } from './worker_app_common';
@@ -15,8 +14,8 @@ let _postMessage = {
 export const WORKER_APP_APPLICATION = [
     WORKER_APP_APPLICATION_COMMON,
     COMPILER_PROVIDERS,
-    new Provider(MessageBus, { useFactory: createMessageBus, deps: [NgZone] }),
-    new Provider(APP_INITIALIZER, { useValue: setupWebWorker, multi: true })
+    /* @ts2dart_Provider */ { provide: MessageBus, useFactory: createMessageBus, deps: [NgZone] },
+    /* @ts2dart_Provider */ { provide: APP_INITIALIZER, useValue: setupWebWorker, multi: true }
 ];
 function createMessageBus(zone) {
     let sink = new PostMessageBusSink(_postMessage);

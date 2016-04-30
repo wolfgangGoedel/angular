@@ -31,6 +31,7 @@ import { Provider } from 'angular2/src/core/di/provider';
 import { OptionalMetadata, SelfMetadata, HostMetadata, SkipSelfMetadata, InjectMetadata } from 'angular2/src/core/di/metadata';
 import { AttributeMetadata, QueryMetadata } from 'angular2/src/core/metadata/di';
 import { ReflectorReader } from 'angular2/src/core/reflection/reflector_reader';
+import { isProviderLiteral, createProvider } from '../core/di/provider_util';
 export let CompileMetadataResolver = class CompileMetadataResolver {
     constructor(_directiveResolver, _pipeResolver, _viewResolver, _platformDirectives, _platformPipes, _reflector) {
         this._directiveResolver = _directiveResolver;
@@ -277,6 +278,9 @@ export let CompileMetadataResolver = class CompileMetadataResolver {
             }
             else if (provider instanceof Provider) {
                 return this.getProviderMetadata(provider);
+            }
+            else if (isProviderLiteral(provider)) {
+                return this.getProviderMetadata(createProvider(provider));
             }
             else {
                 return this.getTypeMetadata(provider, staticTypeModuleUrl(provider));

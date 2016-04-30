@@ -1,6 +1,5 @@
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { Injector, THROW_IF_NOT_FOUND } from 'angular2/src/core/di/injector';
-const _UNDEFINED = CONST_EXPR(new Object());
+const _UNDEFINED = new Object();
 export class ElementInjector extends Injector {
     constructor(_view, _nodeIndex) {
         super();

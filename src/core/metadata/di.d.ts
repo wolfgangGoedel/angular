@@ -16,6 +16,7 @@ import { DependencyMetadata } from 'angular2/src/core/di/metadata';
  * A decorator can inject string literal `text` like so:
  *
  * {@example core/ts/metadata/metadata.ts region='attributeMetadata'}
+ * @ts2dart_const
  */
 export declare class AttributeMetadata extends DependencyMetadata {
     attributeName: string;
@@ -129,6 +130,7 @@ export declare class AttributeMetadata extends DependencyMetadata {
  *
  * The injected object is an unmodifiable live list.
  * See {@link QueryList} for more details.
+ * @ts2dart_const
  */
 export declare class QueryMetadata extends DependencyMetadata {
     private _selector;
@@ -185,6 +187,7 @@ export declare class QueryMetadata extends DependencyMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 export declare class ContentChildrenMetadata extends QueryMetadata {
     constructor(_selector: Type | string, {descendants, read}?: {
@@ -211,6 +214,7 @@ export declare class ContentChildrenMetadata extends QueryMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 export declare class ContentChildMetadata extends QueryMetadata {
     constructor(_selector: Type | string, {read}?: {
@@ -251,6 +255,7 @@ export declare class ContentChildMetadata extends QueryMetadata {
  *
  * The injected object is an iterable and observable live list.
  * See {@link QueryList} for more details.
+ * @ts2dart_const
  */
 export declare class ViewQueryMetadata extends QueryMetadata {
     constructor(_selector: Type | string, {descendants, first, read}?: {
@@ -340,6 +345,7 @@ export declare class ViewQueryMetadata extends QueryMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 export declare class ViewChildrenMetadata extends ViewQueryMetadata {
     constructor(_selector: Type | string, {read}?: {
@@ -415,6 +421,7 @@ export declare class ViewChildrenMetadata extends ViewQueryMetadata {
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 export declare class ViewChildMetadata extends ViewQueryMetadata {
     constructor(_selector: Type | string, {read}?: {

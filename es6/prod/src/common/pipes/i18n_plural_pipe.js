@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { CONST, isStringMap, StringWrapper, isPresent, RegExpWrapper } from 'angular2/src/facade/lang';
+import { isStringMap, StringWrapper, isPresent, RegExpWrapper } from 'angular2/src/facade/lang';
 import { Injectable, Pipe } from 'angular2/core';
 import { InvalidPipeArgumentException } from './invalid_pipe_argument_exception';
 var interpolationExp = RegExpWrapper.create('#');
@@ -56,7 +56,6 @@ export let I18nPluralPipe = I18nPluralPipe_1 = class I18nPluralPipe {
     }
 };
 I18nPluralPipe = I18nPluralPipe_1 = __decorate([
-    CONST(),
     Pipe({ name: 'i18nPlural', pure: true }),
     Injectable(), 
     __metadata('design:paramtypes', [])

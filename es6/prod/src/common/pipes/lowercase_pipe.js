@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { isString, CONST, isBlank } from 'angular2/src/facade/lang';
+import { isString, isBlank } from 'angular2/src/facade/lang';
 import { Injectable, Pipe } from 'angular2/core';
 import { InvalidPipeArgumentException } from './invalid_pipe_argument_exception';
 /**
@@ -29,7 +29,6 @@ export let LowerCasePipe = LowerCasePipe_1 = class LowerCasePipe {
     }
 };
 LowerCasePipe = LowerCasePipe_1 = __decorate([
-    CONST(),
     Pipe({ name: 'lowercase' }),
     Injectable(), 
     __metadata('design:paramtypes', [])

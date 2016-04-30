@@ -1,7 +1,7 @@
-import { ElementRef, Renderer, Provider, OnInit, OnDestroy, Injector } from 'angular2/core';
+import { ElementRef, Renderer, OnInit, OnDestroy, Injector } from 'angular2/core';
 import { ControlValueAccessor } from 'angular2/src/common/forms/directives/control_value_accessor';
 import { NgControl } from 'angular2/src/common/forms/directives/ng_control';
-export declare const RADIO_VALUE_ACCESSOR: Provider;
+export declare const RADIO_VALUE_ACCESSOR: any;
 /**
  * Internal class used by Angular to uncheck radio buttons with the matching name.
  */

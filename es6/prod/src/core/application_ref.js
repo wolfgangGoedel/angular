@@ -8,8 +8,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { NgZone } from 'angular2/src/core/zone/ng_zone';
-import { isBlank, isPresent, assertionsEnabled, CONST_EXPR, lockMode, isPromise } from 'angular2/src/facade/lang';
-import { Provider, Injector, Injectable } from 'angular2/src/core/di';
+import { isBlank, isPresent, assertionsEnabled, lockMode, isPromise } from 'angular2/src/facade/lang';
+import { Injector, Injectable } from 'angular2/src/core/di';
 import { PLATFORM_INITIALIZER, APP_INITIALIZER } from './application_tokens';
 import { PromiseWrapper, ObservableWrapper } from 'angular2/src/facade/async';
 import { ListWrapper } from 'angular2/src/facade/collection';
@@ -329,12 +329,17 @@ ApplicationRef_ = ApplicationRef_1 = __decorate([
 /**
  * @internal
  */
-export const PLATFORM_CORE_PROVIDERS = CONST_EXPR([PlatformRef_, CONST_EXPR(new Provider(PlatformRef, { useExisting: PlatformRef_ }))]);
+export const PLATFORM_CORE_PROVIDERS = 
+/*@ts2dart_const*/ [
+    PlatformRef_,
+    /*@ts2dart_const*/ (
+    /* @ts2dart_Provider */ { provide: PlatformRef, useExisting: PlatformRef_ })
+];
 /**
  * @internal
  */
-export const APPLICATION_CORE_PROVIDERS = CONST_EXPR([
-    CONST_EXPR(new Provider(NgZone, { useFactory: createNgZone, deps: CONST_EXPR([]) })),
+export const APPLICATION_CORE_PROVIDERS = [
+    /* @ts2dart_Provider */ { provide: NgZone, useFactory: createNgZone, deps: [] },
     ApplicationRef_,
-    CONST_EXPR(new Provider(ApplicationRef, { useExisting: ApplicationRef_ }))
-]);
+    /* @ts2dart_Provider */ { provide: ApplicationRef, useExisting: ApplicationRef_ }
+];

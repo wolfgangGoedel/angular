@@ -1,5 +1,5 @@
-import { CONST_EXPR, isBlank } from 'angular2/src/facade/lang';
-const EMPTY_CONTEXT = CONST_EXPR(new Object());
+import { isBlank } from 'angular2/src/facade/lang';
+const EMPTY_CONTEXT = new Object();
 /**
  * Represents an Embedded Template that can be used to instantiate Embedded Views.
  *

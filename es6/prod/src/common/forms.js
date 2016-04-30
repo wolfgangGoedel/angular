@@ -32,7 +32,6 @@ export { RequiredValidator, MinLengthValidator, MaxLengthValidator, PatternValid
 export { FormBuilder } from './forms/form_builder';
 import { FormBuilder } from './forms/form_builder';
 import { RadioControlRegistry } from './forms/directives/radio_control_value_accessor';
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 /**
  * Shorthand set of providers used for building Angular forms.
  *
@@ -42,7 +41,7 @@ import { CONST_EXPR } from 'angular2/src/facade/lang';
  * bootstrap(MyApp, [FORM_PROVIDERS]);
  * ```
  */
-export const FORM_PROVIDERS = CONST_EXPR([FormBuilder, RadioControlRegistry]);
+export const FORM_PROVIDERS = [FormBuilder, RadioControlRegistry];
 /**
  * See {@link FORM_PROVIDERS} instead.
  *

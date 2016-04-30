@@ -10,12 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { Injectable, Inject, OpaqueToken } from 'angular2/src/core/di';
 import { NgZone } from 'angular2/src/core/zone/ng_zone';
 import { ListWrapper } from 'angular2/src/facade/collection';
-export const EVENT_MANAGER_PLUGINS = CONST_EXPR(new OpaqueToken("EventManagerPlugins"));
+export const EVENT_MANAGER_PLUGINS = 
+/*@ts2dart_const*/ new OpaqueToken("EventManagerPlugins");
 export let EventManager = class EventManager {
     constructor(plugins, _zone) {
         this._zone = _zone;

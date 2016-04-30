@@ -226,21 +226,20 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
   return module.exports;
 });
 
-System.register("angular2/router/router_link_dsl", ["angular2/compiler", "angular2/core", "angular2/src/router/directives/router_link_transform", "angular2/src/facade/lang", "angular2/src/router/directives/router_link_transform"], true, function(require, exports, module) {
+System.register("angular2/router/router_link_dsl", ["angular2/compiler", "angular2/src/router/directives/router_link_transform", "angular2/src/router/directives/router_link_transform"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var compiler_1 = require("angular2/compiler");
-  var core_1 = require("angular2/core");
   var router_link_transform_1 = require("angular2/src/router/directives/router_link_transform");
-  var lang_1 = require("angular2/src/facade/lang");
   var router_link_transform_2 = require("angular2/src/router/directives/router_link_transform");
   exports.RouterLinkTransform = router_link_transform_2.RouterLinkTransform;
-  exports.ROUTER_LINK_DSL_PROVIDER = lang_1.CONST_EXPR(new core_1.Provider(compiler_1.TEMPLATE_TRANSFORMS, {
+  exports.ROUTER_LINK_DSL_PROVIDER = {
+    provide: compiler_1.TEMPLATE_TRANSFORMS,
     useClass: router_link_transform_1.RouterLinkTransform,
     multi: true
-  }));
+  };
   global.define = __define;
   return module.exports;
 });
@@ -498,7 +497,7 @@ System.register("angular2/src/platform/browser/location/path_location_strategy",
   return module.exports;
 });
 
-System.register("angular2/src/router/route_config/route_config_impl", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/router/route_config/route_config_impl", [], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -512,29 +511,11 @@ System.register("angular2/src/router/route_config/route_config_impl", ["angular2
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
   var __make_dart_analyzer_happy = null;
   var RouteConfig = (function() {
     function RouteConfig(configs) {
       this.configs = configs;
     }
-    RouteConfig = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Array])], RouteConfig);
     return RouteConfig;
   }());
   exports.RouteConfig = RouteConfig;
@@ -553,7 +534,6 @@ System.register("angular2/src/router/route_config/route_config_impl", ["angular2
       this.serializer = serializer;
       this.data = data;
     }
-    AbstractRoute = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], AbstractRoute);
     return AbstractRoute;
   }());
   exports.AbstractRoute = AbstractRoute;
@@ -578,7 +558,6 @@ System.register("angular2/src/router/route_config/route_config_impl", ["angular2
       this.aux = null;
       this.component = component;
     }
-    Route = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], Route);
     return Route;
   }(AbstractRoute));
   exports.Route = Route;
@@ -602,7 +581,6 @@ System.register("angular2/src/router/route_config/route_config_impl", ["angular2
       });
       this.component = component;
     }
-    AuxRoute = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], AuxRoute);
     return AuxRoute;
   }(AbstractRoute));
   exports.AuxRoute = AuxRoute;
@@ -627,7 +605,6 @@ System.register("angular2/src/router/route_config/route_config_impl", ["angular2
       this.aux = null;
       this.loader = loader;
     }
-    AsyncRoute = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], AsyncRoute);
     return AsyncRoute;
   }(AbstractRoute));
   exports.AsyncRoute = AsyncRoute;
@@ -651,7 +628,6 @@ System.register("angular2/src/router/route_config/route_config_impl", ["angular2
       });
       this.redirectTo = redirectTo;
     }
-    Redirect = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], Redirect);
     return Redirect;
   }(AbstractRoute));
   exports.Redirect = Redirect;
@@ -700,10 +676,10 @@ System.register("angular2/src/router/url_parser", ["angular2/src/facade/collecti
         child = null;
       }
       if (auxiliary === void 0) {
-        auxiliary = lang_1.CONST_EXPR([]);
+        auxiliary = [];
       }
       if (params === void 0) {
-        params = lang_1.CONST_EXPR({});
+        params = {};
       }
       this.path = path;
       this.child = child;
@@ -741,7 +717,7 @@ System.register("angular2/src/router/url_parser", ["angular2/src/facade/collecti
         child = null;
       }
       if (auxiliary === void 0) {
-        auxiliary = lang_1.CONST_EXPR([]);
+        auxiliary = [];
       }
       if (params === void 0) {
         params = null;
@@ -949,7 +925,7 @@ System.register("angular2/src/router/instruction", ["angular2/src/facade/collect
   var RouteData = (function() {
     function RouteData(data) {
       if (data === void 0) {
-        data = lang_1.CONST_EXPR({});
+        data = {};
       }
       this.data = data;
     }
@@ -1076,7 +1052,7 @@ System.register("angular2/src/router/instruction", ["angular2/src/facade/collect
         _urlPath = '';
       }
       if (_urlParams === void 0) {
-        _urlParams = lang_1.CONST_EXPR([]);
+        _urlParams = [];
       }
       _super.call(this, null, null, {});
       this._resolver = _resolver;
@@ -1352,33 +1328,15 @@ System.register("angular2/src/router/route_config/route_config_decorator", ["ang
   return module.exports;
 });
 
-System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", [], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
   var RouteLifecycleHook = (function() {
     function RouteLifecycleHook(name) {
       this.name = name;
     }
-    RouteLifecycleHook = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], RouteLifecycleHook);
     return RouteLifecycleHook;
   }());
   exports.RouteLifecycleHook = RouteLifecycleHook;
@@ -1386,15 +1344,14 @@ System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", ["an
     function CanActivate(fn) {
       this.fn = fn;
     }
-    CanActivate = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], CanActivate);
     return CanActivate;
   }());
   exports.CanActivate = CanActivate;
-  exports.routerCanReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
-  exports.routerCanDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
-  exports.routerOnActivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
-  exports.routerOnReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
-  exports.routerOnDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));
+  exports.routerCanReuse = new RouteLifecycleHook("routerCanReuse");
+  exports.routerCanDeactivate = new RouteLifecycleHook("routerCanDeactivate");
+  exports.routerOnActivate = new RouteLifecycleHook("routerOnActivate");
+  exports.routerOnReuse = new RouteLifecycleHook("routerOnReuse");
+  exports.routerOnDeactivate = new RouteLifecycleHook("routerOnDeactivate");
   global.define = __define;
   return module.exports;
 });
@@ -1494,7 +1451,7 @@ System.register("angular2/src/router/directives/router_link", ["angular2/core", 
   return module.exports;
 });
 
-System.register("angular2/src/router/router_providers_common", ["angular2/platform/common", "angular2/src/router/router", "angular2/src/router/route_registry", "angular2/src/facade/lang", "angular2/core", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+System.register("angular2/src/router/router_providers_common", ["angular2/platform/common", "angular2/src/router/router", "angular2/src/router/route_registry", "angular2/core", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -1502,16 +1459,20 @@ System.register("angular2/src/router/router_providers_common", ["angular2/platfo
   var common_1 = require("angular2/platform/common");
   var router_1 = require("angular2/src/router/router");
   var route_registry_1 = require("angular2/src/router/route_registry");
-  var lang_1 = require("angular2/src/facade/lang");
   var core_1 = require("angular2/core");
   var exceptions_1 = require("angular2/src/facade/exceptions");
-  exports.ROUTER_PROVIDERS_COMMON = lang_1.CONST_EXPR([route_registry_1.RouteRegistry, lang_1.CONST_EXPR(new core_1.Provider(common_1.LocationStrategy, {useClass: common_1.PathLocationStrategy})), common_1.Location, lang_1.CONST_EXPR(new core_1.Provider(router_1.Router, {
+  exports.ROUTER_PROVIDERS_COMMON = [route_registry_1.RouteRegistry, {
+    provide: common_1.LocationStrategy,
+    useClass: common_1.PathLocationStrategy
+  }, common_1.Location, {
+    provide: router_1.Router,
     useFactory: routerFactory,
-    deps: lang_1.CONST_EXPR([route_registry_1.RouteRegistry, common_1.Location, route_registry_1.ROUTER_PRIMARY_COMPONENT, core_1.ApplicationRef])
-  })), lang_1.CONST_EXPR(new core_1.Provider(route_registry_1.ROUTER_PRIMARY_COMPONENT, {
+    deps: [route_registry_1.RouteRegistry, common_1.Location, route_registry_1.ROUTER_PRIMARY_COMPONENT, core_1.ApplicationRef]
+  }, {
+    provide: route_registry_1.ROUTER_PRIMARY_COMPONENT,
     useFactory: routerPrimaryComponentFactory,
-    deps: lang_1.CONST_EXPR([core_1.ApplicationRef])
-  }))]);
+    deps: ([core_1.ApplicationRef])
+  }];
   function routerFactory(registry, location, primaryComponent, appRef) {
     var rootRouter = new router_1.RootRouter(registry, location, primaryComponent);
     appRef.registerDisposeListener(function() {
@@ -2513,17 +2474,18 @@ System.register("angular2/src/router/rules/rule_set", ["angular2/src/facade/lang
   return module.exports;
 });
 
-System.register("angular2/src/router/router_providers", ["angular2/src/router/router_providers_common", "angular2/core", "angular2/src/platform/browser/location/browser_platform_location", "angular2/platform/common", "angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/router/router_providers", ["angular2/src/router/router_providers_common", "angular2/src/platform/browser/location/browser_platform_location", "angular2/platform/common"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var router_providers_common_1 = require("angular2/src/router/router_providers_common");
-  var core_1 = require("angular2/core");
   var browser_platform_location_1 = require("angular2/src/platform/browser/location/browser_platform_location");
   var common_1 = require("angular2/platform/common");
-  var lang_1 = require("angular2/src/facade/lang");
-  exports.ROUTER_PROVIDERS = lang_1.CONST_EXPR([router_providers_common_1.ROUTER_PROVIDERS_COMMON, lang_1.CONST_EXPR(new core_1.Provider(common_1.PlatformLocation, {useClass: browser_platform_location_1.BrowserPlatformLocation}))]);
+  exports.ROUTER_PROVIDERS = [router_providers_common_1.ROUTER_PROVIDERS_COMMON, ({
+    provide: common_1.PlatformLocation,
+    useClass: browser_platform_location_1.BrowserPlatformLocation
+  })];
   exports.ROUTER_BINDINGS = exports.ROUTER_PROVIDERS;
   global.define = __define;
   return module.exports;
@@ -2568,7 +2530,7 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
   var route_config_normalizer_1 = require("angular2/src/router/route_config/route_config_normalizer");
   var url_parser_1 = require("angular2/src/router/url_parser");
   var _resolveToNull = async_1.PromiseWrapper.resolve(null);
-  exports.ROUTER_PRIMARY_COMPONENT = lang_1.CONST_EXPR(new core_1.OpaqueToken('RouterPrimaryComponent'));
+  exports.ROUTER_PRIMARY_COMPONENT = new core_1.OpaqueToken('RouterPrimaryComponent');
   var RouteRegistry = (function() {
     function RouteRegistry(_rootComponent) {
       this._rootComponent = _rootComponent;
@@ -2911,19 +2873,18 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
   return module.exports;
 });
 
-System.register("angular2/src/platform/browser/location/location_strategy", ["angular2/src/facade/lang", "angular2/core"], true, function(require, exports, module) {
+System.register("angular2/src/platform/browser/location/location_strategy", ["angular2/core"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
   var core_1 = require("angular2/core");
   var LocationStrategy = (function() {
     function LocationStrategy() {}
     return LocationStrategy;
   }());
   exports.LocationStrategy = LocationStrategy;
-  exports.APP_BASE_HREF = lang_1.CONST_EXPR(new core_1.OpaqueToken('appBaseHref'));
+  exports.APP_BASE_HREF = new core_1.OpaqueToken('appBaseHref');
   global.define = __define;
   return module.exports;
 });
@@ -3417,7 +3378,7 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
   return module.exports;
 });
 
-System.register("angular2/router", ["angular2/src/router/router", "angular2/src/router/directives/router_outlet", "angular2/src/router/directives/router_link", "angular2/src/router/instruction", "angular2/src/router/route_registry", "angular2/src/router/route_config/route_config_decorator", "angular2/src/router/lifecycle/lifecycle_annotations", "angular2/src/router/instruction", "angular2/core", "angular2/src/router/router_providers_common", "angular2/src/router/router_providers", "angular2/src/router/directives/router_outlet", "angular2/src/router/directives/router_link", "angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/router", ["angular2/src/router/router", "angular2/src/router/directives/router_outlet", "angular2/src/router/directives/router_link", "angular2/src/router/instruction", "angular2/src/router/route_registry", "angular2/src/router/route_config/route_config_decorator", "angular2/src/router/lifecycle/lifecycle_annotations", "angular2/src/router/instruction", "angular2/core", "angular2/src/router/router_providers_common", "angular2/src/router/router_providers", "angular2/src/router/directives/router_outlet", "angular2/src/router/directives/router_link"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -3454,8 +3415,7 @@ System.register("angular2/router", ["angular2/src/router/router", "angular2/src/
   exports.ROUTER_BINDINGS = router_providers_1.ROUTER_BINDINGS;
   var router_outlet_2 = require("angular2/src/router/directives/router_outlet");
   var router_link_2 = require("angular2/src/router/directives/router_link");
-  var lang_1 = require("angular2/src/facade/lang");
-  exports.ROUTER_DIRECTIVES = lang_1.CONST_EXPR([router_outlet_2.RouterOutlet, router_link_2.RouterLink]);
+  exports.ROUTER_DIRECTIVES = [router_outlet_2.RouterOutlet, router_link_2.RouterLink];
   global.define = __define;
   return module.exports;
 });

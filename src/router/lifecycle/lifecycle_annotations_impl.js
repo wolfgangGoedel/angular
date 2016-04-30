@@ -1,39 +1,28 @@
 'use strict';"use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var lang_1 = require('angular2/src/facade/lang');
+/* @ts2dart_const */
 var RouteLifecycleHook = (function () {
     function RouteLifecycleHook(name) {
         this.name = name;
     }
-    RouteLifecycleHook = __decorate([
-        lang_1.CONST(), 
-        __metadata('design:paramtypes', [String])
-    ], RouteLifecycleHook);
     return RouteLifecycleHook;
 }());
 exports.RouteLifecycleHook = RouteLifecycleHook;
+/* @ts2dart_const */
 var CanActivate = (function () {
     function CanActivate(fn) {
         this.fn = fn;
     }
-    CanActivate = __decorate([
-        lang_1.CONST(), 
-        __metadata('design:paramtypes', [Function])
-    ], CanActivate);
     return CanActivate;
 }());
 exports.CanActivate = CanActivate;
-exports.routerCanReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
-exports.routerCanDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
-exports.routerOnActivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
-exports.routerOnReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
-exports.routerOnDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGlmZWN5Y2xlX2Fubm90YXRpb25zX2ltcGwuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJkaWZmaW5nX3BsdWdpbl93cmFwcGVyLW91dHB1dF9wYXRoLXp2WnZKdkZGLnRtcC9hbmd1bGFyMi9zcmMvcm91dGVyL2xpZmVjeWNsZS9saWZlY3ljbGVfYW5ub3RhdGlvbnNfaW1wbC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBQUEscUJBQWdDLDBCQUEwQixDQUFDLENBQUE7QUFHM0Q7SUFDRSw0QkFBbUIsSUFBWTtRQUFaLFNBQUksR0FBSixJQUFJLENBQVE7SUFBRyxDQUFDO0lBRnJDO1FBQUMsWUFBSyxFQUFFOzswQkFBQTtJQUdSLHlCQUFDO0FBQUQsQ0FBQyxBQUZELElBRUM7QUFGWSwwQkFBa0IscUJBRTlCLENBQUE7QUFHRDtJQUNFLHFCQUFtQixFQUFZO1FBQVosT0FBRSxHQUFGLEVBQUUsQ0FBVTtJQUFHLENBQUM7SUFGckM7UUFBQyxZQUFLLEVBQUU7O21CQUFBO0lBR1Isa0JBQUM7QUFBRCxDQUFDLEFBRkQsSUFFQztBQUZZLG1CQUFXLGNBRXZCLENBQUE7QUFFWSxzQkFBYyxHQUN2QixpQkFBVSxDQUFDLElBQUksa0JBQWtCLENBQUMsZ0JBQWdCLENBQUMsQ0FBQyxDQUFDO0FBQzVDLDJCQUFtQixHQUM1QixpQkFBVSxDQUFDLElBQUksa0JBQWtCLENBQUMscUJBQXFCLENBQUMsQ0FBQyxDQUFDO0FBQ2pELHdCQUFnQixHQUN6QixpQkFBVSxDQUFDLElBQUksa0JBQWtCLENBQUMsa0JBQWtCLENBQUMsQ0FBQyxDQUFDO0FBQzlDLHFCQUFhLEdBQ3RCLGlCQUFVLENBQUMsSUFBSSxrQkFBa0IsQ0FBQyxlQUFlLENBQUMsQ0FBQyxDQUFDO0FBQzNDLDBCQUFrQixHQUMzQixpQkFBVSxDQUFDLElBQUksa0JBQWtCLENBQUMsb0JBQW9CLENBQUMsQ0FBQyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHtDT05TVCwgQ09OU1RfRVhQUn0gZnJvbSAnYW5ndWxhcjIvc3JjL2ZhY2FkZS9sYW5nJztcblxuQENPTlNUKClcbmV4cG9ydCBjbGFzcyBSb3V0ZUxpZmVjeWNsZUhvb2sge1xuICBjb25zdHJ1Y3RvcihwdWJsaWMgbmFtZTogc3RyaW5nKSB7fVxufVxuXG5AQ09OU1QoKVxuZXhwb3J0IGNsYXNzIENhbkFjdGl2YXRlIHtcbiAgY29uc3RydWN0b3IocHVibGljIGZuOiBGdW5jdGlvbikge31cbn1cblxuZXhwb3J0IGNvbnN0IHJvdXRlckNhblJldXNlOiBSb3V0ZUxpZmVjeWNsZUhvb2sgPVxuICAgIENPTlNUX0VYUFIobmV3IFJvdXRlTGlmZWN5Y2xlSG9vayhcInJvdXRlckNhblJldXNlXCIpKTtcbmV4cG9ydCBjb25zdCByb3V0ZXJDYW5EZWFjdGl2YXRlOiBSb3V0ZUxpZmVjeWNsZUhvb2sgPVxuICAgIENPTlNUX0VYUFIobmV3IFJvdXRlTGlmZWN5Y2xlSG9vayhcInJvdXRlckNhbkRlYWN0aXZhdGVcIikpO1xuZXhwb3J0IGNvbnN0IHJvdXRlck9uQWN0aXZhdGU6IFJvdXRlTGlmZWN5Y2xlSG9vayA9XG4gICAgQ09OU1RfRVhQUihuZXcgUm91dGVMaWZlY3ljbGVIb29rKFwicm91dGVyT25BY3RpdmF0ZVwiKSk7XG5leHBvcnQgY29uc3Qgcm91dGVyT25SZXVzZTogUm91dGVMaWZlY3ljbGVIb29rID1cbiAgICBDT05TVF9FWFBSKG5ldyBSb3V0ZUxpZmVjeWNsZUhvb2soXCJyb3V0ZXJPblJldXNlXCIpKTtcbmV4cG9ydCBjb25zdCByb3V0ZXJPbkRlYWN0aXZhdGU6IFJvdXRlTGlmZWN5Y2xlSG9vayA9XG4gICAgQ09OU1RfRVhQUihuZXcgUm91dGVMaWZlY3ljbGVIb29rKFwicm91dGVyT25EZWFjdGl2YXRlXCIpKTtcbiJdfQ==
+exports.routerCanReuse = 
+/*@ts2dart_const*/ new RouteLifecycleHook("routerCanReuse");
+exports.routerCanDeactivate = 
+/*@ts2dart_const*/ new RouteLifecycleHook("routerCanDeactivate");
+exports.routerOnActivate = 
+/*@ts2dart_const*/ new RouteLifecycleHook("routerOnActivate");
+exports.routerOnReuse = 
+/*@ts2dart_const*/ new RouteLifecycleHook("routerOnReuse");
+exports.routerOnDeactivate = 
+/*@ts2dart_const*/ new RouteLifecycleHook("routerOnDeactivate");
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGlmZWN5Y2xlX2Fubm90YXRpb25zX2ltcGwuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJkaWZmaW5nX3BsdWdpbl93cmFwcGVyLW91dHB1dF9wYXRoLXVrV3hyZ2V6LnRtcC9hbmd1bGFyMi9zcmMvcm91dGVyL2xpZmVjeWNsZS9saWZlY3ljbGVfYW5ub3RhdGlvbnNfaW1wbC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiO0FBQ0Esb0JBQW9CO0FBQ3BCO0lBQ0UsNEJBQW1CLElBQVk7UUFBWixTQUFJLEdBQUosSUFBSSxDQUFRO0lBQUcsQ0FBQztJQUNyQyx5QkFBQztBQUFELENBQUMsQUFGRCxJQUVDO0FBRlksMEJBQWtCLHFCQUU5QixDQUFBO0FBRUQsb0JBQW9CO0FBQ3BCO0lBQ0UscUJBQW1CLEVBQVk7UUFBWixPQUFFLEdBQUYsRUFBRSxDQUFVO0lBQUcsQ0FBQztJQUNyQyxrQkFBQztBQUFELENBQUMsQUFGRCxJQUVDO0FBRlksbUJBQVcsY0FFdkIsQ0FBQTtBQUVZLHNCQUFjO0FBQ3ZCLGtCQUFrQixDQUFDLElBQUksa0JBQWtCLENBQUMsZ0JBQWdCLENBQUMsQ0FBQztBQUNuRCwyQkFBbUI7QUFDNUIsa0JBQWtCLENBQUMsSUFBSSxrQkFBa0IsQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDO0FBQ3hELHdCQUFnQjtBQUN6QixrQkFBa0IsQ0FBQyxJQUFJLGtCQUFrQixDQUFDLGtCQUFrQixDQUFDLENBQUM7QUFDckQscUJBQWE7QUFDdEIsa0JBQWtCLENBQUMsSUFBSSxrQkFBa0IsQ0FBQyxlQUFlLENBQUMsQ0FBQztBQUNsRCwwQkFBa0I7QUFDM0Isa0JBQWtCLENBQUMsSUFBSSxrQkFBa0IsQ0FBQyxvQkFBb0IsQ0FBQyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiXG4vKiBAdHMyZGFydF9jb25zdCAqL1xuZXhwb3J0IGNsYXNzIFJvdXRlTGlmZWN5Y2xlSG9vayB7XG4gIGNvbnN0cnVjdG9yKHB1YmxpYyBuYW1lOiBzdHJpbmcpIHt9XG59XG5cbi8qIEB0czJkYXJ0X2NvbnN0ICovXG5leHBvcnQgY2xhc3MgQ2FuQWN0aXZhdGUge1xuICBjb25zdHJ1Y3RvcihwdWJsaWMgZm46IEZ1bmN0aW9uKSB7fVxufVxuXG5leHBvcnQgY29uc3Qgcm91dGVyQ2FuUmV1c2U6IFJvdXRlTGlmZWN5Y2xlSG9vayA9XG4gICAgLypAdHMyZGFydF9jb25zdCovIG5ldyBSb3V0ZUxpZmVjeWNsZUhvb2soXCJyb3V0ZXJDYW5SZXVzZVwiKTtcbmV4cG9ydCBjb25zdCByb3V0ZXJDYW5EZWFjdGl2YXRlOiBSb3V0ZUxpZmVjeWNsZUhvb2sgPVxuICAgIC8qQHRzMmRhcnRfY29uc3QqLyBuZXcgUm91dGVMaWZlY3ljbGVIb29rKFwicm91dGVyQ2FuRGVhY3RpdmF0ZVwiKTtcbmV4cG9ydCBjb25zdCByb3V0ZXJPbkFjdGl2YXRlOiBSb3V0ZUxpZmVjeWNsZUhvb2sgPVxuICAgIC8qQHRzMmRhcnRfY29uc3QqLyBuZXcgUm91dGVMaWZlY3ljbGVIb29rKFwicm91dGVyT25BY3RpdmF0ZVwiKTtcbmV4cG9ydCBjb25zdCByb3V0ZXJPblJldXNlOiBSb3V0ZUxpZmVjeWNsZUhvb2sgPVxuICAgIC8qQHRzMmRhcnRfY29uc3QqLyBuZXcgUm91dGVMaWZlY3ljbGVIb29rKFwicm91dGVyT25SZXVzZVwiKTtcbmV4cG9ydCBjb25zdCByb3V0ZXJPbkRlYWN0aXZhdGU6IFJvdXRlTGlmZWN5Y2xlSG9vayA9XG4gICAgLypAdHMyZGFydF9jb25zdCovIG5ldyBSb3V0ZUxpZmVjeWNsZUhvb2soXCJyb3V0ZXJPbkRlYWN0aXZhdGVcIik7XG4iXX0=

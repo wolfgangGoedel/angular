@@ -1,13 +1,4 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-import { normalizeBool, CONST, isType, isBlank, isFunction, stringify } from 'angular2/src/facade/lang';
+import { normalizeBool, isType, isBlank, isFunction, stringify } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 /**
  * Describes how the {@link Injector} should instantiate a given token.
@@ -23,8 +14,9 @@ import { BaseException } from 'angular2/src/facade/exceptions';
  *
  * expect(injector.get("message")).toEqual('Hello');
  * ```
+ * @ts2dart_const
  */
-export let Provider = class Provider {
+export class Provider {
     constructor(token, { useClass, useValue, useExisting, useFactory, deps, multi }) {
         this.token = token;
         this.useClass = useClass;
@@ -65,17 +57,14 @@ export let Provider = class Provider {
      * ```
      */
     get multi() { return normalizeBool(this._multi); }
-};
-Provider = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object, Object])
-], Provider);
+}
 /**
  * See {@link Provider} instead.
  *
  * @deprecated
+ * @ts2dart_const
  */
-export let Binding = class Binding extends Provider {
+export class Binding extends Provider {
     constructor(token, { toClass, toValue, toAlias, toFactory, deps, multi }) {
         super(token, {
             useClass: toClass,
@@ -102,11 +91,7 @@ export let Binding = class Binding extends Provider {
      * @deprecated
      */
     get toValue() { return this.useValue; }
-};
-Binding = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object, Object])
-], Binding);
+}
 /**
  * Creates a {@link Provider}.
  *

@@ -1,6 +1,7 @@
 import { ChangeDetectorRef } from '../change_detector_ref';
 import { KeyValueDiffer, KeyValueDifferFactory } from '../differs/keyvalue_differs';
 export declare class DefaultKeyValueDifferFactory implements KeyValueDifferFactory {
+    constructor();
     supports(obj: any): boolean;
     create(cdRef: ChangeDetectorRef): KeyValueDiffer;
 }

@@ -1,29 +1,17 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-import { CONST } from 'angular2/src/facade/lang';
 var __make_dart_analyzer_happy = null;
 /**
  * The `RouteConfig` decorator defines routes for a given component.
  *
  * It takes an array of {@link RouteDefinition}s.
+ * @ts2dart_const
  */
-export let RouteConfig = class RouteConfig {
+export class RouteConfig {
     constructor(configs) {
         this.configs = configs;
     }
-};
-RouteConfig = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Array])
-], RouteConfig);
-export let AbstractRoute = class AbstractRoute {
+}
+/* @ts2dart_const */
+export class AbstractRoute {
     constructor({ name, useAsDefault, path, regex, serializer, data }) {
         this.name = name;
         this.useAsDefault = useAsDefault;
@@ -32,11 +20,7 @@ export let AbstractRoute = class AbstractRoute {
         this.serializer = serializer;
         this.data = data;
     }
-};
-AbstractRoute = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], AbstractRoute);
+}
 /**
  * `Route` is a type of {@link RouteDefinition} used to route a path to a component.
  *
@@ -58,8 +42,9 @@ AbstractRoute = __decorate([
  * ])
  * class MyApp {}
  * ```
+ * @ts2dart_const
  */
-export let Route = class Route extends AbstractRoute {
+export class Route extends AbstractRoute {
     constructor({ name, useAsDefault, path, regex, serializer, data, component }) {
         super({
             name: name,
@@ -72,11 +57,7 @@ export let Route = class Route extends AbstractRoute {
         this.aux = null;
         this.component = component;
     }
-};
-Route = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], Route);
+}
 /**
  * `AuxRoute` is a type of {@link RouteDefinition} used to define an auxiliary route.
  *
@@ -96,8 +77,9 @@ Route = __decorate([
  * ])
  * class MyApp {}
  * ```
+ * @ts2dart_const
  */
-export let AuxRoute = class AuxRoute extends AbstractRoute {
+export class AuxRoute extends AbstractRoute {
     constructor({ name, useAsDefault, path, regex, serializer, data, component }) {
         super({
             name: name,
@@ -109,11 +91,7 @@ export let AuxRoute = class AuxRoute extends AbstractRoute {
         });
         this.component = component;
     }
-};
-AuxRoute = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], AuxRoute);
+}
 /**
  * `AsyncRoute` is a type of {@link RouteDefinition} used to route a path to an asynchronously
  * loaded component.
@@ -137,8 +115,9 @@ AuxRoute = __decorate([
  * ])
  * class MyApp {}
  * ```
+ * @ts2dart_const
  */
-export let AsyncRoute = class AsyncRoute extends AbstractRoute {
+export class AsyncRoute extends AbstractRoute {
     constructor({ name, useAsDefault, path, regex, serializer, data, loader }) {
         super({
             name: name,
@@ -151,11 +130,7 @@ export let AsyncRoute = class AsyncRoute extends AbstractRoute {
         this.aux = null;
         this.loader = loader;
     }
-};
-AsyncRoute = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], AsyncRoute);
+}
 /**
  * `Redirect` is a type of {@link RouteDefinition} used to route a path to a canonical route.
  *
@@ -176,8 +151,9 @@ AsyncRoute = __decorate([
  * ])
  * class MyApp {}
  * ```
+ * @ts2dart_const
  */
-export let Redirect = class Redirect extends AbstractRoute {
+export class Redirect extends AbstractRoute {
     constructor({ name, useAsDefault, path, regex, serializer, data, redirectTo }) {
         super({
             name: name,
@@ -189,8 +165,4 @@ export let Redirect = class Redirect extends AbstractRoute {
         });
         this.redirectTo = redirectTo;
     }
-};
-Redirect = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], Redirect);
+}

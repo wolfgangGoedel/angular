@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { isDate, isNumber, DateWrapper, CONST, isBlank } from 'angular2/src/facade/lang';
+import { isDate, isNumber, DateWrapper, isBlank } from 'angular2/src/facade/lang';
 import { DateFormatter } from 'angular2/src/facade/intl';
 import { Pipe, Injectable } from 'angular2/core';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
@@ -110,7 +110,6 @@ DatePipe._ALIASES = {
     'shortTime': 'jm'
 };
 DatePipe = DatePipe_1 = __decorate([
-    CONST(),
     Pipe({ name: 'date', pure: true }),
     Injectable(), 
     __metadata('design:paramtypes', [])

@@ -8,12 +8,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { Injectable } from 'angular2/src/core/di';
-import { isPresent, isBlank, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent, isBlank } from 'angular2/src/facade/lang';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { DOM } from 'angular2/src/platform/dom/dom_adapter';
 import { splitNsName } from 'angular2/src/compiler/html_tags';
 import { ElementSchemaRegistry } from './element_schema_registry';
-const NAMESPACE_URIS = CONST_EXPR({ 'xlink': 'http://www.w3.org/1999/xlink', 'svg': 'http://www.w3.org/2000/svg' });
+const NAMESPACE_URIS = 
+/*@ts2dart_const*/
+{ 'xlink': 'http://www.w3.org/1999/xlink', 'svg': 'http://www.w3.org/2000/svg' };
 export let DomElementSchemaRegistry = class DomElementSchemaRegistry extends ElementSchemaRegistry {
     constructor(...args) {
         super(...args);

@@ -1,7 +1,7 @@
-import { CONST_EXPR, looseIdentical, isPrimitive } from 'angular2/src/facade/lang';
+import { looseIdentical, isPrimitive } from 'angular2/src/facade/lang';
 import { isListLikeIterable, areIterablesEqual } from 'angular2/src/facade/collection';
 export { looseIdentical } from 'angular2/src/facade/lang';
-export var uninitialized = CONST_EXPR(new Object());
+export var uninitialized = new Object();
 export function devModeEqual(a, b) {
     if (isListLikeIterable(a) && isListLikeIterable(b)) {
         return areIterablesEqual(a, b, devModeEqual);

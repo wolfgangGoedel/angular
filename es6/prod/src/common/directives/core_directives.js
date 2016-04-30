@@ -1,4 +1,3 @@
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { NgClass } from './ng_class';
 import { NgFor } from './ng_for';
 import { NgIf } from './ng_if';
@@ -46,7 +45,7 @@ import { NgPlural, NgPluralCase } from './ng_plural';
  * }
  * ```
  */
-export const CORE_DIRECTIVES = CONST_EXPR([
+export const CORE_DIRECTIVES = [
     NgClass,
     NgFor,
     NgIf,
@@ -57,4 +56,4 @@ export const CORE_DIRECTIVES = CONST_EXPR([
     NgSwitchDefault,
     NgPlural,
     NgPluralCase
-]);
+];

@@ -1,4 +1,4 @@
-import { Type, isBlank, isPresent, CONST_EXPR, isArray } from 'angular2/src/facade/lang';
+import { Type, isBlank, isPresent, isArray } from 'angular2/src/facade/lang';
 import { MapWrapper, ListWrapper } from 'angular2/src/facade/collection';
 import { reflector } from 'angular2/src/core/reflection/reflection';
 import { ReflectiveKey } from './reflective_key';
@@ -6,6 +6,7 @@ import { InjectMetadata, OptionalMetadata, SelfMetadata, HostMetadata, SkipSelfM
 import { NoAnnotationError, MixingMultiProvidersWithRegularProvidersError, InvalidProviderError } from './reflective_exceptions';
 import { resolveForwardRef } from './forward_ref';
 import { Provider, ProviderBuilder, provide } from './provider';
+import { isProviderLiteral, createProvider } from './provider_util';
 /**
  * `Dependency` is used by the framework to extend DI.
  * This is internal to Angular and should not be used directly.
@@ -22,7 +23,7 @@ export class ReflectiveDependency {
         return new ReflectiveDependency(key, false, null, null, []);
     }
 }
-const _EMPTY_LIST = CONST_EXPR([]);
+const _EMPTY_LIST = [];
 export class ResolvedReflectiveProvider_ {
     constructor(key, resolvedFactories, multiProvider) {
         this.key = key;
@@ -132,6 +133,9 @@ function _normalizeProviders(providers, res) {
         }
         else if (b instanceof Provider) {
             res.push(b);
+        }
+        else if (isProviderLiteral(b)) {
+            res.push(createProvider(b));
         }
         else if (b instanceof Array) {
             _normalizeProviders(b, res);

@@ -11,10 +11,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { HammerGesturesPluginCommon } from './hammer_common';
-import { isPresent, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { Injectable, Inject, OpaqueToken } from 'angular2/core';
-export const HAMMER_GESTURE_CONFIG = CONST_EXPR(new OpaqueToken("HammerGestureConfig"));
+export const HAMMER_GESTURE_CONFIG = 
+/*@ts2dart_const*/ new OpaqueToken("HammerGestureConfig");
 export let HammerGestureConfig = class HammerGestureConfig {
     constructor() {
         this.events = [];

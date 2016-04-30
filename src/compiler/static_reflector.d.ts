@@ -1,9 +1,4 @@
 import { ReflectorReader } from 'angular2/src/core/reflection/reflector_reader';
-export declare class ModuleContext {
-    moduleId: string;
-    filePath: string;
-    constructor(moduleId: string, filePath: string);
-}
 /**
  * The host of the static resolver is expected to be able to provide module metadata in the form of
  * ModuleMetadata. Angular 2 CLI will produce this metadata for a module whenever a .d.ts files is
@@ -33,7 +28,7 @@ export interface StaticReflectorHost {
  *
  * This token is unique for a moduleId and name and can be used as a hash table key.
  */
-export declare class StaticSymbol implements ModuleContext {
+export declare class StaticSymbol {
     moduleId: string;
     filePath: string;
     name: string;
@@ -57,7 +52,7 @@ export declare class StaticReflector implements ReflectorReader {
         [key: string]: any;
     };
     parameters(type: StaticSymbol): any[];
-    private registerDecoratorOrConstructor(type, ctor, crossModuleProps?);
+    private registerDecoratorOrConstructor(type, ctor);
     private initializeConversionMap();
     /**
      * @param module an absolute path to a module file.

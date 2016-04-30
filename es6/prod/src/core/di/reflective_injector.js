@@ -1,7 +1,6 @@
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { resolveReflectiveProviders } from './reflective_provider';
 import { AbstractProviderError, NoProviderError, CyclicDependencyError, InstantiationError, OutOfBoundsError } from './reflective_exceptions';
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { BaseException, unimplemented } from 'angular2/src/facade/exceptions';
 import { ReflectiveKey } from './reflective_key';
 import { SelfMetadata, SkipSelfMetadata } from './metadata';
@@ -9,7 +8,7 @@ import { Injector, THROW_IF_NOT_FOUND } from './injector';
 var __unused; // avoid unused import when Type union types are erased
 // Threshold for the dynamic version
 const _MAX_CONSTRUCTION_COUNTER = 10;
-const UNDEFINED = CONST_EXPR(new Object());
+const UNDEFINED = new Object();
 export class ReflectiveProtoInjectorInlineStrategy {
     constructor(protoEI, providers) {
         this.provider0 = null;

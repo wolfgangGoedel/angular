@@ -2,25 +2,18 @@ import { ComponentResolver } from 'angular2/core';
 import { LocationStrategy, PathLocationStrategy, Location } from 'angular2/platform/common';
 import { Router, RouterOutletMap } from './router';
 import { RouterUrlSerializer, DefaultRouterUrlSerializer } from './router_url_serializer';
-import { CONST_EXPR } from 'angular2/src/facade/lang';
-import { ApplicationRef, Provider } from 'angular2/core';
+import { ApplicationRef } from 'angular2/core';
 import { BaseException } from 'angular2/src/facade/exceptions';
-export const ROUTER_PROVIDERS_COMMON = CONST_EXPR([
+export const ROUTER_PROVIDERS_COMMON = [
     RouterOutletMap,
-    CONST_EXPR(new Provider(RouterUrlSerializer, { useClass: DefaultRouterUrlSerializer })),
-    CONST_EXPR(new Provider(LocationStrategy, { useClass: PathLocationStrategy })),
-    Location,
-    CONST_EXPR(new Provider(Router, {
+    /*@ts2dart_Provider*/ { provide: RouterUrlSerializer, useClass: DefaultRouterUrlSerializer },
+    /*@ts2dart_Provider*/ { provide: LocationStrategy, useClass: PathLocationStrategy }, Location,
+    /*@ts2dart_Provider*/ {
+        provide: Router,
         useFactory: routerFactory,
-        deps: CONST_EXPR([
-            ApplicationRef,
-            ComponentResolver,
-            RouterUrlSerializer,
-            RouterOutletMap,
-            Location
-        ])
-    }))
-]);
+        deps: /*@ts2dart_const*/ [ApplicationRef, ComponentResolver, RouterUrlSerializer, RouterOutletMap, Location],
+    },
+];
 function routerFactory(app, componentResolver, urlSerializer, routerOutletMap, location) {
     if (app.componentTypes.length == 0) {
         throw new BaseException("Bootstrap at least one component before injecting Router.");

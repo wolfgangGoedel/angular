@@ -1,5 +1,5 @@
-import { OpaqueToken, Provider } from 'angular2/src/core/di';
-import { CONST_EXPR, Math, StringWrapper } from 'angular2/src/facade/lang';
+import { OpaqueToken } from 'angular2/src/core/di';
+import { Math, StringWrapper } from 'angular2/src/facade/lang';
 /**
  * A DI Token representing a unique string id assigned to the application by Angular and used
  * primarily for prefixing application attributes and CSS styles when
@@ -9,26 +9,34 @@ import { CONST_EXPR, Math, StringWrapper } from 'angular2/src/facade/lang';
  * a custom value via a DI provider <!-- TODO: provider --> configuring the root {@link Injector}
  * using this token.
  */
-export const APP_ID = CONST_EXPR(new OpaqueToken('AppId'));
+export const APP_ID = new OpaqueToken('AppId');
 function _appIdRandomProviderFactory() {
     return `${_randomChar()}${_randomChar()}${_randomChar()}`;
 }
 /**
  * Providers that will generate a random APP_ID_TOKEN.
  */
-export const APP_ID_RANDOM_PROVIDER = CONST_EXPR(new Provider(APP_ID, { useFactory: _appIdRandomProviderFactory, deps: [] }));
+export const APP_ID_RANDOM_PROVIDER = 
+/*@ts2dart_const*/ /* @ts2dart_Provider */ {
+    provide: APP_ID,
+    useFactory: _appIdRandomProviderFactory,
+    deps: []
+};
 function _randomChar() {
     return StringWrapper.fromCharCode(97 + Math.floor(Math.random() * 25));
 }
 /**
  * A function that will be executed when a platform is initialized.
  */
-export const PLATFORM_INITIALIZER = CONST_EXPR(new OpaqueToken("Platform Initializer"));
+export const PLATFORM_INITIALIZER = 
+/*@ts2dart_const*/ new OpaqueToken("Platform Initializer");
 /**
  * A function that will be executed when an application is initialized.
  */
-export const APP_INITIALIZER = CONST_EXPR(new OpaqueToken("Application Initializer"));
+export const APP_INITIALIZER = 
+/*@ts2dart_const*/ new OpaqueToken("Application Initializer");
 /**
  * A token which indicates the root directory of the application
  */
-export const PACKAGE_ROOT_URL = CONST_EXPR(new OpaqueToken("Application Packages Root URL"));
+export const PACKAGE_ROOT_URL = 
+/*@ts2dart_const*/ new OpaqueToken("Application Packages Root URL");

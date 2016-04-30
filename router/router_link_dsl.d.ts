@@ -1,4 +1,4 @@
-import { Provider } from 'angular2/core';
+import { RouterLinkTransform } from 'angular2/src/router/directives/router_link_transform';
 export { RouterLinkTransform } from 'angular2/src/router/directives/router_link_transform';
 /**
  * Enables the router link DSL.
@@ -26,4 +26,8 @@ export { RouterLinkTransform } from 'angular2/src/router/directives/router_link_
  * <a [routerLink]="User[Modal]"> <!-- Same as <a [routerLink]="['User', ['Modal']]"> -->
  * ```
  */
-export declare const ROUTER_LINK_DSL_PROVIDER: Provider;
+export declare const ROUTER_LINK_DSL_PROVIDER: {
+    provide: any;
+    useClass: typeof RouterLinkTransform;
+    multi: boolean;
+};

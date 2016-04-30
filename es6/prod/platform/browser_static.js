@@ -8,7 +8,8 @@ import { coreLoadAndBootstrap, ReflectiveInjector, getPlatform, createPlatform, 
  * when all templates
  * have been precompiled offline.
  */
-export const BROWSER_APP_PROVIDERS = BROWSER_APP_COMMON_PROVIDERS;
+export const BROWSER_APP_PROVIDERS = 
+/*@ts2dart_const*/ BROWSER_APP_COMMON_PROVIDERS;
 export function browserStaticPlatform() {
     if (isBlank(getPlatform())) {
         createPlatform(ReflectiveInjector.resolveAndCreate(BROWSER_PROVIDERS));

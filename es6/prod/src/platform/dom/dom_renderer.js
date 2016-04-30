@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 import { Inject, Injectable } from 'angular2/src/core/di';
 import { AnimationBuilder } from 'angular2/src/animate/animation_builder';
-import { isPresent, isBlank, Json, RegExpWrapper, CONST_EXPR, stringify, StringWrapper, isArray, isString } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, Json, RegExpWrapper, stringify, StringWrapper, isArray, isString } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { DomSharedStylesHost } from './shared_styles_host';
 import { EventManager } from './events/event_manager';
@@ -20,7 +20,9 @@ import { DOCUMENT } from './dom_tokens';
 import { ViewEncapsulation } from 'angular2/src/core/metadata';
 import { DOM } from 'angular2/src/platform/dom/dom_adapter';
 import { camelCaseToDashCase } from './util';
-const NAMESPACE_URIS = CONST_EXPR({ 'xlink': 'http://www.w3.org/1999/xlink', 'svg': 'http://www.w3.org/2000/svg' });
+const NAMESPACE_URIS = 
+/*@ts2dart_const*/
+{ 'xlink': 'http://www.w3.org/1999/xlink', 'svg': 'http://www.w3.org/2000/svg' };
 const TEMPLATE_COMMENT_TEXT = 'template bindings={}';
 var TEMPLATE_BINDINGS_EXP = /^template bindings=(.*)$/g;
 export class DomRootRenderer {

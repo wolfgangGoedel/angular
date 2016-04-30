@@ -10,15 +10,18 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { EventEmitter, ObservableWrapper } from 'angular2/src/facade/async';
-import { Directive, forwardRef, Host, SkipSelf, Provider, Inject, Optional, Self } from 'angular2/core';
+import { Directive, forwardRef, Host, SkipSelf, Inject, Optional, Self } from 'angular2/core';
 import { ControlContainer } from './control_container';
 import { NgControl } from './ng_control';
 import { NG_VALUE_ACCESSOR } from './control_value_accessor';
 import { controlPath, composeValidators, composeAsyncValidators, isPropertyUpdated, selectValueAccessor } from './shared';
 import { NG_VALIDATORS, NG_ASYNC_VALIDATORS } from '../validators';
-export const controlNameBinding = CONST_EXPR(new Provider(NgControl, { useExisting: forwardRef(() => NgControlName) }));
+export const controlNameBinding = 
+/*@ts2dart_const*/ /* @ts2dart_Provider */ {
+    provide: NgControl,
+    useExisting: forwardRef(() => NgControlName)
+};
 /**
  * Creates and binds a control with a specified name to a DOM element.
  *

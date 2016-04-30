@@ -1,4 +1,3 @@
-import { Provider } from 'angular2/src/core/di';
 /**
  * Create a {@link UrlResolver} with no package prefix.
  */
@@ -7,7 +6,10 @@ export declare function createOfflineCompileUrlResolver(): UrlResolver;
 /**
  * A default provider for {@link PACKAGE_ROOT_URL} that maps to '/'.
  */
-export declare var DEFAULT_PACKAGE_URL_PROVIDER: Provider;
+export declare var DEFAULT_PACKAGE_URL_PROVIDER: {
+    provide: any;
+    useValue: string;
+};
 /**
  * Used by the {@link Compiler} when resolving HTML and CSS template URLs.
  *

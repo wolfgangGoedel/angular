@@ -17,7 +17,6 @@ export { ROUTER_PROVIDERS_COMMON } from 'angular2/src/router/router_providers_co
 export { ROUTER_PROVIDERS, ROUTER_BINDINGS } from 'angular2/src/router/router_providers';
 import { RouterOutlet } from './src/router/directives/router_outlet';
 import { RouterLink } from './src/router/directives/router_link';
-import { CONST_EXPR } from './src/facade/lang';
 /**
  * A list of directives. To use the router directives like {@link RouterOutlet} and
  * {@link RouterLink}, add this to your `directives` array in the {@link View} decorator of your
@@ -40,4 +39,4 @@ import { CONST_EXPR } from './src/facade/lang';
  * bootstrap(AppCmp, [ROUTER_PROVIDERS]);
  * ```
  */
-export const ROUTER_DIRECTIVES = CONST_EXPR([RouterOutlet, RouterLink]);
+export const ROUTER_DIRECTIVES = [RouterOutlet, RouterLink];

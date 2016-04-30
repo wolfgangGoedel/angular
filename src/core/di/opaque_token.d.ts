@@ -18,6 +18,7 @@
  *
  * Using an `OpaqueToken` is preferable to using an `Object` as tokens because it provides better
  * error messages.
+ * @ts2dart_const
  */
 export declare class OpaqueToken {
     private _desc;

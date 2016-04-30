@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { isNumber, isPresent, isBlank, NumberWrapper, RegExpWrapper, CONST } from 'angular2/src/facade/lang';
+import { isNumber, isPresent, isBlank, NumberWrapper, RegExpWrapper } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { NumberFormatter, NumberFormatStyle } from 'angular2/src/facade/intl';
 import { Injectable, Pipe } from 'angular2/core';
@@ -52,7 +52,6 @@ export let NumberPipe = NumberPipe_1 = class NumberPipe {
     }
 };
 NumberPipe = NumberPipe_1 = __decorate([
-    CONST(),
     Injectable(), 
     __metadata('design:paramtypes', [])
 ], NumberPipe);
@@ -88,7 +87,6 @@ export let DecimalPipe = class DecimalPipe extends NumberPipe {
     }
 };
 DecimalPipe = __decorate([
-    CONST(),
     Pipe({ name: 'number' }),
     Injectable(), 
     __metadata('design:paramtypes', [])
@@ -115,7 +113,6 @@ export let PercentPipe = class PercentPipe extends NumberPipe {
     }
 };
 PercentPipe = __decorate([
-    CONST(),
     Pipe({ name: 'percent' }),
     Injectable(), 
     __metadata('design:paramtypes', [])
@@ -146,7 +143,6 @@ export let CurrencyPipe = class CurrencyPipe extends NumberPipe {
     }
 };
 CurrencyPipe = __decorate([
-    CONST(),
     Pipe({ name: 'currency' }),
     Injectable(), 
     __metadata('design:paramtypes', [])

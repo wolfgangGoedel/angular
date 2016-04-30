@@ -8,7 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { Injectable } from 'angular2/src/core/di';
-import { StringWrapper, RegExpWrapper, CONST_EXPR, isPresent } from 'angular2/src/facade/lang';
+import { StringWrapper, RegExpWrapper, isPresent } from 'angular2/src/facade/lang';
 import { HtmlAttrAst, HtmlElementAst, HtmlExpansionAst } from './html_ast';
 import { HtmlParser, HtmlParseTreeResult } from './html_parser';
 import { dashCaseToCamelCase } from './util';
@@ -18,11 +18,11 @@ var VARIABLE_TPL_BINDING_REGEXP = /(\bvar\s+|#)(\S+)/ig;
 var TEMPLATE_SELECTOR_REGEXP = /^(\S+)/g;
 var SPECIAL_PREFIXES_REGEXP = /^(class|style|attr)\./ig;
 var INTERPOLATION_REGEXP = /\{\{.*?\}\}/g;
-const SPECIAL_CASES = CONST_EXPR([
+const SPECIAL_CASES = [
     'ng-non-bindable',
     'ng-default-control',
     'ng-no-form',
-]);
+];
 /**
  * Convert templates to the case sensitive syntax
  *

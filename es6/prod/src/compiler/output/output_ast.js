@@ -1,4 +1,4 @@
-import { CONST_EXPR, isString, isPresent, isBlank } from 'angular2/src/facade/lang';
+import { isString, isPresent, isBlank } from 'angular2/src/facade/lang';
 //// Types
 export var TypeModifier;
 (function (TypeModifier) {
@@ -489,7 +489,7 @@ export class ClassStmt extends Statement {
     }
 }
 export class IfStmt extends Statement {
-    constructor(condition, trueCase, falseCase = CONST_EXPR([])) {
+    constructor(condition, trueCase, falseCase = []) {
         super();
         this.condition = condition;
         this.trueCase = trueCase;

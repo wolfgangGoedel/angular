@@ -342,19 +342,18 @@ System.register("angular2/src/platform/browser/location/platform_location", [], 
   return module.exports;
 });
 
-System.register("angular2/src/platform/browser/location/location_strategy", ["angular2/src/facade/lang", "angular2/core"], true, function(require, exports, module) {
+System.register("angular2/src/platform/browser/location/location_strategy", ["angular2/core"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
   var core_1 = require("angular2/core");
   var LocationStrategy = (function() {
     function LocationStrategy() {}
     return LocationStrategy;
   }());
   exports.LocationStrategy = LocationStrategy;
-  exports.APP_BASE_HREF = lang_1.CONST_EXPR(new core_1.OpaqueToken('appBaseHref'));
+  exports.APP_BASE_HREF = new core_1.OpaqueToken('appBaseHref');
   global.define = __define;
   return module.exports;
 });
@@ -1418,28 +1417,49 @@ System.register("angular2/platform/testing/browser_static", ["angular2/core", "a
   function createNgZone() {
     return lang_1.IS_DART ? new ng_zone_mock_1.MockNgZone() : new core_1.NgZone({enableLongStackTrace: true});
   }
-  exports.TEST_BROWSER_STATIC_PLATFORM_PROVIDERS = lang_1.CONST_EXPR([core_1.PLATFORM_COMMON_PROVIDERS, new core_1.Provider(core_1.PLATFORM_INITIALIZER, {
+  exports.TEST_BROWSER_STATIC_PLATFORM_PROVIDERS = [core_1.PLATFORM_COMMON_PROVIDERS, {
+    provide: core_1.PLATFORM_INITIALIZER,
     useValue: initBrowserTests,
     multi: true
-  })]);
-  exports.ADDITIONAL_TEST_BROWSER_PROVIDERS = lang_1.CONST_EXPR([new core_1.Provider(core_1.APP_ID, {useValue: 'a'}), common_dom_1.ELEMENT_PROBE_PROVIDERS, new core_1.Provider(compiler_1.DirectiveResolver, {useClass: directive_resolver_mock_1.MockDirectiveResolver}), new core_1.Provider(compiler_1.ViewResolver, {useClass: view_resolver_mock_1.MockViewResolver}), utils_2.Log, test_component_builder_1.TestComponentBuilder, new core_1.Provider(core_1.NgZone, {useFactory: createNgZone}), new core_1.Provider(common_1.LocationStrategy, {useClass: mock_location_strategy_1.MockLocationStrategy}), new core_1.Provider(animation_builder_1.AnimationBuilder, {useClass: animation_builder_mock_1.MockAnimationBuilder})]);
-  exports.TEST_BROWSER_STATIC_APPLICATION_PROVIDERS = lang_1.CONST_EXPR([browser_common_1.BROWSER_APP_COMMON_PROVIDERS, new core_1.Provider(compiler_2.XHR, {useClass: xhr_impl_1.XHRImpl}), exports.ADDITIONAL_TEST_BROWSER_PROVIDERS]);
+  }];
+  exports.ADDITIONAL_TEST_BROWSER_PROVIDERS = [{
+    provide: core_1.APP_ID,
+    useValue: 'a'
+  }, common_dom_1.ELEMENT_PROBE_PROVIDERS, {
+    provide: compiler_1.DirectiveResolver,
+    useClass: directive_resolver_mock_1.MockDirectiveResolver
+  }, {
+    provide: compiler_1.ViewResolver,
+    useClass: view_resolver_mock_1.MockViewResolver
+  }, utils_2.Log, test_component_builder_1.TestComponentBuilder, {
+    provide: core_1.NgZone,
+    useFactory: createNgZone
+  }, {
+    provide: common_1.LocationStrategy,
+    useClass: mock_location_strategy_1.MockLocationStrategy
+  }, {
+    provide: animation_builder_1.AnimationBuilder,
+    useClass: animation_builder_mock_1.MockAnimationBuilder
+  }];
+  exports.TEST_BROWSER_STATIC_APPLICATION_PROVIDERS = [browser_common_1.BROWSER_APP_COMMON_PROVIDERS, {
+    provide: compiler_2.XHR,
+    useClass: xhr_impl_1.XHRImpl
+  }, exports.ADDITIONAL_TEST_BROWSER_PROVIDERS];
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/platform/testing/browser", ["angular2/platform/testing/browser_static", "angular2/platform/browser", "angular2/src/facade/lang", "angular2/platform/browser"], true, function(require, exports, module) {
+System.register("angular2/platform/testing/browser", ["angular2/platform/testing/browser_static", "angular2/platform/browser", "angular2/platform/browser"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var browser_static_1 = require("angular2/platform/testing/browser_static");
   var browser_1 = require("angular2/platform/browser");
-  var lang_1 = require("angular2/src/facade/lang");
   var browser_2 = require("angular2/platform/browser");
   exports.CACHED_TEMPLATE_PROVIDER = browser_2.CACHED_TEMPLATE_PROVIDER;
-  exports.TEST_BROWSER_PLATFORM_PROVIDERS = lang_1.CONST_EXPR([browser_static_1.TEST_BROWSER_STATIC_PLATFORM_PROVIDERS]);
-  exports.TEST_BROWSER_APPLICATION_PROVIDERS = lang_1.CONST_EXPR([browser_1.BROWSER_APP_PROVIDERS, browser_static_1.ADDITIONAL_TEST_BROWSER_PROVIDERS]);
+  exports.TEST_BROWSER_PLATFORM_PROVIDERS = [browser_static_1.TEST_BROWSER_STATIC_PLATFORM_PROVIDERS];
+  exports.TEST_BROWSER_APPLICATION_PROVIDERS = [browser_1.BROWSER_APP_PROVIDERS, browser_static_1.ADDITIONAL_TEST_BROWSER_PROVIDERS];
   global.define = __define;
   return module.exports;
 });

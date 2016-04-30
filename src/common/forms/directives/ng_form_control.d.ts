@@ -1,10 +1,10 @@
 import { EventEmitter } from 'angular2/src/facade/async';
-import { OnChanges, SimpleChange, Provider } from 'angular2/core';
+import { OnChanges, SimpleChange } from 'angular2/core';
 import { NgControl } from './ng_control';
 import { Control } from '../model';
 import { ControlValueAccessor } from './control_value_accessor';
 import { ValidatorFn, AsyncValidatorFn } from './validators';
-export declare const formControlBinding: Provider;
+export declare const formControlBinding: any;
 /**
  * Binds an existing {@link Control} to a DOM element.
  *

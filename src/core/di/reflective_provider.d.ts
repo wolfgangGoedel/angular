@@ -94,7 +94,9 @@ export declare function resolveReflectiveProvider(provider: Provider): ResolvedR
 /**
  * Resolve a list of Providers.
  */
-export declare function resolveReflectiveProviders(providers: Array<Type | Provider | any[]>): ResolvedReflectiveProvider[];
+export declare function resolveReflectiveProviders(providers: Array<Type | Provider | {
+    [k: string]: any;
+} | any[]>): ResolvedReflectiveProvider[];
 /**
  * Merges a list of ResolvedProviders into a list where
  * each key is contained exactly once and multi providers

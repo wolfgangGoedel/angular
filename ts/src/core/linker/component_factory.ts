@@ -1,5 +1,5 @@
 import {Injector} from 'angular2/src/core/di';
-import {Type, CONST, CONST_EXPR, isPresent, isBlank} from 'angular2/src/facade/lang';
+import {Type, isPresent, isBlank} from 'angular2/src/facade/lang';
 import {unimplemented} from 'angular2/src/facade/exceptions';
 import {ElementRef} from './element_ref';
 import {ViewRef, ViewRef_} from './view_ref';
@@ -69,9 +69,9 @@ export class ComponentRef_ extends ComponentRef {
   onDestroy(callback: Function): void { this.hostView.onDestroy(callback); }
 }
 
-const EMPTY_CONTEXT = CONST_EXPR(new Object());
+const EMPTY_CONTEXT = /*@ts2dart_const*/ new Object();
 
-@CONST()
+/*@ts2dart_const*/
 export class ComponentFactory {
   constructor(public selector: string, private _viewFactory: Function,
               private _componentType: Type) {}

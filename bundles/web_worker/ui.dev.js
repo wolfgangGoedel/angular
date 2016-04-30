@@ -58,16 +58,6 @@ System.register("angular2/src/facade/lang", [], true, function(require, exports,
   }
   exports.assertionsEnabled = assertionsEnabled;
   _global.assert = function assert(condition) {};
-  function CONST_EXPR(expr) {
-    return expr;
-  }
-  exports.CONST_EXPR = CONST_EXPR;
-  function CONST() {
-    return function(target) {
-      return target;
-    };
-  }
-  exports.CONST = CONST;
   function isPresent(obj) {
     return obj !== undefined && obj !== null;
   }
@@ -1452,22 +1442,6 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var InjectMetadata = (function() {
     function InjectMetadata(token) {
@@ -1476,7 +1450,6 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
     InjectMetadata.prototype.toString = function() {
       return "@Inject(" + lang_1.stringify(this.token) + ")";
     };
-    InjectMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], InjectMetadata);
     return InjectMetadata;
   }());
   exports.InjectMetadata = InjectMetadata;
@@ -1485,7 +1458,6 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
     OptionalMetadata.prototype.toString = function() {
       return "@Optional()";
     };
-    OptionalMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], OptionalMetadata);
     return OptionalMetadata;
   }());
   exports.OptionalMetadata = OptionalMetadata;
@@ -1498,13 +1470,11 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
       enumerable: true,
       configurable: true
     });
-    DependencyMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], DependencyMetadata);
     return DependencyMetadata;
   }());
   exports.DependencyMetadata = DependencyMetadata;
   var InjectableMetadata = (function() {
     function InjectableMetadata() {}
-    InjectableMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], InjectableMetadata);
     return InjectableMetadata;
   }());
   exports.InjectableMetadata = InjectableMetadata;
@@ -1513,7 +1483,6 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
     SelfMetadata.prototype.toString = function() {
       return "@Self()";
     };
-    SelfMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], SelfMetadata);
     return SelfMetadata;
   }());
   exports.SelfMetadata = SelfMetadata;
@@ -1522,7 +1491,6 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
     SkipSelfMetadata.prototype.toString = function() {
       return "@SkipSelf()";
     };
-    SkipSelfMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], SkipSelfMetadata);
     return SkipSelfMetadata;
   }());
   exports.SkipSelfMetadata = SkipSelfMetadata;
@@ -1531,7 +1499,6 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
     HostMetadata.prototype.toString = function() {
       return "@Host()";
     };
-    HostMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], HostMetadata);
     return HostMetadata;
   }());
   exports.HostMetadata = HostMetadata;
@@ -1734,14 +1701,13 @@ System.register("angular2/src/core/di/forward_ref", ["angular2/src/facade/lang"]
   return module.exports;
 });
 
-System.register("angular2/src/core/di/injector", ["angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/injector", ["angular2/src/facade/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
-  var _THROW_IF_NOT_FOUND = lang_1.CONST_EXPR(new Object());
+  var _THROW_IF_NOT_FOUND = new Object();
   exports.THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
   var Injector = (function() {
     function Injector() {}
@@ -2212,22 +2178,6 @@ System.register("angular2/src/core/di/provider", ["angular2/src/facade/lang", "a
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var Provider = (function() {
@@ -2253,7 +2203,6 @@ System.register("angular2/src/core/di/provider", ["angular2/src/facade/lang", "a
       enumerable: true,
       configurable: true
     });
-    Provider = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], Provider);
     return Provider;
   }());
   exports.Provider = Provider;
@@ -2303,7 +2252,6 @@ System.register("angular2/src/core/di/provider", ["angular2/src/facade/lang", "a
       enumerable: true,
       configurable: true
     });
-    Binding = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], Binding);
     return Binding;
   }(Provider));
   exports.Binding = Binding;
@@ -2363,28 +2311,29 @@ System.register("angular2/src/core/di/provider", ["angular2/src/facade/lang", "a
   return module.exports;
 });
 
-System.register("angular2/src/core/di/opaque_token", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/provider_util", ["angular2/src/core/di/provider"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
+  var provider_1 = require("angular2/src/core/di/provider");
+  function isProviderLiteral(obj) {
+    return obj && typeof obj == 'object' && obj.provide;
+  }
+  exports.isProviderLiteral = isProviderLiteral;
+  function createProvider(obj) {
+    return new provider_1.Provider(obj.provide, obj);
+  }
+  exports.createProvider = createProvider;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/di/opaque_token", [], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
   var OpaqueToken = (function() {
     function OpaqueToken(_desc) {
       this._desc = _desc;
@@ -2392,7 +2341,6 @@ System.register("angular2/src/core/di/opaque_token", ["angular2/src/facade/lang"
     OpaqueToken.prototype.toString = function() {
       return "Token " + this._desc;
     };
-    OpaqueToken = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], OpaqueToken);
     return OpaqueToken;
   }());
   exports.OpaqueToken = OpaqueToken;
@@ -2503,20 +2451,21 @@ System.register("angular2/src/core/application_tokens", ["angular2/src/core/di",
   "use strict";
   var di_1 = require("angular2/src/core/di");
   var lang_1 = require("angular2/src/facade/lang");
-  exports.APP_ID = lang_1.CONST_EXPR(new di_1.OpaqueToken('AppId'));
+  exports.APP_ID = new di_1.OpaqueToken('AppId');
   function _appIdRandomProviderFactory() {
     return "" + _randomChar() + _randomChar() + _randomChar();
   }
-  exports.APP_ID_RANDOM_PROVIDER = lang_1.CONST_EXPR(new di_1.Provider(exports.APP_ID, {
+  exports.APP_ID_RANDOM_PROVIDER = {
+    provide: exports.APP_ID,
     useFactory: _appIdRandomProviderFactory,
     deps: []
-  }));
+  };
   function _randomChar() {
     return lang_1.StringWrapper.fromCharCode(97 + lang_1.Math.floor(lang_1.Math.random() * 25));
   }
-  exports.PLATFORM_INITIALIZER = lang_1.CONST_EXPR(new di_1.OpaqueToken("Platform Initializer"));
-  exports.APP_INITIALIZER = lang_1.CONST_EXPR(new di_1.OpaqueToken("Application Initializer"));
-  exports.PACKAGE_ROOT_URL = lang_1.CONST_EXPR(new di_1.OpaqueToken("Application Packages Root URL"));
+  exports.PLATFORM_INITIALIZER = new di_1.OpaqueToken("Platform Initializer");
+  exports.APP_INITIALIZER = new di_1.OpaqueToken("Application Initializer");
+  exports.PACKAGE_ROOT_URL = new di_1.OpaqueToken("Application Packages Root URL");
   global.define = __define;
   return module.exports;
 });
@@ -2652,14 +2601,13 @@ System.register("angular2/src/core/testability/testability", ["angular2/src/core
     _NoopGetTestability.prototype.findTestabilityInTree = function(registry, elem, findInAncestors) {
       return null;
     };
-    _NoopGetTestability = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], _NoopGetTestability);
     return _NoopGetTestability;
   }());
   function setTestabilityGetter(getter) {
     _testabilityGetter = getter;
   }
   exports.setTestabilityGetter = setTestabilityGetter;
-  var _testabilityGetter = lang_1.CONST_EXPR(new _NoopGetTestability());
+  var _testabilityGetter = new _NoopGetTestability();
   global.define = __define;
   return module.exports;
 });
@@ -2787,22 +2735,6 @@ System.register("angular2/src/core/change_detection/differs/iterable_differs", [
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var collection_1 = require("angular2/src/facade/collection");
@@ -2841,7 +2773,6 @@ System.register("angular2/src/core/change_detection/differs/iterable_differs", [
         throw new exceptions_1.BaseException("Cannot find a differ supporting object '" + iterable + "' of type '" + lang_1.getTypeNameForDebugging(iterable) + "'");
       }
     };
-    IterableDiffers = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Array])], IterableDiffers);
     return IterableDiffers;
   }());
   exports.IterableDiffers = IterableDiffers;
@@ -2854,22 +2785,6 @@ System.register("angular2/src/core/change_detection/differs/default_iterable_dif
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var collection_1 = require("angular2/src/facade/collection");
   var lang_1 = require("angular2/src/facade/lang");
@@ -2881,7 +2796,6 @@ System.register("angular2/src/core/change_detection/differs/default_iterable_dif
     DefaultIterableDifferFactory.prototype.create = function(cdRef, trackByFn) {
       return new DefaultIterableDiffer(trackByFn);
     };
-    DefaultIterableDifferFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], DefaultIterableDifferFactory);
     return DefaultIterableDifferFactory;
   }());
   exports.DefaultIterableDifferFactory = DefaultIterableDifferFactory;
@@ -3369,22 +3283,6 @@ System.register("angular2/src/core/change_detection/differs/keyvalue_differs", [
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var collection_1 = require("angular2/src/facade/collection");
@@ -3423,7 +3321,6 @@ System.register("angular2/src/core/change_detection/differs/keyvalue_differs", [
         throw new exceptions_1.BaseException("Cannot find a differ supporting object '" + kv + "'");
       }
     };
-    KeyValueDiffers = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Array])], KeyValueDiffers);
     return KeyValueDiffers;
   }());
   exports.KeyValueDiffers = KeyValueDiffers;
@@ -3436,22 +3333,6 @@ System.register("angular2/src/core/change_detection/differs/default_keyvalue_dif
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var collection_1 = require("angular2/src/facade/collection");
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
@@ -3463,7 +3344,6 @@ System.register("angular2/src/core/change_detection/differs/default_keyvalue_dif
     DefaultKeyValueDifferFactory.prototype.create = function(cdRef) {
       return new DefaultKeyValueDiffer();
     };
-    DefaultKeyValueDifferFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], DefaultKeyValueDifferFactory);
     return DefaultKeyValueDifferFactory;
   }());
   exports.DefaultKeyValueDifferFactory = DefaultKeyValueDifferFactory;
@@ -3775,7 +3655,7 @@ System.register("angular2/src/core/change_detection/change_detection_util", ["an
   var collection_1 = require("angular2/src/facade/collection");
   var lang_2 = require("angular2/src/facade/lang");
   exports.looseIdentical = lang_2.looseIdentical;
-  exports.uninitialized = lang_1.CONST_EXPR(new Object());
+  exports.uninitialized = new Object();
   function devModeEqual(a, b) {
     if (collection_1.isListLikeIterable(a) && collection_1.isListLikeIterable(b)) {
       return collection_1.areIterablesEqual(a, b, devModeEqual);
@@ -3972,22 +3852,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var di_1 = require("angular2/src/core/di");
   var metadata_1 = require("angular2/src/core/di/metadata");
@@ -4007,7 +3871,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
     AttributeMetadata.prototype.toString = function() {
       return "@Attribute(" + lang_1.stringify(this.attributeName) + ")";
     };
-    AttributeMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], AttributeMetadata);
     return AttributeMetadata;
   }(metadata_1.DependencyMetadata));
   exports.AttributeMetadata = AttributeMetadata;
@@ -4058,7 +3921,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
     QueryMetadata.prototype.toString = function() {
       return "@Query(" + lang_1.stringify(this.selector) + ")";
     };
-    QueryMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], QueryMetadata);
     return QueryMetadata;
   }(metadata_1.DependencyMetadata));
   exports.QueryMetadata = QueryMetadata;
@@ -4075,7 +3937,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
         read: read
       });
     }
-    ContentChildrenMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ContentChildrenMetadata);
     return ContentChildrenMetadata;
   }(QueryMetadata));
   exports.ContentChildrenMetadata = ContentChildrenMetadata;
@@ -4090,7 +3951,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
         read: read
       });
     }
-    ContentChildMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ContentChildMetadata);
     return ContentChildMetadata;
   }(QueryMetadata));
   exports.ContentChildMetadata = ContentChildMetadata;
@@ -4120,7 +3980,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
     ViewQueryMetadata.prototype.toString = function() {
       return "@ViewQuery(" + lang_1.stringify(this.selector) + ")";
     };
-    ViewQueryMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewQueryMetadata);
     return ViewQueryMetadata;
   }(QueryMetadata));
   exports.ViewQueryMetadata = ViewQueryMetadata;
@@ -4134,7 +3993,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
         read: read
       });
     }
-    ViewChildrenMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewChildrenMetadata);
     return ViewChildrenMetadata;
   }(ViewQueryMetadata));
   exports.ViewChildrenMetadata = ViewChildrenMetadata;
@@ -4149,7 +4007,6 @@ System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "a
         read: read
       });
     }
-    ViewChildMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewChildMetadata);
     return ViewChildMetadata;
   }(ViewQueryMetadata));
   exports.ViewChildMetadata = ViewChildMetadata;
@@ -4175,28 +4032,11 @@ System.register("angular2/src/core/change_detection", ["angular2/src/core/change
   return module.exports;
 });
 
-System.register("angular2/src/core/metadata/view", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/core/metadata/view", [], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
   (function(ViewEncapsulation) {
     ViewEncapsulation[ViewEncapsulation["Emulated"] = 0] = "Emulated";
     ViewEncapsulation[ViewEncapsulation["Native"] = 1] = "Native";
@@ -4222,7 +4062,6 @@ System.register("angular2/src/core/metadata/view", ["angular2/src/facade/lang"],
       this.pipes = pipes;
       this.encapsulation = encapsulation;
     }
-    ViewMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], ViewMetadata);
     return ViewMetadata;
   }());
   exports.ViewMetadata = ViewMetadata;
@@ -4441,7 +4280,7 @@ System.register("angular2/src/core/linker/template_ref", ["angular2/src/facade/l
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var lang_1 = require("angular2/src/facade/lang");
-  var EMPTY_CONTEXT = lang_1.CONST_EXPR(new Object());
+  var EMPTY_CONTEXT = new Object();
   var TemplateRef = (function() {
     function TemplateRef() {}
     Object.defineProperty(TemplateRef.prototype, "elementRef", {
@@ -4822,26 +4661,23 @@ System.register("angular2/src/core/debug/debug_node", ["angular2/src/facade/lang
   return module.exports;
 });
 
-System.register("angular2/src/core/platform_directives_and_pipes", ["angular2/src/core/di", "angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/core/platform_directives_and_pipes", ["angular2/src/core/di"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var di_1 = require("angular2/src/core/di");
-  var lang_1 = require("angular2/src/facade/lang");
-  exports.PLATFORM_DIRECTIVES = lang_1.CONST_EXPR(new di_1.OpaqueToken("Platform Directives"));
-  exports.PLATFORM_PIPES = lang_1.CONST_EXPR(new di_1.OpaqueToken("Platform Pipes"));
+  exports.PLATFORM_DIRECTIVES = new di_1.OpaqueToken("Platform Directives");
+  exports.PLATFORM_PIPES = new di_1.OpaqueToken("Platform Pipes");
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/core/platform_common_providers", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/console", "angular2/src/core/reflection/reflection", "angular2/src/core/reflection/reflector_reader", "angular2/src/core/testability/testability", "angular2/src/core/application_ref"], true, function(require, exports, module) {
+System.register("angular2/src/core/platform_common_providers", ["angular2/src/core/console", "angular2/src/core/reflection/reflection", "angular2/src/core/reflection/reflector_reader", "angular2/src/core/testability/testability", "angular2/src/core/application_ref"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var di_1 = require("angular2/src/core/di");
   var console_1 = require("angular2/src/core/console");
   var reflection_1 = require("angular2/src/core/reflection/reflection");
   var reflector_reader_1 = require("angular2/src/core/reflection/reflector_reader");
@@ -4850,21 +4686,24 @@ System.register("angular2/src/core/platform_common_providers", ["angular2/src/fa
   function _reflector() {
     return reflection_1.reflector;
   }
-  exports.PLATFORM_COMMON_PROVIDERS = lang_1.CONST_EXPR([application_ref_1.PLATFORM_CORE_PROVIDERS, new di_1.Provider(reflection_1.Reflector, {
+  var __unused;
+  exports.PLATFORM_COMMON_PROVIDERS = [application_ref_1.PLATFORM_CORE_PROVIDERS, {
+    provide: reflection_1.Reflector,
     useFactory: _reflector,
     deps: []
-  }), new di_1.Provider(reflector_reader_1.ReflectorReader, {useExisting: reflection_1.Reflector}), testability_1.TestabilityRegistry, console_1.Console]);
+  }, {
+    provide: reflector_reader_1.ReflectorReader,
+    useExisting: reflection_1.Reflector
+  }, testability_1.TestabilityRegistry, console_1.Console];
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/core/application_common_providers", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/application_tokens", "angular2/src/core/application_ref", "angular2/src/core/change_detection/change_detection", "angular2/src/core/linker/view_utils", "angular2/src/core/linker/component_resolver", "angular2/src/core/linker/dynamic_component_loader"], true, function(require, exports, module) {
+System.register("angular2/src/core/application_common_providers", ["angular2/src/core/application_tokens", "angular2/src/core/application_ref", "angular2/src/core/change_detection/change_detection", "angular2/src/core/linker/view_utils", "angular2/src/core/linker/component_resolver", "angular2/src/core/linker/dynamic_component_loader"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var di_1 = require("angular2/src/core/di");
   var application_tokens_1 = require("angular2/src/core/application_tokens");
   var application_ref_1 = require("angular2/src/core/application_ref");
   var change_detection_1 = require("angular2/src/core/change_detection/change_detection");
@@ -4872,7 +4711,19 @@ System.register("angular2/src/core/application_common_providers", ["angular2/src
   var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
   var dynamic_component_loader_1 = require("angular2/src/core/linker/dynamic_component_loader");
   var __unused;
-  exports.APPLICATION_COMMON_PROVIDERS = lang_1.CONST_EXPR([application_ref_1.APPLICATION_CORE_PROVIDERS, new di_1.Provider(component_resolver_1.ComponentResolver, {useClass: component_resolver_1.ReflectorComponentResolver}), application_tokens_1.APP_ID_RANDOM_PROVIDER, view_utils_1.ViewUtils, new di_1.Provider(change_detection_1.IterableDiffers, {useValue: change_detection_1.defaultIterableDiffers}), new di_1.Provider(change_detection_1.KeyValueDiffers, {useValue: change_detection_1.defaultKeyValueDiffers}), new di_1.Provider(dynamic_component_loader_1.DynamicComponentLoader, {useClass: dynamic_component_loader_1.DynamicComponentLoader_})]);
+  exports.APPLICATION_COMMON_PROVIDERS = [application_ref_1.APPLICATION_CORE_PROVIDERS, {
+    provide: component_resolver_1.ComponentResolver,
+    useClass: component_resolver_1.ReflectorComponentResolver
+  }, application_tokens_1.APP_ID_RANDOM_PROVIDER, view_utils_1.ViewUtils, {
+    provide: change_detection_1.IterableDiffers,
+    useValue: change_detection_1.defaultIterableDiffers
+  }, {
+    provide: change_detection_1.KeyValueDiffers,
+    useValue: change_detection_1.defaultKeyValueDiffers
+  }, {
+    provide: dynamic_component_loader_1.DynamicComponentLoader,
+    useClass: dynamic_component_loader_1.DynamicComponentLoader_
+  }];
   global.define = __define;
   return module.exports;
 });
@@ -5243,19 +5094,18 @@ System.register("angular2/src/animate/browser_details", ["angular2/src/core/di",
   return module.exports;
 });
 
-System.register("angular2/src/platform/dom/dom_tokens", ["angular2/src/core/di", "angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/platform/dom/dom_tokens", ["angular2/src/core/di"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var di_1 = require("angular2/src/core/di");
-  var lang_1 = require("angular2/src/facade/lang");
-  exports.DOCUMENT = lang_1.CONST_EXPR(new di_1.OpaqueToken('DocumentToken'));
+  exports.DOCUMENT = new di_1.OpaqueToken('DocumentToken');
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/platform/dom/events/event_manager", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/di", "angular2/src/core/zone/ng_zone", "angular2/src/facade/collection"], true, function(require, exports, module) {
+System.register("angular2/src/platform/dom/events/event_manager", ["angular2/src/facade/exceptions", "angular2/src/core/di", "angular2/src/core/zone/ng_zone", "angular2/src/facade/collection"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -5281,12 +5131,11 @@ System.register("angular2/src/platform/dom/events/event_manager", ["angular2/src
       decorator(target, key, paramIndex);
     };
   };
-  var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var di_1 = require("angular2/src/core/di");
   var ng_zone_1 = require("angular2/src/core/zone/ng_zone");
   var collection_1 = require("angular2/src/facade/collection");
-  exports.EVENT_MANAGER_PLUGINS = lang_1.CONST_EXPR(new di_1.OpaqueToken("EventManagerPlugins"));
+  exports.EVENT_MANAGER_PLUGINS = new di_1.OpaqueToken("EventManagerPlugins");
   var EventManager = (function() {
     function EventManager(plugins, _zone) {
       var _this = this;
@@ -6674,8 +6523,8 @@ System.register("angular2/src/compiler/expression_parser/lexer", ["angular2/src/
   exports.$BT = 96;
   var $a = 97,
       $e = 101,
-      $f = 102,
-      $n = 110,
+      $f = 102;
+  var $n = 110,
       $r = 114,
       $t = 116,
       $u = 117,
@@ -7138,7 +6987,7 @@ System.register("angular2/src/compiler/html_tags", ["angular2/src/facade/lang"],
   global.define = undefined;
   "use strict";
   var lang_1 = require("angular2/src/facade/lang");
-  exports.NAMED_ENTITIES = lang_1.CONST_EXPR({
+  exports.NAMED_ENTITIES = {
     'Aacute': '\u00C1',
     'aacute': '\u00E1',
     'Acirc': '\u00C2',
@@ -7391,7 +7240,7 @@ System.register("angular2/src/compiler/html_tags", ["angular2/src/facade/lang"],
     'zeta': '\u03B6',
     'zwj': '\u200D',
     'zwnj': '\u200C'
-  });
+  };
   (function(HtmlTagContentType) {
     HtmlTagContentType[HtmlTagContentType["RAW_TEXT"] = 0] = "RAW_TEXT";
     HtmlTagContentType[HtmlTagContentType["ESCAPABLE_RAW_TEXT"] = 1] = "ESCAPABLE_RAW_TEXT";
@@ -8123,7 +7972,10 @@ System.register("angular2/src/compiler/url_resolver", ["angular2/src/core/di", "
     return new UrlResolver(_ASSET_SCHEME);
   }
   exports.createOfflineCompileUrlResolver = createOfflineCompileUrlResolver;
-  exports.DEFAULT_PACKAGE_URL_PROVIDER = new di_1.Provider(application_tokens_1.PACKAGE_ROOT_URL, {useValue: "/"});
+  exports.DEFAULT_PACKAGE_URL_PROVIDER = {
+    provide: application_tokens_1.PACKAGE_ROOT_URL,
+    useValue: "/"
+  };
   var UrlResolver = (function() {
     function UrlResolver(_packagePrefix) {
       if (_packagePrefix === void 0) {
@@ -8273,22 +8125,6 @@ System.register("angular2/src/core/linker/debug_context", ["angular2/src/facade/
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var collection_1 = require("angular2/src/facade/collection");
   var view_type_1 = require("angular2/src/core/linker/view_type");
@@ -8298,7 +8134,6 @@ System.register("angular2/src/core/linker/debug_context", ["angular2/src/facade/
       this.componentToken = componentToken;
       this.refTokens = refTokens;
     }
-    StaticNodeDebugInfo = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Array, Object, Object])], StaticNodeDebugInfo);
     return StaticNodeDebugInfo;
   }());
   exports.StaticNodeDebugInfo = StaticNodeDebugInfo;
@@ -8407,7 +8242,7 @@ System.register("angular2/src/core/linker/debug_context", ["angular2/src/facade/
   return module.exports;
 });
 
-System.register("angular2/src/core/linker/element_injector", ["angular2/src/facade/lang", "angular2/src/core/di/injector"], true, function(require, exports, module) {
+System.register("angular2/src/core/linker/element_injector", ["angular2/src/core/di/injector"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -8421,9 +8256,8 @@ System.register("angular2/src/core/linker/element_injector", ["angular2/src/faca
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var lang_1 = require("angular2/src/facade/lang");
   var injector_1 = require("angular2/src/core/di/injector");
-  var _UNDEFINED = lang_1.CONST_EXPR(new Object());
+  var _UNDEFINED = new Object();
   var ElementInjector = (function(_super) {
     __extends(ElementInjector, _super);
     function ElementInjector(_view, _nodeIndex) {
@@ -9693,7 +9527,7 @@ System.register("angular2/src/compiler/output/output_ast", ["angular2/src/facade
     __extends(IfStmt, _super);
     function IfStmt(condition, trueCase, falseCase) {
       if (falseCase === void 0) {
-        falseCase = lang_1.CONST_EXPR([]);
+        falseCase = [];
       }
       _super.call(this);
       this.condition = condition;
@@ -13177,10 +13011,10 @@ System.register("angular2/src/compiler/schema/dom_element_schema_registry", ["an
   var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
   var html_tags_1 = require("angular2/src/compiler/html_tags");
   var element_schema_registry_1 = require("angular2/src/compiler/schema/element_schema_registry");
-  var NAMESPACE_URIS = lang_1.CONST_EXPR({
+  var NAMESPACE_URIS = {
     'xlink': 'http://www.w3.org/1999/xlink',
     'svg': 'http://www.w3.org/2000/svg'
-  });
+  };
   var DomElementSchemaRegistry = (function(_super) {
     __extends(DomElementSchemaRegistry, _super);
     function DomElementSchemaRegistry() {
@@ -14018,14 +13852,13 @@ System.register("angular2/src/platform/browser/location/platform_location", [], 
   return module.exports;
 });
 
-System.register("angular2/src/web_workers/shared/api", ["angular2/src/facade/lang", "angular2/src/core/di"], true, function(require, exports, module) {
+System.register("angular2/src/web_workers/shared/api", ["angular2/src/core/di"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
   var di_1 = require("angular2/src/core/di");
-  exports.ON_WEB_WORKER = lang_1.CONST_EXPR(new di_1.OpaqueToken('WebWorker.onWebWorker'));
+  exports.ON_WEB_WORKER = new di_1.OpaqueToken('WebWorker.onWebWorker');
   global.define = __define;
   return module.exports;
 });
@@ -14651,7 +14484,7 @@ System.register("angular2/src/core/profile/profile", ["angular2/src/core/profile
   return module.exports;
 });
 
-System.register("angular2/src/core/change_detection/change_detection", ["angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/facade/lang", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/constants", "angular2/src/core/change_detection/change_detector_ref", "angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/change_detection_util"], true, function(require, exports, module) {
+System.register("angular2/src/core/change_detection/change_detection", ["angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/constants", "angular2/src/core/change_detection/change_detector_ref", "angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/change_detection_util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -14660,7 +14493,6 @@ System.register("angular2/src/core/change_detection/change_detection", ["angular
   var default_iterable_differ_1 = require("angular2/src/core/change_detection/differs/default_iterable_differ");
   var keyvalue_differs_1 = require("angular2/src/core/change_detection/differs/keyvalue_differs");
   var default_keyvalue_differ_1 = require("angular2/src/core/change_detection/differs/default_keyvalue_differ");
-  var lang_1 = require("angular2/src/facade/lang");
   var default_keyvalue_differ_2 = require("angular2/src/core/change_detection/differs/default_keyvalue_differ");
   exports.DefaultKeyValueDifferFactory = default_keyvalue_differ_2.DefaultKeyValueDifferFactory;
   exports.KeyValueChangeRecord = default_keyvalue_differ_2.KeyValueChangeRecord;
@@ -14686,10 +14518,10 @@ System.register("angular2/src/core/change_detection/change_detection", ["angular
   exports.devModeEqual = change_detection_util_1.devModeEqual;
   exports.looseIdentical = change_detection_util_1.looseIdentical;
   exports.uninitialized = change_detection_util_1.uninitialized;
-  exports.keyValDiff = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new default_keyvalue_differ_1.DefaultKeyValueDifferFactory())]);
-  exports.iterableDiff = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new default_iterable_differ_1.DefaultIterableDifferFactory())]);
-  exports.defaultIterableDiffers = lang_1.CONST_EXPR(new iterable_differs_1.IterableDiffers(exports.iterableDiff));
-  exports.defaultKeyValueDiffers = lang_1.CONST_EXPR(new keyvalue_differs_1.KeyValueDiffers(exports.keyValDiff));
+  exports.keyValDiff = [new default_keyvalue_differ_1.DefaultKeyValueDifferFactory()];
+  exports.iterableDiff = [new default_iterable_differ_1.DefaultIterableDifferFactory()];
+  exports.defaultIterableDiffers = new iterable_differs_1.IterableDiffers(exports.iterableDiff);
+  exports.defaultKeyValueDiffers = new keyvalue_differs_1.KeyValueDiffers(exports.keyValDiff);
   global.define = __define;
   return module.exports;
 });
@@ -14707,22 +14539,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
       this.constructor = d;
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
   };
   var lang_1 = require("angular2/src/facade/lang");
   var metadata_1 = require("angular2/src/core/di/metadata");
@@ -14795,7 +14611,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
       enumerable: true,
       configurable: true
     });
-    DirectiveMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], DirectiveMetadata);
     return DirectiveMetadata;
   }(metadata_1.InjectableMetadata));
   exports.DirectiveMetadata = DirectiveMetadata;
@@ -14863,7 +14678,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
       enumerable: true,
       configurable: true
     });
-    ComponentMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], ComponentMetadata);
     return ComponentMetadata;
   }(DirectiveMetadata));
   exports.ComponentMetadata = ComponentMetadata;
@@ -14883,7 +14697,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
       enumerable: true,
       configurable: true
     });
-    PipeMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], PipeMetadata);
     return PipeMetadata;
   }(metadata_1.InjectableMetadata));
   exports.PipeMetadata = PipeMetadata;
@@ -14891,7 +14704,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
     function InputMetadata(bindingPropertyName) {
       this.bindingPropertyName = bindingPropertyName;
     }
-    InputMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], InputMetadata);
     return InputMetadata;
   }());
   exports.InputMetadata = InputMetadata;
@@ -14899,7 +14711,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
     function OutputMetadata(bindingPropertyName) {
       this.bindingPropertyName = bindingPropertyName;
     }
-    OutputMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], OutputMetadata);
     return OutputMetadata;
   }());
   exports.OutputMetadata = OutputMetadata;
@@ -14907,7 +14718,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
     function HostBindingMetadata(hostPropertyName) {
       this.hostPropertyName = hostPropertyName;
     }
-    HostBindingMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], HostBindingMetadata);
     return HostBindingMetadata;
   }());
   exports.HostBindingMetadata = HostBindingMetadata;
@@ -14916,7 +14726,6 @@ System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/l
       this.eventName = eventName;
       this.args = args;
     }
-    HostListenerMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String, Array])], HostListenerMetadata);
     return HostListenerMetadata;
   }());
   exports.HostListenerMetadata = HostListenerMetadata;
@@ -15194,22 +15003,21 @@ System.register("angular2/src/platform/dom/shared_styles_host", ["angular2/src/p
   return module.exports;
 });
 
-System.register("angular2/src/platform/dom/debug/ng_probe", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/platform/dom/dom_adapter", "angular2/src/core/debug/debug_node", "angular2/src/platform/dom/dom_renderer", "angular2/core", "angular2/src/core/debug/debug_renderer"], true, function(require, exports, module) {
+System.register("angular2/src/platform/dom/debug/ng_probe", ["angular2/src/facade/lang", "angular2/src/platform/dom/dom_adapter", "angular2/src/core/debug/debug_node", "angular2/src/platform/dom/dom_renderer", "angular2/core", "angular2/src/core/debug/debug_renderer"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var lang_1 = require("angular2/src/facade/lang");
-  var di_1 = require("angular2/src/core/di");
   var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
   var debug_node_1 = require("angular2/src/core/debug/debug_node");
   var dom_renderer_1 = require("angular2/src/platform/dom/dom_renderer");
   var core_1 = require("angular2/core");
   var debug_renderer_1 = require("angular2/src/core/debug/debug_renderer");
-  var CORE_TOKENS = lang_1.CONST_EXPR({
+  var CORE_TOKENS = {
     'ApplicationRef': core_1.ApplicationRef,
     'NgZone': core_1.NgZone
-  });
+  };
   var INSPECT_GLOBAL_NAME = 'ng.probe';
   var CORE_TOKENS_GLOBAL_NAME = 'ng.coreTokens';
   function inspectNativeElement(element) {
@@ -15227,14 +15035,16 @@ System.register("angular2/src/platform/dom/debug/ng_probe", ["angular2/src/facad
     dom_adapter_1.DOM.setGlobalVar(CORE_TOKENS_GLOBAL_NAME, CORE_TOKENS);
     return new debug_renderer_1.DebugDomRootRenderer(rootRenderer);
   }
-  exports.ELEMENT_PROBE_PROVIDERS = lang_1.CONST_EXPR([new di_1.Provider(core_1.RootRenderer, {
+  exports.ELEMENT_PROBE_PROVIDERS = [{
+    provide: core_1.RootRenderer,
     useFactory: _createConditionalRootRenderer,
     deps: [dom_renderer_1.DomRootRenderer]
-  })]);
-  exports.ELEMENT_PROBE_PROVIDERS_PROD_MODE = lang_1.CONST_EXPR([new di_1.Provider(core_1.RootRenderer, {
+  }];
+  exports.ELEMENT_PROBE_PROVIDERS_PROD_MODE = [{
+    provide: core_1.RootRenderer,
     useFactory: _createRootRenderer,
     deps: [dom_renderer_1.DomRootRenderer]
-  })]);
+  }];
   global.define = __define;
   return module.exports;
 });
@@ -18703,7 +18513,7 @@ System.register("angular2/src/compiler/directive_normalizer", ["angular2/src/com
   return module.exports;
 });
 
-System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/di", "angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/compiler/compile_metadata", "angular2/src/core/metadata/directives", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_lifecycle_reflector", "angular2/src/core/metadata/lifecycle_hooks", "angular2/src/core/reflection/reflection", "angular2/src/core/di", "angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/util", "angular2/src/compiler/assertions", "angular2/src/compiler/url_resolver", "angular2/src/core/di/provider", "angular2/src/core/di/metadata", "angular2/src/core/metadata/di", "angular2/src/core/reflection/reflector_reader"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/di", "angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/compiler/compile_metadata", "angular2/src/core/metadata/directives", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_lifecycle_reflector", "angular2/src/core/metadata/lifecycle_hooks", "angular2/src/core/reflection/reflection", "angular2/src/core/di", "angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/util", "angular2/src/compiler/assertions", "angular2/src/compiler/url_resolver", "angular2/src/core/di/provider", "angular2/src/core/di/metadata", "angular2/src/core/metadata/di", "angular2/src/core/reflection/reflector_reader", "angular2/src/core/di/provider_util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -18750,6 +18560,7 @@ System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/d
   var metadata_1 = require("angular2/src/core/di/metadata");
   var di_3 = require("angular2/src/core/metadata/di");
   var reflector_reader_1 = require("angular2/src/core/reflection/reflector_reader");
+  var provider_util_1 = require("angular2/src/core/di/provider_util");
   var CompileMetadataResolver = (function() {
     function CompileMetadataResolver(_directiveResolver, _pipeResolver, _viewResolver, _platformDirectives, _platformPipes, _reflector) {
       this._directiveResolver = _directiveResolver;
@@ -18987,6 +18798,8 @@ System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/d
           return _this.getProvidersMetadata(provider);
         } else if (provider instanceof provider_1.Provider) {
           return _this.getProviderMetadata(provider);
+        } else if (provider_util_1.isProviderLiteral(provider)) {
+          return _this.getProviderMetadata(provider_util_1.createProvider(provider));
         } else {
           return _this.getTypeMetadata(provider, staticTypeModuleUrl(provider));
         }
@@ -20476,7 +20289,7 @@ System.register("angular2/src/platform/dom/events/hammer_gestures", ["angular2/s
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var core_1 = require("angular2/core");
-  exports.HAMMER_GESTURE_CONFIG = lang_1.CONST_EXPR(new core_1.OpaqueToken("HammerGestureConfig"));
+  exports.HAMMER_GESTURE_CONFIG = new core_1.OpaqueToken("HammerGestureConfig");
   var HammerGestureConfig = (function() {
     function HammerGestureConfig() {
       this.events = [];
@@ -20537,20 +20350,20 @@ System.register("angular2/src/platform/dom/events/hammer_gestures", ["angular2/s
   return module.exports;
 });
 
-System.register("angular2/src/web_workers/ui/router_providers", ["angular2/src/web_workers/ui/platform_location", "angular2/src/facade/lang", "angular2/src/platform/browser/location/browser_platform_location", "angular2/core"], true, function(require, exports, module) {
+System.register("angular2/src/web_workers/ui/router_providers", ["angular2/src/web_workers/ui/platform_location", "angular2/src/platform/browser/location/browser_platform_location", "angular2/core"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var platform_location_1 = require("angular2/src/web_workers/ui/platform_location");
-  var lang_1 = require("angular2/src/facade/lang");
   var browser_platform_location_1 = require("angular2/src/platform/browser/location/browser_platform_location");
   var core_1 = require("angular2/core");
-  exports.WORKER_RENDER_ROUTER = lang_1.CONST_EXPR([platform_location_1.MessageBasedPlatformLocation, browser_platform_location_1.BrowserPlatformLocation, lang_1.CONST_EXPR(new core_1.Provider(core_1.APP_INITIALIZER, {
+  exports.WORKER_RENDER_ROUTER = [platform_location_1.MessageBasedPlatformLocation, browser_platform_location_1.BrowserPlatformLocation, {
+    provide: core_1.APP_INITIALIZER,
     useFactory: initRouterListeners,
     multi: true,
-    deps: lang_1.CONST_EXPR([core_1.Injector])
-  }))]);
+    deps: [core_1.Injector]
+  }];
   function initRouterListeners(injector) {
     return function() {
       var zone = injector.get(core_1.NgZone);
@@ -22531,7 +22344,7 @@ System.register("rxjs/Subscriber", ["rxjs/util/isFunction", "rxjs/Subscription",
   return module.exports;
 });
 
-System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/core/reflection/reflection", "angular2/src/core/di/reflective_key", "angular2/src/core/di/metadata", "angular2/src/core/di/reflective_exceptions", "angular2/src/core/di/forward_ref", "angular2/src/core/di/provider"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/core/reflection/reflection", "angular2/src/core/di/reflective_key", "angular2/src/core/di/metadata", "angular2/src/core/di/reflective_exceptions", "angular2/src/core/di/forward_ref", "angular2/src/core/di/provider", "angular2/src/core/di/provider_util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -22544,6 +22357,7 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
   var reflective_exceptions_1 = require("angular2/src/core/di/reflective_exceptions");
   var forward_ref_1 = require("angular2/src/core/di/forward_ref");
   var provider_1 = require("angular2/src/core/di/provider");
+  var provider_util_1 = require("angular2/src/core/di/provider_util");
   var ReflectiveDependency = (function() {
     function ReflectiveDependency(key, optional, lowerBoundVisibility, upperBoundVisibility, properties) {
       this.key = key;
@@ -22558,7 +22372,7 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
     return ReflectiveDependency;
   }());
   exports.ReflectiveDependency = ReflectiveDependency;
-  var _EMPTY_LIST = lang_1.CONST_EXPR([]);
+  var _EMPTY_LIST = [];
   var ResolvedReflectiveProvider_ = (function() {
     function ResolvedReflectiveProvider_(key, resolvedFactories, multiProvider) {
       this.key = key;
@@ -22651,6 +22465,8 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
         res.push(provider_1.provide(b, {useClass: b}));
       } else if (b instanceof provider_1.Provider) {
         res.push(b);
+      } else if (provider_util_1.isProviderLiteral(b)) {
+        res.push(provider_util_1.createProvider(b));
       } else if (b instanceof Array) {
         _normalizeProviders(b, res);
       } else if (b instanceof provider_1.ProviderBuilder) {
@@ -22988,7 +22804,7 @@ System.register("angular2/src/compiler/template_parser", ["angular2/src/facade/c
   var CLASS_PREFIX = 'class';
   var STYLE_PREFIX = 'style';
   var TEXT_CSS_SELECTOR = selector_1.CssSelector.parse('*')[0];
-  exports.TEMPLATE_TRANSFORMS = lang_1.CONST_EXPR(new core_1.OpaqueToken('TemplateTransforms'));
+  exports.TEMPLATE_TRANSFORMS = new core_1.OpaqueToken('TemplateTransforms');
   var TemplateParseError = (function(_super) {
     __extends(TemplateParseError, _super);
     function TemplateParseError(message, span, level) {
@@ -23756,7 +23572,7 @@ System.register("rxjs/util/toSubscriber", ["rxjs/Subscriber", "rxjs/symbol/rxSub
   return module.exports;
 });
 
-System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facade/collection", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/reflective_exceptions", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/di/reflective_key", "angular2/src/core/di/metadata", "angular2/src/core/di/injector"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facade/collection", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/reflective_exceptions", "angular2/src/facade/exceptions", "angular2/src/core/di/reflective_key", "angular2/src/core/di/metadata", "angular2/src/core/di/injector"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -23764,14 +23580,13 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
   var collection_1 = require("angular2/src/facade/collection");
   var reflective_provider_1 = require("angular2/src/core/di/reflective_provider");
   var reflective_exceptions_1 = require("angular2/src/core/di/reflective_exceptions");
-  var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var reflective_key_1 = require("angular2/src/core/di/reflective_key");
   var metadata_1 = require("angular2/src/core/di/metadata");
   var injector_1 = require("angular2/src/core/di/injector");
   var __unused;
   var _MAX_CONSTRUCTION_COUNTER = 10;
-  var UNDEFINED = lang_1.CONST_EXPR(new Object());
+  var UNDEFINED = new Object();
   var ReflectiveProtoInjectorInlineStrategy = (function() {
     function ReflectiveProtoInjectorInlineStrategy(protoEI, providers) {
       this.provider0 = null;
@@ -24439,7 +24254,7 @@ System.register("angular2/src/core/linker/view_utils", ["angular2/src/facade/lan
     }
     return renderNodes;
   }
-  var EMPTY_ARR = lang_1.CONST_EXPR([]);
+  var EMPTY_ARR = [];
   function ensureSlotCount(projectableNodes, expectedSlotCount) {
     var res;
     if (lang_1.isBlank(projectableNodes)) {
@@ -24795,10 +24610,10 @@ System.register("angular2/src/platform/dom/dom_renderer", ["angular2/src/core/di
   var metadata_1 = require("angular2/src/core/metadata");
   var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
   var util_1 = require("angular2/src/platform/dom/util");
-  var NAMESPACE_URIS = lang_1.CONST_EXPR({
+  var NAMESPACE_URIS = {
     'xlink': 'http://www.w3.org/1999/xlink',
     'svg': 'http://www.w3.org/2000/svg'
-  });
+  };
   var TEMPLATE_COMMENT_TEXT = 'template bindings={}';
   var TEMPLATE_BINDINGS_EXP = /^template bindings=(.*)$/g;
   var DomRootRenderer = (function() {
@@ -25394,22 +25209,6 @@ System.register("angular2/src/core/linker/component_factory", ["angular2/src/fac
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var view_utils_1 = require("angular2/src/core/linker/view_utils");
@@ -25523,7 +25322,7 @@ System.register("angular2/src/core/linker/component_factory", ["angular2/src/fac
     return ComponentRef_;
   }(ComponentRef));
   exports.ComponentRef_ = ComponentRef_;
-  var EMPTY_CONTEXT = lang_1.CONST_EXPR(new Object());
+  var EMPTY_CONTEXT = new Object();
   var ComponentFactory = (function() {
     function ComponentFactory(selector, _viewFactory, _componentType) {
       this.selector = selector;
@@ -25552,7 +25351,6 @@ System.register("angular2/src/core/linker/component_factory", ["angular2/src/fac
       var hostElement = hostView.create(EMPTY_CONTEXT, projectableNodes, rootSelectorOrNode);
       return new ComponentRef_(hostElement, this._componentType);
     };
-    ComponentFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String, Function, lang_1.Type])], ComponentFactory);
     return ComponentFactory;
   }());
   exports.ComponentFactory = ComponentFactory;
@@ -25593,7 +25391,7 @@ System.register("angular2/platform/common_dom", ["angular2/src/platform/dom/dom_
   return module.exports;
 });
 
-System.register("angular2/src/compiler/compiler", ["angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/template_ast", "angular2/src/compiler/template_parser", "angular2/src/compiler/config", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/offline_compiler", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/url_resolver", "angular2/src/compiler/xhr", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/compiler/template_parser", "angular2/src/compiler/html_parser", "angular2/src/compiler/directive_normalizer", "angular2/src/compiler/metadata_resolver", "angular2/src/compiler/style_compiler", "angular2/src/compiler/view_compiler/view_compiler", "angular2/src/compiler/config", "angular2/src/core/linker/component_resolver", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/schema/element_schema_registry", "angular2/src/compiler/schema/dom_element_schema_registry", "angular2/src/compiler/url_resolver", "angular2/src/compiler/expression_parser/parser", "angular2/src/compiler/expression_parser/lexer", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/compiler", ["angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/template_ast", "angular2/src/compiler/template_parser", "angular2/src/compiler/config", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/offline_compiler", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/url_resolver", "angular2/src/compiler/xhr", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/facade/lang", "angular2/src/compiler/template_parser", "angular2/src/compiler/html_parser", "angular2/src/compiler/directive_normalizer", "angular2/src/compiler/metadata_resolver", "angular2/src/compiler/style_compiler", "angular2/src/compiler/view_compiler/view_compiler", "angular2/src/compiler/config", "angular2/src/core/linker/component_resolver", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/schema/element_schema_registry", "angular2/src/compiler/schema/dom_element_schema_registry", "angular2/src/compiler/url_resolver", "angular2/src/compiler/expression_parser/parser", "angular2/src/compiler/expression_parser/lexer", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -25625,7 +25423,6 @@ System.register("angular2/src/compiler/compiler", ["angular2/src/core/platform_d
   var pipe_resolver_1 = require("angular2/src/compiler/pipe_resolver");
   exports.PipeResolver = pipe_resolver_1.PipeResolver;
   var lang_1 = require("angular2/src/facade/lang");
-  var di_1 = require("angular2/src/core/di");
   var template_parser_2 = require("angular2/src/compiler/template_parser");
   var html_parser_1 = require("angular2/src/compiler/html_parser");
   var directive_normalizer_1 = require("angular2/src/compiler/directive_normalizer");
@@ -25646,10 +25443,17 @@ System.register("angular2/src/compiler/compiler", ["angular2/src/core/platform_d
   function _createCompilerConfig() {
     return new config_2.CompilerConfig(lang_1.assertionsEnabled(), false, true);
   }
-  exports.COMPILER_PROVIDERS = lang_1.CONST_EXPR([lexer_1.Lexer, parser_1.Parser, html_parser_1.HtmlParser, template_parser_2.TemplateParser, directive_normalizer_1.DirectiveNormalizer, metadata_resolver_1.CompileMetadataResolver, url_resolver_2.DEFAULT_PACKAGE_URL_PROVIDER, style_compiler_1.StyleCompiler, view_compiler_1.ViewCompiler, new di_1.Provider(config_2.CompilerConfig, {
+  exports.COMPILER_PROVIDERS = [lexer_1.Lexer, parser_1.Parser, html_parser_1.HtmlParser, template_parser_2.TemplateParser, directive_normalizer_1.DirectiveNormalizer, metadata_resolver_1.CompileMetadataResolver, url_resolver_2.DEFAULT_PACKAGE_URL_PROVIDER, style_compiler_1.StyleCompiler, view_compiler_1.ViewCompiler, {
+    provide: config_2.CompilerConfig,
     useFactory: _createCompilerConfig,
     deps: []
-  }), runtime_compiler_2.RuntimeCompiler, new di_1.Provider(component_resolver_1.ComponentResolver, {useExisting: runtime_compiler_2.RuntimeCompiler}), dom_element_schema_registry_1.DomElementSchemaRegistry, new di_1.Provider(element_schema_registry_1.ElementSchemaRegistry, {useExisting: dom_element_schema_registry_1.DomElementSchemaRegistry}), url_resolver_2.UrlResolver, view_resolver_2.ViewResolver, directive_resolver_2.DirectiveResolver, pipe_resolver_2.PipeResolver]);
+  }, runtime_compiler_2.RuntimeCompiler, {
+    provide: component_resolver_1.ComponentResolver,
+    useExisting: runtime_compiler_2.RuntimeCompiler
+  }, dom_element_schema_registry_1.DomElementSchemaRegistry, {
+    provide: element_schema_registry_1.ElementSchemaRegistry,
+    useExisting: dom_element_schema_registry_1.DomElementSchemaRegistry
+  }, url_resolver_2.UrlResolver, view_resolver_2.ViewResolver, directive_resolver_2.DirectiveResolver, pipe_resolver_2.PipeResolver];
   global.define = __define;
   return module.exports;
 });
@@ -26518,11 +26322,18 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
     return ApplicationRef_;
   }(ApplicationRef));
   exports.ApplicationRef_ = ApplicationRef_;
-  exports.PLATFORM_CORE_PROVIDERS = lang_1.CONST_EXPR([PlatformRef_, lang_1.CONST_EXPR(new di_1.Provider(PlatformRef, {useExisting: PlatformRef_}))]);
-  exports.APPLICATION_CORE_PROVIDERS = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new di_1.Provider(ng_zone_1.NgZone, {
+  exports.PLATFORM_CORE_PROVIDERS = [PlatformRef_, ({
+    provide: PlatformRef,
+    useExisting: PlatformRef_
+  })];
+  exports.APPLICATION_CORE_PROVIDERS = [{
+    provide: ng_zone_1.NgZone,
     useFactory: createNgZone,
-    deps: lang_1.CONST_EXPR([])
-  })), ApplicationRef_, lang_1.CONST_EXPR(new di_1.Provider(ApplicationRef, {useExisting: ApplicationRef_}))]);
+    deps: []
+  }, ApplicationRef_, {
+    provide: ApplicationRef,
+    useExisting: ApplicationRef_
+  }];
   global.define = __define;
   return module.exports;
 });
@@ -26561,30 +26372,63 @@ System.register("angular2/src/platform/worker_render_common", ["angular2/src/fac
   var api_1 = require("angular2/src/web_workers/shared/api");
   var render_store_1 = require("angular2/src/web_workers/shared/render_store");
   var hammer_gestures_1 = require("angular2/src/platform/dom/events/hammer_gestures");
-  exports.WORKER_SCRIPT = lang_1.CONST_EXPR(new di_1.OpaqueToken("WebWorkerScript"));
-  exports.WORKER_RENDER_MESSAGING_PROVIDERS = lang_1.CONST_EXPR([renderer_1.MessageBasedRenderer, xhr_impl_2.MessageBasedXHRImpl]);
-  exports.WORKER_RENDER_PLATFORM_MARKER = lang_1.CONST_EXPR(new di_1.OpaqueToken('WorkerRenderPlatformMarker'));
-  exports.WORKER_RENDER_PLATFORM = lang_1.CONST_EXPR([core_1.PLATFORM_COMMON_PROVIDERS, lang_1.CONST_EXPR(new di_1.Provider(exports.WORKER_RENDER_PLATFORM_MARKER, {useValue: true})), new di_1.Provider(core_1.PLATFORM_INITIALIZER, {
+  exports.WORKER_SCRIPT = new di_1.OpaqueToken("WebWorkerScript");
+  exports.WORKER_RENDER_MESSAGING_PROVIDERS = [renderer_1.MessageBasedRenderer, xhr_impl_2.MessageBasedXHRImpl];
+  exports.WORKER_RENDER_PLATFORM_MARKER = new di_1.OpaqueToken('WorkerRenderPlatformMarker');
+  exports.WORKER_RENDER_PLATFORM = [core_1.PLATFORM_COMMON_PROVIDERS, ({
+    provide: exports.WORKER_RENDER_PLATFORM_MARKER,
+    useValue: true
+  }), {
+    provide: core_1.PLATFORM_INITIALIZER,
     useValue: initWebWorkerRenderPlatform,
     multi: true
-  })]);
-  exports.WORKER_RENDER_ROUTER = lang_1.CONST_EXPR([browser_platform_location_1.BrowserPlatformLocation]);
-  exports.WORKER_RENDER_APPLICATION_COMMON = lang_1.CONST_EXPR([core_1.APPLICATION_COMMON_PROVIDERS, exports.WORKER_RENDER_MESSAGING_PROVIDERS, new di_1.Provider(core_1.ExceptionHandler, {
+  }];
+  exports.WORKER_RENDER_ROUTER = [browser_platform_location_1.BrowserPlatformLocation];
+  exports.WORKER_RENDER_APPLICATION_COMMON = [core_1.APPLICATION_COMMON_PROVIDERS, exports.WORKER_RENDER_MESSAGING_PROVIDERS, {
+    provide: core_1.ExceptionHandler,
     useFactory: _exceptionHandler,
     deps: []
-  }), new di_1.Provider(dom_tokens_1.DOCUMENT, {
+  }, {
+    provide: dom_tokens_1.DOCUMENT,
     useFactory: _document,
     deps: []
-  }), new di_1.Provider(common_dom_1.EVENT_MANAGER_PLUGINS, {
+  }, {
+    provide: common_dom_1.EVENT_MANAGER_PLUGINS,
     useClass: dom_events_1.DomEventsPlugin,
     multi: true
-  }), new di_1.Provider(common_dom_1.EVENT_MANAGER_PLUGINS, {
+  }, {
+    provide: common_dom_1.EVENT_MANAGER_PLUGINS,
     useClass: key_events_1.KeyEventsPlugin,
     multi: true
-  }), new di_1.Provider(common_dom_1.EVENT_MANAGER_PLUGINS, {
+  }, {
+    provide: common_dom_1.EVENT_MANAGER_PLUGINS,
     useClass: hammer_gestures_1.HammerGesturesPlugin,
     multi: true
-  }), new di_1.Provider(hammer_gestures_1.HAMMER_GESTURE_CONFIG, {useClass: hammer_gestures_1.HammerGestureConfig}), new di_1.Provider(dom_renderer_1.DomRootRenderer, {useClass: dom_renderer_1.DomRootRenderer_}), new di_1.Provider(core_1.RootRenderer, {useExisting: dom_renderer_1.DomRootRenderer}), new di_1.Provider(shared_styles_host_1.SharedStylesHost, {useExisting: shared_styles_host_1.DomSharedStylesHost}), new di_1.Provider(compiler_1.XHR, {useClass: xhr_impl_1.XHRImpl}), xhr_impl_2.MessageBasedXHRImpl, new di_1.Provider(service_message_broker_1.ServiceMessageBrokerFactory, {useClass: service_message_broker_1.ServiceMessageBrokerFactory_}), new di_1.Provider(client_message_broker_1.ClientMessageBrokerFactory, {useClass: client_message_broker_1.ClientMessageBrokerFactory_}), serializer_1.Serializer, new di_1.Provider(api_1.ON_WEB_WORKER, {useValue: false}), render_store_1.RenderStore, shared_styles_host_1.DomSharedStylesHost, testability_1.Testability, browser_details_1.BrowserDetails, animation_builder_1.AnimationBuilder, common_dom_1.EventManager]);
+  }, {
+    provide: hammer_gestures_1.HAMMER_GESTURE_CONFIG,
+    useClass: hammer_gestures_1.HammerGestureConfig
+  }, {
+    provide: dom_renderer_1.DomRootRenderer,
+    useClass: dom_renderer_1.DomRootRenderer_
+  }, {
+    provide: core_1.RootRenderer,
+    useExisting: dom_renderer_1.DomRootRenderer
+  }, {
+    provide: shared_styles_host_1.SharedStylesHost,
+    useExisting: shared_styles_host_1.DomSharedStylesHost
+  }, {
+    provide: compiler_1.XHR,
+    useClass: xhr_impl_1.XHRImpl
+  }, xhr_impl_2.MessageBasedXHRImpl, {
+    provide: service_message_broker_1.ServiceMessageBrokerFactory,
+    useClass: service_message_broker_1.ServiceMessageBrokerFactory_
+  }, {
+    provide: client_message_broker_1.ClientMessageBrokerFactory,
+    useClass: client_message_broker_1.ClientMessageBrokerFactory_
+  }, serializer_1.Serializer, {
+    provide: api_1.ON_WEB_WORKER,
+    useValue: false
+  }, render_store_1.RenderStore, shared_styles_host_1.DomSharedStylesHost, testability_1.Testability, browser_details_1.BrowserDetails, animation_builder_1.AnimationBuilder, common_dom_1.EventManager];
   function initializeGenericWorkerRenderer(injector) {
     var bus = injector.get(message_bus_1.MessageBus);
     var zone = injector.get(ng_zone_1.NgZone);
@@ -26629,7 +26473,7 @@ System.register("angular2/src/facade/facade", ["angular2/src/facade/lang", "angu
   return module.exports;
 });
 
-System.register("angular2/src/platform/worker_render", ["angular2/src/web_workers/shared/post_message_bus", "angular2/src/web_workers/shared/message_bus", "angular2/core", "angular2/src/core/di", "angular2/src/platform/worker_render_common", "angular2/src/facade/exceptions", "angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/platform/worker_render", ["angular2/src/web_workers/shared/post_message_bus", "angular2/src/web_workers/shared/message_bus", "angular2/core", "angular2/src/core/di", "angular2/src/platform/worker_render_common", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -26656,7 +26500,6 @@ System.register("angular2/src/platform/worker_render", ["angular2/src/web_worker
   var di_1 = require("angular2/src/core/di");
   var worker_render_common_1 = require("angular2/src/platform/worker_render_common");
   var exceptions_1 = require("angular2/src/facade/exceptions");
-  var lang_1 = require("angular2/src/facade/lang");
   var WebWorkerInstance = (function() {
     function WebWorkerInstance() {}
     WebWorkerInstance.prototype.init = function(worker, bus) {
@@ -26667,20 +26510,22 @@ System.register("angular2/src/platform/worker_render", ["angular2/src/web_worker
     return WebWorkerInstance;
   }());
   exports.WebWorkerInstance = WebWorkerInstance;
-  exports.WORKER_RENDER_APPLICATION = lang_1.CONST_EXPR([worker_render_common_1.WORKER_RENDER_APPLICATION_COMMON, WebWorkerInstance, new di_1.Provider(core_1.APP_INITIALIZER, {
-    useFactory: function(injector) {
+  exports.WORKER_RENDER_APPLICATION = [worker_render_common_1.WORKER_RENDER_APPLICATION_COMMON, WebWorkerInstance, {
+    provide: core_1.APP_INITIALIZER,
+    useFactory: (function(injector) {
       return function() {
         return initWebWorkerApplication(injector);
       };
-    },
+    }),
     multi: true,
     deps: [di_1.Injector]
-  }), new di_1.Provider(message_bus_1.MessageBus, {
+  }, {
+    provide: message_bus_1.MessageBus,
     useFactory: function(instance) {
       return instance.bus;
     },
     deps: [WebWorkerInstance]
-  })]);
+  }];
   function initWebWorkerApplication(injector) {
     var scriptUri;
     try {
@@ -26750,7 +26595,10 @@ System.register("angular2/platform/worker_render", ["angular2/src/facade/lang", 
   exports.workerRenderPlatform = workerRenderPlatform;
   function bootstrapRender(workerScriptUri, customProviders) {
     var pf = core_1.ReflectiveInjector.resolveAndCreate(worker_render_common_1.WORKER_RENDER_PLATFORM);
-    var app = core_1.ReflectiveInjector.resolveAndCreate([worker_render_1.WORKER_RENDER_APPLICATION, new core_1.Provider(worker_render_common_1.WORKER_SCRIPT, {useValue: workerScriptUri}), lang_1.isPresent(customProviders) ? customProviders : []], workerRenderPlatform().injector);
+    var app = core_1.ReflectiveInjector.resolveAndCreate([worker_render_1.WORKER_RENDER_APPLICATION, {
+      provide: worker_render_common_1.WORKER_SCRIPT,
+      useValue: workerScriptUri
+    }, lang_1.isPresent(customProviders) ? customProviders : []], workerRenderPlatform().injector);
     return async_1.PromiseWrapper.resolve(app.get(core_1.ApplicationRef));
   }
   exports.bootstrapRender = bootstrapRender;

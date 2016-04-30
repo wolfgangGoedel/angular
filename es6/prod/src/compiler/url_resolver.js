@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Provider, Injectable, Inject } from 'angular2/src/core/di';
+import { Injectable, Inject } from 'angular2/src/core/di';
 import { StringWrapper, isPresent, isBlank, RegExpWrapper } from 'angular2/src/facade/lang';
 import { PACKAGE_ROOT_URL } from 'angular2/src/core/application_tokens';
 const _ASSET_SCHEME = 'asset:';
@@ -26,7 +26,10 @@ export function createOfflineCompileUrlResolver() {
 /**
  * A default provider for {@link PACKAGE_ROOT_URL} that maps to '/'.
  */
-export var DEFAULT_PACKAGE_URL_PROVIDER = new Provider(PACKAGE_ROOT_URL, { useValue: "/" });
+export var DEFAULT_PACKAGE_URL_PROVIDER = {
+    provide: PACKAGE_ROOT_URL,
+    useValue: "/"
+};
 /**
  * Used by the {@link Compiler} when resolving HTML and CSS template URLs.
  *

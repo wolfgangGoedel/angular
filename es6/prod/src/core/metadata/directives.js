@@ -1,13 +1,4 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-import { isPresent, CONST } from 'angular2/src/facade/lang';
+import { isPresent } from 'angular2/src/facade/lang';
 import { InjectableMetadata } from 'angular2/src/core/di/metadata';
 import { ChangeDetectionStrategy } from 'angular2/src/core/change_detection';
 /**
@@ -387,8 +378,9 @@ import { ChangeDetectionStrategy } from 'angular2/src/core/change_detection';
  * Note also that although the `<li></li>` template still exists inside the `<template></template>`,
  * the instantiated
  * view occurs on the second `<li></li>` which is a sibling to the `<template>` element.
+ * @ts2dart_const
  */
-export let DirectiveMetadata = class DirectiveMetadata extends InjectableMetadata {
+export class DirectiveMetadata extends InjectableMetadata {
     constructor({ selector, inputs, outputs, properties, events, host, bindings, providers, exportAs, queries } = {}) {
         super();
         this.selector = selector;
@@ -539,11 +531,7 @@ export let DirectiveMetadata = class DirectiveMetadata extends InjectableMetadat
     }
     /** @deprecated */
     get bindings() { return this.providers; }
-};
-DirectiveMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], DirectiveMetadata);
+}
 /**
  * Declare reusable UI building blocks for an application.
  *
@@ -569,8 +557,9 @@ DirectiveMetadata = __decorate([
  * ### Example
  *
  * {@example core/ts/metadata/metadata.ts region='component'}
+ * @ts2dart_const
  */
-export let ComponentMetadata = class ComponentMetadata extends DirectiveMetadata {
+export class ComponentMetadata extends DirectiveMetadata {
     constructor({ selector, inputs, outputs, properties, events, host, exportAs, moduleId, bindings, providers, viewBindings, viewProviders, changeDetection = ChangeDetectionStrategy.Default, queries, templateUrl, template, styleUrls, styles, directives, pipes, encapsulation } = {}) {
         super({
             selector: selector,
@@ -639,11 +628,7 @@ export let ComponentMetadata = class ComponentMetadata extends DirectiveMetadata
             this._viewProviders;
     }
     get viewBindings() { return this.viewProviders; }
-};
-ComponentMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], ComponentMetadata);
+}
 /**
  * Declare reusable pipe function.
  *
@@ -654,19 +639,16 @@ ComponentMetadata = __decorate([
  * ### Example
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
+ * @ts2dart_const
  */
-export let PipeMetadata = class PipeMetadata extends InjectableMetadata {
+export class PipeMetadata extends InjectableMetadata {
     constructor({ name, pure }) {
         super();
         this.name = name;
         this._pure = pure;
     }
     get pure() { return isPresent(this._pure) ? this._pure : true; }
-};
-PipeMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], PipeMetadata);
+}
 /**
  * Declares a data-bound input property.
  *
@@ -707,8 +689,9 @@ PipeMetadata = __decorate([
  *
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
-export let InputMetadata = class InputMetadata {
+export class InputMetadata {
     constructor(
         /**
          * Name used when instantiating a component in the template.
@@ -716,11 +699,7 @@ export let InputMetadata = class InputMetadata {
         bindingPropertyName) {
         this.bindingPropertyName = bindingPropertyName;
     }
-};
-InputMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [String])
-], InputMetadata);
+}
 /**
  * Declares an event-bound output property.
  *
@@ -761,16 +740,13 @@ InputMetadata = __decorate([
  * }
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
-export let OutputMetadata = class OutputMetadata {
+export class OutputMetadata {
     constructor(bindingPropertyName) {
         this.bindingPropertyName = bindingPropertyName;
     }
-};
-OutputMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [String])
-], OutputMetadata);
+}
 /**
  * Declares a host property binding.
  *
@@ -805,16 +781,13 @@ OutputMetadata = __decorate([
  *
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
-export let HostBindingMetadata = class HostBindingMetadata {
+export class HostBindingMetadata {
     constructor(hostPropertyName) {
         this.hostPropertyName = hostPropertyName;
     }
-};
-HostBindingMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [String])
-], HostBindingMetadata);
+}
 /**
  * Declares a host listener.
  *
@@ -848,14 +821,11 @@ HostBindingMetadata = __decorate([
  *
  * bootstrap(App);
  * ```
+ * @ts2dart_const
  */
-export let HostListenerMetadata = class HostListenerMetadata {
+export class HostListenerMetadata {
     constructor(eventName, args) {
         this.eventName = eventName;
         this.args = args;
     }
-};
-HostListenerMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [String, Array])
-], HostListenerMetadata);
+}

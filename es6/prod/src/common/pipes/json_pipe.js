@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Json, CONST } from 'angular2/src/facade/lang';
+import { Json } from 'angular2/src/facade/lang';
 import { Injectable, Pipe } from 'angular2/core';
 /**
  * Transforms any input value using `JSON.stringify`. Useful for debugging.
@@ -15,11 +15,11 @@ import { Injectable, Pipe } from 'angular2/core';
  * ### Example
  * {@example core/pipes/ts/json_pipe/json_pipe_example.ts region='JsonPipe'}
  */
+/* @ts2dart_const */
 export let JsonPipe = class JsonPipe {
     transform(value) { return Json.stringify(value); }
 };
 JsonPipe = __decorate([
-    CONST(),
     Pipe({ name: 'json', pure: false }),
     Injectable(), 
     __metadata('design:paramtypes', [])

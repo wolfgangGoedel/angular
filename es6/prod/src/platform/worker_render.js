@@ -10,10 +10,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { PostMessageBus, PostMessageBusSink, PostMessageBusSource } from 'angular2/src/web_workers/shared/post_message_bus';
 import { MessageBus } from 'angular2/src/web_workers/shared/message_bus';
 import { APP_INITIALIZER } from 'angular2/core';
-import { Injector, Injectable, Provider } from 'angular2/src/core/di';
+import { Injector, Injectable } from 'angular2/src/core/di';
 import { WORKER_RENDER_APPLICATION_COMMON, WORKER_SCRIPT, initializeGenericWorkerRenderer } from 'angular2/src/platform/worker_render_common';
 import { BaseException } from 'angular2/src/facade/exceptions';
-import { CONST_EXPR } from 'angular2/src/facade/lang';
 /**
  * Wrapper class that exposes the Worker
  * and underlying {@link MessageBus} for lower level message passing.
@@ -32,16 +31,20 @@ WebWorkerInstance = __decorate([
 /**
  * An array of providers that should be passed into `application()` when initializing a new Worker.
  */
-export const WORKER_RENDER_APPLICATION = CONST_EXPR([
-    WORKER_RENDER_APPLICATION_COMMON,
-    WebWorkerInstance,
-    new Provider(APP_INITIALIZER, {
-        useFactory: (injector) => () => initWebWorkerApplication(injector),
+export const WORKER_RENDER_APPLICATION = [
+    WORKER_RENDER_APPLICATION_COMMON, WebWorkerInstance,
+    /*@ts2dart_Provider*/ {
+        provide: APP_INITIALIZER,
+        useFactory: (injector => () => initWebWorkerApplication(injector)),
         multi: true,
         deps: [Injector]
-    }),
-    new Provider(MessageBus, { useFactory: (instance) => instance.bus, deps: [WebWorkerInstance] })
-]);
+    },
+    /*@ts2dart_Provider*/ {
+        provide: MessageBus,
+        useFactory: (instance) => instance.bus,
+        deps: [WebWorkerInstance]
+    }
+];
 function initWebWorkerApplication(injector) {
     var scriptUri;
     try {

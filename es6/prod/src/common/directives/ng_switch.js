@@ -11,9 +11,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Directive, Host, ViewContainerRef, TemplateRef } from 'angular2/core';
-import { isPresent, isBlank, normalizeBlank, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, normalizeBlank } from 'angular2/src/facade/lang';
 import { ListWrapper, Map } from 'angular2/src/facade/collection';
-const _WHEN_DEFAULT = CONST_EXPR(new Object());
+const _WHEN_DEFAULT = new Object();
 export class SwitchView {
     constructor(_viewContainerRef, _templateRef) {
         this._viewContainerRef = _viewContainerRef;

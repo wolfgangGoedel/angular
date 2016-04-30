@@ -1,4 +1,3 @@
-import { OpaqueToken } from 'angular2/core';
 import { Console } from 'angular2/src/core/console';
 import { RecursiveAstVisitor, BindingPipe } from './expression_parser/ast';
 import { Parser } from './expression_parser/parser';
@@ -14,7 +13,7 @@ import { ElementSchemaRegistry } from 'angular2/src/compiler/schema/element_sche
  *
  * This is currently an internal-only feature and not meant for general use.
  */
-export declare const TEMPLATE_TRANSFORMS: OpaqueToken;
+export declare const TEMPLATE_TRANSFORMS: any;
 export declare class TemplateParseError extends ParseError {
     constructor(message: string, span: ParseSourceSpan, level: ParseErrorLevel);
 }

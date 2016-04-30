@@ -1,6 +1,6 @@
 import { isPresent, isBlank } from 'angular2/src/facade/lang';
 import { PromiseWrapper } from 'angular2/src/facade/async';
-import { ApplicationRef, ReflectiveInjector, Provider, getPlatform, createPlatform, assertPlatform } from 'angular2/core';
+import { ApplicationRef, ReflectiveInjector, getPlatform, createPlatform, assertPlatform } from 'angular2/core';
 import { WORKER_RENDER_APPLICATION } from 'angular2/src/platform/worker_render';
 import { WORKER_SCRIPT, WORKER_RENDER_PLATFORM, WORKER_RENDER_PLATFORM_MARKER } from 'angular2/src/platform/worker_render_common';
 export { WORKER_SCRIPT, WORKER_RENDER_PLATFORM, initializeGenericWorkerRenderer, WORKER_RENDER_APPLICATION_COMMON } from 'angular2/src/platform/worker_render_common';
@@ -24,7 +24,7 @@ export function bootstrapRender(workerScriptUri, customProviders) {
     var pf = ReflectiveInjector.resolveAndCreate(WORKER_RENDER_PLATFORM);
     var app = ReflectiveInjector.resolveAndCreate([
         WORKER_RENDER_APPLICATION,
-        new Provider(WORKER_SCRIPT, { useValue: workerScriptUri }),
+        /* @ts2dart_Provider */ { provide: WORKER_SCRIPT, useValue: workerScriptUri },
         isPresent(customProviders) ? customProviders : []
     ], workerRenderPlatform().injector);
     // Return a promise so that we keep the same semantics as Dart,

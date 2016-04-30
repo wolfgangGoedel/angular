@@ -55,6 +55,7 @@ export declare var VIEW_ENCAPSULATION_VALUES: ViewEncapsulation[];
  *   }
  * }
  * ```
+ * @ts2dart_const
  */
 export declare class ViewMetadata {
     /**

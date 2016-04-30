@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Injectable } from 'angular2/src/core/di';
 import { Map, MapWrapper } from 'angular2/src/facade/collection';
-import { CONST, CONST_EXPR, scheduleMicroTask } from 'angular2/src/facade/lang';
+import { scheduleMicroTask } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { NgZone } from '../zone/ng_zone';
 import { ObservableWrapper } from 'angular2/src/facade/async';
@@ -125,20 +125,17 @@ TestabilityRegistry = __decorate([
     Injectable(), 
     __metadata('design:paramtypes', [])
 ], TestabilityRegistry);
-let _NoopGetTestability = class _NoopGetTestability {
+/* @ts2dart_const */
+class _NoopGetTestability {
     addToWindow(registry) { }
     findTestabilityInTree(registry, elem, findInAncestors) {
         return null;
     }
-};
-_NoopGetTestability = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [])
-], _NoopGetTestability);
+}
 /**
  * Set the {@link GetTestability} implementation used by the Angular testing framework.
  */
 export function setTestabilityGetter(getter) {
     _testabilityGetter = getter;
 }
-var _testabilityGetter = CONST_EXPR(new _NoopGetTestability());
+var _testabilityGetter = new _NoopGetTestability();
