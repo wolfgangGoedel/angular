@@ -7,4 +7,4 @@ export { PRIMITIVE } from 'angular2/src/web_workers/shared/serializer';
 export * from 'angular2/src/web_workers/shared/message_bus';
 export { WORKER_APP_ROUTER } from 'angular2/src/web_workers/worker/router_providers';
 export declare function workerAppPlatform(): PlatformRef;
-export declare function bootstrapApp(appComponentType: Type, customProviders?: Array<any>): Promise<ComponentRef>;
+export declare function bootstrapApp(appComponentType: Type, customProviders?: Array<any>): Promise<ComponentRef<any>>;

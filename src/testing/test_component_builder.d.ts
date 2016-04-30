@@ -1,4 +1,4 @@
-import { OpaqueToken, ComponentRef, Injector, ViewMetadata, ElementRef, ChangeDetectorRef, NgZone } from 'angular2/core';
+import { OpaqueToken, ComponentRef, ComponentFactory, Injector, ViewMetadata, ElementRef, ChangeDetectorRef, NgZone } from 'angular2/core';
 import { Type } from 'angular2/src/facade/lang';
 import { DebugElement } from 'angular2/src/core/debug/debug_node';
 export declare var ComponentFixtureAutoDetect: OpaqueToken;
@@ -6,7 +6,7 @@ export declare var ComponentFixtureNoNgZone: OpaqueToken;
 /**
  * Fixture for debugging and testing a component.
  */
-export declare class ComponentFixture {
+export declare class ComponentFixture<T> {
     /**
      * The DebugElement associated with the root element of this component.
      */
@@ -26,7 +26,7 @@ export declare class ComponentFixture {
     /**
      * The ComponentRef for the component
      */
-    componentRef: ComponentRef;
+    componentRef: ComponentRef<T>;
     /**
      * The ChangeDetectorRef for the component
      */
@@ -42,7 +42,7 @@ export declare class ComponentFixture {
     private _onStableSubscription;
     private _onMicrotaskEmptySubscription;
     private _onErrorSubscription;
-    constructor(componentRef: ComponentRef, ngZone: NgZone, autoDetect: boolean);
+    constructor(componentRef: ComponentRef<T>, ngZone: NgZone, autoDetect: boolean);
     private _tick(checkNoChanges);
     /**
      * Trigger a change detection cycle for the component.
@@ -150,11 +150,13 @@ export declare class TestComponentBuilder {
      * @deprecated
      */
     overrideViewBindings(type: Type, providers: any[]): TestComponentBuilder;
+    private _create<C>(ngZone, componentFactory);
     /**
      * Builds and returns a ComponentFixture.
      *
      * @return {Promise<ComponentFixture>}
      */
-    createAsync(rootComponentType: Type): Promise<ComponentFixture>;
-    createFakeAsync(rootComponentType: Type): ComponentFixture;
+    createAsync(rootComponentType: Type): Promise<ComponentFixture<any>>;
+    createFakeAsync(rootComponentType: Type): ComponentFixture<any>;
+    createSync<C>(componentFactory: ComponentFactory<C>): ComponentFixture<C>;
 }

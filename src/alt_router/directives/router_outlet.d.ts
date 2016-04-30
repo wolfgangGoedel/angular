@@ -8,5 +8,5 @@ export declare class RouterOutlet {
     unload(): void;
     loadedComponent: Object;
     isLoaded: boolean;
-    load(factory: ComponentFactory, providers: ResolvedReflectiveProvider[], outletMap: RouterOutletMap): ComponentRef;
+    load(factory: ComponentFactory<any>, providers: ResolvedReflectiveProvider[], outletMap: RouterOutletMap): ComponentRef<any>;
 }

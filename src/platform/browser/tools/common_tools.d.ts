@@ -11,7 +11,7 @@ export declare class ChangeDetectionPerfRecord {
  */
 export declare class AngularTools {
     profiler: AngularProfiler;
-    constructor(ref: ComponentRef);
+    constructor(ref: ComponentRef<any>);
 }
 /**
  * Entry point for all Angular profiling-related debug tools. This object
@@ -19,7 +19,7 @@ export declare class AngularTools {
  */
 export declare class AngularProfiler {
     appRef: ApplicationRef;
-    constructor(ref: ComponentRef);
+    constructor(ref: ComponentRef<any>);
     /**
      * Exercises change detection in a loop and then prints the average amount of
      * time in milliseconds how long a single round of change detection takes for

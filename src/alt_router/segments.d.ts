@@ -33,11 +33,11 @@ export declare class RouteSegment {
     outlet: string;
     constructor(urlSegments: UrlSegment[], parameters: {
         [key: string]: string;
-    }, outlet: string, type: Type, componentFactory: ComponentFactory);
+    }, outlet: string, type: Type, componentFactory: ComponentFactory<any>);
     getParam(param: string): string;
     type: Type;
     stringifiedUrlSegments: string;
 }
 export declare function serializeRouteSegmentTree(tree: Tree<RouteSegment>): string;
 export declare function equalSegments(a: RouteSegment, b: RouteSegment): boolean;
-export declare function routeSegmentComponentFactory(a: RouteSegment): ComponentFactory;
+export declare function routeSegmentComponentFactory(a: RouteSegment): ComponentFactory<any>;

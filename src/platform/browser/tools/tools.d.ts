@@ -10,7 +10,7 @@ import { ComponentRef } from 'angular2/src/core/linker/component_factory';
  * 1. Try the change detection profiler `ng.profiler.timeChangeDetection()`
  *    then hit Enter.
  */
-export declare function enableDebugTools(ref: ComponentRef): void;
+export declare function enableDebugTools(ref: ComponentRef<any>): void;
 /**
  * Disables Angular 2 tools.
  */

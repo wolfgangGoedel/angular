@@ -12,4 +12,4 @@ export declare function browserStaticPlatform(): PlatformRef;
 /**
  * See {@link bootstrap} for more information.
  */
-export declare function bootstrapStatic(appComponentType: Type, customProviders?: Array<any>, initReflector?: Function): Promise<ComponentRef>;
+export declare function bootstrapStatic(appComponentType: Type, customProviders?: Array<any>, initReflector?: Function): Promise<ComponentRef<any>>;

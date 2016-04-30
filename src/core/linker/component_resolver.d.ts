@@ -5,10 +5,10 @@ import { ComponentFactory } from './component_factory';
  * can later be used to create and render a Component instance.
  */
 export declare abstract class ComponentResolver {
-    abstract resolveComponent(componentType: Type): Promise<ComponentFactory>;
+    abstract resolveComponent(componentType: Type): Promise<ComponentFactory<any>>;
     abstract clearCache(): any;
 }
 export declare class ReflectorComponentResolver extends ComponentResolver {
-    resolveComponent(componentType: Type): Promise<ComponentFactory>;
+    resolveComponent(componentType: Type): Promise<ComponentFactory<any>>;
     clearCache(): void;
 }

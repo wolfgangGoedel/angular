@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { OpaqueToken, DynamicComponentLoader, Injector, Injectable, NgZone } from 'angular2/core';
+import { OpaqueToken, ComponentResolver, Injector, Injectable, NgZone } from 'angular2/core';
 import { DirectiveResolver, ViewResolver } from 'angular2/compiler';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { isPresent, IS_DART } from 'angular2/src/facade/lang';
@@ -266,6 +266,20 @@ export let TestComponentBuilder = TestComponentBuilder_1 = class TestComponentBu
     overrideViewBindings(type, providers) {
         return this.overrideViewProviders(type, providers);
     }
+    _create(ngZone, componentFactory) {
+        let rootElId = `root${_nextRootElementId++}`;
+        let rootEl = el(`<div id="${rootElId}"></div>`);
+        let doc = this._injector.get(DOCUMENT);
+        // TODO(juliemr): can/should this be optional?
+        let oldRoots = DOM.querySelectorAll(doc, '[id^=root]');
+        for (let i = 0; i < oldRoots.length; i++) {
+            DOM.remove(oldRoots[i]);
+        }
+        DOM.appendChild(doc.body, rootEl);
+        var componentRef = componentFactory.create(this._injector, [], `#${rootElId}`);
+        let autoDetect = this._injector.get(ComponentFixtureAutoDetect, false);
+        return new ComponentFixture(componentRef, ngZone, autoDetect);
+    }
     /**
      * Builds and returns a ComponentFixture.
      *
@@ -274,7 +288,6 @@ export let TestComponentBuilder = TestComponentBuilder_1 = class TestComponentBu
     createAsync(rootComponentType) {
         let noNgZone = IS_DART || this._injector.get(ComponentFixtureNoNgZone, false);
         let ngZone = noNgZone ? null : this._injector.get(NgZone, null);
-        let autoDetect = this._injector.get(ComponentFixtureAutoDetect, false);
         let initComponent = () => {
             let mockDirectiveResolver = this._injector.get(DirectiveResolver);
             let mockViewResolver = this._injector.get(ViewResolver);
@@ -285,18 +298,8 @@ export let TestComponentBuilder = TestComponentBuilder_1 = class TestComponentBu
             });
             this._bindingsOverrides.forEach((bindings, type) => mockDirectiveResolver.setBindingsOverride(type, bindings));
             this._viewBindingsOverrides.forEach((bindings, type) => mockDirectiveResolver.setViewBindingsOverride(type, bindings));
-            let rootElId = `root${_nextRootElementId++}`;
-            let rootEl = el(`<div id="${rootElId}"></div>`);
-            let doc = this._injector.get(DOCUMENT);
-            // TODO(juliemr): can/should this be optional?
-            let oldRoots = DOM.querySelectorAll(doc, '[id^=root]');
-            for (let i = 0; i < oldRoots.length; i++) {
-                DOM.remove(oldRoots[i]);
-            }
-            DOM.appendChild(doc.body, rootEl);
-            let promise = this._injector.get(DynamicComponentLoader)
-                .loadAsRoot(rootComponentType, `#${rootElId}`, this._injector);
-            return promise.then((componentRef) => { return new ComponentFixture(componentRef, ngZone, autoDetect); });
+            let promise = this._injector.get(ComponentResolver).resolveComponent(rootComponentType);
+            return promise.then(componentFactory => this._create(ngZone, componentFactory));
         };
         return ngZone == null ? initComponent() : ngZone.run(initComponent);
     }
@@ -309,6 +312,12 @@ export let TestComponentBuilder = TestComponentBuilder_1 = class TestComponentBu
             throw error;
         }
         return result;
+    }
+    createSync(componentFactory) {
+        let noNgZone = IS_DART || this._injector.get(ComponentFixtureNoNgZone, false);
+        let ngZone = noNgZone ? null : this._injector.get(NgZone, null);
+        let initComponent = () => this._create(ngZone, componentFactory);
+        return ngZone == null ? initComponent() : ngZone.run(initComponent);
     }
 };
 TestComponentBuilder = TestComponentBuilder_1 = __decorate([

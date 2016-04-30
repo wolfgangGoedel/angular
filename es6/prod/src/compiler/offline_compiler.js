@@ -49,12 +49,12 @@ export class OfflineCompiler {
             var hostViewFactoryVar = this._compileComponent(hostMeta, [compMeta], [], statements);
             var compFactoryVar = `${compMeta.type.name}NgFactory`;
             statements.push(o.variable(compFactoryVar)
-                .set(o.importExpr(_COMPONENT_FACTORY_IDENTIFIER)
+                .set(o.importExpr(_COMPONENT_FACTORY_IDENTIFIER, [o.importType(compMeta.type)])
                 .instantiate([
                 o.literal(compMeta.selector),
                 o.variable(hostViewFactoryVar),
                 o.importExpr(compMeta.type)
-            ], o.importType(_COMPONENT_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const])))
+            ], o.importType(_COMPONENT_FACTORY_IDENTIFIER, [o.importType(compMeta.type)], [o.TypeModifier.Const])))
                 .toDeclStmt(null, [o.StmtModifier.Final]));
             exportedVars.push(compFactoryVar);
         });

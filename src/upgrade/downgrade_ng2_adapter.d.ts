@@ -15,12 +15,12 @@ export declare class DowngradeNg2ComponentAdapter {
     inputChanges: {
         [key: string]: SimpleChange;
     };
-    componentRef: ComponentRef;
+    componentRef: ComponentRef<any>;
     changeDetector: ChangeDetectorRef;
     componentScope: angular.IScope;
     childNodes: Node[];
     contentInsertionPoint: Node;
-    constructor(id: string, info: ComponentInfo, element: angular.IAugmentedJQuery, attrs: angular.IAttributes, scope: angular.IScope, parentInjector: Injector, parse: angular.IParseService, componentFactory: ComponentFactory);
+    constructor(id: string, info: ComponentInfo, element: angular.IAugmentedJQuery, attrs: angular.IAttributes, scope: angular.IScope, parentInjector: Injector, parse: angular.IParseService, componentFactory: ComponentFactory<any>);
     bootstrapNg2(): void;
     setupInputs(): void;
     projectContent(): void;

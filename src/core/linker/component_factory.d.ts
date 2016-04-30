@@ -11,7 +11,7 @@ import { ChangeDetectorRef } from '../change_detection/change_detection';
  * Component Instance and allows you to destroy the Component Instance via the {@link #destroy}
  * method.
  */
-export declare abstract class ComponentRef {
+export declare abstract class ComponentRef<C> {
     /**
      * Location of the Host Element of this Component Instance.
      */
@@ -23,7 +23,7 @@ export declare abstract class ComponentRef {
     /**
      * The instance of the Component.
      */
-    instance: any;
+    instance: C;
     /**
      * The {@link ViewRef} of the Host View of this Component instance.
      */
@@ -45,20 +45,20 @@ export declare abstract class ComponentRef {
      */
     abstract onDestroy(callback: Function): void;
 }
-export declare class ComponentRef_ extends ComponentRef {
+export declare class ComponentRef_<C> extends ComponentRef<C> {
     private _hostElement;
     private _componentType;
     constructor(_hostElement: AppElement, _componentType: Type);
     location: ElementRef;
     injector: Injector;
-    instance: any;
+    instance: C;
     hostView: ViewRef;
     changeDetectorRef: ChangeDetectorRef;
     componentType: Type;
     destroy(): void;
     onDestroy(callback: Function): void;
 }
-export declare class ComponentFactory {
+export declare class ComponentFactory<C> {
     selector: string;
     private _viewFactory;
     private _componentType;
@@ -67,5 +67,5 @@ export declare class ComponentFactory {
     /**
      * Creates a new component.
      */
-    create(injector: Injector, projectableNodes?: any[][], rootSelectorOrNode?: string | any): ComponentRef;
+    create(injector: Injector, projectableNodes?: any[][], rootSelectorOrNode?: string | any): ComponentRef<C>;
 }

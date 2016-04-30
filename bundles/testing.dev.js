@@ -1189,11 +1189,23 @@ System.register("angular2/src/testing/test_component_builder", ["angular2/core",
     TestComponentBuilder.prototype.overrideViewBindings = function(type, providers) {
       return this.overrideViewProviders(type, providers);
     };
+    TestComponentBuilder.prototype._create = function(ngZone, componentFactory) {
+      var rootElId = "root" + _nextRootElementId++;
+      var rootEl = utils_1.el("<div id=\"" + rootElId + "\"></div>");
+      var doc = this._injector.get(dom_tokens_1.DOCUMENT);
+      var oldRoots = dom_adapter_1.DOM.querySelectorAll(doc, '[id^=root]');
+      for (var i = 0; i < oldRoots.length; i++) {
+        dom_adapter_1.DOM.remove(oldRoots[i]);
+      }
+      dom_adapter_1.DOM.appendChild(doc.body, rootEl);
+      var componentRef = componentFactory.create(this._injector, [], "#" + rootElId);
+      var autoDetect = this._injector.get(exports.ComponentFixtureAutoDetect, false);
+      return new ComponentFixture(componentRef, ngZone, autoDetect);
+    };
     TestComponentBuilder.prototype.createAsync = function(rootComponentType) {
       var _this = this;
       var noNgZone = lang_1.IS_DART || this._injector.get(exports.ComponentFixtureNoNgZone, false);
       var ngZone = noNgZone ? null : this._injector.get(core_1.NgZone, null);
-      var autoDetect = this._injector.get(exports.ComponentFixtureAutoDetect, false);
       var initComponent = function() {
         var mockDirectiveResolver = _this._injector.get(compiler_1.DirectiveResolver);
         var mockViewResolver = _this._injector.get(compiler_1.ViewResolver);
@@ -1214,17 +1226,9 @@ System.register("angular2/src/testing/test_component_builder", ["angular2/core",
         _this._viewBindingsOverrides.forEach(function(bindings, type) {
           return mockDirectiveResolver.setViewBindingsOverride(type, bindings);
         });
-        var rootElId = "root" + _nextRootElementId++;
-        var rootEl = utils_1.el("<div id=\"" + rootElId + "\"></div>");
-        var doc = _this._injector.get(dom_tokens_1.DOCUMENT);
-        var oldRoots = dom_adapter_1.DOM.querySelectorAll(doc, '[id^=root]');
-        for (var i = 0; i < oldRoots.length; i++) {
-          dom_adapter_1.DOM.remove(oldRoots[i]);
-        }
-        dom_adapter_1.DOM.appendChild(doc.body, rootEl);
-        var promise = _this._injector.get(core_1.DynamicComponentLoader).loadAsRoot(rootComponentType, "#" + rootElId, _this._injector);
-        return promise.then(function(componentRef) {
-          return new ComponentFixture(componentRef, ngZone, autoDetect);
+        var promise = _this._injector.get(core_1.ComponentResolver).resolveComponent(rootComponentType);
+        return promise.then(function(componentFactory) {
+          return _this._create(ngZone, componentFactory);
         });
       };
       return ngZone == null ? initComponent() : ngZone.run(initComponent);
@@ -1242,6 +1246,15 @@ System.register("angular2/src/testing/test_component_builder", ["angular2/core",
         throw error;
       }
       return result;
+    };
+    TestComponentBuilder.prototype.createSync = function(componentFactory) {
+      var _this = this;
+      var noNgZone = lang_1.IS_DART || this._injector.get(exports.ComponentFixtureNoNgZone, false);
+      var ngZone = noNgZone ? null : this._injector.get(core_1.NgZone, null);
+      var initComponent = function() {
+        return _this._create(ngZone, componentFactory);
+      };
+      return ngZone == null ? initComponent() : ngZone.run(initComponent);
     };
     TestComponentBuilder = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [core_1.Injector])], TestComponentBuilder);
     return TestComponentBuilder;

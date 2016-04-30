@@ -29,13 +29,13 @@ export declare function getPlatform(): PlatformRef;
  * Shortcut for ApplicationRef.bootstrap.
  * Requires a platform the be created first.
  */
-export declare function coreBootstrap(injector: Injector, componentFactory: ComponentFactory): ComponentRef;
+export declare function coreBootstrap<C>(injector: Injector, componentFactory: ComponentFactory<C>): ComponentRef<C>;
 /**
  * Resolves the componentFactory for the given component,
  * waits for asynchronous initializers and bootstraps the component.
  * Requires a platform the be created first.
  */
-export declare function coreLoadAndBootstrap(injector: Injector, componentType: Type): Promise<ComponentRef>;
+export declare function coreLoadAndBootstrap(injector: Injector, componentType: Type): Promise<ComponentRef<any>>;
 /**
  * The Angular platform is the entry point for Angular on a web page. Each page
  * has exactly one platform, and services (such as reflection) which are common
@@ -80,7 +80,7 @@ export declare abstract class ApplicationRef {
      * Register a listener to be called each time `bootstrap()` is called to bootstrap
      * a new root component.
      */
-    abstract registerBootstrapListener(listener: (ref: ComponentRef) => void): void;
+    abstract registerBootstrapListener(listener: (ref: ComponentRef<any>) => void): void;
     /**
      * Register a listener to be called when the application is disposed.
      */
@@ -107,7 +107,7 @@ export declare abstract class ApplicationRef {
      * ### Example
      * {@example core/ts/platform/platform.ts region='longform'}
      */
-    abstract bootstrap(componentFactory: ComponentFactory): ComponentRef;
+    abstract bootstrap<C>(componentFactory: ComponentFactory<C>): ComponentRef<C>;
     /**
      * Retrieve the application {@link Injector}.
      */
@@ -144,13 +144,13 @@ export declare class ApplicationRef_ extends ApplicationRef {
     private _asyncInitDonePromise;
     private _asyncInitDone;
     constructor(_platform: PlatformRef_, _zone: NgZone, _injector: Injector);
-    registerBootstrapListener(listener: (ref: ComponentRef) => void): void;
+    registerBootstrapListener(listener: (ref: ComponentRef<any>) => void): void;
     registerDisposeListener(dispose: () => void): void;
     registerChangeDetector(changeDetector: ChangeDetectorRef): void;
     unregisterChangeDetector(changeDetector: ChangeDetectorRef): void;
     waitForAsyncInitializers(): Promise<any>;
     run(callback: Function): any;
-    bootstrap(componentFactory: ComponentFactory): ComponentRef;
+    bootstrap<C>(componentFactory: ComponentFactory<C>): ComponentRef<C>;
     injector: Injector;
     zone: NgZone;
     tick(): void;

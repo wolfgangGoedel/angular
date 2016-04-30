@@ -75,4 +75,4 @@ export declare function browserPlatform(): PlatformRef;
  *
  * Returns a `Promise` of {@link ComponentRef}.
  */
-export declare function bootstrap(appComponentType: Type, customProviders?: Array<any>): Promise<ComponentRef>;
+export declare function bootstrap(appComponentType: Type, customProviders?: Array<any>): Promise<ComponentRef<any>>;
