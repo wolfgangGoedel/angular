@@ -7,7 +7,7 @@ import "directives/router_outlet.dart" show RouterOutlet;
 import "package:angular2/src/facade/lang.dart" show Type, isBlank, isPresent;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "package:angular2/src/facade/async.dart"
-    show EventEmitter, Stream, PromiseWrapper;
+    show EventEmitter, Stream, PromiseWrapper, ObservableWrapper;
 import "package:angular2/src/facade/collection.dart" show StringMapWrapper;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "router_url_serializer.dart" show RouterUrlSerializer;
@@ -45,9 +45,11 @@ class Router {
   Location _location;
   Tree<RouteSegment> _prevTree;
   Tree<UrlSegment> _urlTree;
+  dynamic _locationSubscription;
   EventEmitter _changes = new EventEmitter();
   Router(this._rootComponent, this._rootComponentType, this._componentResolver,
       this._urlSerializer, this._routerOutletMap, this._location) {
+    this._setUpLocationChangeListener();
     this.navigateByUrl(this._location.path());
   }
   Tree<UrlSegment> get urlTree {
@@ -60,6 +62,16 @@ class Router {
 
   Future navigate(List<dynamic> changes, [RouteSegment segment]) {
     return this._navigate(this.createUrlTree(changes, segment));
+  }
+
+  void dispose() {
+    ObservableWrapper.dispose(this._locationSubscription);
+  }
+
+  void _setUpLocationChangeListener() {
+    this._locationSubscription = this._location.subscribe((change) {
+      this._navigate(this._urlSerializer.parse(change["url"]));
+    });
   }
 
   Future _navigate(Tree<UrlSegment> url) {
