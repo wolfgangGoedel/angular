@@ -17,11 +17,14 @@ export declare class Router {
     private _location;
     private _prevTree;
     private _urlTree;
+    private _locationSubscription;
     private _changes;
     constructor(_rootComponent: Object, _rootComponentType: Type, _componentResolver: ComponentResolver, _urlSerializer: RouterUrlSerializer, _routerOutletMap: RouterOutletMap, _location: Location);
     urlTree: Tree<UrlSegment>;
     navigateByUrl(url: string): Promise<void>;
     navigate(changes: any[], segment?: RouteSegment): Promise<void>;
+    dispose(): void;
+    private _setUpLocationChangeListener();
     private _navigate(url);
     createUrlTree(changes: any[], segment?: RouteSegment): Tree<UrlSegment>;
     serializeUrl(url: Tree<UrlSegment>): string;

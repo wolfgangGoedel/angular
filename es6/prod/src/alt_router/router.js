@@ -1,7 +1,7 @@
 import { provide, ReflectiveInjector } from 'angular2/core';
 import { isBlank, isPresent } from 'angular2/src/facade/lang';
 import { ListWrapper } from 'angular2/src/facade/collection';
-import { EventEmitter, PromiseWrapper } from 'angular2/src/facade/async';
+import { EventEmitter, PromiseWrapper, ObservableWrapper } from 'angular2/src/facade/async';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { recognize } from './recognize';
@@ -25,6 +25,7 @@ export class Router {
         this._routerOutletMap = _routerOutletMap;
         this._location = _location;
         this._changes = new EventEmitter();
+        this._setUpLocationChangeListener();
         this.navigateByUrl(this._location.path());
     }
     get urlTree() { return this._urlTree; }
@@ -33,6 +34,10 @@ export class Router {
     }
     navigate(changes, segment) {
         return this._navigate(this.createUrlTree(changes, segment));
+    }
+    dispose() { ObservableWrapper.dispose(this._locationSubscription); }
+    _setUpLocationChangeListener() {
+        this._locationSubscription = this._location.subscribe((change) => { this._navigate(this._urlSerializer.parse(change['url'])); });
     }
     _navigate(url) {
         this._urlTree = url;

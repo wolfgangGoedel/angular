@@ -1401,7 +1401,11 @@ System.register("angular2/src/alt_router/router_providers_common", ["angular2/co
     if (app.componentTypes.length == 0) {
       throw new exceptions_1.BaseException("Bootstrap at least one component before injecting Router.");
     }
-    return new router_1.Router(null, app.componentTypes[0], componentResolver, urlSerializer, routerOutletMap, location);
+    var router = new router_1.Router(null, app.componentTypes[0], componentResolver, urlSerializer, routerOutletMap, location);
+    app.registerDisposeListener(function() {
+      return router.dispose();
+    });
+    return router;
   }
   global.define = __define;
   return module.exports;
@@ -1458,6 +1462,7 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
       this._routerOutletMap = _routerOutletMap;
       this._location = _location;
       this._changes = new async_1.EventEmitter();
+      this._setUpLocationChangeListener();
       this.navigateByUrl(this._location.path());
     }
     Object.defineProperty(Router.prototype, "urlTree", {
@@ -1472,6 +1477,15 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
     };
     Router.prototype.navigate = function(changes, segment) {
       return this._navigate(this.createUrlTree(changes, segment));
+    };
+    Router.prototype.dispose = function() {
+      async_1.ObservableWrapper.dispose(this._locationSubscription);
+    };
+    Router.prototype._setUpLocationChangeListener = function() {
+      var _this = this;
+      this._locationSubscription = this._location.subscribe(function(change) {
+        _this._navigate(_this._urlSerializer.parse(change['url']));
+      });
     };
     Router.prototype._navigate = function(url) {
       var _this = this;
