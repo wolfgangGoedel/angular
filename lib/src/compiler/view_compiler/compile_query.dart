@@ -109,8 +109,8 @@ o.Expression createQueryList(
     o.Expression directiveInstance,
     String propertyName,
     CompileView compileView) {
-  compileView.fields.add(new o.ClassField(propertyName,
-      o.importType(Identifiers.QueryList), [o.StmtModifier.Private]));
+  compileView.fields
+      .add(new o.ClassField(propertyName, o.importType(Identifiers.QueryList)));
   var expr = o.THIS_EXPR.prop(propertyName);
   compileView.createMethod.addStmt(o.THIS_EXPR
       .prop(propertyName)

@@ -9,6 +9,7 @@ import "package:angular2/src/facade/lang.dart"
         evalExpression,
         RegExpWrapper,
         StringWrapper;
+import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "abstract_emitter.dart" show OutputEmitter, EmitterVisitorContext;
 import "abstract_js_emitter.dart" show AbstractJsEmitterVisitor;
 import "path_util.dart" show getImportModulePath, ImportEnv;
@@ -38,6 +39,10 @@ class JsEmitterVisitor extends AbstractJsEmitterVisitor {
     /* super call moved to initializer */;
   }
   dynamic visitExternalExpr(o.ExternalExpr ast, EmitterVisitorContext ctx) {
+    if (isBlank(ast.value.name)) {
+      throw new BaseException(
+          '''Internal error: unknown identifier ${ ast . value}''');
+    }
     if (isPresent(ast.value.moduleUrl) &&
         ast.value.moduleUrl != this._moduleUrl) {
       var prefix = this.importsWithPrefixes[ast.value.moduleUrl];

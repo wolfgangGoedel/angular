@@ -38,8 +38,8 @@ class CompilePipe {
       }
       return injectFromViewParentInjector(diDep.token, false);
     }).toList();
-    this.view.fields.add(new o.ClassField(this.instance.name,
-        o.importType(this.meta.type), [o.StmtModifier.Private]));
+    this.view.fields.add(
+        new o.ClassField(this.instance.name, o.importType(this.meta.type)));
     this.view.createMethod.resetDebugInfo(null, null);
     this.view.createMethod.addStmt(o.THIS_EXPR
         .prop(this.instance.name)

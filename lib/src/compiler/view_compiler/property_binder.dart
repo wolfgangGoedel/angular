@@ -45,6 +45,7 @@ bind(
     // e.g. an empty expression was given
     return;
   }
+  // private is fine here as no child view will reference the cached value...
   view.fields
       .add(new o.ClassField(fieldExpr.name, null, [o.StmtModifier.Private]));
   view.createMethod.addStmt(o.THIS_EXPR

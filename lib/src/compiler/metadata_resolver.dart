@@ -28,7 +28,8 @@ import "package:angular2/src/core/reflection/reflection.dart" show reflector;
 import "package:angular2/src/core/di.dart" show Injectable, Inject, Optional;
 import "package:angular2/src/core/platform_directives_and_pipes.dart"
     show PLATFORM_DIRECTIVES, PLATFORM_PIPES;
-import "util.dart" show MODULE_SUFFIX, sanitizeIdentifier;
+import "util.dart"
+    show MODULE_SUFFIX, sanitizeIdentifier, ValueTransformer, visitValue;
 import "assertions.dart" show assertArrayOfStrings;
 import "package:angular2/src/compiler/url_resolver.dart" show getUrlScheme;
 import "package:angular2/src/core/di/provider.dart" show Provider;
@@ -325,9 +326,7 @@ class CompileMetadataResolver {
             ? this.getTypeMetadata(
                 provider.useClass, staticTypeModuleUrl(provider.useClass))
             : null,
-        useValue: isPresent(provider.useValue)
-            ? new cpl.CompileIdentifierMetadata(runtime: provider.useValue)
-            : null,
+        useValue: convertToCompileValue(provider.useValue),
         useFactory: isPresent(provider.useFactory)
             ? this.getFactoryMetadata(
                 provider.useFactory, staticTypeModuleUrl(provider.useFactory))
@@ -431,4 +430,20 @@ String calcTemplateBaseUrl(
         : '''package:${ moduleId}${ MODULE_SUFFIX}''';
   }
   return reflector.importUri(type);
+}
+
+// Only fill CompileIdentifierMetadata.runtime if needed...
+dynamic convertToCompileValue(dynamic value) {
+  return visitValue(value, new _CompileValueConverter(), null);
+}
+
+class _CompileValueConverter extends ValueTransformer {
+  dynamic visitOther(dynamic value, dynamic context) {
+    if (isStaticType(value)) {
+      return new cpl.CompileIdentifierMetadata(
+          name: value["name"], moduleUrl: staticTypeModuleUrl(value));
+    } else {
+      return new cpl.CompileIdentifierMetadata(runtime: value);
+    }
+  }
 }
