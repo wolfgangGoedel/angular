@@ -19,6 +19,16 @@ export class Tree {
     }
     pathFromRoot(t) { return _findPath(t, this._root, []).map(s => s.value); }
 }
+export class UrlTree extends Tree {
+    constructor(root) {
+        super(root);
+    }
+}
+export class RouteTree extends Tree {
+    constructor(root) {
+        super(root);
+    }
+}
 export function rootNode(tree) {
     return tree._root;
 }

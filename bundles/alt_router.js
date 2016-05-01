@@ -4,6 +4,15 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var collection_1 = require("angular2/src/facade/collection");
   var lang_1 = require("angular2/src/facade/lang");
   var Tree = (function() {
@@ -39,6 +48,22 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
     return Tree;
   }());
   exports.Tree = Tree;
+  var UrlTree = (function(_super) {
+    __extends(UrlTree, _super);
+    function UrlTree(root) {
+      _super.call(this, root);
+    }
+    return UrlTree;
+  }(Tree));
+  exports.UrlTree = UrlTree;
+  var RouteTree = (function(_super) {
+    __extends(RouteTree, _super);
+    function RouteTree(root) {
+      _super.call(this, root);
+    }
+    return RouteTree;
+  }(Tree));
+  exports.RouteTree = RouteTree;
   function rootNode(tree) {
     return tree._root;
   }
@@ -255,7 +280,7 @@ System.register("angular2/src/alt_router/link", ["angular2/src/alt_router/segmen
     }
     var updated = _update(startingNode, normalizedChange);
     var newRoot = _constructNewTree(segments_1.rootNode(urlTree), startingNode, updated);
-    return new segments_1.Tree(newRoot);
+    return new segments_1.UrlTree(newRoot);
   }
   exports.link = link;
   function _findUrlSegment(segment, routeTree) {
@@ -397,7 +422,7 @@ System.register("angular2/src/alt_router/router_url_serializer", ["angular2/src/
     }
     DefaultRouterUrlSerializer.prototype.parse = function(url) {
       var root = new _UrlParser().parse(url);
-      return new segments_1.Tree(root);
+      return new segments_1.UrlTree(root);
     };
     DefaultRouterUrlSerializer.prototype.serialize = function(tree) {
       return _serializeUrlTreeNode(segments_1.rootNode(tree));
@@ -997,7 +1022,7 @@ System.register("angular2/src/alt_router/recognize", ["angular2/src/alt_router/s
   function recognize(componentResolver, type, url) {
     var matched = new _MatchResult(type, [url.root], null, segments_1.rootNode(url).children, []);
     return _constructSegment(componentResolver, matched).then(function(roots) {
-      return new segments_1.Tree(roots[0]);
+      return new segments_1.RouteTree(roots[0]);
     });
   }
   exports.recognize = recognize;
@@ -1024,8 +1049,8 @@ System.register("angular2/src/alt_router/recognize", ["angular2/src/alt_router/s
   }
   function _constructSegment(componentResolver, matched) {
     return componentResolver.resolveComponent(matched.component).then(function(factory) {
-      var urlOutlet = matched.consumedUrlSegments[0].outlet;
-      var segment = new segments_1.RouteSegment(matched.consumedUrlSegments, matched.parameters, lang_1.isBlank(urlOutlet) ? constants_1.DEFAULT_OUTLET_NAME : urlOutlet, matched.component, factory);
+      var urlOutlet = matched.consumedUrlSegments.length === 0 || lang_1.isBlank(matched.consumedUrlSegments[0].outlet) ? constants_1.DEFAULT_OUTLET_NAME : matched.consumedUrlSegments[0].outlet;
+      var segment = new segments_1.RouteSegment(matched.consumedUrlSegments, matched.parameters, urlOutlet, matched.component, factory);
       if (matched.leftOverUrl.length > 0) {
         return _recognizeMany(componentResolver, matched.component, matched.leftOverUrl).then(function(children) {
           return [new segments_1.TreeNode(segment, children)];
@@ -1074,6 +1099,9 @@ System.register("angular2/src/alt_router/recognize", ["angular2/src/alt_router/s
   }
   function _matchWithParts(route, url) {
     var path = route.path.startsWith("/") ? route.path.substring(1) : route.path;
+    if (path == "*") {
+      return new _MatchResult(route.component, [], null, [], []);
+    }
     var parts = path.split("/");
     var positionalParams = {};
     var consumedUrlSegments = [];
@@ -1462,6 +1490,7 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
       this._routerOutletMap = _routerOutletMap;
       this._location = _location;
       this._changes = new async_1.EventEmitter();
+      this._prevTree = this._createInitialTree();
       this._setUpLocationChangeListener();
       this.navigateByUrl(this._location.path());
     }
@@ -1480,6 +1509,10 @@ System.register("angular2/src/alt_router/router", ["angular2/core", "angular2/sr
     };
     Router.prototype.dispose = function() {
       async_1.ObservableWrapper.dispose(this._locationSubscription);
+    };
+    Router.prototype._createInitialTree = function() {
+      var root = new segments_1.RouteSegment([new segments_1.UrlSegment("", null, null)], null, constants_1.DEFAULT_OUTLET_NAME, this._rootComponentType, null);
+      return new segments_1.RouteTree(new segments_1.TreeNode(root, []));
     };
     Router.prototype._setUpLocationChangeListener = function() {
       var _this = this;
@@ -1658,6 +1691,8 @@ System.register("angular2/alt_router", ["angular2/src/alt_router/router", "angul
   exports.RouteSegment = segments_1.RouteSegment;
   exports.UrlSegment = segments_1.UrlSegment;
   exports.Tree = segments_1.Tree;
+  exports.UrlTree = segments_1.UrlTree;
+  exports.RouteTree = segments_1.RouteTree;
   var decorators_1 = require("angular2/src/alt_router/metadata/decorators");
   exports.Routes = decorators_1.Routes;
   var metadata_1 = require("angular2/src/alt_router/metadata/metadata");

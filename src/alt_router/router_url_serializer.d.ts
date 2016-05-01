@@ -1,9 +1,9 @@
-import { UrlSegment, Tree } from './segments';
+import { UrlTree } from './segments';
 export declare abstract class RouterUrlSerializer {
-    abstract parse(url: string): Tree<UrlSegment>;
-    abstract serialize(tree: Tree<UrlSegment>): string;
+    abstract parse(url: string): UrlTree;
+    abstract serialize(tree: UrlTree): string;
 }
 export declare class DefaultRouterUrlSerializer extends RouterUrlSerializer {
-    parse(url: string): Tree<UrlSegment>;
-    serialize(tree: Tree<UrlSegment>): string;
+    parse(url: string): UrlTree;
+    serialize(tree: UrlTree): string;
 }

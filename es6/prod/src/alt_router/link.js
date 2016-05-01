@@ -1,4 +1,4 @@
-import { Tree, TreeNode, UrlSegment, rootNode } from './segments';
+import { TreeNode, UrlSegment, rootNode, UrlTree } from './segments';
 import { isBlank, isPresent, isString, isStringMap } from 'angular2/src/facade/lang';
 import { ListWrapper } from 'angular2/src/facade/collection';
 export function link(segment, routeTree, urlTree, change) {
@@ -24,7 +24,7 @@ export function link(segment, routeTree, urlTree, change) {
     }
     let updated = _update(startingNode, normalizedChange);
     let newRoot = _constructNewTree(rootNode(urlTree), startingNode, updated);
-    return new Tree(newRoot);
+    return new UrlTree(newRoot);
 }
 function _findUrlSegment(segment, routeTree) {
     let s = segment;

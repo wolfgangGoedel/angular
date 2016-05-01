@@ -1,4 +1,4 @@
-import { RouteSegment, Tree, TreeNode, rootNode } from './segments';
+import { RouteSegment, TreeNode, rootNode, RouteTree } from './segments';
 import { RoutesMetadata } from './metadata/metadata';
 import { isBlank, isPresent, stringify } from 'angular2/src/facade/lang';
 import { ListWrapper, StringMapWrapper } from 'angular2/src/facade/collection';
@@ -9,8 +9,7 @@ import { reflector } from 'angular2/src/core/reflection/reflection';
 // TODO: vsavkin: recognize should take the old tree and merge it
 export function recognize(componentResolver, type, url) {
     let matched = new _MatchResult(type, [url.root], null, rootNode(url).children, []);
-    return _constructSegment(componentResolver, matched)
-        .then(roots => new Tree(roots[0]));
+    return _constructSegment(componentResolver, matched).then(roots => new RouteTree(roots[0]));
 }
 function _recognize(componentResolver, parentType, url) {
     let metadata = _readMetadata(parentType); // should read from the factory instead
@@ -35,8 +34,11 @@ function _recognizeMany(componentResolver, parentType, urls) {
 function _constructSegment(componentResolver, matched) {
     return componentResolver.resolveComponent(matched.component)
         .then(factory => {
-        let urlOutlet = matched.consumedUrlSegments[0].outlet;
-        let segment = new RouteSegment(matched.consumedUrlSegments, matched.parameters, isBlank(urlOutlet) ? DEFAULT_OUTLET_NAME : urlOutlet, matched.component, factory);
+        let urlOutlet = matched.consumedUrlSegments.length === 0 ||
+            isBlank(matched.consumedUrlSegments[0].outlet) ?
+            DEFAULT_OUTLET_NAME :
+            matched.consumedUrlSegments[0].outlet;
+        let segment = new RouteSegment(matched.consumedUrlSegments, matched.parameters, urlOutlet, matched.component, factory);
         if (matched.leftOverUrl.length > 0) {
             return _recognizeMany(componentResolver, matched.component, matched.leftOverUrl)
                 .then(children => [new TreeNode(segment, children)]);
@@ -82,6 +84,9 @@ function _match(metadata, url) {
 }
 function _matchWithParts(route, url) {
     let path = route.path.startsWith("/") ? route.path.substring(1) : route.path;
+    if (path == "*") {
+        return new _MatchResult(route.component, [], null, [], []);
+    }
     let parts = path.split("/");
     let positionalParams = {};
     let consumedUrlSegments = [];

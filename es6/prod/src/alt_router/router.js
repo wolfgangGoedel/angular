@@ -6,7 +6,7 @@ import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { recognize } from './recognize';
 import { link } from './link';
-import { equalSegments, routeSegmentComponentFactory, RouteSegment, rootNode } from './segments';
+import { equalSegments, routeSegmentComponentFactory, RouteSegment, RouteTree, rootNode, TreeNode, UrlSegment } from './segments';
 import { hasLifecycleHook } from './lifecycle_reflector';
 import { DEFAULT_OUTLET_NAME } from './constants';
 export class RouterOutletMap {
@@ -25,6 +25,7 @@ export class Router {
         this._routerOutletMap = _routerOutletMap;
         this._location = _location;
         this._changes = new EventEmitter();
+        this._prevTree = this._createInitialTree();
         this._setUpLocationChangeListener();
         this.navigateByUrl(this._location.path());
     }
@@ -36,6 +37,10 @@ export class Router {
         return this._navigate(this.createUrlTree(changes, segment));
     }
     dispose() { ObservableWrapper.dispose(this._locationSubscription); }
+    _createInitialTree() {
+        let root = new RouteSegment([new UrlSegment("", null, null)], null, DEFAULT_OUTLET_NAME, this._rootComponentType, null);
+        return new RouteTree(new TreeNode(root, []));
+    }
     _setUpLocationChangeListener() {
         this._locationSubscription = this._location.subscribe((change) => { this._navigate(this._urlSerializer.parse(change['url'])); });
     }
