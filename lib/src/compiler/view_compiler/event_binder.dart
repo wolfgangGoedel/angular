@@ -92,6 +92,7 @@ class CompileEventListener {
       markPathToRootStart.callMethod("markPathToRootAsCheckOnce", []).toStmt()
     ]))..addAll(this._method.finish())))
       ..addAll([new o.ReturnStatement(resultExpr)]));
+    // private is fine here as no child view will reference the event handler...
     this.compileElement.view.eventHandlerMethods.add(new o.ClassMethod(
         this._methodName,
         [this._eventParam],
@@ -123,6 +124,7 @@ class CompileEventListener {
     var disposable = o.variable(
         '''disposable_${ this . compileElement . view . disposables . length}''');
     this.compileElement.view.disposables.add(disposable);
+    // private is fine here as no child view will reference the event handler...
     this.compileElement.view.createMethod.addStmt(disposable
         .set(listenExpr)
         .toDeclStmt(o.FUNCTION_TYPE, [o.StmtModifier.Private]));

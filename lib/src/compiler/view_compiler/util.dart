@@ -89,8 +89,7 @@ o.Expression createFlatArray(List<o.Expression> expressions) {
 
 createPureProxy(o.Expression fn, num argCount, o.ReadPropExpr pureProxyProp,
     CompileView view) {
-  view.fields.add(
-      new o.ClassField(pureProxyProp.name, null, [o.StmtModifier.Private]));
+  view.fields.add(new o.ClassField(pureProxyProp.name, null));
   var pureProxyId = argCount < Identifiers.pureProxies.length
       ? Identifiers.pureProxies[argCount]
       : null;
