@@ -82,7 +82,7 @@ class ViewBuilderVisitor {
     }
     _visitText(ast, value, ngContentIndex, parent) {
         var fieldName = `_text_${this.view.nodes.length}`;
-        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText), [o.StmtModifier.Private]));
+        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText)));
         var renderNode = o.THIS_EXPR.prop(fieldName);
         var compileNode = new CompileNode(parent, this.view, this.view.nodes.length, renderNode, ast);
         var createRenderNode = o.THIS_EXPR.prop(fieldName)
@@ -135,7 +135,7 @@ class ViewBuilderVisitor {
             createRenderNodeExpr = ViewProperties.renderer.callMethod('createElement', [this._getParentRenderNode(parent), o.literal(ast.name), debugContextExpr]);
         }
         var fieldName = `_el_${nodeIndex}`;
-        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement), [o.StmtModifier.Private]));
+        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement)));
         this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
         var renderNode = o.THIS_EXPR.prop(fieldName);
         var directives = ast.directives.map(directiveAst => directiveAst.directive);
@@ -184,7 +184,7 @@ class ViewBuilderVisitor {
     visitEmbeddedTemplate(ast, parent) {
         var nodeIndex = this.view.nodes.length;
         var fieldName = `_anchor_${nodeIndex}`;
-        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment), [o.StmtModifier.Private]));
+        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment)));
         this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName)
             .set(ViewProperties.renderer.callMethod('createTemplateAnchor', [
             this._getParentRenderNode(parent),

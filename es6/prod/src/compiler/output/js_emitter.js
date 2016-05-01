@@ -1,4 +1,5 @@
 import { isPresent, isBlank } from 'angular2/src/facade/lang';
+import { BaseException } from 'angular2/src/facade/exceptions';
 import { EmitterVisitorContext } from './abstract_emitter';
 import { AbstractJsEmitterVisitor } from './abstract_js_emitter';
 import { getImportModulePath, ImportEnv } from './path_util';
@@ -26,6 +27,9 @@ class JsEmitterVisitor extends AbstractJsEmitterVisitor {
         this.importsWithPrefixes = new Map();
     }
     visitExternalExpr(ast, ctx) {
+        if (isBlank(ast.value.name)) {
+            throw new BaseException(`Internal error: unknown identifier ${ast.value}`);
+        }
         if (isPresent(ast.value.moduleUrl) && ast.value.moduleUrl != this._moduleUrl) {
             var prefix = this.importsWithPrefixes.get(ast.value.moduleUrl);
             if (isBlank(prefix)) {
