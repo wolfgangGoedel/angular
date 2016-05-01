@@ -8,7 +8,7 @@
     "moduleResolution": "node",
     "outDir": "../dist/packages-ts2dart/",
     "paths": {
-      "selenium-webdriver": ["angular2/typings/selenium-webdriver/selenium-webdriver.d.ts"],
+      "selenium-webdriver": ["@angular/typings/selenium-webdriver/selenium-webdriver.d.ts"],
       "rxjs/*": ["../node_modules/rxjs/*"],
       "@angular/upgrade": ["./upgrade-ts2dart.d.ts"],
       "@angular/*": ["./@angular/*"]
@@ -26,7 +26,6 @@
     "@angular/typings/es6-promise/es6-promise.d.ts",
     "@angular/typings/tsd.d.ts",
     "@angular/typings.d.ts",
-
     "angular1_router",
     "rollup-test"
   ]

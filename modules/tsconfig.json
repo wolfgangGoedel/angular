@@ -8,15 +8,12 @@
     "moduleResolution": "node",
     "outDir": "../dist/all/",
     "paths": {
-      "selenium-webdriver": ["angular2/typings/selenium-webdriver/selenium-webdriver.d.ts"],
+      "selenium-webdriver": ["./@angular/typings/selenium-webdriver/selenium-webdriver.d.ts"],
       "rxjs/*": ["../node_modules/rxjs/*"],
-      "@angular/*": ["./@angular/*"],
-      "@angular/*/testing": ["./@angular/*/testing"]
+      "@angular/*": ["./@angular/*"]
     },
     "rootDir": ".",
     "inlineSourceMap": true,
-    "sourceMap": false,
-    "sourceRoot": ".",
     "target": "es5"
   },
   "exclude": [

@@ -12,10 +12,7 @@ module.exports = function(config) {
       // Sources and specs.
       // Loaded through the System loader, in `test-main.js`.
       {pattern: 'dist/all/@angular/**/*.js', included: false, watched: true},
-      {pattern: 'dist/all/@angular/**/*.js.map', included: false, watched: false},
-
       {pattern: 'dist/all/angular2/**/*.js', included: false, watched: true},
-      {pattern: 'dist/all/angular2/**/*.js.map', included: false, watched: false},
 
       'node_modules/es6-shim/es6-shim.js',
       // include Angular v1 for upgrade module testing
@@ -28,7 +25,7 @@ module.exports = function(config) {
       'node_modules/zone.js/dist/fake-async-test.js',
 
       // Including systemjs because it defines `__eval`, which produces correct stack traces.
-      'modules/@angular/platform-browser/testing/shims_for_IE.js',
+      'shims_for_IE.js',
       'node_modules/systemjs/dist/system.src.js',
       {pattern: 'node_modules/rxjs/**', included: false, watched: false, served: true},
       'node_modules/reflect-metadata/Reflect.js',
@@ -65,6 +62,7 @@ module.exports = function(config) {
     reporters: ['internal-angular'],
     sauceLabs: {
       testName: 'Angular2',
+      retryLimit: 3,
       startConnect: false,
       recordVideo: false,
       recordScreenshots: false,
@@ -79,7 +77,7 @@ module.exports = function(config) {
     browserStack: {
       project: 'Angular2',
       startTunnel: false,
-      retryLimit: 1,
+      retryLimit: 3,
       timeout: 600,
       pollingTimeout: 10000
     },
@@ -91,7 +89,7 @@ module.exports = function(config) {
 
   if (process.env.TRAVIS) {
     var buildId = 'TRAVIS #' + process.env.TRAVIS_BUILD_NUMBER + ' (' + process.env.TRAVIS_BUILD_ID + ')';
-    if (process.env.MODE.startsWith('saucelabs')) {
+    if (process.env.CI_MODE.startsWith('saucelabs')) {
       config.sauceLabs.build = buildId;
       config.sauceLabs.tunnelIdentifier = process.env.TRAVIS_JOB_NUMBER;
 
@@ -101,7 +99,7 @@ module.exports = function(config) {
       config.transports = ['polling'];
     }
 
-    if (process.env.MODE.startsWith('browserstack')) {
+    if (process.env.CI_MODE.startsWith('browserstack')) {
       config.browserStack.build = buildId;
       config.browserStack.tunnelIdentifier = process.env.TRAVIS_JOB_NUMBER;
     }

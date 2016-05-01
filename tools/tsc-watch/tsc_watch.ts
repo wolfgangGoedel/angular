@@ -92,7 +92,7 @@ export class TscWatch {
         this.state = State.idle;
       } else {
         if (this.triggered) {
-          this.triggered.then(() => this.triggerCmds());
+          this.triggered.then(() => this.triggerCmds(), (e) => {console.log("Error while running commands....", e)});
         } else {
           this.triggerCmds();
         }
@@ -111,6 +111,10 @@ export class TscWatch {
     });
     cmdPromise.then(() => this.triggered = null, (code) => {
       if (this.runOnce) {
+        if (typeof code != 'number') {
+          console.error('Error occurred while executing commands', code);
+          process.exit(1);
+        }
         process.exit(code);
       } else  {
         this.triggered = null;
