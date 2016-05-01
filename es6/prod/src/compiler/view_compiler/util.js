@@ -73,7 +73,7 @@ export function createFlatArray(expressions) {
     return result;
 }
 export function createPureProxy(fn, argCount, pureProxyProp, view) {
-    view.fields.push(new o.ClassField(pureProxyProp.name, null));
+    view.fields.push(new o.ClassField(pureProxyProp.name, null, [o.StmtModifier.Private]));
     var pureProxyId = argCount < Identifiers.pureProxies.length ? Identifiers.pureProxies[argCount] : null;
     if (isBlank(pureProxyId)) {
         throw new BaseException(`Unsupported number of argument for pure functions: ${argCount}`);

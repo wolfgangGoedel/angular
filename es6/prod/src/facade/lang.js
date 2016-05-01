@@ -81,10 +81,6 @@ export function isType(obj) {
 export function isStringMap(obj) {
     return typeof obj === 'object' && obj !== null;
 }
-const STRING_MAP_PROTO = Object.getPrototypeOf({});
-export function isStrictStringMap(obj) {
-    return isStringMap(obj) && Object.getPrototypeOf(obj) === STRING_MAP_PROTO;
-}
 export function isPromise(obj) {
     return obj instanceof _global.Promise;
 }

@@ -128,8 +128,9 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
   private _visitText(ast: TemplateAst, value: string, ngContentIndex: number,
                      parent: CompileElement): o.Expression {
     var fieldName = `_text_${this.view.nodes.length}`;
-    this.view.fields.push(
-        new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText)));
+    this.view.fields.push(new o.ClassField(fieldName,
+                                           o.importType(this.view.genConfig.renderTypes.renderText),
+                                           [o.StmtModifier.Private]));
     var renderNode = o.THIS_EXPR.prop(fieldName);
     var compileNode = new CompileNode(parent, this.view, this.view.nodes.length, renderNode, ast);
     var createRenderNode =
@@ -193,7 +194,8 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
     }
     var fieldName = `_el_${nodeIndex}`;
     this.view.fields.push(
-        new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement)));
+        new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement),
+                         [o.StmtModifier.Private]));
     this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
 
     var renderNode = o.THIS_EXPR.prop(fieldName);
@@ -255,7 +257,8 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
     var nodeIndex = this.view.nodes.length;
     var fieldName = `_anchor_${nodeIndex}`;
     this.view.fields.push(
-        new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment)));
+        new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment),
+                         [o.StmtModifier.Private]));
     this.view.createMethod.addStmt(
         o.THIS_EXPR.prop(fieldName)
             .set(ViewProperties.renderer.callMethod(

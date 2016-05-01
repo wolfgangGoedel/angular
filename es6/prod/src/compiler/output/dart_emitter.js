@@ -327,9 +327,6 @@ class _DartEmitterVisitor extends AbstractEmitterVisitor {
         }, params, ctx, ',');
     }
     _visitIdentifier(value, typeParams, ctx) {
-        if (isBlank(value.name)) {
-            throw new BaseException(`Internal error: unknown identifier ${value}`);
-        }
         if (isPresent(value.moduleUrl) && value.moduleUrl != this._moduleUrl) {
             var prefix = this.importsWithPrefixes.get(value.moduleUrl);
             if (isBlank(prefix)) {

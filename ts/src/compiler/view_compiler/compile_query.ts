@@ -97,7 +97,8 @@ function mapNestedViews(declarationAppElement: o.Expression, view: CompileView,
 
 export function createQueryList(query: CompileQueryMetadata, directiveInstance: o.Expression,
                                 propertyName: string, compileView: CompileView): o.Expression {
-  compileView.fields.push(new o.ClassField(propertyName, o.importType(Identifiers.QueryList)));
+  compileView.fields.push(new o.ClassField(propertyName, o.importType(Identifiers.QueryList),
+                                           [o.StmtModifier.Private]));
   var expr = o.THIS_EXPR.prop(propertyName);
   compileView.createMethod.addStmt(o.THIS_EXPR.prop(propertyName)
                                        .set(o.importExpr(Identifiers.QueryList).instantiate([]))

@@ -1723,11 +1723,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return typeof obj === 'object' && obj !== null;
 	}
 	exports.isStringMap = isStringMap;
-	var STRING_MAP_PROTO = Object.getPrototypeOf({});
-	function isStrictStringMap(obj) {
-	    return isStringMap(obj) && Object.getPrototypeOf(obj) === STRING_MAP_PROTO;
-	}
-	exports.isStrictStringMap = isStrictStringMap;
 	function isPromise(obj) {
 	    return obj instanceof _global.Promise;
 	}
@@ -22296,7 +22291,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	"use strict";
 	var lang_1 = __webpack_require__(5);
-	var collection_1 = __webpack_require__(15);
 	exports.MODULE_SUFFIX = lang_1.IS_DART ? '.dart' : '';
 	var CAMEL_CASE_REGEXP = /([A-Z])/g;
 	var DASH_CASE_REGEXP = /-([a-z])/g;
@@ -22322,39 +22316,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return lang_1.StringWrapper.replaceAll(name, /\W/g, '_');
 	}
 	exports.sanitizeIdentifier = sanitizeIdentifier;
-	function visitValue(value, visitor, context) {
-	    if (lang_1.isArray(value)) {
-	        return visitor.visitArray(value, context);
-	    }
-	    else if (lang_1.isStrictStringMap(value)) {
-	        return visitor.visitStringMap(value, context);
-	    }
-	    else if (lang_1.isBlank(value) || lang_1.isPrimitive(value)) {
-	        return visitor.visitPrimitive(value, context);
-	    }
-	    else {
-	        return visitor.visitOther(value, context);
-	    }
-	}
-	exports.visitValue = visitValue;
-	var ValueTransformer = (function () {
-	    function ValueTransformer() {
-	    }
-	    ValueTransformer.prototype.visitArray = function (arr, context) {
-	        var _this = this;
-	        return arr.map(function (value) { return visitValue(value, _this, context); });
-	    };
-	    ValueTransformer.prototype.visitStringMap = function (map, context) {
-	        var _this = this;
-	        var result = {};
-	        collection_1.StringMapWrapper.forEach(map, function (value, key) { result[key] = visitValue(value, _this, context); });
-	        return result;
-	    };
-	    ValueTransformer.prototype.visitPrimitive = function (value, context) { return value; };
-	    ValueTransformer.prototype.visitOther = function (value, context) { return value; };
-	    return ValueTransformer;
-	}());
-	exports.ValueTransformer = ValueTransformer;
 
 
 /***/ },
@@ -26483,7 +26444,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var exceptions_1 = __webpack_require__(12);
 	var o = __webpack_require__(166);
 	var identifiers_1 = __webpack_require__(156);
 	var constants_1 = __webpack_require__(172);
@@ -26494,7 +26454,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var util_1 = __webpack_require__(173);
 	var compile_query_1 = __webpack_require__(174);
 	var compile_method_1 = __webpack_require__(175);
-	var util_2 = __webpack_require__(155);
 	var CompileNode = (function () {
 	    function CompileNode(parent, view, nodeIndex, renderNode, sourceAst) {
 	        this.parent = parent;
@@ -26541,7 +26500,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CompileElement.prototype._createAppElement = function () {
 	        var fieldName = "_appEl_" + this.nodeIndex;
 	        var parentNodeIndex = this.isRootElement() ? null : this.parent.nodeIndex;
-	        // private is fine here as no child view will reference an AppElement
 	        this.view.fields.push(new o.ClassField(fieldName, o.importType(identifiers_1.Identifiers.AppElement), [o.StmtModifier.Private]));
 	        var statement = o.THIS_EXPR.prop(fieldName)
 	            .set(o.importExpr(identifiers_1.Identifiers.AppElement)
@@ -26602,7 +26560,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        .instantiate(depsExpr, o.importType(provider.useClass));
 	                }
 	                else {
-	                    return _convertValueToOutputAst(provider.useValue);
+	                    if (provider.useValue instanceof compile_metadata_1.CompileIdentifierMetadata) {
+	                        return o.importExpr(provider.useValue);
+	                    }
+	                    else if (provider.useValue instanceof o.Expression) {
+	                        return provider.useValue;
+	                    }
+	                    else {
+	                        return o.literal(provider.useValue);
+	                    }
 	                }
 	            });
 	            var propName = "_" + resolvedProvider.token.name + "_" + _this.nodeIndex + "_" + _this._instances.size;
@@ -26802,12 +26768,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        type = o.DYNAMIC_TYPE;
 	    }
 	    if (isEager) {
-	        view.fields.push(new o.ClassField(propName, type));
+	        view.fields.push(new o.ClassField(propName, type, [o.StmtModifier.Private]));
 	        view.createMethod.addStmt(o.THIS_EXPR.prop(propName).set(resolvedProviderValueExpr).toStmt());
 	    }
 	    else {
 	        var internalField = "_" + propName;
-	        view.fields.push(new o.ClassField(internalField, type));
+	        view.fields.push(new o.ClassField(internalField, type, [o.StmtModifier.Private]));
 	        var getter = new compile_method_1.CompileMethod(view);
 	        getter.resetDebugInfo(compileElement.nodeIndex, compileElement.sourceAst);
 	        // Note: Equals is important for JS so that it also checks the undefined case!
@@ -26824,38 +26790,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return _QueryWithRead;
 	}());
-	function _convertValueToOutputAst(value) {
-	    return util_2.visitValue(value, new _ValueOutputAstTransformer(), null);
-	}
-	var _ValueOutputAstTransformer = (function (_super) {
-	    __extends(_ValueOutputAstTransformer, _super);
-	    function _ValueOutputAstTransformer() {
-	        _super.apply(this, arguments);
-	    }
-	    _ValueOutputAstTransformer.prototype.visitArray = function (arr, context) {
-	        var _this = this;
-	        return o.literalArr(arr.map(function (value) { return util_2.visitValue(value, _this, context); }));
-	    };
-	    _ValueOutputAstTransformer.prototype.visitStringMap = function (map, context) {
-	        var _this = this;
-	        var entries = [];
-	        collection_1.StringMapWrapper.forEach(map, function (value, key) { entries.push([key, util_2.visitValue(value, _this, context)]); });
-	        return o.literalMap(entries);
-	    };
-	    _ValueOutputAstTransformer.prototype.visitPrimitive = function (value, context) { return o.literal(value); };
-	    _ValueOutputAstTransformer.prototype.visitOther = function (value, context) {
-	        if (value instanceof compile_metadata_1.CompileIdentifierMetadata) {
-	            return o.importExpr(value);
-	        }
-	        else if (value instanceof o.Expression) {
-	            return value;
-	        }
-	        else {
-	            throw new exceptions_1.BaseException("Illegal state: Don't now how to compile value " + value);
-	        }
-	    };
-	    return _ValueOutputAstTransformer;
-	}(util_2.ValueTransformer));
 
 
 /***/ },
@@ -27062,7 +26996,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	exports.createFlatArray = createFlatArray;
 	function createPureProxy(fn, argCount, pureProxyProp, view) {
-	    view.fields.push(new o.ClassField(pureProxyProp.name, null));
+	    view.fields.push(new o.ClassField(pureProxyProp.name, null, [o.StmtModifier.Private]));
 	    var pureProxyId = argCount < identifiers_1.Identifiers.pureProxies.length ? identifiers_1.Identifiers.pureProxies[argCount] : null;
 	    if (lang_1.isBlank(pureProxyId)) {
 	        throw new exceptions_1.BaseException("Unsupported number of argument for pure functions: " + argCount);
@@ -27158,7 +27092,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ]);
 	}
 	function createQueryList(query, directiveInstance, propertyName, compileView) {
-	    compileView.fields.push(new o.ClassField(propertyName, o.importType(identifiers_1.Identifiers.QueryList)));
+	    compileView.fields.push(new o.ClassField(propertyName, o.importType(identifiers_1.Identifiers.QueryList), [o.StmtModifier.Private]));
 	    var expr = o.THIS_EXPR.prop(propertyName);
 	    compileView.createMethod.addStmt(o.THIS_EXPR.prop(propertyName)
 	        .set(o.importExpr(identifiers_1.Identifiers.QueryList).instantiate([]))
@@ -27457,7 +27391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            return util_1.injectFromViewParentInjector(diDep.token, false);
 	        });
-	        this.view.fields.push(new o.ClassField(this.instance.name, o.importType(this.meta.type)));
+	        this.view.fields.push(new o.ClassField(this.instance.name, o.importType(this.meta.type), [o.StmtModifier.Private]));
 	        this.view.createMethod.resetDebugInfo(null, null);
 	        this.view.createMethod.addStmt(o.THIS_EXPR.prop(this.instance.name)
 	            .set(o.importExpr(this.meta.type).instantiate(deps))
@@ -27590,7 +27524,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    ViewBuilderVisitor.prototype._visitText = function (ast, value, ngContentIndex, parent) {
 	        var fieldName = "_text_" + this.view.nodes.length;
-	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText)));
+	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText), [o.StmtModifier.Private]));
 	        var renderNode = o.THIS_EXPR.prop(fieldName);
 	        var compileNode = new compile_element_1.CompileNode(parent, this.view, this.view.nodes.length, renderNode, ast);
 	        var createRenderNode = o.THIS_EXPR.prop(fieldName)
@@ -27643,7 +27577,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            createRenderNodeExpr = constants_1.ViewProperties.renderer.callMethod('createElement', [this._getParentRenderNode(parent), o.literal(ast.name), debugContextExpr]);
 	        }
 	        var fieldName = "_el_" + nodeIndex;
-	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement)));
+	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement), [o.StmtModifier.Private]));
 	        this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
 	        var renderNode = o.THIS_EXPR.prop(fieldName);
 	        var directives = ast.directives.map(function (directiveAst) { return directiveAst.directive; });
@@ -27692,7 +27626,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ViewBuilderVisitor.prototype.visitEmbeddedTemplate = function (ast, parent) {
 	        var nodeIndex = this.view.nodes.length;
 	        var fieldName = "_anchor_" + nodeIndex;
-	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment)));
+	        this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment), [o.StmtModifier.Private]));
 	        this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName)
 	            .set(constants_1.ViewProperties.renderer.callMethod('createTemplateAnchor', [
 	            this._getParentRenderNode(parent),
@@ -28070,7 +28004,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // e.g. an empty expression was given
 	        return;
 	    }
-	    // private is fine here as no child view will reference the cached value...
 	    view.fields.push(new o.ClassField(fieldExpr.name, null, [o.StmtModifier.Private]));
 	    view.createMethod.addStmt(o.THIS_EXPR.prop(fieldExpr.name).set(o.importExpr(identifiers_1.Identifiers.uninitialized)).toStmt());
 	    if (checkExpression.needsValueUnwrapper) {
@@ -28534,7 +28467,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var stmts = [markPathToRootStart.callMethod('markPathToRootAsCheckOnce', []).toStmt()]
 	            .concat(this._method.finish())
 	            .concat([new o.ReturnStatement(resultExpr)]);
-	        // private is fine here as no child view will reference the event handler...
 	        this.compileElement.view.eventHandlerMethods.push(new o.ClassMethod(this._methodName, [this._eventParam], stmts, o.BOOL_TYPE, [o.StmtModifier.Private]));
 	    };
 	    CompileEventListener.prototype.listenToRenderer = function () {
@@ -28548,7 +28480,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        var disposable = o.variable("disposable_" + this.compileElement.view.disposables.length);
 	        this.compileElement.view.disposables.push(disposable);
-	        // private is fine here as no child view will reference the event handler...
 	        this.compileElement.view.createMethod.addStmt(disposable.set(listenExpr).toDeclStmt(o.FUNCTION_TYPE, [o.StmtModifier.Private]));
 	    };
 	    CompileEventListener.prototype.listenToDirective = function (directiveInstance, observablePropName) {
@@ -28859,11 +28790,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
 	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -29170,7 +29096,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            useClass: lang_1.isPresent(provider.useClass) ?
 	                this.getTypeMetadata(provider.useClass, staticTypeModuleUrl(provider.useClass)) :
 	                null,
-	            useValue: convertToCompileValue(provider.useValue),
+	            useValue: lang_1.isPresent(provider.useValue) ?
+	                new cpl.CompileIdentifierMetadata({ runtime: provider.useValue }) :
+	                null,
 	            useFactory: lang_1.isPresent(provider.useFactory) ?
 	                this.getFactoryMetadata(provider.useFactory, staticTypeModuleUrl(provider.useFactory)) :
 	                null,
@@ -29270,25 +29198,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return reflector.importUri(type);
 	}
-	// Only fill CompileIdentifierMetadata.runtime if needed...
-	function convertToCompileValue(value) {
-	    return util_1.visitValue(value, new _CompileValueConverter(), null);
-	}
-	var _CompileValueConverter = (function (_super) {
-	    __extends(_CompileValueConverter, _super);
-	    function _CompileValueConverter() {
-	        _super.apply(this, arguments);
-	    }
-	    _CompileValueConverter.prototype.visitOther = function (value, context) {
-	        if (isStaticType(value)) {
-	            return new cpl.CompileIdentifierMetadata({ name: value['name'], moduleUrl: staticTypeModuleUrl(value) });
-	        }
-	        else {
-	            return new cpl.CompileIdentifierMetadata({ runtime: value });
-	        }
-	    };
-	    return _CompileValueConverter;
-	}(util_1.ValueTransformer));
 
 
 /***/ },
@@ -31108,9 +31017,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    _DartEmitterVisitor.prototype._visitIdentifier = function (value, typeParams, ctx) {
 	        var _this = this;
-	        if (lang_1.isBlank(value.name)) {
-	            throw new exceptions_1.BaseException("Internal error: unknown identifier " + value);
-	        }
 	        if (lang_1.isPresent(value.moduleUrl) && value.moduleUrl != this._moduleUrl) {
 	            var prefix = this.importsWithPrefixes.get(value.moduleUrl);
 	            if (lang_1.isBlank(prefix)) {
@@ -31547,9 +31453,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    _TsEmitterVisitor.prototype._visitIdentifier = function (value, typeParams, ctx) {
 	        var _this = this;
-	        if (lang_1.isBlank(value.name)) {
-	            throw new exceptions_1.BaseException("Internal error: unknown identifier " + value);
-	        }
 	        if (lang_1.isPresent(value.moduleUrl) && value.moduleUrl != this._moduleUrl) {
 	            var prefix = this.importsWithPrefixes.get(value.moduleUrl);
 	            if (lang_1.isBlank(prefix)) {
