@@ -17,7 +17,7 @@ import "package:angular2/testing_internal.dart"
         it,
         xit;
 import "package:angular2/src/alt_router/segments.dart"
-    show RouteSegment, UrlSegment, Tree, TreeNode;
+    show RouteSegment, UrlSegment, UrlTree, TreeNode, RouteTree;
 import "package:angular2/src/alt_router/link.dart" show link;
 import "package:angular2/src/alt_router/router_url_serializer.dart"
     show DefaultRouterUrlSerializer;
@@ -86,15 +86,15 @@ main() {
       var root = new TreeNode<RouteSegment>(
           new RouteSegment([c], {}, null, null, null),
           [new TreeNode<RouteSegment>(child, [])]);
-      var tree = new Tree<RouteSegment>(root);
+      var tree = new RouteTree(root);
       var t = link(child, tree, p, ["./c2"]);
       expect(parser.serialize(t)).toEqual("/a(aux:ap)/c2(aux:cp)");
     });
   });
 }
 
-Tree<RouteSegment> s(UrlSegment u) {
+RouteTree s(UrlSegment u) {
   var root = new TreeNode<RouteSegment>(
       new RouteSegment([u], {}, null, null, null), []);
-  return new Tree<RouteSegment>(root);
+  return new RouteTree(root);
 }

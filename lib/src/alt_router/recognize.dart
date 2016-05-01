@@ -1,7 +1,8 @@
 library angular2.src.alt_router.recognize;
 
 import "dart:async";
-import "segments.dart" show RouteSegment, UrlSegment, Tree, TreeNode, rootNode;
+import "segments.dart"
+    show RouteSegment, UrlSegment, Tree, TreeNode, rootNode, UrlTree, RouteTree;
 import "metadata/metadata.dart" show RoutesMetadata, RouteMetadata;
 import "package:angular2/src/facade/lang.dart"
     show Type, isBlank, isPresent, stringify;
@@ -14,12 +15,12 @@ import "constants.dart" show DEFAULT_OUTLET_NAME;
 import "package:angular2/src/core/reflection/reflection.dart" show reflector;
 
 // TODO: vsavkin: recognize should take the old tree and merge it
-Future<Tree<RouteSegment>> recognize(
-    ComponentResolver componentResolver, Type type, Tree<UrlSegment> url) {
+Future<RouteTree> recognize(
+    ComponentResolver componentResolver, Type type, UrlTree url) {
   var matched =
       new _MatchResult(type, [url.root], null, rootNode(url).children, []);
   return _constructSegment(componentResolver, matched)
-      .then((roots) => new Tree<RouteSegment>(roots[0]));
+      .then((roots) => new RouteTree(roots[0]));
 }
 
 Future<List<TreeNode<RouteSegment>>> _recognize(
@@ -55,13 +56,12 @@ Future<List<TreeNode<RouteSegment>>> _recognizeMany(
 Future<List<TreeNode<RouteSegment>>> _constructSegment(
     ComponentResolver componentResolver, _MatchResult matched) {
   return componentResolver.resolveComponent(matched.component).then((factory) {
-    var urlOutlet = matched.consumedUrlSegments[0].outlet;
-    var segment = new RouteSegment(
-        matched.consumedUrlSegments,
-        matched.parameters,
-        isBlank(urlOutlet) ? DEFAULT_OUTLET_NAME : urlOutlet,
-        matched.component,
-        factory);
+    var urlOutlet = identical(matched.consumedUrlSegments.length, 0) ||
+            isBlank(matched.consumedUrlSegments[0].outlet)
+        ? DEFAULT_OUTLET_NAME
+        : matched.consumedUrlSegments[0].outlet;
+    var segment = new RouteSegment(matched.consumedUrlSegments,
+        matched.parameters, urlOutlet, matched.component, factory);
     if (matched.leftOverUrl.length > 0) {
       return _recognizeMany(
               componentResolver, matched.component, matched.leftOverUrl)
@@ -115,6 +115,9 @@ _MatchResult _match(RoutesMetadata metadata, TreeNode<UrlSegment> url) {
 
 _MatchResult _matchWithParts(RouteMetadata route, TreeNode<UrlSegment> url) {
   var path = route.path.startsWith("/") ? route.path.substring(1) : route.path;
+  if (path == "*") {
+    return new _MatchResult(route.component, [], null, [], []);
+  }
   var parts = path.split("/");
   var positionalParams = {};
   var consumedUrlSegments = [];

@@ -36,6 +36,18 @@ class Tree<T> {
   }
 }
 
+class UrlTree extends Tree<UrlSegment> {
+  UrlTree(TreeNode<UrlSegment> root) : super(root) {
+    /* super call moved to initializer */;
+  }
+}
+
+class RouteTree extends Tree<RouteSegment> {
+  RouteTree(TreeNode<RouteSegment> root) : super(root) {
+    /* super call moved to initializer */;
+  }
+}
+
 TreeNode<dynamic/*= T */ > rootNode/*< T >*/(Tree<dynamic/*= T */ > tree) {
   return tree._root;
 }
@@ -120,7 +132,7 @@ class RouteSegment {
   }
 }
 
-String serializeRouteSegmentTree(Tree<RouteSegment> tree) {
+String serializeRouteSegmentTree(RouteTree tree) {
   return _serializeRouteSegmentTree(tree._root);
 }
 

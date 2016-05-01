@@ -19,7 +19,8 @@ import "package:angular2/testing_internal.dart"
 import "package:angular2/src/alt_router/recognize.dart" show recognize;
 import "package:angular2/alt_router.dart" show Routes, Route;
 import "package:angular2/core.dart" show provide, Component, ComponentResolver;
-import "package:angular2/src/alt_router/segments.dart" show UrlSegment, Tree;
+import "package:angular2/src/alt_router/segments.dart"
+    show UrlSegment, RouteTree, UrlTree;
 import "package:angular2/src/alt_router/router_url_serializer.dart"
     show DefaultRouterUrlSerializer;
 import "package:angular2/src/alt_router/constants.dart"
@@ -136,6 +137,17 @@ main() {
           });
         }));
     it(
+        "should match a wildcard",
+        inject([AsyncTestCompleter, ComponentResolver], (async, resolver) {
+          recognize(resolver, ComponentG, tree("a;aa=1/b;bb=2")).then((r) {
+            var c = r.children(r.root);
+            expect(c.length).toEqual(1);
+            expect(stringifyUrl(c[0].urlSegments)).toEqual([]);
+            expect(c[0].parameters).toEqual(null);
+            async.done();
+          });
+        }));
+    it(
         "should error when no matching routes",
         inject([AsyncTestCompleter, ComponentResolver], (async, resolver) {
           recognize(resolver, ComponentA, tree("invalid")).catchError((e) {
@@ -163,7 +175,7 @@ main() {
   });
 }
 
-Tree<UrlSegment> tree(String url) {
+UrlTree tree(String url) {
   return new DefaultRouterUrlSerializer().parse(url);
 }
 
@@ -192,6 +204,13 @@ class ComponentC {}
   const Route(path: "c/:c", component: ComponentC)
 ])
 class ComponentB {}
+
+@Component(selector: "g", template: "t")
+@Routes(const [
+  const Route(path: "d", component: ComponentD),
+  const Route(path: "*", component: ComponentE)
+])
+class ComponentG {}
 
 @Component(selector: "a", template: "t")
 @Routes(const [

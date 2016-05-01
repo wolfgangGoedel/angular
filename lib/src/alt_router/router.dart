@@ -20,7 +20,8 @@ import "segments.dart"
         equalSegments,
         routeSegmentComponentFactory,
         RouteSegment,
-        Tree,
+        UrlTree,
+        RouteTree,
         rootNode,
         TreeNode,
         UrlSegment,
@@ -43,16 +44,17 @@ class Router {
   RouterUrlSerializer _urlSerializer;
   RouterOutletMap _routerOutletMap;
   Location _location;
-  Tree<RouteSegment> _prevTree;
-  Tree<UrlSegment> _urlTree;
+  RouteTree _prevTree;
+  UrlTree _urlTree;
   dynamic _locationSubscription;
   EventEmitter _changes = new EventEmitter();
   Router(this._rootComponent, this._rootComponentType, this._componentResolver,
       this._urlSerializer, this._routerOutletMap, this._location) {
+    this._prevTree = this._createInitialTree();
     this._setUpLocationChangeListener();
     this.navigateByUrl(this._location.path());
   }
-  Tree<UrlSegment> get urlTree {
+  UrlTree get urlTree {
     return this._urlTree;
   }
 
@@ -68,13 +70,19 @@ class Router {
     ObservableWrapper.dispose(this._locationSubscription);
   }
 
+  RouteTree _createInitialTree() {
+    var root = new RouteSegment([new UrlSegment("", null, null)], null,
+        DEFAULT_OUTLET_NAME, this._rootComponentType, null);
+    return new RouteTree(new TreeNode<RouteSegment>(root, []));
+  }
+
   void _setUpLocationChangeListener() {
     this._locationSubscription = this._location.subscribe((change) {
       this._navigate(this._urlSerializer.parse(change["url"]));
     });
   }
 
-  Future _navigate(Tree<UrlSegment> url) {
+  Future _navigate(UrlTree url) {
     this._urlTree = url;
     return recognize(this._componentResolver, this._rootComponentType, url)
         .then((currTree) {
@@ -90,8 +98,7 @@ class Router {
     });
   }
 
-  Tree<UrlSegment> createUrlTree(List<dynamic> changes,
-      [RouteSegment segment]) {
+  UrlTree createUrlTree(List<dynamic> changes, [RouteSegment segment]) {
     if (isPresent(this._prevTree)) {
       var s = isPresent(segment) ? segment : this._prevTree.root;
       return link(s, this._prevTree, this.urlTree, changes);
@@ -100,7 +107,7 @@ class Router {
     }
   }
 
-  String serializeUrl(Tree<UrlSegment> url) {
+  String serializeUrl(UrlTree url) {
     return this._urlSerializer.serialize(url);
   }
 
@@ -108,14 +115,14 @@ class Router {
     return this._changes;
   }
 
-  Tree<RouteSegment> get routeTree {
+  RouteTree get routeTree {
     return this._prevTree;
   }
 }
 
 class _LoadSegments {
-  Tree<RouteSegment> currTree;
-  Tree<RouteSegment> prevTree;
+  RouteTree currTree;
+  RouteTree prevTree;
   List<List<Object>> deactivations = [];
   bool performMutation = true;
   _LoadSegments(this.currTree, this.prevTree) {}

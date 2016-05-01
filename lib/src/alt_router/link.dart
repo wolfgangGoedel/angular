@@ -1,12 +1,13 @@
 library angular2.src.alt_router.link;
 
-import "segments.dart" show Tree, TreeNode, UrlSegment, RouteSegment, rootNode;
+import "segments.dart"
+    show Tree, TreeNode, UrlSegment, RouteSegment, rootNode, UrlTree, RouteTree;
 import "package:angular2/src/facade/lang.dart"
     show isBlank, isPresent, isString, isStringMap;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 
-Tree<UrlSegment> link(RouteSegment segment, Tree<RouteSegment> routeTree,
-    Tree<UrlSegment> urlTree, List<dynamic> change) {
+UrlTree link(RouteSegment segment, RouteTree routeTree, UrlTree urlTree,
+    List<dynamic> change) {
   if (identical(change.length, 0)) return urlTree;
   var startingNode;
   var normalizedChange;
@@ -30,10 +31,10 @@ Tree<UrlSegment> link(RouteSegment segment, Tree<RouteSegment> routeTree,
   }
   var updated = _update(startingNode, normalizedChange);
   var newRoot = _constructNewTree(rootNode(urlTree), startingNode, updated);
-  return new Tree<UrlSegment>(newRoot);
+  return new UrlTree(newRoot);
 }
 
-UrlSegment _findUrlSegment(RouteSegment segment, Tree<RouteSegment> routeTree) {
+UrlSegment _findUrlSegment(RouteSegment segment, RouteTree routeTree) {
   var s = segment;
   var res = null;
   while (isBlank(res)) {

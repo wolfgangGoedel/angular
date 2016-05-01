@@ -1,23 +1,23 @@
 library angular2.src.alt_router.router_url_serializer;
 
-import "segments.dart" show UrlSegment, Tree, TreeNode, rootNode;
+import "segments.dart" show UrlSegment, Tree, TreeNode, rootNode, UrlTree;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "package:angular2/src/facade/lang.dart"
     show isBlank, isPresent, RegExpWrapper;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 
 abstract class RouterUrlSerializer {
-  Tree<UrlSegment> parse(String url);
-  String serialize(Tree<UrlSegment> tree);
+  UrlTree parse(String url);
+  String serialize(UrlTree tree);
 }
 
 class DefaultRouterUrlSerializer extends RouterUrlSerializer {
-  Tree<UrlSegment> parse(String url) {
+  UrlTree parse(String url) {
     var root = new _UrlParser().parse(url);
-    return new Tree<UrlSegment>(root);
+    return new UrlTree(root);
   }
 
-  String serialize(Tree<UrlSegment> tree) {
+  String serialize(UrlTree tree) {
     return _serializeUrlTreeNode(rootNode(tree));
   }
 }

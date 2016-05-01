@@ -6,7 +6,8 @@
 library angular2.alt_router;
 
 export "src/alt_router/router.dart" show Router, RouterOutletMap;
-export "src/alt_router/segments.dart" show RouteSegment, UrlSegment, Tree;
+export "src/alt_router/segments.dart"
+    show RouteSegment, UrlSegment, Tree, UrlTree, RouteTree;
 export "src/alt_router/metadata/decorators.dart" show Routes;
 export "src/alt_router/metadata/metadata.dart" show Route;
 export "src/alt_router/router_url_serializer.dart"
