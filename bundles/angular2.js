@@ -90,6 +90,11 @@ System.register("angular2/src/facade/lang", [], true, function(require, exports,
     return typeof obj === 'object' && obj !== null;
   }
   exports.isStringMap = isStringMap;
+  var STRING_MAP_PROTO = Object.getPrototypeOf({});
+  function isStrictStringMap(obj) {
+    return isStringMap(obj) && Object.getPrototypeOf(obj) === STRING_MAP_PROTO;
+  }
+  exports.isStrictStringMap = isStrictStringMap;
   function isPromise(obj) {
     return obj instanceof _global.Promise;
   }
@@ -15206,12 +15211,13 @@ System.register("angular2/src/compiler/style_url_resolver", ["angular2/src/facad
   return module.exports;
 });
 
-System.register("angular2/src/compiler/util", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/util", ["angular2/src/facade/lang", "angular2/src/facade/collection"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var lang_1 = require("angular2/src/facade/lang");
+  var collection_1 = require("angular2/src/facade/collection");
   exports.MODULE_SUFFIX = lang_1.IS_DART ? '.dart' : '';
   var CAMEL_CASE_REGEXP = /([A-Z])/g;
   var DASH_CASE_REGEXP = /-([a-z])/g;
@@ -15240,6 +15246,43 @@ System.register("angular2/src/compiler/util", ["angular2/src/facade/lang"], true
     return lang_1.StringWrapper.replaceAll(name, /\W/g, '_');
   }
   exports.sanitizeIdentifier = sanitizeIdentifier;
+  function visitValue(value, visitor, context) {
+    if (lang_1.isArray(value)) {
+      return visitor.visitArray(value, context);
+    } else if (lang_1.isStrictStringMap(value)) {
+      return visitor.visitStringMap(value, context);
+    } else if (lang_1.isBlank(value) || lang_1.isPrimitive(value)) {
+      return visitor.visitPrimitive(value, context);
+    } else {
+      return visitor.visitOther(value, context);
+    }
+  }
+  exports.visitValue = visitValue;
+  var ValueTransformer = (function() {
+    function ValueTransformer() {}
+    ValueTransformer.prototype.visitArray = function(arr, context) {
+      var _this = this;
+      return arr.map(function(value) {
+        return visitValue(value, _this, context);
+      });
+    };
+    ValueTransformer.prototype.visitStringMap = function(map, context) {
+      var _this = this;
+      var result = {};
+      collection_1.StringMapWrapper.forEach(map, function(value, key) {
+        result[key] = visitValue(value, _this, context);
+      });
+      return result;
+    };
+    ValueTransformer.prototype.visitPrimitive = function(value, context) {
+      return value;
+    };
+    ValueTransformer.prototype.visitOther = function(value, context) {
+      return value;
+    };
+    return ValueTransformer;
+  }());
+  exports.ValueTransformer = ValueTransformer;
   global.define = __define;
   return module.exports;
 });
@@ -17708,7 +17751,7 @@ System.register("angular2/src/compiler/view_compiler/util", ["angular2/src/facad
   }
   exports.createFlatArray = createFlatArray;
   function createPureProxy(fn, argCount, pureProxyProp, view) {
-    view.fields.push(new o.ClassField(pureProxyProp.name, null, [o.StmtModifier.Private]));
+    view.fields.push(new o.ClassField(pureProxyProp.name, null));
     var pureProxyId = argCount < identifiers_1.Identifiers.pureProxies.length ? identifiers_1.Identifiers.pureProxies[argCount] : null;
     if (lang_1.isBlank(pureProxyId)) {
       throw new exceptions_1.BaseException("Unsupported number of argument for pure functions: " + argCount);
@@ -17801,7 +17844,7 @@ System.register("angular2/src/compiler/view_compiler/compile_query", ["angular2/
     return declarationAppElement.callMethod('mapNestedViews', [o.variable(view.className), o.fn([new o.FnParam('nestedView', view.classType)], [new o.ReturnStatement(o.literalArr(adjustedExpressions))])]);
   }
   function createQueryList(query, directiveInstance, propertyName, compileView) {
-    compileView.fields.push(new o.ClassField(propertyName, o.importType(identifiers_1.Identifiers.QueryList), [o.StmtModifier.Private]));
+    compileView.fields.push(new o.ClassField(propertyName, o.importType(identifiers_1.Identifiers.QueryList)));
     var expr = o.THIS_EXPR.prop(propertyName);
     compileView.createMethod.addStmt(o.THIS_EXPR.prop(propertyName).set(o.importExpr(identifiers_1.Identifiers.QueryList).instantiate([])).toStmt());
     return expr;
@@ -17930,7 +17973,7 @@ System.register("angular2/src/compiler/view_compiler/compile_pipe", ["angular2/s
         }
         return util_1.injectFromViewParentInjector(diDep.token, false);
       });
-      this.view.fields.push(new o.ClassField(this.instance.name, o.importType(this.meta.type), [o.StmtModifier.Private]));
+      this.view.fields.push(new o.ClassField(this.instance.name, o.importType(this.meta.type)));
       this.view.createMethod.resetDebugInfo(null, null);
       this.view.createMethod.addStmt(o.THIS_EXPR.prop(this.instance.name).set(o.importExpr(this.meta.type).instantiate(deps)).toStmt());
       this._purePipeProxies.forEach(function(purePipeProxy) {
@@ -18052,7 +18095,7 @@ System.register("angular2/src/compiler/view_compiler/view_builder", ["angular2/s
     };
     ViewBuilderVisitor.prototype._visitText = function(ast, value, ngContentIndex, parent) {
       var fieldName = "_text_" + this.view.nodes.length;
-      this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText), [o.StmtModifier.Private]));
+      this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderText)));
       var renderNode = o.THIS_EXPR.prop(fieldName);
       var compileNode = new compile_element_1.CompileNode(parent, this.view, this.view.nodes.length, renderNode, ast);
       var createRenderNode = o.THIS_EXPR.prop(fieldName).set(constants_1.ViewProperties.renderer.callMethod('createText', [this._getParentRenderNode(parent), o.literal(value), this.view.createMethod.resetDebugInfoExpr(this.view.nodes.length, ast)])).toStmt();
@@ -18088,7 +18131,7 @@ System.register("angular2/src/compiler/view_compiler/view_builder", ["angular2/s
         createRenderNodeExpr = constants_1.ViewProperties.renderer.callMethod('createElement', [this._getParentRenderNode(parent), o.literal(ast.name), debugContextExpr]);
       }
       var fieldName = "_el_" + nodeIndex;
-      this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement), [o.StmtModifier.Private]));
+      this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderElement)));
       this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
       var renderNode = o.THIS_EXPR.prop(fieldName);
       var directives = ast.directives.map(function(directiveAst) {
@@ -18134,7 +18177,7 @@ System.register("angular2/src/compiler/view_compiler/view_builder", ["angular2/s
     ViewBuilderVisitor.prototype.visitEmbeddedTemplate = function(ast, parent) {
       var nodeIndex = this.view.nodes.length;
       var fieldName = "_anchor_" + nodeIndex;
-      this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment), [o.StmtModifier.Private]));
+      this.view.fields.push(new o.ClassField(fieldName, o.importType(this.view.genConfig.renderTypes.renderComment)));
       this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(constants_1.ViewProperties.renderer.callMethod('createTemplateAnchor', [this._getParentRenderNode(parent), this.view.createMethod.resetDebugInfoExpr(nodeIndex, ast)])).toStmt());
       var renderNode = o.THIS_EXPR.prop(fieldName);
       var templateVariableBindings = ast.variables.map(function(varAst) {
@@ -20359,6 +20402,9 @@ System.register("angular2/src/compiler/output/ts_emitter", ["angular2/src/compil
     };
     _TsEmitterVisitor.prototype._visitIdentifier = function(value, typeParams, ctx) {
       var _this = this;
+      if (lang_1.isBlank(value.name)) {
+        throw new exceptions_1.BaseException("Internal error: unknown identifier " + value);
+      }
       if (lang_1.isPresent(value.moduleUrl) && value.moduleUrl != this._moduleUrl) {
         var prefix = this.importsWithPrefixes.get(value.moduleUrl);
         if (lang_1.isBlank(prefix)) {
@@ -23800,7 +23846,7 @@ System.register("angular2/src/compiler/style_compiler", ["angular2/src/compiler/
   return module.exports;
 });
 
-System.register("angular2/src/compiler/view_compiler/compile_element", ["angular2/src/compiler/output/output_ast", "angular2/src/compiler/identifiers", "angular2/src/compiler/view_compiler/constants", "angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/compiler/template_ast", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/view_compiler/util", "angular2/src/compiler/view_compiler/compile_query", "angular2/src/compiler/view_compiler/compile_method"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/view_compiler/compile_element", ["angular2/src/facade/exceptions", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/identifiers", "angular2/src/compiler/view_compiler/constants", "angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/compiler/template_ast", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/view_compiler/util", "angular2/src/compiler/view_compiler/compile_query", "angular2/src/compiler/view_compiler/compile_method", "angular2/src/compiler/util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -23814,6 +23860,7 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
+  var exceptions_1 = require("angular2/src/facade/exceptions");
   var o = require("angular2/src/compiler/output/output_ast");
   var identifiers_1 = require("angular2/src/compiler/identifiers");
   var constants_1 = require("angular2/src/compiler/view_compiler/constants");
@@ -23824,6 +23871,7 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
   var util_1 = require("angular2/src/compiler/view_compiler/util");
   var compile_query_1 = require("angular2/src/compiler/view_compiler/compile_query");
   var compile_method_1 = require("angular2/src/compiler/view_compiler/compile_method");
+  var util_2 = require("angular2/src/compiler/util");
   var CompileNode = (function() {
     function CompileNode(parent, view, nodeIndex, renderNode, sourceAst) {
       this.parent = parent;
@@ -23926,13 +23974,7 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
             });
             return o.importExpr(provider.useClass).instantiate(depsExpr, o.importType(provider.useClass));
           } else {
-            if (provider.useValue instanceof compile_metadata_1.CompileIdentifierMetadata) {
-              return o.importExpr(provider.useValue);
-            } else if (provider.useValue instanceof o.Expression) {
-              return provider.useValue;
-            } else {
-              return o.literal(provider.useValue);
-            }
+            return _convertValueToOutputAst(provider.useValue);
           }
         });
         var propName = "_" + resolvedProvider.token.name + "_" + _this.nodeIndex + "_" + _this._instances.size;
@@ -24119,11 +24161,11 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
       type = o.DYNAMIC_TYPE;
     }
     if (isEager) {
-      view.fields.push(new o.ClassField(propName, type, [o.StmtModifier.Private]));
+      view.fields.push(new o.ClassField(propName, type));
       view.createMethod.addStmt(o.THIS_EXPR.prop(propName).set(resolvedProviderValueExpr).toStmt());
     } else {
       var internalField = "_" + propName;
-      view.fields.push(new o.ClassField(internalField, type, [o.StmtModifier.Private]));
+      view.fields.push(new o.ClassField(internalField, type));
       var getter = new compile_method_1.CompileMethod(view);
       getter.resetDebugInfo(compileElement.nodeIndex, compileElement.sourceAst);
       getter.addStmt(new o.IfStmt(o.THIS_EXPR.prop(internalField).isBlank(), [o.THIS_EXPR.prop(internalField).set(resolvedProviderValueExpr).toStmt()]));
@@ -24139,6 +24181,42 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
     }
     return _QueryWithRead;
   }());
+  function _convertValueToOutputAst(value) {
+    return util_2.visitValue(value, new _ValueOutputAstTransformer(), null);
+  }
+  var _ValueOutputAstTransformer = (function(_super) {
+    __extends(_ValueOutputAstTransformer, _super);
+    function _ValueOutputAstTransformer() {
+      _super.apply(this, arguments);
+    }
+    _ValueOutputAstTransformer.prototype.visitArray = function(arr, context) {
+      var _this = this;
+      return o.literalArr(arr.map(function(value) {
+        return util_2.visitValue(value, _this, context);
+      }));
+    };
+    _ValueOutputAstTransformer.prototype.visitStringMap = function(map, context) {
+      var _this = this;
+      var entries = [];
+      collection_1.StringMapWrapper.forEach(map, function(value, key) {
+        entries.push([key, util_2.visitValue(value, _this, context)]);
+      });
+      return o.literalMap(entries);
+    };
+    _ValueOutputAstTransformer.prototype.visitPrimitive = function(value, context) {
+      return o.literal(value);
+    };
+    _ValueOutputAstTransformer.prototype.visitOther = function(value, context) {
+      if (value instanceof compile_metadata_1.CompileIdentifierMetadata) {
+        return o.importExpr(value);
+      } else if (value instanceof o.Expression) {
+        return value;
+      } else {
+        throw new exceptions_1.BaseException("Illegal state: Don't now how to compile value " + value);
+      }
+    };
+    return _ValueOutputAstTransformer;
+  }(util_2.ValueTransformer));
   global.define = __define;
   return module.exports;
 });
@@ -24464,6 +24542,15 @@ System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/d
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
     var c = arguments.length,
         r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
@@ -24761,7 +24848,7 @@ System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/d
       return new cpl.CompileProviderMetadata({
         token: this.getTokenMetadata(provider.token),
         useClass: lang_1.isPresent(provider.useClass) ? this.getTypeMetadata(provider.useClass, staticTypeModuleUrl(provider.useClass)) : null,
-        useValue: lang_1.isPresent(provider.useValue) ? new cpl.CompileIdentifierMetadata({runtime: provider.useValue}) : null,
+        useValue: convertToCompileValue(provider.useValue),
         useFactory: lang_1.isPresent(provider.useFactory) ? this.getFactoryMetadata(provider.useFactory, staticTypeModuleUrl(provider.useFactory)) : null,
         useExisting: lang_1.isPresent(provider.useExisting) ? this.getTokenMetadata(provider.useExisting) : null,
         deps: compileDeps,
@@ -24850,6 +24937,26 @@ System.register("angular2/src/compiler/metadata_resolver", ["angular2/src/core/d
     }
     return reflector.importUri(type);
   }
+  function convertToCompileValue(value) {
+    return util_1.visitValue(value, new _CompileValueConverter(), null);
+  }
+  var _CompileValueConverter = (function(_super) {
+    __extends(_CompileValueConverter, _super);
+    function _CompileValueConverter() {
+      _super.apply(this, arguments);
+    }
+    _CompileValueConverter.prototype.visitOther = function(value, context) {
+      if (isStaticType(value)) {
+        return new cpl.CompileIdentifierMetadata({
+          name: value['name'],
+          moduleUrl: staticTypeModuleUrl(value)
+        });
+      } else {
+        return new cpl.CompileIdentifierMetadata({runtime: value});
+      }
+    };
+    return _CompileValueConverter;
+  }(util_1.ValueTransformer));
   global.define = __define;
   return module.exports;
 });
@@ -25253,6 +25360,9 @@ System.register("angular2/src/compiler/output/dart_emitter", ["angular2/src/faca
     };
     _DartEmitterVisitor.prototype._visitIdentifier = function(value, typeParams, ctx) {
       var _this = this;
+      if (lang_1.isBlank(value.name)) {
+        throw new exceptions_1.BaseException("Internal error: unknown identifier " + value);
+      }
       if (lang_1.isPresent(value.moduleUrl) && value.moduleUrl != this._moduleUrl) {
         var prefix = this.importsWithPrefixes.get(value.moduleUrl);
         if (lang_1.isBlank(prefix)) {

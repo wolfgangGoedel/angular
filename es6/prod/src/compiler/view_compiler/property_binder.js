@@ -20,6 +20,7 @@ function bind(view, currValExpr, fieldExpr, parsedExpression, context, actions, 
         // e.g. an empty expression was given
         return;
     }
+    // private is fine here as no child view will reference the cached value...
     view.fields.push(new o.ClassField(fieldExpr.name, null, [o.StmtModifier.Private]));
     view.createMethod.addStmt(o.THIS_EXPR.prop(fieldExpr.name).set(o.importExpr(Identifiers.uninitialized)).toStmt());
     if (checkExpression.needsValueUnwrapper) {

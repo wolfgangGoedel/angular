@@ -60,6 +60,7 @@ export class CompileEventListener {
         var stmts = [markPathToRootStart.callMethod('markPathToRootAsCheckOnce', []).toStmt()]
             .concat(this._method.finish())
             .concat([new o.ReturnStatement(resultExpr)]);
+        // private is fine here as no child view will reference the event handler...
         this.compileElement.view.eventHandlerMethods.push(new o.ClassMethod(this._methodName, [this._eventParam], stmts, o.BOOL_TYPE, [o.StmtModifier.Private]));
     }
     listenToRenderer() {
@@ -73,6 +74,7 @@ export class CompileEventListener {
         }
         var disposable = o.variable(`disposable_${this.compileElement.view.disposables.length}`);
         this.compileElement.view.disposables.push(disposable);
+        // private is fine here as no child view will reference the event handler...
         this.compileElement.view.createMethod.addStmt(disposable.set(listenExpr).toDeclStmt(o.FUNCTION_TYPE, [o.StmtModifier.Private]));
     }
     listenToDirective(directiveInstance, observablePropName) {

@@ -1,7 +1,7 @@
 import { Type } from "angular2/src/facade/lang";
 export declare abstract class RouteMetadata {
-    path: string;
-    component: Type;
+    abstract path: string;
+    abstract component: Type;
 }
 export declare class Route implements RouteMetadata {
     path: string;
