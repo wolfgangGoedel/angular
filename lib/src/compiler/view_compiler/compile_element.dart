@@ -1,6 +1,5 @@
 library angular2.src.compiler.view_compiler.compile_element;
 
-import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "../output/output_ast.dart" as o;
 import "../identifiers.dart" show Identifiers, identifierToken;
 import "constants.dart" show InjectMethodVars;
@@ -28,7 +27,6 @@ import "util.dart"
 import "compile_query.dart"
     show CompileQuery, createQueryList, addQueryToTokenMap;
 import "compile_method.dart" show CompileMethod;
-import "../util.dart" show ValueTransformer, visitValue;
 
 class CompileNode {
   CompileElement parent;
@@ -106,7 +104,6 @@ class CompileElement extends CompileNode {
   _createAppElement() {
     var fieldName = '''_appEl_${ this . nodeIndex}''';
     var parentNodeIndex = this.isRootElement() ? null : this.parent.nodeIndex;
-    // private is fine here as no child view will reference an AppElement
     this.view.fields.add(new o.ClassField(fieldName,
         o.importType(Identifiers.AppElement), [o.StmtModifier.Private]));
     var statement = o.THIS_EXPR
@@ -190,7 +187,13 @@ class CompileElement extends CompileNode {
               .importExpr(provider.useClass)
               .instantiate(depsExpr, o.importType(provider.useClass));
         } else {
-          return _convertValueToOutputAst(provider.useValue);
+          if (provider.useValue is CompileIdentifierMetadata) {
+            return o.importExpr(provider.useValue);
+          } else if (provider.useValue is o.Expression) {
+            return provider.useValue;
+          } else {
+            return o.literal(provider.useValue);
+          }
         }
       }).toList();
       var propName =
@@ -465,12 +468,13 @@ o.Expression createProviderProperty(
     type = o.DYNAMIC_TYPE;
   }
   if (isEager) {
-    view.fields.add(new o.ClassField(propName, type));
+    view.fields.add(new o.ClassField(propName, type, [o.StmtModifier.Private]));
     view.createMethod.addStmt(
         o.THIS_EXPR.prop(propName).set(resolvedProviderValueExpr).toStmt());
   } else {
     var internalField = '''_${ propName}''';
-    view.fields.add(new o.ClassField(internalField, type));
+    view.fields
+        .add(new o.ClassField(internalField, type, [o.StmtModifier.Private]));
     var getter = new CompileMethod(view);
     getter.resetDebugInfo(compileElement.nodeIndex, compileElement.sourceAst);
     // Note: Equals is important for JS so that it also checks the undefined case!
@@ -488,39 +492,5 @@ class _QueryWithRead {
   CompileTokenMetadata read;
   _QueryWithRead(this.query, CompileTokenMetadata match) {
     this.read = isPresent(query.meta.read) ? query.meta.read : match;
-  }
-}
-
-o.Expression _convertValueToOutputAst(dynamic value) {
-  return visitValue(value, new _ValueOutputAstTransformer(), null);
-}
-
-class _ValueOutputAstTransformer extends ValueTransformer {
-  o.Expression visitArray(List<dynamic> arr, dynamic context) {
-    return o.literalArr(
-        arr.map((value) => visitValue(value, this, context)).toList());
-  }
-
-  o.Expression visitStringMap(Map<String, dynamic> map, dynamic context) {
-    var entries = [];
-    StringMapWrapper.forEach(map, (value, key) {
-      entries.add([key, visitValue(value, this, context)]);
-    });
-    return o.literalMap(entries);
-  }
-
-  o.Expression visitPrimitive(dynamic value, dynamic context) {
-    return o.literal(value);
-  }
-
-  o.Expression visitOther(dynamic value, dynamic context) {
-    if (value is CompileIdentifierMetadata) {
-      return o.importExpr(value);
-    } else if (value is o.Expression) {
-      return value;
-    } else {
-      throw new BaseException(
-          '''Illegal state: Don\'t now how to compile value ${ value}''');
-    }
   }
 }
