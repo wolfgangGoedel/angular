@@ -18,6 +18,7 @@ export class Tree {
         return isPresent(n) && n.children.length > 0 ? n.children[0].value : null;
     }
     pathFromRoot(t) { return _findPath(t, this._root, []).map(s => s.value); }
+    contains(tree) { return _contains(this._root, tree._root); }
 }
 export class UrlTree extends Tree {
     constructor(root) {
@@ -48,9 +49,7 @@ function _findNode(expected, c) {
 function _findPath(expected, c, collected) {
     collected.push(c);
     // TODO: vsavkin remove it once recognize is fixed
-    if (expected instanceof RouteSegment && equalSegments(expected, c.value))
-        return collected;
-    if (expected === c.value)
+    if (_equalValues(expected, c.value))
         return collected;
     for (let cc of c.children) {
         let r = _findPath(expected, cc, ListWrapper.clone(collected));
@@ -58,6 +57,25 @@ function _findPath(expected, c, collected) {
             return r;
     }
     return null;
+}
+function _contains(tree, subtree) {
+    if (!_equalValues(tree.value, subtree.value))
+        return false;
+    for (let subtreeNode of subtree.children) {
+        let s = tree.children.filter(child => _equalValues(child.value, subtreeNode.value));
+        if (s.length === 0)
+            return false;
+        if (!_contains(s[0], subtreeNode))
+            return false;
+    }
+    return true;
+}
+function _equalValues(a, b) {
+    if (a instanceof RouteSegment)
+        return equalSegments(a, b);
+    if (a instanceof UrlSegment)
+        return equalUrlSegments(a, b);
+    return a === b;
 }
 export class TreeNode {
     constructor(value, children) {
@@ -112,6 +130,25 @@ export function equalSegments(a, b) {
     if (!isBlank(a) && isBlank(b))
         return false;
     if (a._type !== b._type)
+        return false;
+    if (a.outlet != b.outlet)
+        return false;
+    if (isBlank(a.parameters) && !isBlank(b.parameters))
+        return false;
+    if (!isBlank(a.parameters) && isBlank(b.parameters))
+        return false;
+    if (isBlank(a.parameters) && isBlank(b.parameters))
+        return true;
+    return StringMapWrapper.equals(a.parameters, b.parameters);
+}
+export function equalUrlSegments(a, b) {
+    if (isBlank(a) && !isBlank(b))
+        return false;
+    if (!isBlank(a) && isBlank(b))
+        return false;
+    if (a.segment != b.segment)
+        return false;
+    if (a.outlet != b.outlet)
         return false;
     if (isBlank(a.parameters) && !isBlank(b.parameters))
         return false;

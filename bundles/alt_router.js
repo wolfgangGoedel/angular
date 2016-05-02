@@ -45,6 +45,9 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
         return s.value;
       });
     };
+    Tree.prototype.contains = function(tree) {
+      return _contains(this._root, tree._root);
+    };
     return Tree;
   }());
   exports.Tree = Tree;
@@ -84,9 +87,7 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
   }
   function _findPath(expected, c, collected) {
     collected.push(c);
-    if (expected instanceof RouteSegment && equalSegments(expected, c.value))
-      return collected;
-    if (expected === c.value)
+    if (_equalValues(expected, c.value))
       return collected;
     for (var _i = 0,
         _a = c.children; _i < _a.length; _i++) {
@@ -96,6 +97,34 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
         return r;
     }
     return null;
+  }
+  function _contains(tree, subtree) {
+    if (!_equalValues(tree.value, subtree.value))
+      return false;
+    var _loop_1 = function(subtreeNode) {
+      var s = tree.children.filter(function(child) {
+        return _equalValues(child.value, subtreeNode.value);
+      });
+      if (s.length === 0)
+        return {value: false};
+      if (!_contains(s[0], subtreeNode))
+        return {value: false};
+    };
+    for (var _i = 0,
+        _a = subtree.children; _i < _a.length; _i++) {
+      var subtreeNode = _a[_i];
+      var state_1 = _loop_1(subtreeNode);
+      if (typeof state_1 === "object")
+        return state_1.value;
+    }
+    return true;
+  }
+  function _equalValues(a, b) {
+    if (a instanceof RouteSegment)
+      return equalSegments(a, b);
+    if (a instanceof UrlSegment)
+      return equalUrlSegments(a, b);
+    return a === b;
   }
   var TreeNode = (function() {
     function TreeNode(value, children) {
@@ -176,6 +205,8 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
       return false;
     if (a._type !== b._type)
       return false;
+    if (a.outlet != b.outlet)
+      return false;
     if (lang_1.isBlank(a.parameters) && !lang_1.isBlank(b.parameters))
       return false;
     if (!lang_1.isBlank(a.parameters) && lang_1.isBlank(b.parameters))
@@ -185,6 +216,24 @@ System.register("angular2/src/alt_router/segments", ["angular2/src/facade/collec
     return collection_1.StringMapWrapper.equals(a.parameters, b.parameters);
   }
   exports.equalSegments = equalSegments;
+  function equalUrlSegments(a, b) {
+    if (lang_1.isBlank(a) && !lang_1.isBlank(b))
+      return false;
+    if (!lang_1.isBlank(a) && lang_1.isBlank(b))
+      return false;
+    if (a.segment != b.segment)
+      return false;
+    if (a.outlet != b.outlet)
+      return false;
+    if (lang_1.isBlank(a.parameters) && !lang_1.isBlank(b.parameters))
+      return false;
+    if (!lang_1.isBlank(a.parameters) && lang_1.isBlank(b.parameters))
+      return false;
+    if (lang_1.isBlank(a.parameters) && lang_1.isBlank(b.parameters))
+      return true;
+    return collection_1.StringMapWrapper.equals(a.parameters, b.parameters);
+  }
+  exports.equalUrlSegments = equalUrlSegments;
   function routeSegmentComponentFactory(a) {
     return a._componentFactory;
   }
@@ -966,6 +1015,7 @@ System.register("angular2/src/alt_router/directives/router_link", ["angular2/cor
       this._routeSegment = _routeSegment;
       this._router = _router;
       this._changes = [];
+      this.isActive = false;
       this._subscription = async_1.ObservableWrapper.subscribe(_router.changes, function(_) {
         _this._updateTargetUrlAndHref();
       });
@@ -992,10 +1042,14 @@ System.register("angular2/src/alt_router/directives/router_link", ["angular2/cor
       var tree = this._router.createUrlTree(this._changes, this._routeSegment);
       if (lang_1.isPresent(tree)) {
         this.href = this._router.serializeUrl(tree);
+        this.isActive = this._router.urlTree.contains(tree);
+      } else {
+        this.isActive = false;
       }
     };
     __decorate([core_1.Input(), __metadata('design:type', String)], RouterLink.prototype, "target", void 0);
     __decorate([core_1.HostBinding(), __metadata('design:type', String)], RouterLink.prototype, "href", void 0);
+    __decorate([core_1.HostBinding('class.router-link-active'), __metadata('design:type', Boolean)], RouterLink.prototype, "isActive", void 0);
     __decorate([core_1.Input(), __metadata('design:type', Array), __metadata('design:paramtypes', [Array])], RouterLink.prototype, "routerLink", null);
     __decorate([core_1.HostListener("click"), __metadata('design:type', Function), __metadata('design:paramtypes', []), __metadata('design:returntype', Boolean)], RouterLink.prototype, "onClick", null);
     RouterLink = __decorate([core_1.Directive({selector: '[routerLink]'}), __param(0, core_1.Optional()), __metadata('design:paramtypes', [segments_1.RouteSegment, router_1.Router])], RouterLink);
