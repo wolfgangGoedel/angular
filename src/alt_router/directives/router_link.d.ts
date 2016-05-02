@@ -8,7 +8,6 @@ export declare class RouterLink implements OnDestroy {
     private _changes;
     private _subscription;
     private href;
-    private isActive;
     constructor(_routeSegment: RouteSegment, _router: Router);
     ngOnDestroy(): void;
     routerLink: any[];

@@ -7,7 +7,6 @@ export declare class Tree<T> {
     children(t: T): T[];
     firstChild(t: T): T;
     pathFromRoot(t: T): T[];
-    contains(tree: Tree<T>): boolean;
 }
 export declare class UrlTree extends Tree<UrlSegment> {
     constructor(root: TreeNode<UrlSegment>);
@@ -47,5 +46,4 @@ export declare class RouteSegment {
 }
 export declare function serializeRouteSegmentTree(tree: RouteTree): string;
 export declare function equalSegments(a: RouteSegment, b: RouteSegment): boolean;
-export declare function equalUrlSegments(a: UrlSegment, b: UrlSegment): boolean;
 export declare function routeSegmentComponentFactory(a: RouteSegment): ComponentFactory<any>;
