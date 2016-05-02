@@ -20,6 +20,7 @@ export let RouterLink = class RouterLink {
         this._routeSegment = _routeSegment;
         this._router = _router;
         this._changes = [];
+        this.isActive = false;
         this._subscription =
             ObservableWrapper.subscribe(_router.changes, (_) => { this._updateTargetUrlAndHref(); });
     }
@@ -39,6 +40,10 @@ export let RouterLink = class RouterLink {
         let tree = this._router.createUrlTree(this._changes, this._routeSegment);
         if (isPresent(tree)) {
             this.href = this._router.serializeUrl(tree);
+            this.isActive = this._router.urlTree.contains(tree);
+        }
+        else {
+            this.isActive = false;
         }
     }
 };
@@ -50,6 +55,10 @@ __decorate([
     HostBinding(), 
     __metadata('design:type', String)
 ], RouterLink.prototype, "href", void 0);
+__decorate([
+    HostBinding('class.router-link-active'), 
+    __metadata('design:type', Boolean)
+], RouterLink.prototype, "isActive", void 0);
 __decorate([
     Input(), 
     __metadata('design:type', Array), 
