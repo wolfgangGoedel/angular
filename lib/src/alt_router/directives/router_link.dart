@@ -31,6 +31,8 @@ class RouterLink implements OnDestroy {
   dynamic _subscription;
   @HostBinding()
   String href;
+  @HostBinding("class.router-link-active")
+  bool isActive = false;
   RouterLink(@Optional() this._routeSegment, this._router) {
     this._subscription = ObservableWrapper.subscribe(_router.changes, (_) {
       this._updateTargetUrlAndHref();
@@ -59,6 +61,9 @@ class RouterLink implements OnDestroy {
     var tree = this._router.createUrlTree(this._changes, this._routeSegment);
     if (isPresent(tree)) {
       this.href = this._router.serializeUrl(tree);
+      this.isActive = this._router.urlTree.contains(tree);
+    } else {
+      this.isActive = false;
     }
   }
 }

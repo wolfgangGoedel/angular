@@ -34,6 +34,10 @@ class Tree<T> {
   List<T> pathFromRoot(T t) {
     return _findPath(t, this._root, []).map((s) => s.value).toList();
   }
+
+  bool contains(Tree<T> tree) {
+    return _contains(this._root, tree._root);
+  }
 }
 
 class UrlTree extends Tree<UrlSegment> {
@@ -69,15 +73,31 @@ List<TreeNode<dynamic/*= T */ >> _findPath/*< T >*/(dynamic/*= T */ expected,
     TreeNode<dynamic/*= T */ > c, List<TreeNode<dynamic/*= T */ >> collected) {
   collected.add(c);
   // TODO: vsavkin remove it once recognize is fixed
-  if (expected is RouteSegment &&
-      equalSegments((expected as dynamic), (c.value as dynamic)))
-    return collected;
-  if (identical(expected, c.value)) return collected;
+  if (_equalValues(expected, c.value)) return collected;
   for (var cc in c.children) {
     var r = _findPath(expected, cc, ListWrapper.clone(collected));
     if (isPresent(r)) return r;
   }
   return null;
+}
+
+bool _contains/*< T >*/(
+    TreeNode<dynamic/*= T */ > tree, TreeNode<dynamic/*= T */ > subtree) {
+  if (!_equalValues(tree.value, subtree.value)) return false;
+  for (var subtreeNode in subtree.children) {
+    var s = tree.children
+        .where((child) => _equalValues(child.value, subtreeNode.value))
+        .toList();
+    if (identical(s.length, 0)) return false;
+    if (!_contains(s[0], subtreeNode)) return false;
+  }
+  return true;
+}
+
+bool _equalValues(dynamic a, dynamic b) {
+  if (a is RouteSegment) return equalSegments((a as dynamic), (b as dynamic));
+  if (a is UrlSegment) return equalUrlSegments((a as dynamic), (b as dynamic));
+  return identical(a, b);
 }
 
 class TreeNode<T> {
@@ -149,6 +169,18 @@ bool equalSegments(RouteSegment a, RouteSegment b) {
   if (isBlank(a) && !isBlank(b)) return false;
   if (!isBlank(a) && isBlank(b)) return false;
   if (!identical(a._type, b._type)) return false;
+  if (a.outlet != b.outlet) return false;
+  if (isBlank(a.parameters) && !isBlank(b.parameters)) return false;
+  if (!isBlank(a.parameters) && isBlank(b.parameters)) return false;
+  if (isBlank(a.parameters) && isBlank(b.parameters)) return true;
+  return StringMapWrapper.equals(a.parameters, b.parameters);
+}
+
+bool equalUrlSegments(UrlSegment a, UrlSegment b) {
+  if (isBlank(a) && !isBlank(b)) return false;
+  if (!isBlank(a) && isBlank(b)) return false;
+  if (a.segment != b.segment) return false;
+  if (a.outlet != b.outlet) return false;
   if (isBlank(a.parameters) && !isBlank(b.parameters)) return false;
   if (!isBlank(a.parameters) && isBlank(b.parameters)) return false;
   if (isBlank(a.parameters) && isBlank(b.parameters)) return true;
