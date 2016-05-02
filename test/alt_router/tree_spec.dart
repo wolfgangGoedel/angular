@@ -47,26 +47,5 @@ main() {
           new Tree<dynamic>(new TreeNode<num>(1, [new TreeNode<num>(2, [])]));
       expect(t.pathFromRoot(2)).toEqual([1, 2]);
     });
-    describe("contains", () {
-      it("should work", () {
-        var tree = new Tree<dynamic>(new TreeNode<num>(
-            1, [new TreeNode<num>(2, []), new TreeNode<num>(3, [])]));
-        var subtree1 = new Tree<dynamic>(new TreeNode<num>(1, []));
-        var subtree2 =
-            new Tree<dynamic>(new TreeNode<num>(1, [new TreeNode<num>(2, [])]));
-        var subtree3 =
-            new Tree<dynamic>(new TreeNode<num>(1, [new TreeNode<num>(3, [])]));
-        var notSubtree1 =
-            new Tree<dynamic>(new TreeNode<num>(1, [new TreeNode<num>(4, [])]));
-        var notSubtree2 = new Tree<dynamic>(new TreeNode<num>(1, [
-          new TreeNode<num>(2, [new TreeNode<num>(4, [])])
-        ]));
-        expect(tree.contains(subtree1)).toEqual(true);
-        expect(tree.contains(subtree2)).toEqual(true);
-        expect(tree.contains(subtree3)).toEqual(true);
-        expect(tree.contains(notSubtree1)).toEqual(false);
-        expect(tree.contains(notSubtree2)).toEqual(false);
-      });
-    });
   });
 }
