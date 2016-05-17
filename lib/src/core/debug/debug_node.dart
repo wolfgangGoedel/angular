@@ -1,9 +1,10 @@
 library angular2.src.core.debug.debug_node;
 
-import "package:angular2/src/facade/lang.dart" show isPresent, Type;
-import "package:angular2/src/facade/collection.dart"
-    show Predicate, ListWrapper, MapWrapper;
+import "package:angular2/src/facade/lang.dart" show isPresent;
+import "package:angular2/src/facade/collection.dart" show Predicate;
 import "package:angular2/src/core/di.dart" show Injector;
+import "package:angular2/src/facade/collection.dart"
+    show ListWrapper, MapWrapper;
 import "package:angular2/src/core/render/api.dart" show RenderDebugInfo;
 
 class EventListener {
@@ -13,11 +14,14 @@ class EventListener {
 }
 
 class DebugNode {
-  RenderDebugInfo _debugInfo;
   dynamic nativeNode;
   List<EventListener> listeners;
   DebugElement parent;
-  DebugNode(dynamic nativeNode, DebugNode parent, this._debugInfo) {
+  List<dynamic> providerTokens;
+  Map<String, dynamic> locals;
+  Injector injector;
+  dynamic componentInstance;
+  DebugNode(dynamic nativeNode, DebugNode parent) {
     this.nativeNode = nativeNode;
     if (isPresent(parent) && parent is DebugElement) {
       parent.addChild(this);
@@ -25,52 +29,34 @@ class DebugNode {
       this.parent = null;
     }
     this.listeners = [];
+    this.providerTokens = [];
   }
-  Injector get injector {
-    return isPresent(this._debugInfo) ? this._debugInfo.injector : null;
-  }
-
-  dynamic get componentInstance {
-    return isPresent(this._debugInfo) ? this._debugInfo.component : null;
-  }
-
-  dynamic get context {
-    return isPresent(this._debugInfo) ? this._debugInfo.context : null;
+  setDebugInfo(RenderDebugInfo info) {
+    this.injector = info.injector;
+    this.providerTokens = info.providerTokens;
+    this.locals = info.locals;
+    this.componentInstance = info.component;
   }
 
-  Map<String, dynamic> get references {
-    return isPresent(this._debugInfo) ? this._debugInfo.references : null;
-  }
-
-  List<dynamic> get providerTokens {
-    return isPresent(this._debugInfo) ? this._debugInfo.providerTokens : null;
-  }
-
-  String get source {
-    return isPresent(this._debugInfo) ? this._debugInfo.source : null;
-  }
-
-  /**
-   * Use injector.get(token) instead.
-   *
-   * 
-   */
   dynamic inject(dynamic token) {
     return this.injector.get(token);
+  }
+
+  dynamic getLocal(String name) {
+    return this.locals[name];
   }
 }
 
 class DebugElement extends DebugNode {
   String name;
-  Map<String, String> properties;
-  Map<String, String> attributes;
+  Map<String, dynamic> properties;
+  Map<String, dynamic> attributes;
   List<DebugNode> childNodes;
   dynamic nativeElement;
-  DebugElement(dynamic nativeNode, dynamic parent, RenderDebugInfo _debugInfo)
-      : super(nativeNode, parent, _debugInfo) {
+  DebugElement(dynamic nativeNode, dynamic parent) : super(nativeNode, parent) {
     /* super call moved to initializer */;
-    this.properties = {};
-    this.attributes = {};
+    this.properties = new Map<String, dynamic>();
+    this.attributes = new Map<String, dynamic>();
     this.childNodes = [];
     this.nativeElement = nativeNode;
   }

@@ -29,7 +29,7 @@ import "package:angular2/src/facade/lang.dart" show isBlank;
 @Directive(selector: "[ngIf]", inputs: const ["ngIf"])
 class NgIf {
   ViewContainerRef _viewContainer;
-  TemplateRef<Object> _templateRef;
+  TemplateRef _templateRef;
   bool _prevCondition = null;
   NgIf(this._viewContainer, this._templateRef) {}
   set ngIf(dynamic newCondition) {

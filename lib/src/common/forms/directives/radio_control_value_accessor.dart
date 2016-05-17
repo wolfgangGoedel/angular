@@ -20,7 +20,7 @@ import "package:angular2/src/common/forms/directives/ng_control.dart"
 import "package:angular2/src/facade/lang.dart" show looseIdentical, isPresent;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 
-const dynamic RADIO_VALUE_ACCESSOR = const Provider(NG_VALUE_ACCESSOR,
+const RADIO_VALUE_ACCESSOR = const Provider(NG_VALUE_ACCESSOR,
     useExisting: RadioControlValueAccessor, multi: true);
 
 /**
@@ -121,7 +121,7 @@ class RadioControlValueAccessor
     }
   }
 
-  void registerOnChange(dynamic fn(dynamic _)) {
+  void registerOnChange(dynamic /* (_: any) => {} */ fn) {
     this._fn = fn;
     this.onChange = () {
       fn(new RadioButtonState(true, this._state.value));
@@ -133,7 +133,7 @@ class RadioControlValueAccessor
     this._fn(new RadioButtonState(false, this._state.value));
   }
 
-  void registerOnTouched(dynamic fn()) {
+  void registerOnTouched(dynamic /* () => {} */ fn) {
     this.onTouched = fn;
   }
 }

@@ -16,26 +16,29 @@ class DebugDomRootRenderer implements RootRenderer {
   RootRenderer _delegate;
   DebugDomRootRenderer(this._delegate) {}
   Renderer renderComponent(RenderComponentType componentProto) {
-    return new DebugDomRenderer(this._delegate.renderComponent(componentProto));
+    return new DebugDomRenderer(
+        this, this._delegate.renderComponent(componentProto));
   }
 }
 
 class DebugDomRenderer implements Renderer {
+  DebugDomRootRenderer _rootRenderer;
   Renderer _delegate;
-  DebugDomRenderer(this._delegate) {}
-  dynamic selectRootElement(dynamic /* String | dynamic */ selectorOrNode,
-      RenderDebugInfo debugInfo) {
-    var nativeEl = this._delegate.selectRootElement(selectorOrNode, debugInfo);
-    var debugEl = new DebugElement(nativeEl, null, debugInfo);
+  DebugDomRenderer(this._rootRenderer, this._delegate) {}
+  Renderer renderComponent(RenderComponentType componentType) {
+    return this._rootRenderer.renderComponent(componentType);
+  }
+
+  dynamic selectRootElement(String selector) {
+    var nativeEl = this._delegate.selectRootElement(selector);
+    var debugEl = new DebugElement(nativeEl, null);
     indexDebugNode(debugEl);
     return nativeEl;
   }
 
-  dynamic createElement(
-      dynamic parentElement, String name, RenderDebugInfo debugInfo) {
-    var nativeEl = this._delegate.createElement(parentElement, name, debugInfo);
-    var debugEl =
-        new DebugElement(nativeEl, getDebugNode(parentElement), debugInfo);
+  dynamic createElement(dynamic parentElement, String name) {
+    var nativeEl = this._delegate.createElement(parentElement, name);
+    var debugEl = new DebugElement(nativeEl, getDebugNode(parentElement));
     debugEl.name = name;
     indexDebugNode(debugEl);
     return nativeEl;
@@ -45,19 +48,16 @@ class DebugDomRenderer implements Renderer {
     return this._delegate.createViewRoot(hostElement);
   }
 
-  dynamic createTemplateAnchor(
-      dynamic parentElement, RenderDebugInfo debugInfo) {
-    var comment = this._delegate.createTemplateAnchor(parentElement, debugInfo);
-    var debugEl =
-        new DebugNode(comment, getDebugNode(parentElement), debugInfo);
+  dynamic createTemplateAnchor(dynamic parentElement) {
+    var comment = this._delegate.createTemplateAnchor(parentElement);
+    var debugEl = new DebugNode(comment, getDebugNode(parentElement));
     indexDebugNode(debugEl);
     return comment;
   }
 
-  dynamic createText(
-      dynamic parentElement, String value, RenderDebugInfo debugInfo) {
-    var text = this._delegate.createText(parentElement, value, debugInfo);
-    var debugEl = new DebugNode(text, getDebugNode(parentElement), debugInfo);
+  dynamic createText(dynamic parentElement, String value) {
+    var text = this._delegate.createText(parentElement, value);
+    var debugEl = new DebugNode(text, getDebugNode(parentElement));
     indexDebugNode(debugEl);
     return text;
   }
@@ -138,11 +138,24 @@ class DebugDomRenderer implements Renderer {
         .setElementAttribute(renderElement, attributeName, attributeValue);
   }
 
+  /**
+   * Used only in debug mode to serialize property changes to comment nodes,
+   * such as <template> placeholders.
+   */
   setBindingDebugInfo(
       dynamic renderElement, String propertyName, String propertyValue) {
     this
         ._delegate
         .setBindingDebugInfo(renderElement, propertyName, propertyValue);
+  }
+
+  /**
+   * Used only in development mode to set information needed by the DebugNode for this element.
+   */
+  setElementDebugInfo(dynamic renderElement, RenderDebugInfo info) {
+    var debugEl = getDebugNode(renderElement);
+    debugEl.setDebugInfo(info);
+    this._delegate.setElementDebugInfo(renderElement, info);
   }
 
   setElementClass(dynamic renderElement, String className, bool isAdd) {

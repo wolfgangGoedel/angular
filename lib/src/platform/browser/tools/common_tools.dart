@@ -1,8 +1,8 @@
 library angular2.src.platform.browser.tools.common_tools;
 
 import "package:angular2/src/core/application_ref.dart" show ApplicationRef;
-import "package:angular2/src/core/linker/component_factory.dart"
-    show ComponentRef;
+import "package:angular2/src/core/linker/dynamic_component_loader.dart"
+    show ComponentRef, ComponentRef_;
 import "package:angular2/src/facade/lang.dart" show isPresent, NumberWrapper;
 import "package:angular2/src/facade/browser.dart" show window;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
@@ -19,7 +19,7 @@ class ChangeDetectionPerfRecord {
  */
 class AngularTools {
   AngularProfiler profiler;
-  AngularTools(ComponentRef<dynamic> ref) {
+  AngularTools(ComponentRef ref) {
     this.profiler = new AngularProfiler(ref);
   }
 }
@@ -30,8 +30,8 @@ class AngularTools {
  */
 class AngularProfiler {
   ApplicationRef appRef;
-  AngularProfiler(ComponentRef<dynamic> ref) {
-    this.appRef = ref.injector.get(ApplicationRef);
+  AngularProfiler(ComponentRef ref) {
+    this.appRef = ((ref as ComponentRef_)).injector.get(ApplicationRef);
   }
   /**
    * Exercises change detection in a loop and then prints the average amount of
@@ -75,8 +75,9 @@ class AngularProfiler {
       ((window.console.profileEnd as dynamic))(profileName);
     }
     var msPerTick = (end - start) / numTicks;
-    print('''ran ${ numTicks} change detection cycles''');
-    print('''${ NumberWrapper . toFixed ( msPerTick , 2 )} ms per check''');
+    window.console.log('''ran ${ numTicks} change detection cycles''');
+    window.console
+        .log('''${ NumberWrapper . toFixed ( msPerTick , 2 )} ms per check''');
     return new ChangeDetectionPerfRecord(msPerTick, numTicks);
   }
 }

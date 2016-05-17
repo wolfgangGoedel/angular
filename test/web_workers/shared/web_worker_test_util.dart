@@ -42,7 +42,8 @@ PairedMessageBuses createPairedMessageBuses() {
  * Only intended to be called on a given broker instance once.
  */
 void expectBrokerCall(SpyMessageBroker broker, String methodName,
-    [List<dynamic> vals, Function handler]) {
+    [List<dynamic> vals,
+    dynamic /* (..._: any[]) => Promise<any>| void */ handler]) {
   broker.spy("runOnService").andCallFake((UiArguments args, Type returnType) {
     expect(args.method).toEqual(methodName);
     if (isPresent(vals)) {

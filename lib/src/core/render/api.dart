@@ -1,55 +1,35 @@
 library angular2.src.core.render.api;
 
-import "package:angular2/src/facade/exceptions.dart" show unimplemented;
 import "package:angular2/src/core/metadata/view.dart" show ViewEncapsulation;
 import "package:angular2/src/core/di.dart" show Injector, Injectable;
 
 class RenderComponentType {
   String id;
-  String templateUrl;
-  num slotCount;
   ViewEncapsulation encapsulation;
   List<dynamic /* String | List < dynamic > */ > styles;
-  RenderComponentType(this.id, this.templateUrl, this.slotCount,
-      this.encapsulation, this.styles) {}
+  RenderComponentType(this.id, this.encapsulation, this.styles) {}
 }
 
-abstract class RenderDebugInfo {
-  Injector get injector {
-    return unimplemented();
-  }
-
-  dynamic get component {
-    return unimplemented();
-  }
-
-  List<dynamic> get providerTokens {
-    return unimplemented();
-  }
-
-  Map<String, dynamic> get references {
-    return unimplemented();
-  }
-
-  dynamic get context {
-    return unimplemented();
-  }
-
-  String get source {
-    return unimplemented();
-  }
+class RenderDebugInfo {
+  Injector injector;
+  dynamic component;
+  List<dynamic> providerTokens;
+  Map<String, dynamic> locals;
+  RenderDebugInfo(
+      this.injector, this.component, this.providerTokens, this.locals) {}
 }
 
-abstract class Renderer {
-  dynamic selectRootElement(
-      dynamic /* String | dynamic */ selectorOrNode, RenderDebugInfo debugInfo);
-  dynamic createElement(
-      dynamic parentElement, String name, RenderDebugInfo debugInfo);
+abstract class ParentRenderer {
+  Renderer renderComponent(RenderComponentType componentType);
+}
+
+abstract class Renderer implements ParentRenderer {
+  Renderer renderComponent(RenderComponentType componentType);
+  dynamic selectRootElement(String selector);
+  dynamic createElement(dynamic parentElement, String name);
   dynamic createViewRoot(dynamic hostElement);
-  dynamic createTemplateAnchor(
-      dynamic parentElement, RenderDebugInfo debugInfo);
-  dynamic createText(
-      dynamic parentElement, String value, RenderDebugInfo debugInfo);
+  dynamic createTemplateAnchor(dynamic parentElement);
+  dynamic createText(dynamic parentElement, String value);
   void projectNodes(dynamic parentElement, List<dynamic> nodes);
   void attachViewAfter(dynamic node, List<dynamic> viewRootNodes);
   void detachView(List<dynamic> viewRootNodes);
@@ -61,10 +41,12 @@ abstract class Renderer {
   void setElementAttribute(
       dynamic renderElement, String attributeName, String attributeValue);
   /**
-   * Used only in debug mode to serialize property changes to dom nodes as attributes.
+   * Used only in debug mode to serialize property changes to comment nodes,
+   * such as <template> placeholders.
    */
   void setBindingDebugInfo(
       dynamic renderElement, String propertyName, String propertyValue);
+  setElementDebugInfo(dynamic renderElement, RenderDebugInfo info);
   setElementClass(dynamic renderElement, String className, bool isAdd);
   setElementStyle(dynamic renderElement, String styleName, String styleValue);
   invokeElementMethod(
@@ -84,6 +66,6 @@ abstract class Renderer {
  *
  * The default Renderer implementation is `DomRenderer`. Also available is `WebWorkerRenderer`.
  */
-abstract class RootRenderer {
+abstract class RootRenderer implements ParentRenderer {
   Renderer renderComponent(RenderComponentType componentType);
 }

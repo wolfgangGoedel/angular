@@ -21,10 +21,8 @@ import "shared.dart"
         composeAsyncValidators;
 import "../validators.dart" show Validators, NG_VALIDATORS, NG_ASYNC_VALIDATORS;
 
-const dynamic formDirectiveProvider =
-    /*@ts2dart_const*/
-    /* @ts2dart_Provider */ const Provider(ControlContainer,
-        useExisting: NgFormModel);
+const formDirectiveProvider =
+    const Provider(ControlContainer, useExisting: NgFormModel);
 
 /**
  * Binds an existing control group to a DOM element.

@@ -1,3 +1,5 @@
+library angular2.src.core.di.opaque_token;
+
 /**
  * Creates a token that can be used in a DI Provider.
  *
@@ -18,10 +20,7 @@
  *
  * Using an `OpaqueToken` is preferable to using an `Object` as tokens because it provides better
  * error messages.
- * @ts2dart_const
  */
-library angular2.src.core.di.opaque_token;
-
 class OpaqueToken {
   final String _desc;
   const OpaqueToken(this._desc);

@@ -63,7 +63,6 @@ var VIEW_ENCAPSULATION_VALUES = [
  *   }
  * }
  * ```
- * @ts2dart_const
  */
 class ViewMetadata {
   /**
@@ -103,7 +102,7 @@ class ViewMetadata {
    *   directives: [NgFor]
    *   template: '
    *   <ul>
-   *     <li *ngFor="let item of items">{{item}}</li>
+   *     <li *ngFor="#item of items">{{item}}</li>
    *   </ul>'
    * })
    * class MyComponent {
@@ -120,13 +119,13 @@ class ViewMetadata {
    */
   final ViewEncapsulation encapsulation;
   const ViewMetadata(
-      {String templateUrl,
-      String template,
-      List<dynamic /* Type | List < dynamic > */ > directives,
-      List<dynamic /* Type | List < dynamic > */ > pipes,
-      ViewEncapsulation encapsulation,
-      List<String> styles,
-      List<String> styleUrls})
+      {templateUrl,
+      template,
+      directives,
+      pipes,
+      encapsulation,
+      styles,
+      styleUrls})
       : templateUrl = templateUrl,
         template = template,
         styleUrls = styleUrls,

@@ -9,12 +9,12 @@ import "package:angular2/core.dart"
 const WORKER_RENDER_ROUTER = const [
   MessageBasedPlatformLocation,
   BrowserPlatformLocation,
-  /* @ts2dart_Provider */ const Provider(APP_INITIALIZER,
+  const Provider(APP_INITIALIZER,
       useFactory: initRouterListeners, multi: true, deps: const [Injector])
 ];
 dynamic /* () => void */ initRouterListeners(Injector injector) {
   return () {
     var zone = injector.get(NgZone);
-    zone.runGuarded(() => injector.get(MessageBasedPlatformLocation).start());
+    zone.run(() => injector.get(MessageBasedPlatformLocation).start());
   };
 }

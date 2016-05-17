@@ -149,7 +149,6 @@ abstract class GetTestability {
       TestabilityRegistry registry, dynamic elem, bool findInAncestors);
 }
 
-/* @ts2dart_const */
 class _NoopGetTestability implements GetTestability {
   void addToWindow(TestabilityRegistry registry) {}
   Testability findTestabilityInTree(

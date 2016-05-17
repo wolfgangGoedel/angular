@@ -12,14 +12,12 @@ Future<dynamic> ___make_dart_analyzer_happy = null;
  * The `RouteConfig` decorator defines routes for a given component.
  *
  * It takes an array of [RouteDefinition]s.
- * @ts2dart_const
  */
 class RouteConfig {
   final List<RouteDefinition> configs;
   const RouteConfig(this.configs);
 }
 
-/* @ts2dart_const */
 abstract class AbstractRoute implements RouteDefinition {
   final String name;
   final bool useAsDefault;
@@ -27,13 +25,7 @@ abstract class AbstractRoute implements RouteDefinition {
   final String regex;
   final RegexSerializer serializer;
   final Map<String, dynamic> data;
-  const AbstractRoute(
-      {String name,
-      bool useAsDefault,
-      String path,
-      String regex,
-      RegexSerializer serializer,
-      dynamic data})
+  const AbstractRoute({name, useAsDefault, path, regex, serializer, data})
       : name = name,
         useAsDefault = useAsDefault,
         path = path,
@@ -63,19 +55,11 @@ abstract class AbstractRoute implements RouteDefinition {
  * ])
  * class MyApp {}
  * ```
- * @ts2dart_const
  */
 class Route extends AbstractRoute {
   final dynamic component;
   final String aux = null;
-  const Route(
-      {String name,
-      bool useAsDefault,
-      String path,
-      String regex,
-      RegexSerializer serializer,
-      dynamic data,
-      dynamic /* Type | ComponentDefinition */ component})
+  const Route({name, useAsDefault, path, regex, serializer, data, component})
       : component = component,
         super(
             name: name,
@@ -105,18 +89,10 @@ class Route extends AbstractRoute {
  * ])
  * class MyApp {}
  * ```
- * @ts2dart_const
  */
 class AuxRoute extends AbstractRoute {
   final dynamic component;
-  const AuxRoute(
-      {String name,
-      bool useAsDefault,
-      String path,
-      String regex,
-      RegexSerializer serializer,
-      dynamic data,
-      dynamic /* Type | ComponentDefinition */ component})
+  const AuxRoute({name, useAsDefault, path, regex, serializer, data, component})
       : component = component,
         super(
             name: name,
@@ -150,19 +126,11 @@ class AuxRoute extends AbstractRoute {
  * ])
  * class MyApp {}
  * ```
- * @ts2dart_const
  */
 class AsyncRoute extends AbstractRoute {
   final dynamic /* () => Promise<Type> */ loader;
   final String aux = null;
-  const AsyncRoute(
-      {String name,
-      bool useAsDefault,
-      String path,
-      String regex,
-      RegexSerializer serializer,
-      dynamic data,
-      dynamic /* () => Promise<Type> */ loader})
+  const AsyncRoute({name, useAsDefault, path, regex, serializer, data, loader})
       : loader = loader,
         super(
             name: name,
@@ -193,18 +161,11 @@ class AsyncRoute extends AbstractRoute {
  * ])
  * class MyApp {}
  * ```
- * @ts2dart_const
  */
 class Redirect extends AbstractRoute {
   final List<dynamic> redirectTo;
   const Redirect(
-      {String name,
-      bool useAsDefault,
-      String path,
-      String regex,
-      RegexSerializer serializer,
-      dynamic data,
-      List<dynamic> redirectTo})
+      {name, useAsDefault, path, regex, serializer, data, redirectTo})
       : redirectTo = redirectTo,
         super(
             name: name,

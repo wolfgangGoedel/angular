@@ -57,10 +57,10 @@ void allTests() {
           'a|web/bar.dart': 'simple_annotation_files/bar.dart'
         },
         outputs: {
-          'a|web/bar.ngfactory.dart':
-              'simple_annotation_files/expected/bar.ngfactory.dart',
-          'a|web/index.ngfactory.dart':
-              'simple_annotation_files/expected/index.ngfactory.dart'
+          'a|web/bar.template.dart':
+              'simple_annotation_files/expected/bar.template.dart',
+          'a|web/index.template.dart':
+              'simple_annotation_files/expected/index.template.dart'
         }),
     new IntegrationTestConfig('should generate proper code for a Component with multiple deps.',
         inputs: {
@@ -69,7 +69,7 @@ void allTests() {
           'a|web/bar.dart': 'two_deps_files/bar.dart'
         },
         outputs: {
-          'a|web/bar.ngfactory.dart': 'two_deps_files/expected/bar.ngfactory.dart'
+          'a|web/bar.template.dart': 'two_deps_files/expected/bar.template.dart'
         }),
     new IntegrationTestConfig(
         'should generate proper code for a Component declaring a '
@@ -80,8 +80,8 @@ void allTests() {
           'a|web/bar.dart': 'list_of_types_files/bar.dart'
         },
         outputs: {
-          'a|web/bar.ngfactory.dart':
-              'list_of_types_files/expected/bar.ngfactory.dart'
+          'a|web/bar.template.dart':
+              'list_of_types_files/expected/bar.template.dart'
         }),
     new IntegrationTestConfig('should generate a factory for a class with no declared ctor.',
         inputs: {
@@ -89,8 +89,8 @@ void allTests() {
           'a|web/bar.dart': 'synthetic_ctor_files/bar.dart'
         },
         outputs: {
-          'a|web/bar.ngfactory.dart':
-              'synthetic_ctor_files/expected/bar.ngfactory.dart'
+          'a|web/bar.template.dart':
+              'synthetic_ctor_files/expected/bar.template.dart'
         }),
     new IntegrationTestConfig('should preserve multiple annotations.', inputs: {
       'a|web/index.dart': 'two_annotations_files/index.dart',
@@ -98,19 +98,27 @@ void allTests() {
       'angular2|lib/src/core/metadata.dart':
           '../../../lib/src/core/metadata.dart'
     }, outputs: {
-      'a|web/bar.ngfactory.dart':
-          'two_annotations_files/expected/bar.ngfactory.dart'
+      'a|web/bar.template.dart':
+          'two_annotations_files/expected/bar.template.dart'
     }),
-    new IntegrationTestConfig(
-        'should handle Directive dependencies declared on a View.',
+    new IntegrationTestConfig('should generate getters for output events defined on a Component.',
+        inputs: {
+          'a|web/index.dart': 'event_getter_files/index.dart',
+          'a|web/bar.dart': 'event_getter_files/bar.dart'
+        },
+        outputs: {
+          'a|web/bar.template.dart':
+              'event_getter_files/expected/bar.template.dart'
+        }),
+    new IntegrationTestConfig('should handle Directive dependencies declared on a View.',
         inputs: {
           'a|web/index.dart': 'directive_dep_files/index.dart',
           'a|web/foo.dart': 'directive_dep_files/foo.dart',
           'a|web/bar.dart': 'directive_dep_files/bar.dart'
         },
         outputs: {
-          'a|web/bar.ngfactory.dart':
-              'directive_dep_files/expected/bar.ngfactory.dart'
+          'a|web/bar.template.dart':
+              'directive_dep_files/expected/bar.template.dart'
         }),
     new IntegrationTestConfig('should handle chained Directive dependencies declared on a View.',
         inputs: {
@@ -120,8 +128,8 @@ void allTests() {
           'a|web/baz.dart': 'directive_chain_files/baz.dart'
         },
         outputs: {
-          'a|web/bar.ngfactory.dart':
-              'directive_chain_files/expected/bar.ngfactory.dart'
+          'a|web/bar.template.dart':
+              'directive_chain_files/expected/bar.template.dart'
         }),
     new IntegrationTestConfig('should handle empty template files that define directive aliases.',
         inputs: {
@@ -129,11 +137,35 @@ void allTests() {
           'a|web/bar.dart': 'empty_ng_deps_files/bar.dart'
         },
         outputs: {
-      'a|web/foo.ngfactory.dart':
-          'empty_ng_deps_files/expected/foo.ngfactory.dart',
-      'a|web/bar.ngfactory.dart':
-          'empty_ng_deps_files/expected/bar.ngfactory.dart'
-    })
+          'a|web/foo.template.dart':
+              'empty_ng_deps_files/expected/foo.template.dart',
+          'a|web/bar.template.dart':
+              'empty_ng_deps_files/expected/bar.template.dart'
+        }),
+    new IntegrationTestConfig('should generate setters for annotated properties.',
+        inputs: {
+          'a|web/bar.dart': 'queries_prop_annotation_files/bar.dart'
+        },
+        outputs: {
+          'a|web/bar.template.dart':
+              'queries_prop_annotation_files/expected/bar.template.dart'
+        }),
+    new IntegrationTestConfig('should generate setters for `queries` values in Directives.',
+        inputs: {
+          'a|web/bar.dart': 'queries_class_annotation_files/bar.dart'
+        },
+        outputs: {
+          'a|web/bar.template.dart':
+              'queries_class_annotation_files/expected/bar.template.dart'
+        }),
+    new IntegrationTestConfig('should handle @override annotations in properties on Directives.',
+        inputs: {
+          'a|web/bar.dart': 'override_annotation_files/bar.dart'
+        },
+        outputs: {
+          'a|web/bar.template.dart':
+              'override_annotation_files/expected/bar.template.dart'
+        })
   ];
 
   var cache = {};
@@ -180,8 +212,8 @@ void _testDeferredRewriter() {
   inputs.addAll(commonInputs);
   inputs.keys.forEach((k) => inputs[k] = _readFile(inputs[k]));
   var outputs = {
-    'a|web/bar.ngfactory.dart':
-        _readFile('deferred_files/expected/bar.ngfactory.dart'),
+    'a|web/bar.template.dart':
+        _readFile('deferred_files/expected/bar.template.dart'),
     'a|web/bar.dart': deferredOuts.barContents,
     'a|web/index.dart': deferredOuts.indexContents
   };

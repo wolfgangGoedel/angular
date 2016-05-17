@@ -30,7 +30,7 @@ var childCmpInstanceCount;
 main() {
   describe("redirects", () {
     TestComponentBuilder tcb;
-    ComponentFixture<dynamic> rootTC;
+    ComponentFixture rootTC;
     var rtr;
     beforeEachProviders(() => TEST_ROUTER_PROVIDERS);
     beforeEach(inject([TestComponentBuilder, Router], (tcBuilder, router) {

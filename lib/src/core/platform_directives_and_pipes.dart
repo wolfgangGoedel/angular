@@ -27,7 +27,7 @@ import "package:angular2/src/core/di.dart" show OpaqueToken;
  * ```
  */
 const OpaqueToken PLATFORM_DIRECTIVES =
-    /*@ts2dart_const*/ const OpaqueToken("Platform Directives");
+    const OpaqueToken("Platform Directives");
 /**
  * A token that can be provided when bootstraping an application to make an array of pipes
  * available in every component of the application.

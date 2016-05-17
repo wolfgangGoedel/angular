@@ -7,7 +7,7 @@ import "package:angular2/src/core/zone/ng_zone.dart" show NgZone;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 
 const OpaqueToken EVENT_MANAGER_PLUGINS =
-    /*@ts2dart_const*/ const OpaqueToken("EventManagerPlugins");
+    const OpaqueToken("EventManagerPlugins");
 
 @Injectable()
 class EventManager {

@@ -6,6 +6,7 @@ final ngFor = {
     "value": {
       "class": "Directive",
       "isComponent": false,
+      "dynamicLoadable": true,
       "selector": "[ngFor][ngForOf]",
       "exportAs": null,
       "type": {

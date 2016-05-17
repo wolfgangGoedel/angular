@@ -1,15 +1,14 @@
 library angular2.src.mock.view_resolver_mock;
 
-import "package:angular2/src/core/di.dart" show resolveForwardRef;
 import "package:angular2/src/core/di.dart" show Injectable;
 import "package:angular2/src/facade/collection.dart"
     show Map, MapWrapper, ListWrapper;
 import "package:angular2/src/facade/lang.dart"
-    show Type, isPresent, isArray, stringify, isBlank;
+    show Type, isPresent, stringify, isBlank;
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException;
 import "../core/metadata.dart" show ViewMetadata;
-import "package:angular2/src/compiler/view_resolver.dart" show ViewResolver;
+import "package:angular2/src/core/linker/view_resolver.dart" show ViewResolver;
 
 @Injectable()
 class MockViewResolver extends ViewResolver {
@@ -81,10 +80,10 @@ class MockViewResolver extends ViewResolver {
     if (isBlank(view)) {
       view = super.resolve(component);
     }
-    var directives = [];
+    var directives = view.directives;
     var overrides = this._directiveOverrides[component];
-    if (isPresent(overrides) && isPresent(view.directives)) {
-      flattenArray(view.directives, directives);
+    if (isPresent(overrides) && isPresent(directives)) {
+      directives = ListWrapper.clone(view.directives);
       overrides.forEach((from, to) {
         var srcIndex = directives.indexOf(from);
         if (srcIndex == -1) {
@@ -124,18 +123,6 @@ class MockViewResolver extends ViewResolver {
     if (isPresent(cached)) {
       throw new BaseException(
           '''The component ${ stringify ( component )} has already been compiled, its configuration can not be changed''');
-    }
-  }
-}
-
-void flattenArray(
-    List<dynamic> tree, List<dynamic /* Type | List < dynamic > */ > out) {
-  for (var i = 0; i < tree.length; i++) {
-    var item = resolveForwardRef(tree[i]);
-    if (isArray(item)) {
-      flattenArray(item, out);
-    } else {
-      out.add(item);
     }
   }
 }

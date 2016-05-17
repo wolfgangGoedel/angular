@@ -17,28 +17,6 @@ import "../../core/change_detection/differs/default_iterable_differ.dart"
     show DefaultIterableDiffer, CollectionChangeRecord;
 import "../../facade/exceptions.dart" show BaseException;
 
-class NgForRow {
-  dynamic $implicit;
-  num index;
-  num count;
-  NgForRow(this.$implicit, this.index, this.count) {}
-  bool get first {
-    return identical(this.index, 0);
-  }
-
-  bool get last {
-    return identical(this.index, this.count - 1);
-  }
-
-  bool get even {
-    return identical(this.index % 2, 0);
-  }
-
-  bool get odd {
-    return !this.even;
-  }
-}
-
 /**
  * The `NgFor` directive instantiates a template once per item from an iterable. The context for
  * each instantiated template inherits from the outer context with the given loop variable set
@@ -81,7 +59,7 @@ class NgForRow {
  *
  * ### Syntax
  *
- * - `<li *ngFor="let item of items; #i = index">...</li>`
+ * - `<li *ngFor="#item of items; #i = index">...</li>`
  * - `<li template="ngFor #item of items; #i = index">...</li>`
  * - `<template ngFor #item [ngForOf]="items" #i="index"><li>...</li></template>`
  *
@@ -95,7 +73,7 @@ class NgForRow {
     inputs: const ["ngForTrackBy", "ngForOf", "ngForTemplate"])
 class NgFor implements DoCheck {
   ViewContainerRef _viewContainer;
-  TemplateRef<NgForRow> _templateRef;
+  TemplateRef _templateRef;
   IterableDiffers _iterableDiffers;
   ChangeDetectorRef _cdr;
   /** @internal */
@@ -120,7 +98,7 @@ class NgFor implements DoCheck {
     }
   }
 
-  set ngForTemplate(TemplateRef<NgForRow> value) {
+  set ngForTemplate(TemplateRef value) {
     if (isPresent(value)) {
       this._templateRef = value;
     }
@@ -154,20 +132,22 @@ class NgFor implements DoCheck {
       this._perViewChange(insertTuples[i].view, insertTuples[i].record);
     }
     for (var i = 0, ilen = this._viewContainer.length; i < ilen; i++) {
-      var viewRef = (this._viewContainer.get(i) as EmbeddedViewRef<NgForRow>);
-      viewRef.context.index = i;
-      viewRef.context.count = ilen;
+      var viewRef = (this._viewContainer.get(i) as EmbeddedViewRef);
+      viewRef.setLocal("first", identical(i, 0));
+      viewRef.setLocal("last", identical(i, ilen - 1));
     }
     changes.forEachIdentityChange((record) {
-      var viewRef = (this._viewContainer.get(record.currentIndex)
-          as EmbeddedViewRef<NgForRow>);
-      viewRef.context.$implicit = record.item;
+      var viewRef =
+          (this._viewContainer.get(record.currentIndex) as EmbeddedViewRef);
+      viewRef.setLocal("\$implicit", record.item);
     });
   }
 
-  _perViewChange(
-      EmbeddedViewRef<NgForRow> view, CollectionChangeRecord record) {
-    view.context.$implicit = record.item;
+  _perViewChange(EmbeddedViewRef view, CollectionChangeRecord record) {
+    view.setLocal("\$implicit", record.item);
+    view.setLocal("index", record.currentIndex);
+    view.setLocal("even", (record.currentIndex % 2 == 0));
+    view.setLocal("odd", (record.currentIndex % 2 == 1));
   }
 
   List<RecordViewTuple> _bulkRemove(List<RecordViewTuple> tuples) {
@@ -178,8 +158,7 @@ class NgFor implements DoCheck {
       var tuple = tuples[i];
       // separate moved views from removed views.
       if (isPresent(tuple.record.currentIndex)) {
-        tuple.view = (this._viewContainer.detach(tuple.record.previousIndex)
-            as EmbeddedViewRef<NgForRow>);
+        tuple.view = this._viewContainer.detach(tuple.record.previousIndex);
         movedTuples.add(tuple);
       } else {
         this._viewContainer.remove(tuple.record.previousIndex);
@@ -195,8 +174,9 @@ class NgFor implements DoCheck {
       if (isPresent(tuple.view)) {
         this._viewContainer.insert(tuple.view, tuple.record.currentIndex);
       } else {
-        tuple.view = this._viewContainer.createEmbeddedView(this._templateRef,
-            new NgForRow(null, null, null), tuple.record.currentIndex);
+        tuple.view = this
+            ._viewContainer
+            .createEmbeddedView(this._templateRef, tuple.record.currentIndex);
       }
     }
     return tuples;
@@ -204,9 +184,9 @@ class NgFor implements DoCheck {
 }
 
 class RecordViewTuple {
-  EmbeddedViewRef<NgForRow> view;
+  EmbeddedViewRef view;
   dynamic record;
-  RecordViewTuple(dynamic record, EmbeddedViewRef<NgForRow> view) {
+  RecordViewTuple(dynamic record, EmbeddedViewRef view) {
     this.record = record;
     this.view = view;
   }

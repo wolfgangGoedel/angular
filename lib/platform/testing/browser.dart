@@ -14,13 +14,13 @@ export "package:angular2/platform/browser.dart" show CACHED_TEMPLATE_PROVIDER;
 /**
  * Default platform providers for testing.
  */
-const List<dynamic> TEST_BROWSER_PLATFORM_PROVIDERS =
-    /*@ts2dart_const*/ const [TEST_BROWSER_STATIC_PLATFORM_PROVIDERS];
+const List<dynamic> TEST_BROWSER_PLATFORM_PROVIDERS = const [
+  TEST_BROWSER_STATIC_PLATFORM_PROVIDERS
+];
 /**
  * Default application providers for testing.
  */
-const List<dynamic> TEST_BROWSER_APPLICATION_PROVIDERS =
-    /*@ts2dart_const*/ const [
+const List<dynamic> TEST_BROWSER_APPLICATION_PROVIDERS = const [
   BROWSER_APP_PROVIDERS,
   ADDITIONAL_TEST_BROWSER_PROVIDERS
 ];

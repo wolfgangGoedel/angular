@@ -30,10 +30,8 @@ import "../model.dart" show Control;
 import "../validators.dart" show NG_VALIDATORS, NG_ASYNC_VALIDATORS;
 import "validators.dart" show ValidatorFn, AsyncValidatorFn;
 
-const dynamic controlNameBinding =
-    /*@ts2dart_const*/
-    /* @ts2dart_Provider */ const Provider(NgControl,
-        useExisting: NgControlName);
+const controlNameBinding =
+    const Provider(NgControl, useExisting: NgControlName);
 
 /**
  * Creates and binds a control with a specified name to a DOM element.

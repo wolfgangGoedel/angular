@@ -1,6 +1,6 @@
 library playground.hello_world.index_common_dart.ng_deps.dart;
 
-import 'hello.ngfactory.dart' as _templates;
+import 'hello.template.dart' as _templates;
 
 import 'hello.dart';
 import 'package:angular2/angular2.dart'
@@ -19,5 +19,6 @@ void initReflector(reflector) {
           _templates.HostHelloCmpTemplate
         ], const [
           const []
-        ], () => new HelloCmp()));
+        ], () => new HelloCmp()))
+    ..registerGetters({'eventName': (o) => o.eventName});
 }

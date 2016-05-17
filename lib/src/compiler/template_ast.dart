@@ -1,14 +1,9 @@
 library angular2.src.compiler.template_ast;
 
-import "expression_parser/ast.dart" show AST;
+import "package:angular2/src/core/change_detection/change_detection.dart"
+    show AST;
 import "package:angular2/src/facade/lang.dart" show isPresent;
-import "compile_metadata.dart"
-    show
-        CompileDirectiveMetadata,
-        CompileTokenMetadata,
-        CompileProviderMetadata,
-        CompileTokenMap,
-        CompileQueryMetadata;
+import "directive_metadata.dart" show CompileDirectiveMetadata;
 import "parse_util.dart" show ParseSourceSpan;
 
 /**
@@ -103,20 +98,7 @@ class BoundEventAst implements TemplateAst {
 }
 
 /**
- * A reference declaration on an element (e.g. `let someName="expression"`).
- */
-class ReferenceAst implements TemplateAst {
-  String name;
-  CompileTokenMetadata value;
-  ParseSourceSpan sourceSpan;
-  ReferenceAst(this.name, this.value, this.sourceSpan) {}
-  dynamic visit(TemplateAstVisitor visitor, dynamic context) {
-    return visitor.visitReference(this, context);
-  }
-}
-
-/**
- * A variable declaration on a <template> (e.g. `var-someName="someLocalName"`).
+ * A variable declaration on an element (e.g. `#var="expression"`).
  */
 class VariableAst implements TemplateAst {
   String name;
@@ -136,10 +118,8 @@ class ElementAst implements TemplateAst {
   List<AttrAst> attrs;
   List<BoundElementPropertyAst> inputs;
   List<BoundEventAst> outputs;
-  List<ReferenceAst> references;
+  List<VariableAst> exportAsVars;
   List<DirectiveAst> directives;
-  List<ProviderAst> providers;
-  bool hasViewContainer;
   List<TemplateAst> children;
   num ngContentIndex;
   ParseSourceSpan sourceSpan;
@@ -148,15 +128,33 @@ class ElementAst implements TemplateAst {
       this.attrs,
       this.inputs,
       this.outputs,
-      this.references,
+      this.exportAsVars,
       this.directives,
-      this.providers,
-      this.hasViewContainer,
       this.children,
       this.ngContentIndex,
       this.sourceSpan) {}
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitElement(this, context);
+  }
+
+  /**
+   * Whether the element has any active bindings (inputs, outputs, vars, or directives).
+   */
+  bool isBound() {
+    return (this.inputs.length > 0 ||
+        this.outputs.length > 0 ||
+        this.exportAsVars.length > 0 ||
+        this.directives.length > 0);
+  }
+
+  /**
+   * Get the component associated with this element, if any.
+   */
+  CompileDirectiveMetadata getComponent() {
+    return this.directives.length > 0 &&
+            this.directives[0].directive.isComponent
+        ? this.directives[0].directive
+        : null;
   }
 }
 
@@ -166,25 +164,13 @@ class ElementAst implements TemplateAst {
 class EmbeddedTemplateAst implements TemplateAst {
   List<AttrAst> attrs;
   List<BoundEventAst> outputs;
-  List<ReferenceAst> references;
-  List<VariableAst> variables;
+  List<VariableAst> vars;
   List<DirectiveAst> directives;
-  List<ProviderAst> providers;
-  bool hasViewContainer;
   List<TemplateAst> children;
   num ngContentIndex;
   ParseSourceSpan sourceSpan;
-  EmbeddedTemplateAst(
-      this.attrs,
-      this.outputs,
-      this.references,
-      this.variables,
-      this.directives,
-      this.providers,
-      this.hasViewContainer,
-      this.children,
-      this.ngContentIndex,
-      this.sourceSpan) {}
+  EmbeddedTemplateAst(this.attrs, this.outputs, this.vars, this.directives,
+      this.children, this.ngContentIndex, this.sourceSpan) {}
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitEmbeddedTemplate(this, context);
   }
@@ -213,38 +199,13 @@ class DirectiveAst implements TemplateAst {
   List<BoundDirectivePropertyAst> inputs;
   List<BoundElementPropertyAst> hostProperties;
   List<BoundEventAst> hostEvents;
+  List<VariableAst> exportAsVars;
   ParseSourceSpan sourceSpan;
   DirectiveAst(this.directive, this.inputs, this.hostProperties,
-      this.hostEvents, this.sourceSpan) {}
+      this.hostEvents, this.exportAsVars, this.sourceSpan) {}
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitDirective(this, context);
   }
-}
-
-/**
- * A provider declared on an element
- */
-class ProviderAst implements TemplateAst {
-  CompileTokenMetadata token;
-  bool multiProvider;
-  bool eager;
-  List<CompileProviderMetadata> providers;
-  ProviderAstType providerType;
-  ParseSourceSpan sourceSpan;
-  ProviderAst(this.token, this.multiProvider, this.eager, this.providers,
-      this.providerType, this.sourceSpan) {}
-  dynamic visit(TemplateAstVisitor visitor, dynamic context) {
-    // No visit method in the visitor for now...
-    return null;
-  }
-}
-
-enum ProviderAstType {
-  PublicService,
-  PrivateService,
-  Component,
-  Directive,
-  Builtin
 }
 
 /**
@@ -289,7 +250,6 @@ abstract class TemplateAstVisitor {
   dynamic visitNgContent(NgContentAst ast, dynamic context);
   dynamic visitEmbeddedTemplate(EmbeddedTemplateAst ast, dynamic context);
   dynamic visitElement(ElementAst ast, dynamic context);
-  dynamic visitReference(ReferenceAst ast, dynamic context);
   dynamic visitVariable(VariableAst ast, dynamic context);
   dynamic visitEvent(BoundEventAst ast, dynamic context);
   dynamic visitElementProperty(BoundElementPropertyAst ast, dynamic context);

@@ -323,7 +323,7 @@ main() {
               .overrideTemplate(
                   Simple, "<ng-content></ng-content><p>P,</p>{{stringProp}}")
               .createAsync(MainComp)
-              .then((ComponentFixture<dynamic> main) {
+              .then((ComponentFixture main) {
             main.detectChanges();
             expect(main.debugElement.nativeElement).toHaveText("P,text");
             async.done();
@@ -345,7 +345,7 @@ main() {
               .overrideTemplate(
                   Simple, "<style></style><p>P,</p>{{stringProp}}")
               .createAsync(MainComp)
-              .then((ComponentFixture<dynamic> main) {
+              .then((ComponentFixture main) {
             main.detectChanges();
             expect(main.debugElement.nativeElement).toHaveText("P,text");
             async.done();
@@ -489,49 +489,6 @@ main() {
             async.done();
           });
         }));
-    // Note: This does not use a ng-content element, but
-
-    // is still important as we are merging proto views independent of
-
-    // the presence of ng-content elements!
-    it(
-        "should still allow to implement a recursive trees via multiple components",
-        inject([TestComponentBuilder, AsyncTestCompleter],
-            (TestComponentBuilder tcb, async) {
-          tcb
-              .overrideView(
-                  MainComp,
-                  new ViewMetadata(
-                      template: "<tree></tree>", directives: [Tree]))
-              .overrideView(
-                  Tree,
-                  new ViewMetadata(
-                      template:
-                          "TREE({{depth}}:<tree2 *manual [depth]=\"depth+1\"></tree2>)",
-                      directives: [Tree2, ManualViewportDirective]))
-              .createAsync(MainComp)
-              .then((main) {
-            main.detectChanges();
-            expect(main.debugElement.nativeElement).toHaveText("TREE(0:)");
-            var tree = main.debugElement.query(By.directive(Tree));
-            ManualViewportDirective manualDirective = tree
-                .queryAllNodes(By.directive(ManualViewportDirective))[0]
-                .inject(ManualViewportDirective);
-            manualDirective.show();
-            main.detectChanges();
-            expect(main.debugElement.nativeElement)
-                .toHaveText("TREE(0:TREE2(1:))");
-            var tree2 = main.debugElement.query(By.directive(Tree2));
-            manualDirective = tree2
-                .queryAllNodes(By.directive(ManualViewportDirective))[0]
-                .inject(ManualViewportDirective);
-            manualDirective.show();
-            main.detectChanges();
-            expect(main.debugElement.nativeElement)
-                .toHaveText("TREE(0:TREE2(1:TREE(2:)))");
-            async.done();
-          });
-        }));
     if (DOM.supportsNativeShadowDOM()) {
       it(
           "should support native content projection and isolate styles per component",
@@ -556,32 +513,6 @@ main() {
           }));
     }
     if (DOM.supportsDOMEvents()) {
-      it(
-          "should support non emulated styles",
-          inject([TestComponentBuilder, AsyncTestCompleter],
-              (TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MainComp,
-                    new ViewMetadata(
-                        template: "<div class=\"redStyle\"></div>",
-                        styles: [".redStyle { color: red}"],
-                        encapsulation: ViewEncapsulation.None,
-                        directives: [OtherComp]))
-                .createAsync(MainComp)
-                .then((main) {
-              var mainEl = main.debugElement.nativeElement;
-              var div1 = DOM.firstChild(mainEl);
-              var div2 = DOM.createElement("div");
-              DOM.setAttribute(div2, "class", "redStyle");
-              DOM.appendChild(mainEl, div2);
-              expect(DOM.getComputedStyle(div1).color)
-                  .toEqual("rgb(255, 0, 0)");
-              expect(DOM.getComputedStyle(div2).color)
-                  .toEqual("rgb(255, 0, 0)");
-              async.done();
-            });
-          }));
       it(
           "should support emulated style encapsulation",
           inject([TestComponentBuilder, AsyncTestCompleter],
@@ -762,10 +693,10 @@ class MultipleContentTagsComponent {}
 @Directive(selector: "[manual]")
 class ManualViewportDirective {
   ViewContainerRef vc;
-  TemplateRef<Object> templateRef;
+  TemplateRef templateRef;
   ManualViewportDirective(this.vc, this.templateRef) {}
   show() {
-    this.vc.createEmbeddedView(this.templateRef);
+    this.vc.createEmbeddedView(this.templateRef, 0);
   }
 
   hide() {
@@ -777,8 +708,8 @@ class ManualViewportDirective {
 class ProjectDirective {
   ViewContainerRef vc;
   ProjectDirective(this.vc) {}
-  show(TemplateRef<Object> templateRef) {
-    this.vc.createEmbeddedView(templateRef);
+  show(TemplateRef templateRef) {
+    this.vc.createEmbeddedView(templateRef, 0);
   }
 
   hide() {
@@ -834,19 +765,10 @@ class ConditionalTextComponent {}
 class Tab {}
 
 @Component(
-    selector: "tree2",
-    inputs: const ["depth"],
-    template: "TREE2({{depth}}:<tree *manual [depth]=\"depth+1\"></tree>)",
-    directives: const [ManualViewportDirective, Tree])
-class Tree2 {
-  var depth = 0;
-}
-
-@Component(
     selector: "tree",
     inputs: const ["depth"],
     template: "TREE({{depth}}:<tree *manual [depth]=\"depth+1\"></tree>)",
-    directives: const [ManualViewportDirective, Tree, Tree])
+    directives: const [ManualViewportDirective, Tree])
 class Tree {
   var depth = 0;
 }

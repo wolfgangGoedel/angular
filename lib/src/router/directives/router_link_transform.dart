@@ -7,7 +7,7 @@ import "package:angular2/compiler.dart"
         BoundDirectivePropertyAst,
         DirectiveAst,
         BoundElementPropertyAst;
-import "package:angular2/src/compiler/expression_parser/ast.dart"
+import "package:angular2/src/core/change_detection/parser/ast.dart"
     show
         AstTransformer,
         Quote,
@@ -18,7 +18,7 @@ import "package:angular2/src/compiler/expression_parser/ast.dart"
         ASTWithSource;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "package:angular2/core.dart" show Injectable;
-import "package:angular2/src/compiler/expression_parser/parser.dart"
+import "package:angular2/src/core/change_detection/parser/parser.dart"
     show Parser;
 
 /**
@@ -151,12 +151,12 @@ class RouterLinkAstTransformer extends AstTransformer {
   RouterLinkAstTransformer(this.parser) : super() {
     /* super call moved to initializer */;
   }
-  AST visitQuote(Quote ast, dynamic context) {
+  AST visitQuote(Quote ast) {
     if (ast.prefix == "route") {
       return parseRouterLinkExpression(
           this.parser, ast.uninterpretedExpression);
     } else {
-      return super.visitQuote(ast, context);
+      return super.visitQuote(ast);
     }
   }
 }
@@ -194,17 +194,11 @@ class RouterLinkTransform implements TemplateAstVisitor {
         ast.attrs,
         updatedInputs,
         ast.outputs,
-        ast.references,
+        ast.exportAsVars,
         updatedDirectives,
-        ast.providers,
-        ast.hasViewContainer,
         updatedChildren,
         ast.ngContentIndex,
         ast.sourceSpan);
-  }
-
-  dynamic visitReference(dynamic ast, dynamic context) {
-    return ast;
   }
 
   dynamic visitVariable(dynamic ast, dynamic context) {
@@ -234,7 +228,7 @@ class RouterLinkTransform implements TemplateAstVisitor {
   dynamic visitDirective(DirectiveAst ast, dynamic context) {
     var updatedInputs = ast.inputs.map((c) => c.visit(this, context)).toList();
     return new DirectiveAst(ast.directive, updatedInputs, ast.hostProperties,
-        ast.hostEvents, ast.sourceSpan);
+        ast.hostEvents, ast.exportAsVars, ast.sourceSpan);
   }
 
   dynamic visitDirectiveProperty(

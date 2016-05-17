@@ -4,6 +4,7 @@ import "package:angular2/testing_internal.dart"
     show
         AsyncTestCompleter,
         describe,
+        proxy,
         it,
         iit,
         ddescribe,

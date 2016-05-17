@@ -18,9 +18,7 @@ import "shared.dart"
         composeAsyncValidators;
 import "validators.dart" show ValidatorFn, AsyncValidatorFn;
 
-const dynamic formControlBinding =
-    /*@ts2dart_const*/
-    /* @ts2dart_Provider */ const Provider(NgControl, useExisting: NgModel);
+const formControlBinding = const Provider(NgControl, useExisting: NgModel);
 
 /**
  * Binds a domain model to a form control.

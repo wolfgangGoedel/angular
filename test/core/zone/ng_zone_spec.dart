@@ -26,7 +26,7 @@ var needsLongerTimers = browserDetection.isSlow || browserDetection.isEdge;
 var resultTimer = 1000;
 var testTimeout = browserDetection.isEdge ? 1200 : 500;
 // Schedules a macrotask (using a timer)
-void macroTask(Function fn, [timer = 1]) {
+void macroTask(dynamic /* (...args: any[]) => void */ fn, [timer = 1]) {
   // adds longer timers for passing tests in IE and Edge
   TimerWrapper.setTimeout(fn, needsLongerTimers ? timer : 1);
 }
@@ -55,7 +55,7 @@ logOnStable() {
   ObservableWrapper.subscribe(_zone.onStable, _log.fn("onStable"));
 }
 
-runNgZoneNoLog(dynamic fn()) {
+runNgZoneNoLog(dynamic /* () => any */ fn) {
   var length = _log.logItems.length;
   try {
     return _zone.run(fn);
@@ -686,28 +686,15 @@ commonTests() {
   });
   describe("exceptions", () {
     it(
-        "should call the on error callback when it is invoked via zone.runGuarded",
+        "should call the on error callback when it is defined",
         inject([AsyncTestCompleter], (async) {
           macroTask(() {
             var exception = new BaseException("sync");
-            _zone.runGuarded(() {
+            _zone.run(() {
               throw exception;
             });
             expect(_errors.length).toBe(1);
             expect(_errors[0]).toBe(exception);
-            async.done();
-          });
-        }),
-        testTimeout);
-    it(
-        "should not call the on error callback but rethrow when it is invoked via zone.run",
-        inject([AsyncTestCompleter], (async) {
-          macroTask(() {
-            var exception = new BaseException("sync");
-            expect(() => _zone.run(() {
-                  throw exception;
-                })).toThrowError("sync");
-            expect(_errors.length).toBe(0);
             async.done();
           });
         }),

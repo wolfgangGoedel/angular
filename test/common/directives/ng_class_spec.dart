@@ -22,7 +22,7 @@ import "package:angular2/core.dart" show Component, provide;
 import "package:angular2/common.dart" show NgFor;
 import "package:angular2/src/common/directives/ng_class.dart" show NgClass;
 
-detectChangesAndCheck(ComponentFixture<dynamic> fixture, String classes) {
+detectChangesAndCheck(ComponentFixture fixture, String classes) {
   fixture.detectChanges();
   expect(fixture.debugElement.children[0].nativeElement.className)
       .toEqual(classes);
@@ -30,27 +30,29 @@ detectChangesAndCheck(ComponentFixture<dynamic> fixture, String classes) {
 
 main() {
   describe("binding to CSS class list", () {
-    it(
-        "should clean up when the directive is destroyed",
-        inject([TestComponentBuilder, AsyncTestCompleter],
-            (TestComponentBuilder tcb, async) {
-          var template =
-              "<div *ngFor=\"let item of items\" [ngClass]=\"item\"></div>";
-          tcb
-              .overrideTemplate(TestComponent, template)
-              .createAsync(TestComponent)
-              .then((fixture) {
-            fixture.debugElement.componentInstance.items = [
-              ["0"]
-            ];
-            fixture.detectChanges();
-            fixture.debugElement.componentInstance.items = [
-              ["1"]
-            ];
-            detectChangesAndCheck(fixture, "1");
-            async.done();
-          });
-        }));
+    describe("viewpool support", () {
+      it(
+          "should clean up when the directive is destroyed",
+          inject([TestComponentBuilder, AsyncTestCompleter],
+              (TestComponentBuilder tcb, async) {
+            var template =
+                "<div *ngFor=\"var item of items\" [ngClass]=\"item\"></div>";
+            tcb
+                .overrideTemplate(TestComponent, template)
+                .createAsync(TestComponent)
+                .then((fixture) {
+              fixture.debugElement.componentInstance.items = [
+                ["0"]
+              ];
+              fixture.detectChanges();
+              fixture.debugElement.componentInstance.items = [
+                ["1"]
+              ];
+              detectChangesAndCheck(fixture, "1");
+              async.done();
+            });
+          }));
+    });
     describe("expressions evaluating to objects", () {
       it(
           "should add classes specified in an object literal",

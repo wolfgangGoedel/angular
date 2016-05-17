@@ -11,8 +11,7 @@ import "package:angular2/src/facade/lang.dart"
         RegExpWrapper,
         stringify,
         StringWrapper,
-        isArray,
-        isString;
+        isArray;
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException;
 import "shared_styles_host.dart" show DomSharedStylesHost;
@@ -24,9 +23,7 @@ import "package:angular2/src/core/metadata.dart" show ViewEncapsulation;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 import "util.dart" show camelCaseToDashCase;
 
-const NAMESPACE_URIS =
-    /*@ts2dart_const*/
-    const {
+const NAMESPACE_URIS = const {
   "xlink": "http://www.w3.org/1999/xlink",
   "svg": "http://www.w3.org/2000/svg"
 };
@@ -84,24 +81,21 @@ class DomRenderer implements Renderer {
       this._hostAttr = null;
     }
   }
-  dynamic selectRootElement(dynamic /* String | dynamic */ selectorOrNode,
-      RenderDebugInfo debugInfo) {
-    var el;
-    if (isString(selectorOrNode)) {
-      el = DOM.querySelector(this._rootRenderer.document, selectorOrNode);
-      if (isBlank(el)) {
-        throw new BaseException(
-            '''The selector "${ selectorOrNode}" did not match any elements''');
-      }
-    } else {
-      el = selectorOrNode;
+  Renderer renderComponent(RenderComponentType componentProto) {
+    return this._rootRenderer.renderComponent(componentProto);
+  }
+
+  dynamic selectRootElement(String selector) {
+    var el = DOM.querySelector(this._rootRenderer.document, selector);
+    if (isBlank(el)) {
+      throw new BaseException(
+          '''The selector "${ selector}" did not match any elements''');
     }
     DOM.clearNodes(el);
     return el;
   }
 
-  dynamic createElement(
-      dynamic parent, String name, RenderDebugInfo debugInfo) {
+  dynamic createElement(dynamic parent, String name) {
     var nsAndName = splitNamespace(name);
     var el = isPresent(nsAndName[0])
         ? DOM.createElementNS(NAMESPACE_URIS[nsAndName[0]], nsAndName[1])
@@ -133,8 +127,7 @@ class DomRenderer implements Renderer {
     return nodesParent;
   }
 
-  dynamic createTemplateAnchor(
-      dynamic parentElement, RenderDebugInfo debugInfo) {
+  dynamic createTemplateAnchor(dynamic parentElement) {
     var comment = DOM.createComment(TEMPLATE_COMMENT_TEXT);
     if (isPresent(parentElement)) {
       DOM.appendChild(parentElement, comment);
@@ -142,8 +135,7 @@ class DomRenderer implements Renderer {
     return comment;
   }
 
-  dynamic createText(
-      dynamic parentElement, String value, RenderDebugInfo debugInfo) {
+  dynamic createText(dynamic parentElement, String value) {
     var node = DOM.createTextNode(value);
     if (isPresent(parentElement)) {
       DOM.appendChild(parentElement, node);
@@ -241,6 +233,7 @@ class DomRenderer implements Renderer {
     }
   }
 
+  setElementDebugInfo(dynamic renderElement, RenderDebugInfo info) {}
   void setElementClass(dynamic renderElement, String className, bool isAdd) {
     if (isAdd) {
       DOM.addClass(renderElement, className);

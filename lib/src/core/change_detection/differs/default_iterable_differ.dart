@@ -9,9 +9,7 @@ import "../change_detector_ref.dart" show ChangeDetectorRef;
 import "../differs/iterable_differs.dart"
     show IterableDiffer, IterableDifferFactory, TrackByFn;
 
-/* @ts2dart_const */
 class DefaultIterableDifferFactory implements IterableDifferFactory {
-  const DefaultIterableDifferFactory();
   bool supports(Object obj) {
     return isListLikeIterable(obj);
   }
@@ -19,6 +17,8 @@ class DefaultIterableDifferFactory implements IterableDifferFactory {
   DefaultIterableDiffer create(ChangeDetectorRef cdRef, [TrackByFn trackByFn]) {
     return new DefaultIterableDiffer(trackByFn);
   }
+
+  const DefaultIterableDifferFactory();
 }
 
 var trackByIdentity = (num index, dynamic item) => item;

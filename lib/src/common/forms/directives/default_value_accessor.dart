@@ -6,9 +6,8 @@ import "control_value_accessor.dart"
     show NG_VALUE_ACCESSOR, ControlValueAccessor;
 import "package:angular2/src/facade/lang.dart" show isBlank;
 
-const dynamic DEFAULT_VALUE_ACCESSOR =
-    /* @ts2dart_Provider */ const Provider(NG_VALUE_ACCESSOR,
-        useExisting: DefaultValueAccessor, multi: true);
+const DEFAULT_VALUE_ACCESSOR = const Provider(NG_VALUE_ACCESSOR,
+    useExisting: DefaultValueAccessor, multi: true);
 
 /**
  * The default accessor for writing a value and listening to changes that is used by the
@@ -41,11 +40,11 @@ class DefaultValueAccessor implements ControlValueAccessor {
         this._elementRef.nativeElement, "value", normalizedValue);
   }
 
-  void registerOnChange(void fn(dynamic _)) {
+  void registerOnChange(dynamic /* (_: any) => void */ fn) {
     this.onChange = fn;
   }
 
-  void registerOnTouched(void fn()) {
+  void registerOnTouched(dynamic /* () => void */ fn) {
     this.onTouched = fn;
   }
 }

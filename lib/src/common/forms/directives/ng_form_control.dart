@@ -27,10 +27,8 @@ import "shared.dart"
         selectValueAccessor;
 import "validators.dart" show ValidatorFn, AsyncValidatorFn;
 
-const dynamic formControlBinding =
-    /*@ts2dart_const*/
-    /* @ts2dart_Provider */ const Provider(NgControl,
-        useExisting: NgFormControl);
+const formControlBinding =
+    const Provider(NgControl, useExisting: NgFormControl);
 
 /**
  * Binds an existing [Control] to a DOM element.

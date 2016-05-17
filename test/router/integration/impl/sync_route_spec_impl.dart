@@ -28,7 +28,7 @@ import "fixture_components.dart"
         DynamicLoaderCmp;
 import "package:angular2/src/facade/async.dart" show PromiseWrapper;
 
-getLinkElement(ComponentFixture<dynamic> rtc) {
+getLinkElement(ComponentFixture rtc) {
   return rtc.debugElement.query(By.css("a")).nativeElement;
 }
 
@@ -531,7 +531,7 @@ syncRoutesWithSyncChildrenWithDefaultRoutesWithoutParams() {
 }
 
 syncRoutesWithDynamicComponents() {
-  ComponentFixture<dynamic> fixture;
+  ComponentFixture fixture;
   TestComponentBuilder tcb;
   Router rtr;
   beforeEachProviders(() => TEST_ROUTER_PROVIDERS);

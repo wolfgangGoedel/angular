@@ -6,11 +6,14 @@ import 'package:barback/barback.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:test/test.dart';
 
-import 'package:angular2/src/compiler/compile_metadata.dart'
-    show CompileIdentifierMetadata, CompileProviderMetadata, CompileTypeMetadata, CompileTokenMetadata;
+import 'package:angular2/src/compiler/directive_metadata.dart'
+    show
+        CompileIdentifierMetadata,
+        CompileProviderMetadata,
+        CompileTypeMetadata;
 import 'package:angular2/src/core/change_detection/change_detection.dart';
 import 'package:angular2/src/platform/server/html_adapter.dart';
-import 'package:angular2/src/core/metadata/lifecycle_hooks.dart' show LifecycleHooks;
+import 'package:angular2/src/core/linker/interfaces.dart' show LifecycleHooks;
 import 'package:angular2/src/transform/common/annotation_matcher.dart';
 import 'package:angular2/src/transform/common/asset_reader.dart';
 import 'package:angular2/src/transform/common/code/ng_deps_code.dart';
@@ -28,6 +31,17 @@ var formatter = new DartFormatter();
 main() {
   Html5LibDomAdapter.makeCurrent();
   allTests();
+}
+
+void _expectSelector(ReflectionInfoModel model, Matcher matcher) {
+  expect(model.annotations.isNotEmpty, isTrue);
+  var componentAnnotation = model.annotations
+      .firstWhere((e) => e.name == 'Component', orElse: () => null);
+  expect(componentAnnotation, isNotNull);
+  var selectorArg = componentAnnotation.namedParameters
+      .firstWhere((e) => e.name == 'selector', orElse: () => null);
+  expect(selectorArg, isNotNull);
+  return expect(selectorArg.value, matcher);
 }
 
 var oldTest = test;
@@ -68,17 +82,22 @@ void allTests() {
     test('should list part contributions first.', () async {
       var model = await modelFuture;
       expect(model.reflectables.first.name, equals('PartComponent'));
+      _expectSelector(model.reflectables.first, equals("'[part]'"));
     });
 
     test('should list main contributions second.', () async {
       var model = await modelFuture;
       expect(model.reflectables[1].name, equals('MainComponent'));
+      _expectSelector(model.reflectables[1], equals("'[main]'"));
     });
 
     test('should handle multiple `part` directives.', () async {
       var model =
           (await _testCreateModel('multiple_part_files/main.dart')).ngDeps;
       expect(model.reflectables.length, equals(3));
+      _expectSelector(model.reflectables.first, equals("'[part1]'"));
+      _expectSelector(model.reflectables[1], equals("'[part2]'"));
+      _expectSelector(model.reflectables[2], equals("'[main]'"));
     });
 
     test('should not generate anything for `part` files.', () async {
@@ -186,6 +205,94 @@ void allTests() {
       expect(
           model.reflectables.first.interfaces
               .firstWhere((i) => i.contains('OnChanges'), orElse: () => null),
+          isNotNull);
+    });
+  });
+
+  group('property metadata', () {
+    test('should be recorded on fields', () async {
+      var model =
+          (await _testCreateModel('prop_metadata_files/fields.dart')).ngDeps;
+
+      expect(model.reflectables.first.propertyMetadata, isNotNull);
+      expect(model.reflectables.first.propertyMetadata.isNotEmpty, isTrue);
+      expect(model.reflectables.first.propertyMetadata.first.name,
+          equals('field'));
+      expect(
+          model.reflectables.first.propertyMetadata.first.annotations
+              .firstWhere((a) => a.name == 'FieldDecorator',
+                  orElse: () => null),
+          isNotNull);
+    });
+
+    test('should be recorded on getters', () async {
+      var model =
+          (await _testCreateModel('prop_metadata_files/getters.dart')).ngDeps;
+
+      expect(model.reflectables.first.propertyMetadata, isNotNull);
+      expect(model.reflectables.first.propertyMetadata.isNotEmpty, isTrue);
+      expect(model.reflectables.first.propertyMetadata.first.name,
+          equals('getVal'));
+
+      var getDecoratorAnnotation = model
+          .reflectables.first.propertyMetadata.first.annotations
+          .firstWhere((a) => a.name == 'GetDecorator', orElse: () => null);
+      expect(getDecoratorAnnotation, isNotNull);
+      expect(getDecoratorAnnotation.isConstObject, isFalse);
+    });
+
+    test('should gracefully handle const instances of annotations', () async {
+      // Regression test for i/4481
+      var model =
+          (await _testCreateModel('prop_metadata_files/override.dart')).ngDeps;
+
+      expect(model.reflectables.first.propertyMetadata, isNotNull);
+      expect(model.reflectables.first.propertyMetadata.isNotEmpty, isTrue);
+      expect(model.reflectables.first.propertyMetadata.first.name,
+          equals('getVal'));
+      var overrideAnnotation = model
+          .reflectables.first.propertyMetadata.first.annotations
+          .firstWhere((a) => a.name == 'override', orElse: () => null);
+
+      expect(overrideAnnotation, isNotNull);
+      expect(overrideAnnotation.isConstObject, isTrue);
+
+      var buf = new StringBuffer();
+      new NgDepsWriter(buf).writeAnnotationModel(overrideAnnotation);
+      expect(buf.toString(), equals('override'));
+    });
+
+    test('should be recorded on setters', () async {
+      var model =
+          (await _testCreateModel('prop_metadata_files/setters.dart')).ngDeps;
+
+      expect(model.reflectables.first.propertyMetadata, isNotNull);
+      expect(model.reflectables.first.propertyMetadata.isNotEmpty, isTrue);
+      expect(model.reflectables.first.propertyMetadata.first.name,
+          equals('setVal'));
+      expect(
+          model.reflectables.first.propertyMetadata.first.annotations
+              .firstWhere((a) => a.name == 'SetDecorator', orElse: () => null),
+          isNotNull);
+    });
+
+    test('should be coalesced when getters and setters have the same name',
+        () async {
+      var model = (await _testCreateModel(
+              'prop_metadata_files/getters_and_setters.dart'))
+          .ngDeps;
+
+      expect(model.reflectables.first.propertyMetadata, isNotNull);
+      expect(model.reflectables.first.propertyMetadata.length, equals(1));
+      expect(model.reflectables.first.propertyMetadata.first.name,
+          equals('myVal'));
+      expect(
+          model.reflectables.first.propertyMetadata.first.annotations
+              .firstWhere((a) => a.name == 'GetDecorator', orElse: () => null),
+          isNotNull);
+      expect(
+          model.reflectables.first.propertyMetadata.first.annotations
+              .firstWhere((a) => a.name == 'SetDecorator', orElse: () => null),
           isNotNull);
     });
   });
@@ -349,14 +456,24 @@ void allTests() {
     });
 
     test('should handle prefixed annotations', () async {
-      var ngMeta =
-          (await _testCreateModel('prefixed_annotations_files/soup.dart'));
-      expect(ngMeta.identifiers.isNotEmpty, isTrue);
-      expect(ngMeta.identifiers['SoupComponent'], isNotNull);
+      var model =
+          (await _testCreateModel('prefixed_annotations_files/soup.dart'))
+              .ngDeps;
+
+      expect(model.reflectables.isEmpty, isFalse);
+      final annotations = model.reflectables.first.annotations;
+      final viewAnnotation =
+          annotations.firstWhere((m) => m.isView, orElse: () => null);
+      final componentAnnotation =
+          annotations.firstWhere((m) => m.isComponent, orElse: () => null);
+      expect(viewAnnotation, isNotNull);
+      expect(viewAnnotation.namedParameters.first.name, equals('template'));
+      expect(viewAnnotation.namedParameters.first.value, contains('SoupView'));
+      expect(componentAnnotation, isNotNull);
       expect(
-          ngMeta.identifiers['SoupComponent'].selector, equals('[soup]'));
+          componentAnnotation.namedParameters.first.name, equals('selector'));
       expect(
-          ngMeta.identifiers['SoupComponent'].template.template, equals('SoupView'));
+          componentAnnotation.namedParameters.first.value, contains('[soup]'));
     });
   });
 
@@ -410,7 +527,7 @@ void allTests() {
       expect(
           model.identifiers['a'].value.toJson(),
           equals(new CompileProviderMetadata(
-                  token: new CompileTokenMetadata(value: 'someToken'),
+                  token: 'someToken',
                   useClass: new CompileTypeMetadata(name: 'SomeClass'))
               .toJson()));
     });
@@ -425,7 +542,7 @@ void allTests() {
       expect(list[0].name, equals("SomeClass"));
       expect(list[1].name, equals("a"));
       expect(list[2].toJson(), equals(new CompileProviderMetadata(
-          token: new CompileTokenMetadata(value: 'someOtherToken'),
+          token: 'someOtherToken',
           useClass: new CompileTypeMetadata(name: 'SomeClass'))
           .toJson()));
     });
@@ -581,37 +698,34 @@ void allTests() {
       var deps = cmp.type.diDeps;
       expect(deps, isNotNull);
       expect(deps.length, equals(13));
-      expect(deps[0].token.identifier.name, equals("ServiceDep"));
-      expect(deps[1].token.identifier.name, equals("ServiceDep"));
-      expect(deps[2].token.value, "one");
+      expect(deps[0].token.name, equals("ServiceDep"));
+      expect(deps[1].token.name, equals("ServiceDep"));
+      expect(deps[2].token, "one");
       expect(deps[2].isAttribute, isTrue);
       expect(deps[3].isSelf, isTrue);
       expect(deps[4].isSkipSelf, isTrue);
       expect(deps[5].isOptional, isTrue);
       expect(deps[6].query.selectors[0].name, equals("ServiceDep"));
       expect(deps[6].query.descendants, isTrue);
-      expect(deps[6].query.read.identifier.name, equals("ServiceDep"));
-      expect(deps[7].query.selectors[0].identifier.name, equals("ServiceDep"));
+      expect(deps[7].query.selectors[0].name, equals("ServiceDep"));
       expect(deps[7].query.descendants, isTrue);
-      expect(deps[8].viewQuery.selectors[0].value, equals("one"));
-      expect(deps[8].viewQuery.selectors[1].value, equals("two"));
-      expect(deps[8].viewQuery.read.value, equals("three"));
-      expect(deps[9].viewQuery.selectors[0].value, equals("one"));
-      expect(deps[9].viewQuery.selectors[1].value, equals("two"));
-      expect(deps[10].token.identifier.name, equals("ServiceDep"));
-      expect(deps[11].token.identifier.name, equals("ServiceDep"));
-      expect(deps[12].token.identifier.name, equals("ServiceDep"));
+      expect(deps[8].viewQuery.selectors[0], equals("one"));
+      expect(deps[8].viewQuery.selectors[1], equals("two"));
+      expect(deps[9].viewQuery.selectors[0], equals("one"));
+      expect(deps[9].viewQuery.selectors[1], equals("two"));
+      expect(deps[10].token.name, equals("ServiceDep"));
+      expect(deps[11].token.name, equals("ServiceDep"));
+      expect(deps[12].token.name, equals("ServiceDep"));
     });
 
-    test('should populate `diDependency` using a string token.',
-        () async {
-      var cmp =
-      (await _testCreateModel('directives_files/components.dart')).identifiers['ComponentWithDiDepsStrToken'];
+    test('should populate `diDependency` using a string token.', () async {
+      var cmp = (await _testCreateModel('directives_files/components.dart'))
+          .identifiers['ComponentWithDiDepsStrToken'];
 
       var deps = cmp.type.diDeps;
       expect(deps, isNotNull);
       expect(deps.length, equals(1));
-      expect(deps[0].token.value, equals("StringDep"));
+      expect(deps[0].token, equals("StringDep"));
     });
 
     test('should populate `services`.', () async {
@@ -623,8 +737,8 @@ void allTests() {
       var deps = service.diDeps;
       expect(deps, isNotNull);
       expect(deps.length, equals(2));
-      expect(deps[0].token.identifier.name, equals("ServiceDep"));
-      expect(deps[1].token.identifier.name, equals("ServiceDep"));
+      expect(deps[0].token.name, equals("ServiceDep"));
+      expect(deps[1].token.name, equals("ServiceDep"));
     });
 
     test('should populate `providers` using types.', () async {
@@ -636,12 +750,12 @@ void allTests() {
       expect(cmp.providers.length, equals(2));
 
       var firstToken = cmp.providers.first;
-      expect(firstToken.identifier.prefix, isNull);
-      expect(firstToken.identifier.name, equals("ServiceDep"));
+      expect(firstToken.prefix, isNull);
+      expect(firstToken.name, equals("ServiceDep"));
 
       var secondToken = cmp.providers[1];
-      expect(secondToken.identifier.prefix, equals("dep2"));
-      expect(secondToken.identifier.name, equals("ServiceDep"));
+      expect(secondToken.prefix, equals("dep2"));
+      expect(secondToken.name, equals("ServiceDep"));
     });
 
     test('should populate `viewProviders` using types.', () async {
@@ -693,8 +807,8 @@ void allTests() {
 
       var token = cmp.providers.first.token;
       var useClass = cmp.providers.first.useClass;
-      expect(token.identifier.prefix, isNull);
-      expect(token.identifier.name, equals("ServiceDep"));
+      expect(token.prefix, isNull);
+      expect(token.name, equals("ServiceDep"));
 
       expect(useClass.prefix, isNull);
       expect(useClass.name, equals("ServiceDep"));
@@ -709,7 +823,7 @@ void allTests() {
       expect(cmp.providers.length, equals(1));
 
       var token = cmp.providers.first.token;
-      expect(token.value, equals("StringDep"));
+      expect(token, equals("StringDep"));
     });
 
     test('should populate `providers` using toClass.', () async {
@@ -738,7 +852,7 @@ void allTests() {
       var token = cmp.providers.first.token;
       var useExisting = cmp.providers.first.useExisting;
 
-      expect(useExisting.identifier.prefix, isNull);
+      expect(useExisting.prefix, isNull);
       expect(useExisting.name, equals("ServiceDep"));
     });
 
@@ -753,8 +867,8 @@ void allTests() {
       var token = cmp.providers.first.token;
       var useExisting = cmp.providers.first.useExisting;
 
-      expect(useExisting.identifier.prefix, isNull);
-      expect(useExisting.identifier.name, equals("ServiceDep"));
+      expect(useExisting.prefix, isNull);
+      expect(useExisting.name, equals("ServiceDep"));
     });
 
     test('should populate `providers` using useExisting (string token).',
@@ -769,7 +883,7 @@ void allTests() {
       var token = cmp.providers.first.token;
       var useExisting = cmp.providers.first.useExisting;
 
-      expect(useExisting.value, equals("StrToken"));
+      expect(useExisting, equals("StrToken"));
     });
 
     test('should populate `providers` using useValue.', () async {
@@ -873,14 +987,14 @@ void allTests() {
       expect(useFactory.prefix, isNull);
       expect(useFactory.name, equals("funcDep"));
 
-      expect(deps[0].token.identifier.name, equals("ServiceDep"));
-      expect(deps[1].token.value, equals("Str"));
-      expect(deps[2].token.identifier.name, equals("ServiceDep"));
-      expect(deps[3].token.identifier.name, equals("ServiceDep"));
+      expect(deps[0].token.name, equals("ServiceDep"));
+      expect(deps[1].token, equals("Str"));
+      expect(deps[2].token.name, equals("ServiceDep"));
+      expect(deps[3].token.name, equals("ServiceDep"));
       expect(deps[3].isSelf, equals(true));
-      expect(deps[4].token.identifier.name, equals("ServiceDep"));
+      expect(deps[4].token.name, equals("ServiceDep"));
       expect(deps[4].isSkipSelf, equals(true));
-      expect(deps[5].token.identifier.name, equals("ServiceDep"));
+      expect(deps[5].token.name, equals("ServiceDep"));
       expect(deps[5].isOptional, equals(true));
     });
 
@@ -897,28 +1011,6 @@ void allTests() {
       expect(useFactory.name, equals("funcDep"));
     });
 
-    test('should populate factories', () async {
-      var factory = (await _testCreateModel('directives_files/components.dart'))
-          .identifiers['factoryWithDeps'];
-
-      expect(factory, isNotNull);
-
-      expect(factory.prefix, isNull);
-      expect(factory.name, equals("factoryWithDeps"));
-
-      var factoryDeps = factory.diDeps;
-
-      expect(factoryDeps[0].token.identifier.name, equals("ServiceDep"));
-      expect(factoryDeps[1].token.value, equals("Str"));
-      expect(factoryDeps[2].token.identifier.name, equals("ServiceDep"));
-      expect(factoryDeps[3].token.identifier.name, equals("ServiceDep"));
-      expect(factoryDeps[3].isSelf, equals(true));
-      expect(factoryDeps[4].token.identifier.name, equals("ServiceDep"));
-      expect(factoryDeps[4].isSkipSelf, equals(true));
-      expect(factoryDeps[5].token.identifier.name, equals("ServiceDep"));
-      expect(factoryDeps[5].isOptional, equals(true));
-    });
-
     test('should populate `providers` using a const token.', () async {
       var cmp = (await _testCreateModel('directives_files/components.dart'))
           .identifiers['ComponentWithProvidersConstToken'];
@@ -928,8 +1020,8 @@ void allTests() {
       expect(cmp.providers.length, equals(1));
 
       var token = cmp.providers.first.token;
-      expect(token.identifier.name, equals("ServiceDep"));
-      expect(token.identifierIsInstance, isTrue);
+      expect(token.name, equals("ServiceDep"));
+      expect(token.constConstructor, isTrue);
     });
 
     test('should populate `queries`.', () async {
@@ -939,26 +1031,26 @@ void allTests() {
       expect(cmp, isNotNull);
       expect(cmp.queries, isNotNull);
       expect(cmp.queries.length, equals(4));
-      expect(cmp.queries[0].selectors[0].name, equals("child"));
+      expect(cmp.queries[0].selectors, equals(["child"]));
       expect(cmp.queries[0].first, isTrue);
-      expect(cmp.queries[1].selectors[0].name, equals("child"));
+      expect(cmp.queries[1].selectors, equals(["child"]));
       expect(cmp.queries[1].first, isFalse);
       expect(cmp.queries[1].descendants, isTrue);
-      expect(cmp.queries[2].selectors[0].name, equals("child"));
+      expect(cmp.queries[2].selectors, equals(["child"]));
       expect(cmp.queries[2].first, isTrue);
-      expect(cmp.queries[3].selectors[0].name, equals("child"));
+      expect(cmp.queries[3].selectors, equals(["child"]));
       expect(cmp.queries[3].first, isFalse);
       expect(cmp.queries[3].descendants, isTrue);
 
       expect(cmp.viewQueries, isNotNull);
       expect(cmp.viewQueries.length, equals(4));
-      expect(cmp.viewQueries[0].selectors[0].value, equals("child"));
+      expect(cmp.viewQueries[0].selectors, equals(["child"]));
       expect(cmp.viewQueries[0].first, isTrue);
-      expect(cmp.viewQueries[1].selectors[0].value, equals("child"));
+      expect(cmp.viewQueries[1].selectors, equals(["child"]));
       expect(cmp.viewQueries[1].first, isFalse);
-      expect(cmp.viewQueries[2].selectors[0].value, equals("child"));
+      expect(cmp.viewQueries[2].selectors, equals(["child"]));
       expect(cmp.viewQueries[2].first, isTrue);
-      expect(cmp.viewQueries[3].selectors[0].value, equals("child"));
+      expect(cmp.viewQueries[3].selectors, equals(["child"]));
       expect(cmp.viewQueries[3].first, isFalse);
     });
 

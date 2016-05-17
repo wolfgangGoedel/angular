@@ -24,12 +24,6 @@ TransformerOptions parseBarbackSettings(BarbackSettings settings) {
   String mirrorModeVal =
       config.containsKey(MIRROR_MODE_PARAM) ? config[MIRROR_MODE_PARAM] : '';
   var mirrorMode = MirrorMode.none;
-  var codegenMode;
-  if (settings.mode == BarbackMode.DEBUG) {
-    codegenMode = CODEGEN_DEBUG_MODE;
-  } else {
-    codegenMode = config[CODEGEN_MODE_PARAM];
-  }
   switch (mirrorModeVal) {
     case 'debug':
       mirrorMode = MirrorMode.debug;
@@ -45,7 +39,7 @@ TransformerOptions parseBarbackSettings(BarbackSettings settings) {
       modeName: settings.mode.name,
       mirrorMode: mirrorMode,
       initReflector: initReflector,
-      codegenMode: codegenMode,
+      genChangeDetectionDebugInfo: settings.mode == BarbackMode.DEBUG,
       customAnnotationDescriptors: _readCustomAnnotations(config),
       reflectPropertiesAsAttributes: reflectPropertiesAsAttributes,
       platformDirectives: platformDirectives,

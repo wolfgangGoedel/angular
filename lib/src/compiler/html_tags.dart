@@ -275,13 +275,13 @@ class HtmlTagDefinition {
   bool isVoid;
   bool ignoreFirstLf;
   HtmlTagDefinition(
-      {List<String> closedByChildren,
-      List<String> requiredParents,
-      String implicitNamespacePrefix,
-      HtmlTagContentType contentType,
-      bool closedByParent,
-      bool isVoid,
-      bool ignoreFirstLf}) {
+      {closedByChildren,
+      requiredParents,
+      implicitNamespacePrefix,
+      contentType,
+      closedByParent,
+      isVoid,
+      ignoreFirstLf}) {
     if (isPresent(closedByChildren) && closedByChildren.length > 0) {
       closedByChildren
           .forEach((tagName) => this.closedByChildren[tagName] = true);

@@ -6,7 +6,7 @@ import 'package:analyzer/analyzer.dart';
 import 'package:barback/barback.dart';
 import 'package:source_span/source_span.dart';
 
-import 'package:angular2/src/compiler/offline_compiler.dart';
+import 'package:angular2/src/compiler/template_compiler.dart';
 
 typedef _SimpleCallback();
 
@@ -16,7 +16,7 @@ final _templateCompilerKey = #templateCompilerKey;
 
 /// Executes `fn` inside a new `Zone` with the provided zone-local values.
 Future<dynamic> exec(_SimpleCallback fn,
-    {TransformLogger log, OfflineCompiler templateCompiler}) async {
+    {TransformLogger log, TemplateCompiler templateCompiler}) async {
   return runZoned(() async {
     try {
       return await fn();
@@ -52,12 +52,12 @@ Future<dynamic> exec(_SimpleCallback fn,
 /// reasonable default value.
 TransformLogger get log => Zone.current[_loggerKey] as TransformLogger;
 
-/// The [OfflineCompiler] for the current zone.
+/// The [TemplateCompiler] for the current zone.
 ///
-/// This will return `null` if there is no [OfflineCompiler] registered on the
+/// This will return `null` if there is no [TemplateCompiler] registered on the
 /// current zone.
-OfflineCompiler get templateCompiler =>
-    Zone.current[_templateCompilerKey] as OfflineCompiler;
+TemplateCompiler get templateCompiler =>
+    Zone.current[_templateCompilerKey] as TemplateCompiler;
 
 /// Generate a human-readable error message from `error`.
 String _friendlyError(AnalysisError error) {

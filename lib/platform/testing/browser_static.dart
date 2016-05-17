@@ -3,11 +3,12 @@ library angular2.platform.testing.browser_static;
 import "package:angular2/core.dart"
     show
         APP_ID,
+        DirectiveResolver,
         NgZone,
         Provider,
+        ViewResolver,
         PLATFORM_COMMON_PROVIDERS,
         PLATFORM_INITIALIZER;
-import "package:angular2/compiler.dart" show DirectiveResolver, ViewResolver;
 import "package:angular2/src/platform/browser_common.dart"
     show BROWSER_APP_COMMON_PROVIDERS;
 import "package:angular2/src/platform/browser/browser_adapter.dart"
@@ -27,13 +28,9 @@ import "package:angular2/src/mock/ng_zone_mock.dart" show MockNgZone;
 import "package:angular2/src/platform/browser/xhr_impl.dart" show XHRImpl;
 import "package:angular2/compiler.dart" show XHR;
 import "package:angular2/src/testing/test_component_builder.dart"
-    show
-        TestComponentBuilder,
-        ComponentFixtureAutoDetect,
-        ComponentFixtureNoNgZone;
+    show TestComponentBuilder;
 import "package:angular2/src/testing/utils.dart" show BrowserDetection;
 import "package:angular2/platform/common_dom.dart" show ELEMENT_PROBE_PROVIDERS;
-import "package:angular2/src/facade/lang.dart" show IS_DART;
 import "package:angular2/src/testing/utils.dart" show Log;
 
 initBrowserTests() {
@@ -41,41 +38,29 @@ initBrowserTests() {
   BrowserDetection.setup();
 }
 
-NgZone createNgZone() {
-  return IS_DART ? new MockNgZone() : new NgZone(enableLongStackTrace: true);
-}
-
 /**
  * Default platform providers for testing without a compiler.
  */
-const List<dynamic> TEST_BROWSER_STATIC_PLATFORM_PROVIDERS =
-    /*@ts2dart_const*/ const [
+const List<dynamic> TEST_BROWSER_STATIC_PLATFORM_PROVIDERS = const [
   PLATFORM_COMMON_PROVIDERS,
-  /*@ts2dart_Provider*/ const Provider(PLATFORM_INITIALIZER,
-      useValue: initBrowserTests, multi: true)
+  const Provider(PLATFORM_INITIALIZER, useValue: initBrowserTests, multi: true)
 ];
-const List<dynamic> ADDITIONAL_TEST_BROWSER_PROVIDERS =
-    /*@ts2dart_const*/ const [
-  /*@ts2dart_Provider*/ const Provider(APP_ID, useValue: "a"),
+const List<dynamic> ADDITIONAL_TEST_BROWSER_PROVIDERS = const [
+  const Provider(APP_ID, useValue: "a"),
   ELEMENT_PROBE_PROVIDERS,
-  /*@ts2dart_Provider*/ const Provider(DirectiveResolver,
-      useClass: MockDirectiveResolver),
-  /*@ts2dart_Provider*/ const Provider(ViewResolver,
-      useClass: MockViewResolver),
+  const Provider(DirectiveResolver, useClass: MockDirectiveResolver),
+  const Provider(ViewResolver, useClass: MockViewResolver),
   Log,
   TestComponentBuilder,
-  /*@ts2dart_Provider*/ const Provider(NgZone, useFactory: createNgZone),
-  /*@ts2dart_Provider*/ const Provider(LocationStrategy,
-      useClass: MockLocationStrategy),
-  /*@ts2dart_Provider*/ const Provider(AnimationBuilder,
-      useClass: MockAnimationBuilder)
+  const Provider(NgZone, useClass: MockNgZone),
+  const Provider(LocationStrategy, useClass: MockLocationStrategy),
+  const Provider(AnimationBuilder, useClass: MockAnimationBuilder)
 ];
 /**
  * Default application providers for testing without a compiler.
  */
-const List<dynamic> TEST_BROWSER_STATIC_APPLICATION_PROVIDERS =
-    /*@ts2dart_const*/ const [
+const List<dynamic> TEST_BROWSER_STATIC_APPLICATION_PROVIDERS = const [
   BROWSER_APP_COMMON_PROVIDERS,
-  /*@ts2dart_Provider*/ const Provider(XHR, useClass: XHRImpl),
+  const Provider(XHR, useClass: XHRImpl),
   ADDITIONAL_TEST_BROWSER_PROVIDERS
 ];

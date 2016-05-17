@@ -6,7 +6,7 @@ import "package:angular2/src/facade/collection.dart"
 import "package:angular2/src/facade/lang.dart"
     show Type, isPresent, stringify, isBlank, print;
 import "../core/metadata.dart" show DirectiveMetadata, ComponentMetadata;
-import "package:angular2/src/compiler/directive_resolver.dart"
+import "package:angular2/src/core/linker/directive_resolver.dart"
     show DirectiveResolver;
 
 /**
@@ -23,17 +23,13 @@ class MockDirectiveResolver extends DirectiveResolver {
     var viewProviderOverrides = this.viewProviderOverrides[type];
     var providers = dm.providers;
     if (isPresent(providerOverrides)) {
-      var originalViewProviders = isPresent(dm.providers) ? dm.providers : [];
-      providers =
-          (new List.from(originalViewProviders)..addAll(providerOverrides));
+      providers = (new List.from(dm.providers)..addAll(providerOverrides));
     }
     if (dm is ComponentMetadata) {
       var viewProviders = dm.viewProviders;
       if (isPresent(viewProviderOverrides)) {
-        var originalViewProviders =
-            isPresent(dm.viewProviders) ? dm.viewProviders : [];
-        viewProviders = (new List.from(originalViewProviders)
-          ..addAll(viewProviderOverrides));
+        viewProviders =
+            (new List.from(dm.viewProviders)..addAll(viewProviderOverrides));
       }
       return new ComponentMetadata(
           selector: dm.selector,

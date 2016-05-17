@@ -39,7 +39,7 @@ PromiseCompleter<dynamic> completer;
 main() {
   describe("Router lifecycle hooks", () {
     TestComponentBuilder tcb;
-    ComponentFixture<dynamic> fixture;
+    ComponentFixture fixture;
     Router rtr;
     beforeEachProviders(() => TEST_ROUTER_PROVIDERS);
     beforeEach(inject([TestComponentBuilder, Router],

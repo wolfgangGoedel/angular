@@ -1,12 +1,6 @@
 library angular2.src.core.linker.template_ref;
 
-import "package:angular2/src/facade/lang.dart" show isBlank;
-import "element_ref.dart" show ElementRef;
-import "element.dart" show AppElement;
-import "view.dart" show AppView;
-import "view_ref.dart" show EmbeddedViewRef;
-
-const EMPTY_CONTEXT = const Object();
+import "element_ref.dart" show ElementRef, ElementRef_;
 
 /**
  * Represents an Embedded Template that can be used to instantiate Embedded Views.
@@ -20,7 +14,7 @@ const EMPTY_CONTEXT = const Object();
  * [ViewContainerRef#createEmbeddedView], which will create the View and attach it to the
  * View Container.
  */
-abstract class TemplateRef<C> {
+abstract class TemplateRef {
   /**
    * The location in the View where the Embedded View logically belongs to.
    *
@@ -37,27 +31,14 @@ abstract class TemplateRef<C> {
   ElementRef get elementRef {
     return null;
   }
-
-  EmbeddedViewRef<C> createEmbeddedView(C context);
 }
 
-class TemplateRef_<C> extends TemplateRef<C> {
-  AppElement _appElement;
-  Function _viewFactory;
-  TemplateRef_(this._appElement, this._viewFactory) : super() {
+class TemplateRef_ extends TemplateRef {
+  ElementRef_ _elementRef;
+  TemplateRef_(this._elementRef) : super() {
     /* super call moved to initializer */;
   }
-  EmbeddedViewRef<C> createEmbeddedView(C context) {
-    AppView<C> view = this._viewFactory(this._appElement.parentView.viewUtils,
-        this._appElement.parentInjector, this._appElement);
-    if (isBlank(context)) {
-      context = (EMPTY_CONTEXT as dynamic);
-    }
-    view.create(context, null, null);
-    return view.ref;
-  }
-
-  ElementRef get elementRef {
-    return this._appElement.elementRef;
+  ElementRef_ get elementRef {
+    return this._elementRef;
   }
 }

@@ -1,8 +1,55 @@
 library angular2.src.core.di.provider;
 
 import "package:angular2/src/facade/lang.dart"
-    show normalizeBool, Type, isType, isBlank, isFunction, stringify;
-import "package:angular2/src/facade/exceptions.dart" show BaseException;
+    show
+        Type,
+        isBlank,
+        isPresent,
+        stringify,
+        isArray,
+        isType,
+        isFunction,
+        normalizeBool;
+import "package:angular2/src/facade/exceptions.dart"
+    show BaseException, WrappedException;
+import "package:angular2/src/facade/collection.dart"
+    show MapWrapper, ListWrapper;
+import "package:angular2/src/core/reflection/reflection.dart" show reflector;
+import "key.dart" show Key;
+import "metadata.dart"
+    show
+        InjectMetadata,
+        InjectableMetadata,
+        OptionalMetadata,
+        SelfMetadata,
+        HostMetadata,
+        SkipSelfMetadata,
+        DependencyMetadata;
+import "exceptions.dart"
+    show
+        NoAnnotationError,
+        MixingMultiProvidersWithRegularProvidersError,
+        InvalidProviderError;
+import "forward_ref.dart" show resolveForwardRef;
+
+/**
+ * `Dependency` is used by the framework to extend DI.
+ * This is internal to Angular and should not be used directly.
+ */
+class Dependency {
+  Key key;
+  bool optional;
+  dynamic lowerBoundVisibility;
+  dynamic upperBoundVisibility;
+  List<dynamic> properties;
+  Dependency(this.key, this.optional, this.lowerBoundVisibility,
+      this.upperBoundVisibility, this.properties) {}
+  static Dependency fromKey(Key key) {
+    return new Dependency(key, false, null, null, []);
+  }
+}
+
+const _EMPTY_LIST = const [];
 
 /**
  * Describes how the [Injector] should instantiate a given token.
@@ -18,7 +65,6 @@ import "package:angular2/src/facade/exceptions.dart" show BaseException;
  *
  * expect(injector.get("message")).toEqual('Hello');
  * ```
- * @ts2dart_const
  */
 class Provider {
   /**
@@ -40,11 +86,11 @@ class Provider {
    *
    * var injectorClass = Injector.resolveAndCreate([
    *   Car,
-   *   {provide: Vehicle,  useClass: Car }
+   *   new Provider(Vehicle, { useClass: Car })
    * ]);
    * var injectorAlias = Injector.resolveAndCreate([
    *   Car,
-   *   {provide: Vehicle,  useExisting: Car }
+   *   new Provider(Vehicle, { useExisting: Car })
    * ]);
    *
    * expect(injectorClass.get(Vehicle)).not.toBe(injectorClass.get(Car));
@@ -87,11 +133,11 @@ class Provider {
    *
    * var injectorAlias = Injector.resolveAndCreate([
    *   Car,
-   *   {provide: Vehicle,  useExisting: Car }
+   *   new Provider(Vehicle, { useExisting: Car })
    * ]);
    * var injectorClass = Injector.resolveAndCreate([
    *   Car,
-   *   {provide: Vehicle,  useClass: Car }
+   *   new Provider(Vehicle, { useClass: Car })
    * ]);
    *
    * expect(injectorAlias.get(Vehicle)).toBe(injectorAlias.get(Car));
@@ -109,7 +155,7 @@ class Provider {
    *
    * ```typescript
    * var injector = Injector.resolveAndCreate([
-   *   {provide: Number,  useFactory: () => { return 1+2; }},
+   *   new Provider(Number, { useFactory: () => { return 1+2; }}),
    *   new Provider(String, { useFactory: (value) => { return "Value: " + value; },
    *                       deps: [Number] })
    * ]);
@@ -129,7 +175,7 @@ class Provider {
    *
    * ```typescript
    * var injector = Injector.resolveAndCreate([
-   *   {provide: Number,  useFactory: () => { return 1+2; }},
+   *   new Provider(Number, { useFactory: () => { return 1+2; }}),
    *   new Provider(String, { useFactory: (value) => { return "Value: " + value; },
    *                       deps: [Number] })
    * ]);
@@ -144,12 +190,7 @@ class Provider {
   /** @internal */
   final bool _multi;
   const Provider(token,
-      {Type useClass,
-      dynamic useValue,
-      dynamic useExisting,
-      Function useFactory,
-      List<Object> deps,
-      bool multi})
+      {useClass, useValue, useExisting, useFactory, deps, multi})
       : token = token,
         useClass = useClass,
         useValue = useValue,
@@ -197,16 +238,9 @@ class Provider {
  * See [Provider] instead.
  *
  * 
- * @ts2dart_const
  */
 class Binding extends Provider {
-  const Binding(token,
-      {Type toClass,
-      dynamic toValue,
-      dynamic toAlias,
-      Function toFactory,
-      List<Object> deps,
-      bool multi})
+  const Binding(token, {toClass, toValue, toAlias, toFactory, deps, multi})
       : super(token,
             useClass: toClass,
             useValue: toValue,
@@ -244,6 +278,71 @@ class Binding extends Provider {
 }
 
 /**
+ * An internal resolved representation of a [Provider] used by the [Injector].
+ *
+ * It is usually created automatically by `Injector.resolveAndCreate`.
+ *
+ * It can be created manually, as follows:
+ *
+ * ### Example ([live demo](http://plnkr.co/edit/RfEnhh8kUEI0G3qsnIeT?p%3Dpreview&p=preview))
+ *
+ * ```typescript
+ * var resolvedProviders = Injector.resolve([new Provider('message', {useValue: 'Hello'})]);
+ * var injector = Injector.fromResolvedProviders(resolvedProviders);
+ *
+ * expect(injector.get('message')).toEqual('Hello');
+ * ```
+ */
+abstract class ResolvedProvider {
+  /**
+   * A key, usually a `Type`.
+   */
+  Key key;
+  /**
+   * Factory function which can return an instance of an object represented by a key.
+   */
+  List<ResolvedFactory> resolvedFactories;
+  /**
+   * Indicates if the provider is a multi-provider or a regular provider.
+   */
+  bool multiProvider;
+}
+
+/**
+ * See [ResolvedProvider] instead.
+ *
+ * 
+ */
+abstract class ResolvedBinding implements ResolvedProvider {}
+
+class ResolvedProvider_ implements ResolvedBinding {
+  Key key;
+  List<ResolvedFactory> resolvedFactories;
+  bool multiProvider;
+  ResolvedProvider_(this.key, this.resolvedFactories, this.multiProvider) {}
+  ResolvedFactory get resolvedFactory {
+    return this.resolvedFactories[0];
+  }
+}
+
+/**
+ * An internal resolved representation of a factory function created by resolving [Provider].
+ */
+class ResolvedFactory {
+  Function factory;
+  List<Dependency> dependencies;
+  ResolvedFactory(
+      /**
+       * Factory function which can return an instance of an object represented by a key.
+       */
+      this.factory,
+      /**
+       * Arguments (dependencies) to the `factory` function.
+       */
+      this.dependencies) {}
+}
+
+/**
  * Creates a [Provider].
  *
  * To construct a [Provider], bind a `token` to either a class, a value, a factory function,
@@ -257,6 +356,24 @@ class Binding extends Provider {
  */
 ProviderBuilder bind(token) {
   return new ProviderBuilder(token);
+}
+
+/**
+ * Creates a [Provider].
+ *
+ * See [Provider] for more details.
+ *
+ * <!-- TODO: improve the docs -->
+ */
+Provider provide(token,
+    {useClass, useValue, useExisting, useFactory, deps, multi}) {
+  return new Provider(token,
+      useClass: useClass,
+      useValue: useValue,
+      useExisting: useExisting,
+      useFactory: useFactory,
+      deps: deps,
+      multi: multi);
 }
 
 /**
@@ -384,24 +501,178 @@ class ProviderBuilder {
 }
 
 /**
- * Creates a [Provider].
- *
- * See [Provider] for more details.
- *
- * <!-- TODO: improve the docs -->
+ * Resolve a single provider.
  */
-Provider provide(token,
-    {Type useClass,
-    dynamic useValue,
-    dynamic useExisting,
-    Function useFactory,
-    List<Object> deps,
-    bool multi}) {
-  return new Provider(token,
-      useClass: useClass,
-      useValue: useValue,
-      useExisting: useExisting,
-      useFactory: useFactory,
-      deps: deps,
-      multi: multi);
+ResolvedFactory resolveFactory(Provider provider) {
+  Function factoryFn;
+  List<Dependency> resolvedDeps;
+  if (isPresent(provider.useClass)) {
+    var useClass = resolveForwardRef(provider.useClass);
+    factoryFn = reflector.factory(useClass);
+    resolvedDeps = _dependenciesFor(useClass);
+  } else if (isPresent(provider.useExisting)) {
+    factoryFn = (aliasInstance) => aliasInstance;
+    resolvedDeps = [Dependency.fromKey(Key.get(provider.useExisting))];
+  } else if (isPresent(provider.useFactory)) {
+    factoryFn = provider.useFactory;
+    resolvedDeps =
+        _constructDependencies(provider.useFactory, provider.dependencies);
+  } else {
+    factoryFn = () => provider.useValue;
+    resolvedDeps = _EMPTY_LIST;
+  }
+  return new ResolvedFactory(factoryFn, resolvedDeps);
+}
+
+/**
+ * Converts the [Provider] into [ResolvedProvider].
+ *
+ * [Injector] internally only uses [ResolvedProvider], [Provider] contains
+ * convenience provider syntax.
+ */
+ResolvedProvider resolveProvider(Provider provider) {
+  return new ResolvedProvider_(
+      Key.get(provider.token), [resolveFactory(provider)], provider.multi);
+}
+
+/**
+ * Resolve a list of Providers.
+ */
+List<ResolvedProvider> resolveProviders(
+    List<dynamic /* Type | Provider | List < dynamic > */ > providers) {
+  var normalized = _normalizeProviders(providers, []);
+  var resolved = normalized.map(resolveProvider).toList();
+  return MapWrapper.values(
+      mergeResolvedProviders(resolved, new Map<num, ResolvedProvider>()));
+}
+
+/**
+ * Merges a list of ResolvedProviders into a list where
+ * each key is contained exactly once and multi providers
+ * have been merged.
+ */
+Map<num, ResolvedProvider> mergeResolvedProviders(
+    List<ResolvedProvider> providers,
+    Map<num, ResolvedProvider> normalizedProvidersMap) {
+  for (var i = 0; i < providers.length; i++) {
+    var provider = providers[i];
+    var existing = normalizedProvidersMap[provider.key.id];
+    if (isPresent(existing)) {
+      if (!identical(provider.multiProvider, existing.multiProvider)) {
+        throw new MixingMultiProvidersWithRegularProvidersError(
+            existing, provider);
+      }
+      if (provider.multiProvider) {
+        for (var j = 0; j < provider.resolvedFactories.length; j++) {
+          existing.resolvedFactories.add(provider.resolvedFactories[j]);
+        }
+      } else {
+        normalizedProvidersMap[provider.key.id] = provider;
+      }
+    } else {
+      var resolvedProvider;
+      if (provider.multiProvider) {
+        resolvedProvider = new ResolvedProvider_(
+            provider.key,
+            ListWrapper.clone(provider.resolvedFactories),
+            provider.multiProvider);
+      } else {
+        resolvedProvider = provider;
+      }
+      normalizedProvidersMap[provider.key.id] = resolvedProvider;
+    }
+  }
+  return normalizedProvidersMap;
+}
+
+List<Provider> _normalizeProviders(
+    List<
+        dynamic /* Type | Provider | ProviderBuilder | List < dynamic > */ > providers,
+    List<Provider> res) {
+  providers.forEach((b) {
+    if (b is Type) {
+      res.add(provide(b, useClass: b));
+    } else if (b is Provider) {
+      res.add(b);
+    } else if (b is List) {
+      _normalizeProviders(b, res);
+    } else if (b is ProviderBuilder) {
+      throw new InvalidProviderError(b.token);
+    } else {
+      throw new InvalidProviderError(b);
+    }
+  });
+  return res;
+}
+
+List<Dependency> _constructDependencies(
+    Function factoryFunction, List<dynamic> dependencies) {
+  if (isBlank(dependencies)) {
+    return _dependenciesFor(factoryFunction);
+  } else {
+    List<List<dynamic>> params = dependencies.map((t) => [t]).toList();
+    return dependencies
+        .map((t) => _extractToken(factoryFunction, t, params))
+        .toList();
+  }
+}
+
+List<Dependency> _dependenciesFor(typeOrFunc) {
+  List<List<dynamic>> params = reflector.parameters(typeOrFunc);
+  if (isBlank(params)) return [];
+  if (params.any(isBlank)) {
+    throw new NoAnnotationError(typeOrFunc, params);
+  }
+  return params
+      .map((List<dynamic> p) => _extractToken(typeOrFunc, p, params))
+      .toList();
+}
+
+Dependency _extractToken(typeOrFunc, metadata, List<List<dynamic>> params) {
+  var depProps = [];
+  var token = null;
+  var optional = false;
+  if (!isArray(metadata)) {
+    if (metadata is InjectMetadata) {
+      return _createDependency(metadata.token, optional, null, null, depProps);
+    } else {
+      return _createDependency(metadata, optional, null, null, depProps);
+    }
+  }
+  var lowerBoundVisibility = null;
+  var upperBoundVisibility = null;
+  for (var i = 0; i < metadata.length; ++i) {
+    var paramMetadata = metadata[i];
+    if (paramMetadata is Type) {
+      token = paramMetadata;
+    } else if (paramMetadata is InjectMetadata) {
+      token = paramMetadata.token;
+    } else if (paramMetadata is OptionalMetadata) {
+      optional = true;
+    } else if (paramMetadata is SelfMetadata) {
+      upperBoundVisibility = paramMetadata;
+    } else if (paramMetadata is HostMetadata) {
+      upperBoundVisibility = paramMetadata;
+    } else if (paramMetadata is SkipSelfMetadata) {
+      lowerBoundVisibility = paramMetadata;
+    } else if (paramMetadata is DependencyMetadata) {
+      if (isPresent(paramMetadata.token)) {
+        token = paramMetadata.token;
+      }
+      depProps.add(paramMetadata);
+    }
+  }
+  token = resolveForwardRef(token);
+  if (isPresent(token)) {
+    return _createDependency(
+        token, optional, lowerBoundVisibility, upperBoundVisibility, depProps);
+  } else {
+    throw new NoAnnotationError(typeOrFunc, params);
+  }
+}
+
+Dependency _createDependency(
+    token, optional, lowerBoundVisibility, upperBoundVisibility, depProps) {
+  return new Dependency(Key.get(token), optional, lowerBoundVisibility,
+      upperBoundVisibility, depProps);
 }

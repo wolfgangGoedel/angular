@@ -1,6 +1,5 @@
 library angular2.platform.browser;
 
-import "package:angular2/core.dart" show Provider;
 import "dart:async";
 export "package:angular2/src/core/angular_entrypoint.dart";
 export "package:angular2/src/platform/browser_common.dart"
@@ -16,28 +15,16 @@ export "package:angular2/src/platform/browser_common.dart"
         DOCUMENT,
         enableDebugTools,
         disableDebugTools;
-import "package:angular2/src/facade/lang.dart" show Type, isPresent, isBlank;
+import "package:angular2/src/facade/lang.dart" show Type, isPresent;
 import "package:angular2/src/platform/browser_common.dart"
-    show
-        BROWSER_PROVIDERS,
-        BROWSER_APP_COMMON_PROVIDERS,
-        BROWSER_PLATFORM_MARKER;
+    show BROWSER_PROVIDERS, BROWSER_APP_COMMON_PROVIDERS;
 import "package:angular2/compiler.dart" show COMPILER_PROVIDERS;
-import "package:angular2/core.dart"
-    show
-        ComponentRef,
-        coreLoadAndBootstrap,
-        reflector,
-        ReflectiveInjector,
-        PlatformRef,
-        OpaqueToken,
-        getPlatform,
-        createPlatform,
-        assertPlatform;
+import "package:angular2/core.dart" show ComponentRef, platform, reflector;
 import "package:angular2/src/core/reflection/reflection_capabilities.dart"
     show ReflectionCapabilities;
 import "package:angular2/src/platform/browser/xhr_impl.dart" show XHRImpl;
 import "package:angular2/compiler.dart" show XHR;
+import "package:angular2/src/core/di.dart" show Provider;
 
 /**
  * An array of providers that should be passed into `application()` when bootstrapping a component.
@@ -45,15 +32,8 @@ import "package:angular2/compiler.dart" show XHR;
 const List<dynamic> BROWSER_APP_PROVIDERS = const [
   BROWSER_APP_COMMON_PROVIDERS,
   COMPILER_PROVIDERS,
-  /*@ts2dart_Provider*/ const Provider(XHR, useClass: XHRImpl)
+  const Provider(XHR, useClass: XHRImpl)
 ];
-PlatformRef browserPlatform() {
-  if (isBlank(getPlatform())) {
-    createPlatform(ReflectiveInjector.resolveAndCreate(BROWSER_PROVIDERS));
-  }
-  return assertPlatform(BROWSER_PLATFORM_MARKER);
-}
-
 /**
  * Bootstrapping for Angular applications.
  *
@@ -122,12 +102,13 @@ PlatformRef browserPlatform() {
  *
  * Returns a `Promise` of [ComponentRef].
  */
-Future<ComponentRef<dynamic>> bootstrap(Type appComponentType,
+Future<ComponentRef> bootstrap(Type appComponentType,
     [List<dynamic> customProviders]) {
   reflector.reflectionCapabilities = new ReflectionCapabilities();
-  var appInjector = ReflectiveInjector.resolveAndCreate([
-    BROWSER_APP_PROVIDERS,
-    isPresent(customProviders) ? customProviders : []
-  ], browserPlatform().injector);
-  return coreLoadAndBootstrap(appInjector, appComponentType);
+  var appProviders = isPresent(customProviders)
+      ? [BROWSER_APP_PROVIDERS, customProviders]
+      : BROWSER_APP_PROVIDERS;
+  return platform(BROWSER_PROVIDERS)
+      .application(appProviders)
+      .bootstrap(appComponentType);
 }

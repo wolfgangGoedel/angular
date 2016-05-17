@@ -17,11 +17,8 @@ const ERROR_ON_MISSING_IDENTIFIERS = 'error_on_missing_identifiers';
 const INIT_REFLECTOR_PARAM = 'init_reflector';
 const INLINE_VIEWS_PARAM = 'inline_views';
 const MIRROR_MODE_PARAM = 'mirror_mode';
-const CODEGEN_MODE_PARAM = 'codegen_mode';
 const LAZY_TRANSFORMERS = 'lazy_transformers';
 const TRANSLATIONS = 'translations';
-
-const CODEGEN_DEBUG_MODE = 'debug';
 
 /// Provides information necessary to transform an Angular2 app.
 class TransformerOptions {
@@ -47,9 +44,9 @@ class TransformerOptions {
   /// as attributes on DOM elements, which may aid in application debugging.
   final bool reflectPropertiesAsAttributes;
 
-  /// Whether to generate debug information in views.
-  /// Needed for testing and improves error messages when exception are triggered.
-  final String codegenMode;
+  /// Whether to generate debug information in change detectors.
+  /// This improves error messages when exception are triggered in templates.
+  final bool genChangeDetectionDebugInfo;
 
   /// A set of directives that will be automatically passed-in to the template compiler
   /// Format of an item in the list:
@@ -90,7 +87,7 @@ class TransformerOptions {
   ///
   /// This option is strictly for internal testing and is not available as an
   /// option on the transformer.
-  /// Setting this to `false` means that our generated .ngfactory.dart files do
+  /// Setting this to `false` means that our generated .template.dart files do
   /// not have any compiled templates or change detectors defined in them.
   /// These files will not be usable, but this allows us to test the code output
   /// of the transformer without breaking when compiled template internals
@@ -108,7 +105,7 @@ class TransformerOptions {
       this.initReflector,
       this.annotationMatcher,
       {this.formatCode,
-      this.codegenMode,
+      this.genChangeDetectionDebugInfo,
       this.genCompiledTemplates,
       this.inlineViews,
       this.lazyTransformers,
@@ -125,7 +122,7 @@ class TransformerOptions {
       bool initReflector: true,
       List<ClassDescriptor> customAnnotationDescriptors: const [],
       bool inlineViews: false,
-      String codegenMode: '',
+      bool genChangeDetectionDebugInfo: false,
       bool genCompiledTemplates: true,
       bool reflectPropertiesAsAttributes: false,
       bool errorOnMissingIdentifiers: true,
@@ -142,7 +139,7 @@ class TransformerOptions {
         : null;
     return new TransformerOptions._internal(entryPoints, entryPointGlobs,
         modeName, mirrorMode, initReflector, annotationMatcher,
-        codegenMode: codegenMode,
+        genChangeDetectionDebugInfo: genChangeDetectionDebugInfo,
         genCompiledTemplates: genCompiledTemplates,
         reflectPropertiesAsAttributes: reflectPropertiesAsAttributes,
         platformDirectives: platformDirectives,

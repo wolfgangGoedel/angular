@@ -31,7 +31,7 @@ var childCmpInstanceCount;
 main() {
   describe("navigation", () {
     TestComponentBuilder tcb;
-    ComponentFixture<dynamic> fixture;
+    ComponentFixture fixture;
     var rtr;
     beforeEachProviders(() => TEST_ROUTER_PROVIDERS);
     beforeEach(inject([TestComponentBuilder, Router], (tcBuilder, router) {
@@ -255,31 +255,6 @@ main() {
               .then((_) {
                 fixture.detectChanges();
                 expect(fixture.debugElement.nativeElement).toHaveText("");
-                async.done();
-              });
-        }));
-    it(
-        "should fire an event for each activated component",
-        inject([AsyncTestCompleter], (async) {
-          compile(tcb,
-                  "<router-outlet (activate)=\"activatedCmp = \$event\"></router-outlet>")
-              .then((rtc) {
-                fixture = rtc;
-              })
-              .then((_) =>
-                  rtr.config([new Route(path: "/test", component: HelloCmp)]))
-              .then((_) => rtr.navigateByUrl("/test"))
-              .then((_) {
-                // Note: need a timeout so that all promises are flushed
-                var completer = PromiseWrapper.completer();
-                TimerWrapper.setTimeout(() {
-                  completer.resolve(null);
-                }, 0);
-                return completer.promise;
-              })
-              .then((_) {
-                expect(fixture.componentInstance.activatedCmp)
-                    .toBeAnInstanceOf(HelloCmp);
                 async.done();
               });
         }));

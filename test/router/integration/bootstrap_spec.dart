@@ -21,7 +21,7 @@ import "package:angular2/platform/common.dart"
 import "package:angular2/src/core/metadata.dart" show Component, Directive;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 import "package:angular2/src/core/console.dart" show Console;
-import "package:angular2/core.dart" show provide;
+import "package:angular2/core.dart" show provide, ViewChild, AfterViewInit;
 import "package:angular2/src/platform/dom/dom_tokens.dart" show DOCUMENT;
 import "package:angular2/src/router/route_config/route_config_decorator.dart"
     show RouteConfig, Route, Redirect, AuxRoute;
@@ -43,7 +43,6 @@ import "package:angular2/src/mock/mock_application_ref.dart"
 
 class DummyConsole implements Console {
   log(message) {}
-  warn(message) {}
 }
 
 main() {
@@ -55,7 +54,7 @@ main() {
         ]);
     // do not refactor out the `bootstrap` functionality. We still want to
 
-    // keep this test around so we can ensure that bootstrap a router works
+    // keep this test around so we can ensure that bootstrapping a router works
     it(
         "should bootstrap a simple app",
         inject([AsyncTestCompleter], (async) {
@@ -69,10 +68,10 @@ main() {
             provide(DOCUMENT, useValue: fakeDoc),
             provide(Console, useClass: DummyConsole)
           ]).then((applicationRef) {
-            var router = applicationRef.instance.router;
+            var router = applicationRef.hostComponent.router;
             router.subscribe((_) {
               expect(el).toHaveText("outer { hello }");
-              expect(applicationRef.instance.location.path()).toEqual("");
+              expect(applicationRef.hostComponent.location.path()).toEqual("");
               async.done();
             });
           });
@@ -212,7 +211,7 @@ main() {
             });
           }));
     });
-    describe("activate event on outlet", () {
+    describe("retrieving components loaded via outlet via @ViewChild", () {
       TestComponentBuilder tcb = null;
       beforeEachProviders(
           () => [provide(ROUTER_PRIMARY_COMPONENT, useValue: AppCmp)]);
@@ -222,7 +221,7 @@ main() {
       it(
           "should get a reference and pass data to components loaded inside of outlets",
           inject([AsyncTestCompleter], (async) {
-            tcb.createAsync(AppWithOutletListeners).then((fixture) {
+            tcb.createAsync(AppWithViewChildren).then((fixture) {
               var appInstance = fixture.debugElement.componentInstance;
               var router = appInstance.router;
               router.subscribe((_) {
@@ -262,26 +261,23 @@ class AppCmp {
     selector: "app-cmp",
     template: '''
     Hello routing!
-    <router-outlet (activate)="activateHello(\$event)"></router-outlet>
-    <router-outlet (activate)="activateHello2(\$event)" name="pony"></router-outlet>''',
+    <router-outlet></router-outlet>
+    <router-outlet name="pony"></router-outlet>''',
     directives: ROUTER_DIRECTIVES)
 @RouteConfig(const [
   const Route(path: "/rainbow", component: HelloCmp),
   const AuxRoute(name: "pony", path: "pony", component: Hello2Cmp)
 ])
-class AppWithOutletListeners {
+class AppWithViewChildren implements AfterViewInit {
   Router router;
   LocationStrategy location;
+  @ViewChild(HelloCmp)
   HelloCmp helloCmp;
+  @ViewChild(Hello2Cmp)
   Hello2Cmp hello2Cmp;
-  AppWithOutletListeners(this.router, this.location) {}
-  activateHello(HelloCmp cmp) {
-    this.helloCmp = cmp;
+  AppWithViewChildren(this.router, this.location) {}
+  ngAfterViewInit() {
     this.helloCmp.message = "Ahoy";
-  }
-
-  activateHello2(Hello2Cmp cmp) {
-    this.hello2Cmp = cmp;
   }
 }
 

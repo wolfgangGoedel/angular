@@ -30,5 +30,4 @@ abstract class ControlValueAccessor {
  *
  * See [DefaultValueAccessor] for how to implement one.
  */
-const OpaqueToken NG_VALUE_ACCESSOR =
-    /*@ts2dart_const*/ const OpaqueToken("NgValueAccessor");
+const OpaqueToken NG_VALUE_ACCESSOR = const OpaqueToken("NgValueAccessor");

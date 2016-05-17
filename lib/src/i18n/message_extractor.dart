@@ -14,7 +14,7 @@ import "package:angular2/src/compiler/html_ast.dart"
         htmlVisitAll;
 import "package:angular2/src/facade/lang.dart" show isPresent, isBlank;
 import "package:angular2/src/facade/collection.dart" show StringMapWrapper;
-import "package:angular2/src/compiler/expression_parser/parser.dart"
+import "package:angular2/src/core/change_detection/parser/parser.dart"
     show Parser;
 import "message.dart" show Message, id;
 import "expander.dart" show expandNodes;

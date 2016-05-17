@@ -264,8 +264,8 @@ class SelectorMatcher {
    * 
    * 
   */
-  bool match(
-      CssSelector cssSelector, void matchedCallback(CssSelector c, dynamic a)) {
+  bool match(CssSelector cssSelector,
+      dynamic /* (c: CssSelector, a: any) => void */ matchedCallback) {
     var result = false;
     var element = cssSelector.element;
     var classNames = cssSelector.classNames;
@@ -318,8 +318,11 @@ class SelectorMatcher {
   }
 
   /** @internal */
-  bool _matchTerminal(Map<String, List<SelectorContext>> map, name,
-      CssSelector cssSelector, void matchedCallback(CssSelector c, dynamic a)) {
+  bool _matchTerminal(
+      Map<String, List<SelectorContext>> map,
+      name,
+      CssSelector cssSelector,
+      dynamic /* (c: CssSelector, a: any) => void */ matchedCallback) {
     if (isBlank(map) || isBlank(name)) {
       return false;
     }
@@ -374,8 +377,8 @@ class SelectorContext {
   SelectorContext(this.selector, this.cbContext, this.listContext) {
     this.notSelectors = selector.notSelectors;
   }
-  bool finalize(
-      CssSelector cssSelector, void callback(CssSelector c, dynamic a)) {
+  bool finalize(CssSelector cssSelector,
+      dynamic /* (c: CssSelector, a: any) => void */ callback) {
     var result = true;
     if (this.notSelectors.length > 0 &&
         (isBlank(this.listContext) || !this.listContext.alreadyMatched)) {

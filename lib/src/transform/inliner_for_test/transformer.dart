@@ -72,7 +72,7 @@ Future<String> inline(AssetReader reader, AssetId assetId,
   return visitor.modifiedSource ? writer.asyncToString() : null;
 }
 
-final _urlResolver = createOfflineCompileUrlResolver();
+final _urlResolver = const TransformerUrlResolver();
 
 class _ViewPropInliner extends RecursiveAstVisitor<Object> {
   /// The prefixes given to inlined names.

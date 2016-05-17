@@ -28,8 +28,7 @@ const OpaqueToken NG_VALIDATORS = const OpaqueToken("NgValidators");
  *
  * See [NG_VALIDATORS] for more details.
  */
-const OpaqueToken NG_ASYNC_VALIDATORS =
-    /*@ts2dart_const*/ const OpaqueToken("NgAsyncValidators");
+const OpaqueToken NG_ASYNC_VALIDATORS = const OpaqueToken("NgAsyncValidators");
 
 /**
  * Provides a set of validators used by form controls.

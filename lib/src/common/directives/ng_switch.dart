@@ -9,7 +9,7 @@ const _WHEN_DEFAULT = const Object();
 
 class SwitchView {
   ViewContainerRef _viewContainerRef;
-  TemplateRef<Object> _templateRef;
+  TemplateRef _templateRef;
   SwitchView(this._viewContainerRef, this._templateRef) {}
   void create() {
     this._viewContainerRef.createEmbeddedView(this._templateRef);
@@ -179,7 +179,7 @@ class NgSwitchWhen {
   /** @internal */
   SwitchView _view;
   NgSwitch _switch;
-  NgSwitchWhen(ViewContainerRef viewContainer, TemplateRef<Object> templateRef,
+  NgSwitchWhen(ViewContainerRef viewContainer, TemplateRef templateRef,
       @Host() NgSwitch ngSwitch) {
     this._switch = ngSwitch;
     this._view = new SwitchView(viewContainer, templateRef);
@@ -198,8 +198,8 @@ class NgSwitchWhen {
  */
 @Directive(selector: "[ngSwitchDefault]")
 class NgSwitchDefault {
-  NgSwitchDefault(ViewContainerRef viewContainer,
-      TemplateRef<Object> templateRef, @Host() NgSwitch sswitch) {
+  NgSwitchDefault(ViewContainerRef viewContainer, TemplateRef templateRef,
+      @Host() NgSwitch sswitch) {
     sswitch._registerView(
         _WHEN_DEFAULT, new SwitchView(viewContainer, templateRef));
   }

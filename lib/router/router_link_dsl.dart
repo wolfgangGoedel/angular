@@ -1,7 +1,7 @@
 library angular2.router.router_link_dsl;
 
-import "package:angular2/core.dart" show Provider;
 import "package:angular2/compiler.dart" show TEMPLATE_TRANSFORMS;
+import "package:angular2/core.dart" show Provider;
 import "package:angular2/src/router/directives/router_link_transform.dart"
     show RouterLinkTransform;
 export "package:angular2/src/router/directives/router_link_transform.dart"
@@ -33,7 +33,5 @@ export "package:angular2/src/router/directives/router_link_transform.dart"
  * <a [routerLink]="User[Modal]"> <!-- Same as <a [routerLink]="['User', ['Modal']]"> -->
  * ```
  */
-const ROUTER_LINK_DSL_PROVIDER =
-    /*@ts2dart_const*/
-    /* @ts2dart_Provider */ const Provider(TEMPLATE_TRANSFORMS,
-        useClass: RouterLinkTransform, multi: true);
+const ROUTER_LINK_DSL_PROVIDER = const Provider(TEMPLATE_TRANSFORMS,
+    useClass: RouterLinkTransform, multi: true);

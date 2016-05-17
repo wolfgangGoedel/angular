@@ -42,7 +42,6 @@ import "package:angular2/src/facade/lang.dart"
  * var injector = Injector.resolveAndCreate([Engine, Car]);
  * expect(injector.get(Car).engine instanceof Engine).toBe(true);
  * ```
- * @ts2dart_const
  */
 class InjectMetadata {
   final token;
@@ -72,7 +71,6 @@ class InjectMetadata {
  * var injector = Injector.resolveAndCreate([Car]);
  * expect(injector.get(Car).engine).toBeNull();
  * ```
- * @ts2dart_const
  */
 class OptionalMetadata {
   String toString() {
@@ -85,7 +83,6 @@ class OptionalMetadata {
 /**
  * `DependencyMetadata` is used by the framework to extend DI.
  * This is internal to Angular and should not be used directly.
- * @ts2dart_const
  */
 class DependencyMetadata {
   get token {
@@ -125,7 +122,6 @@ class DependencyMetadata {
  * var injector = Injector.resolveAndCreate([NeedsService, UsefulService]);
  * expect(() => injector.get(NeedsService)).toThrowError();
  * ```
- * @ts2dart_const
  */
 class InjectableMetadata {
   const InjectableMetadata();
@@ -157,7 +153,6 @@ class InjectableMetadata {
  * var child = inj.resolveAndCreateChild([NeedsDependency]);
  * expect(() => child.get(NeedsDependency)).toThrowError();
  * ```
- * @ts2dart_const
  */
 class SelfMetadata {
   String toString() {
@@ -191,7 +186,6 @@ class SelfMetadata {
  * var inj = Injector.resolveAndCreate([Dependency, NeedsDependency]);
  * expect(() => inj.get(NeedsDependency)).toThrowError();
  * ```
- * @ts2dart_const
  */
 class SkipSelfMetadata {
   String toString() {
@@ -254,7 +248,6 @@ class SkipSelfMetadata {
  *
  * bootstrap(App);
  *```
- * @ts2dart_const
  */
 class HostMetadata {
   String toString() {

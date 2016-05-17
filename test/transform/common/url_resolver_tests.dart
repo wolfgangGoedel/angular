@@ -8,7 +8,7 @@ import 'package:angular2/src/transform/common/url_resolver.dart';
 main() => allTests();
 
 void allTests() {
-  var urlResolver = createOfflineCompileUrlResolver();
+  var urlResolver = const TransformerUrlResolver();
 
   group('toAssetUri', () {
     test('should convert `AssetId`s to asset: uris', () {
@@ -141,9 +141,29 @@ void allTests() {
           equals('asset:angular2/lib/src/transform/transformer.dart'));
     });
 
+    test('should throw if passed a null uri', () {
+      expect(() => urlResolver.resolve('package:angular2/angular2.dart', null),
+          throwsArgumentError);
+    });
+
     test('should gracefully handle an empty uri', () {
       expect(urlResolver.resolve('package:angular2/angular2.dart', ''),
           equals('asset:angular2/lib/angular2.dart'));
+    });
+
+    test('should throw if passed a relative uri and a null baseUri', () {
+      expect(() => urlResolver.resolve(null, 'angular2/angular2.dart'),
+          throwsArgumentError);
+    });
+
+    test('should throw if passed a relative uri and an empty baseUri', () {
+      expect(() => urlResolver.resolve('', 'angular2/angular2.dart'),
+          throwsArgumentError);
+    });
+
+    test('should throw if the resolved uri is relative', () {
+      expect(() => urlResolver.resolve('/angular2/', 'angular2.dart'),
+          throwsArgumentError);
     });
   });
 }

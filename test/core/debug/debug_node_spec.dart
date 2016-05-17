@@ -140,9 +140,9 @@ class ConditionalParentComp {
 @Component(
     selector: "using-for",
     viewProviders: const [Logger],
-    template: '''<span *ngFor="let thing of stuff" [innerHtml]="thing"></span>
+    template: '''<span *ngFor="#thing of stuff" [innerHtml]="thing"></span>
             <ul message="list">
-              <li *ngFor="let item of stuff" [innerHtml]="item"></li>
+              <li *ngFor="#item of stuff" [innerHtml]="item"></li>
             </ul>''',
     directives: const [NgFor, MessageDir])
 @Injectable()
@@ -331,7 +331,7 @@ main() {
             (TestComponentBuilder tcb, async) {
           tcb.createAsync(LocalsComp).then((fixture) {
             fixture.detectChanges();
-            expect(fixture.debugElement.children[0].references["alice"])
+            expect(fixture.debugElement.children[0].getLocal("alice"))
                 .toBeAnInstanceOf(MyDir);
             async.done();
           });
@@ -342,9 +342,7 @@ main() {
             (TestComponentBuilder tcb, async) {
           tcb.createAsync(ParentComp).then((fixture) {
             fixture.detectChanges();
-            expect((((fixture.debugElement.children[0].inject(Logger))
-                        as Logger))
-                    .log)
+            expect(fixture.debugElement.children[0].inject(Logger).log)
                 .toEqual(["parent", "nestedparent", "child", "nestedchild"]);
             async.done();
           });

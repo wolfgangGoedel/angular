@@ -89,7 +89,7 @@ String defaultLocale = "en-US";
 @Injectable()
 class DatePipe implements PipeTransform {
   /** @internal */
-  static Map<String, String> _ALIASES = {
+  static final Map<String, String> _ALIASES = {
     "medium": "yMMMdjms",
     "short": "yMdjm",
     "fullDate": "yMMMMEEEEd",
@@ -99,11 +99,13 @@ class DatePipe implements PipeTransform {
     "mediumTime": "jms",
     "shortTime": "jm"
   };
-  String transform(dynamic value, [String pattern = "mediumDate"]) {
+  String transform(dynamic value, List<dynamic> args) {
     if (isBlank(value)) return null;
     if (!this.supports(value)) {
       throw new InvalidPipeArgumentException(DatePipe, value);
     }
+    String pattern =
+        isPresent(args) && args.length > 0 ? args[0] : "mediumDate";
     if (isNumber(value)) {
       value = DateWrapper.fromMillis(value);
     }
@@ -116,4 +118,6 @@ class DatePipe implements PipeTransform {
   bool supports(dynamic obj) {
     return isDate(obj) || isNumber(obj);
   }
+
+  const DatePipe();
 }

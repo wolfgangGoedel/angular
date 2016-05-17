@@ -1,7 +1,7 @@
 library angular2.test.common.forms.integration_spec;
 
 import "package:angular2/core.dart"
-    show Component, Directive, Output, EventEmitter, Provider, Input;
+    show Component, Directive, Output, EventEmitter;
 import "package:angular2/testing_internal.dart"
     show
         ComponentFixture,
@@ -37,6 +37,7 @@ import "package:angular2/common.dart"
         Validators,
         Validator,
         RadioButtonState;
+import "package:angular2/core.dart" show Provider, Input;
 import "package:angular2/platform/browser.dart" show By;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "package:angular2/src/facade/async.dart"
@@ -119,7 +120,10 @@ main() {
                       <form [ngFormModel]="form" (ngSubmit)="name=\'updated\'"></form>
                       <span>{{name}}</span>
                     </div>''';
-          var fixture = tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+          ComponentFixture fixture;
+          tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+            fixture = root;
+          });
           tick();
           fixture.debugElement.componentInstance.form = new ControlGroup({});
           fixture.debugElement.componentInstance.name = "old";
@@ -400,7 +404,7 @@ main() {
             inject([TestComponentBuilder, AsyncTestCompleter],
                 (TestComponentBuilder tcb, async) {
               var t = '''<select>
-                      <option *ngFor="let city of list" [value]="city[\'id\']">
+                      <option *ngFor="#city of list" [value]="city[\'id\']">
                         {{ city[\'name\'] }}
                       </option>
                     </select>''';
@@ -457,7 +461,7 @@ main() {
                 inject([TestComponentBuilder], (TestComponentBuilder tcb) {
               var t = '''<div [ngFormModel]="form">
                       <select ngControl="city">
-                        <option *ngFor="let c of data" [value]="c"></option>
+                        <option *ngFor="#c of data" [value]="c"></option>
                       </select>
                   </div>''';
               var fixture;
@@ -480,7 +484,7 @@ main() {
                 (TestComponentBuilder tcb, async) {
               var t = '''<div>
                       <select [(ngModel)]="selectedCity">
-                        <option *ngFor="let c of list" [ngValue]="c">{{c[\'name\']}}</option>
+                        <option *ngFor="#c of list" [ngValue]="c">{{c[\'name\']}}</option>
                       </select>
                   </div>''';
               tcb
@@ -515,7 +519,7 @@ main() {
                 (TestComponentBuilder tcb, async) {
               var t = '''<div>
                       <select [(ngModel)]="selectedCity">
-                        <option *ngFor="let c of list" [ngValue]="c">{{c[\'name\']}}</option>
+                        <option *ngFor="#c of list" [ngValue]="c">{{c[\'name\']}}</option>
                       </select>
                   </div>''';
               tcb
@@ -546,7 +550,7 @@ main() {
                 (TestComponentBuilder tcb, async) {
               var t = '''<div>
                       <select [(ngModel)]="selectedCity">
-                        <option *ngFor="let c of list" [ngValue]="c">{{c}}</option>
+                        <option *ngFor="#c of list" [ngValue]="c">{{c}}</option>
                       </select>
                   </div>''';
               tcb
@@ -574,7 +578,7 @@ main() {
                 (TestComponentBuilder tcb, async) {
               var t = '''<div>
                       <select [(ngModel)]="selectedCity">
-                        <option *ngFor="let c of list; trackBy:customTrackBy" [ngValue]="c">{{c}}</option>
+                        <option *ngFor="#c of list; trackBy:customTrackBy" [ngValue]="c">{{c}}</option>
                       </select>
                   </div>''';
               tcb
@@ -605,7 +609,7 @@ main() {
                 (TestComponentBuilder tcb, async) {
               var t = '''<div>
                       <select [(ngModel)]="selectedCity">
-                        <option *ngFor="let c of list" [ngValue]="c">{{c}}</option>
+                        <option *ngFor="#c of list" [ngValue]="c">{{c}}</option>
                       </select>
                   </div>''';
               tcb
@@ -636,7 +640,7 @@ main() {
                 (TestComponentBuilder tcb, async) {
               var t = '''<div>
                       <select [(ngModel)]="selectedCity">
-                        <option *ngFor="let c of list" [ngValue]="c">{{c[\'name\']}}</option>
+                        <option *ngFor="#c of list" [ngValue]="c">{{c[\'name\']}}</option>
                       </select>
                   </div>''';
               tcb
@@ -873,7 +877,10 @@ main() {
           var form = new ControlGroup({"name": new Control("")});
           var t =
               '''<div [ngFormModel]="form"><input type="text" ngControl="name" [(ngModel)]="name"></div>''';
-          var fixture = tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+          ComponentFixture fixture;
+          tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+            fixture = root;
+          });
           tick();
           fixture.debugElement.componentInstance.name = "oldValue";
           fixture.debugElement.componentInstance.form = form;
@@ -892,7 +899,10 @@ main() {
           var form = new Control("");
           var t =
               '''<div><input type="text" [ngFormControl]="form" [(ngModel)]="name"></div>''';
-          var fixture = tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+          ComponentFixture fixture;
+          tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+            fixture = root;
+          });
           tick();
           fixture.debugElement.componentInstance.form = form;
           fixture.debugElement.componentInstance.name = "oldValue";
@@ -914,8 +924,10 @@ main() {
                       <input type="text" ngControl="login">
                      </div>
                </form>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = null;
             fixture.detectChanges();
@@ -930,8 +942,10 @@ main() {
           fakeAsync(inject([TestComponentBuilder], (TestComponentBuilder tcb) {
             var t =
                 '''<div><form (ngSubmit)="name=\'updated\'"></form></div>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = "old";
             var form = fixture.debugElement.query(By.css("form"));
@@ -962,8 +976,10 @@ main() {
                       <input type="text" ngControl="login">
                     </div>
                   </form>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = "show";
             fixture.detectChanges();
@@ -983,8 +999,10 @@ main() {
                       <input type="text" ngControl="login">
                      </div>
                </form>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = "show";
             fixture.detectChanges();
@@ -1002,8 +1020,10 @@ main() {
             var t = '''<form>
                       <input type="text" ngControl="name" [(ngModel)]="name">
                </form>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = "oldValue";
             fixture.detectChanges();
@@ -1021,8 +1041,10 @@ main() {
           "should support ngModel for single fields",
           fakeAsync(inject([TestComponentBuilder], (TestComponentBuilder tcb) {
             var t = '''<div><input type="text" [(ngModel)]="name"></div>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = "oldValue";
             fixture.detectChanges();
@@ -1046,8 +1068,10 @@ main() {
                   <input type="radio" name="food" ngControl="chicken" [(ngModel)]="data[\'chicken2\']">
                   <input type="radio" name="food" ngControl="fish" [(ngModel)]="data[\'fish2\']">
                 </form>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((f) {
+              fixture = f;
+            });
             tick();
             fixture.debugElement.componentInstance.data = {
               "chicken1": new RadioButtonState(false, "chicken"),
@@ -1155,8 +1179,10 @@ main() {
             var form = new Control("");
             var t =
                 '''<div><input type="text" [ngFormControl]="form" [(ngModel)]="name"></div>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.form = form;
             fixture.detectChanges();
@@ -1181,8 +1207,10 @@ main() {
           "should update the view when the model is set back to what used to be in the view",
           fakeAsync(inject([TestComponentBuilder], (TestComponentBuilder tcb) {
             var t = '''<input type="text" [(ngModel)]="name">''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.debugElement.componentInstance.name = "";
             fixture.detectChanges();
@@ -1216,8 +1244,10 @@ main() {
             // fixed.
             var t = '''<form><div ngControlGroup="x" #x="ngForm">
                   <input type="text" ngControl="test"></div>{{x.valid}}</form>''';
-            var fixture =
-                tcb.overrideTemplate(MyComp, t).createFakeAsync(MyComp);
+            ComponentFixture fixture;
+            tcb.overrideTemplate(MyComp, t).createAsync(MyComp).then((root) {
+              fixture = root;
+            });
             tick();
             fixture.detectChanges();
           })));
@@ -1286,7 +1316,7 @@ loginIsEmptyGroupValidator(ControlGroup c) {
 }
 
 @Directive(selector: "[login-is-empty-validator]", providers: const [
-  /* @ts2dart_Provider */ const Provider(NG_VALIDATORS,
+  const Provider(NG_VALIDATORS,
       useValue: loginIsEmptyGroupValidator, multi: true)
 ])
 class LoginIsEmptyValidator {}

@@ -10,11 +10,7 @@ library angular2.testing;
 
 export "src/testing/testing.dart";
 export "src/testing/test_component_builder.dart"
-    show
-        ComponentFixture,
-        TestComponentBuilder,
-        ComponentFixtureAutoDetect,
-        ComponentFixtureNoNgZone;
+    show ComponentFixture, TestComponentBuilder;
 export "src/testing/test_injector.dart";
 export "src/testing/fake_async.dart";
 export "package:angular2/src/mock/view_resolver_mock.dart"

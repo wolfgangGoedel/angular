@@ -18,17 +18,19 @@ export "di/metadata.dart"
 export "di/decorators.dart";
 export "di/forward_ref.dart" show forwardRef, resolveForwardRef, ForwardRefFn;
 export "di/injector.dart" show Injector;
-export "di/reflective_injector.dart" show ReflectiveInjector;
 export "di/provider.dart"
-    show Binding, ProviderBuilder, bind, Provider, provide;
-export "di/reflective_provider.dart"
     show
-        ResolvedReflectiveBinding,
-        ResolvedReflectiveFactory,
-        ReflectiveDependency,
-        ResolvedReflectiveProvider;
-export "di/reflective_key.dart" show ReflectiveKey;
-export "di/reflective_exceptions.dart"
+        Binding,
+        ProviderBuilder,
+        ResolvedBinding,
+        ResolvedFactory,
+        Dependency,
+        bind,
+        Provider,
+        ResolvedProvider,
+        provide;
+export "di/key.dart" show Key;
+export "di/exceptions.dart"
     show
         NoProviderError,
         AbstractProviderError,

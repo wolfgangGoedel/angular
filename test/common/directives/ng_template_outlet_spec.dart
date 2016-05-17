@@ -46,7 +46,7 @@ main() {
               .then((fixture) {
             fixture.detectChanges();
             expect(fixture.nativeElement).toHaveText("");
-            var refs = fixture.debugElement.children[0].references["refs"];
+            var refs = fixture.debugElement.children[0].getLocal("refs");
             fixture.componentInstance.currentTplRef = refs.tplRefs.first;
             fixture.detectChanges();
             expect(fixture.nativeElement).toHaveText("foo");
@@ -64,7 +64,7 @@ main() {
               .createAsync(TestComponent)
               .then((fixture) {
             fixture.detectChanges();
-            var refs = fixture.debugElement.children[0].references["refs"];
+            var refs = fixture.debugElement.children[0].getLocal("refs");
             fixture.componentInstance.currentTplRef = refs.tplRefs.first;
             fixture.detectChanges();
             expect(fixture.nativeElement).toHaveText("foo");
@@ -85,7 +85,7 @@ main() {
               .createAsync(TestComponent)
               .then((fixture) {
             fixture.detectChanges();
-            var refs = fixture.debugElement.children[0].references["refs"];
+            var refs = fixture.debugElement.children[0].getLocal("refs");
             fixture.componentInstance.currentTplRef = refs.tplRefs.first;
             fixture.detectChanges();
             expect(fixture.nativeElement).toHaveText("foo");
@@ -101,7 +101,7 @@ main() {
 @Directive(selector: "tpl-refs", exportAs: "tplRefs")
 class CaptureTplRefs {
   @ContentChildren(TemplateRef)
-  QueryList<TemplateRef<dynamic>> tplRefs;
+  QueryList<TemplateRef> tplRefs;
 }
 
 @Component(
@@ -109,5 +109,5 @@ class CaptureTplRefs {
     directives: const [NgTemplateOutlet, CaptureTplRefs],
     template: "")
 class TestComponent {
-  TemplateRef<dynamic> currentTplRef;
+  TemplateRef currentTplRef;
 }

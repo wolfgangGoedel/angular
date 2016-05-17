@@ -15,5 +15,6 @@ void initReflector(reflector) {
           const Directive(selector: 'hello', outputs: const ['eventName'])
         ], const [
           const []
-        ], () => new HelloDirective()));
+        ], () => new HelloDirective()))
+    ..registerGetters({'eventName': (o) => o.eventName});
 }

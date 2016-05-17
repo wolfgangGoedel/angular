@@ -23,6 +23,8 @@ import "package:angular2/router.dart"
 import "package:angular2/src/mock/location_mock.dart" show SpyLocation;
 import "package:angular2/platform/common.dart" show Location;
 import "package:angular2/src/router/route_registry.dart" show RouteRegistry;
+import "package:angular2/src/core/linker/directive_resolver.dart"
+    show DirectiveResolver;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 export "package:angular2/testing_internal.dart" show ComponentFixture;
 
@@ -35,7 +37,6 @@ export "package:angular2/testing_internal.dart" show ComponentFixture;
     directives: const [ROUTER_DIRECTIVES])
 class RootCmp {
   String name;
-  dynamic activatedCmp;
 }
 
 compile(TestComponentBuilder tcb,
@@ -47,6 +48,7 @@ compile(TestComponentBuilder tcb,
 
 var TEST_ROUTER_PROVIDERS = [
   RouteRegistry,
+  DirectiveResolver,
   provide(Location, useClass: SpyLocation),
   provide(ROUTER_PRIMARY_COMPONENT, useValue: RootCmp),
   provide(Router, useClass: RootRouter)

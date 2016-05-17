@@ -16,7 +16,7 @@ class NgTemplateOutlet {
   ViewRef _insertedViewRef;
   NgTemplateOutlet(this._viewContainerRef) {}
   @Input()
-  set ngTemplateOutlet(TemplateRef<Object> templateRef) {
+  set ngTemplateOutlet(TemplateRef templateRef) {
     if (isPresent(this._insertedViewRef)) {
       this
           ._viewContainerRef

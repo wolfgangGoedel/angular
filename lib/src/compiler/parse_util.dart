@@ -30,13 +30,10 @@ class ParseSourceSpan {
   }
 }
 
-enum ParseErrorLevel { WARNING, FATAL }
-
 abstract class ParseError {
   ParseSourceSpan span;
   String msg;
-  ParseErrorLevel level;
-  ParseError(this.span, this.msg, [this.level = ParseErrorLevel.FATAL]) {}
+  ParseError(this.span, this.msg) {}
   String toString() {
     var source = this.span.start.file.content;
     var ctxStart = this.span.start.offset;

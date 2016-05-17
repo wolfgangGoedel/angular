@@ -1,28 +1,28 @@
 library angular2.transform.template_compiler.ng_compiler;
 
-import 'package:angular2/src/compiler/config.dart';
-import 'package:angular2/src/compiler/view_compiler/view_compiler.dart';
-import 'package:angular2/src/core/console.dart';
+import 'package:angular2/src/compiler/view_compiler.dart';
 import 'package:angular2/src/compiler/html_parser.dart';
 import 'package:angular2/src/compiler/style_compiler.dart';
-import 'package:angular2/src/compiler/offline_compiler.dart';
-import 'package:angular2/src/compiler/directive_normalizer.dart';
+import 'package:angular2/src/compiler/template_compiler.dart';
+import 'package:angular2/src/compiler/template_normalizer.dart';
 import 'package:angular2/src/compiler/template_parser.dart';
-import 'package:angular2/src/compiler/expression_parser/lexer.dart' as ng;
-import 'package:angular2/src/compiler/expression_parser/parser.dart' as ng;
+import 'package:angular2/src/core/change_detection/parser/lexer.dart' as ng;
+import 'package:angular2/src/core/change_detection/parser/parser.dart' as ng;
 import 'package:angular2/src/compiler/schema/dom_element_schema_registry.dart';
-import 'package:angular2/src/compiler/output/dart_emitter.dart';
 import 'package:angular2/src/transform/common/asset_reader.dart';
+import 'package:angular2/src/core/change_detection/interfaces.dart';
+import 'package:angular2/src/compiler/change_detector_compiler.dart';
 import 'package:angular2/router/router_link_dsl.dart';
+import 'package:angular2/src/compiler/proto_view_compiler.dart';
 import 'package:angular2/i18n.dart';
 
 import 'xhr_impl.dart';
 import 'url_resolver.dart';
 
-OfflineCompiler createTemplateCompiler(AssetReader reader,
-    {CompilerConfig compilerConfig, XmbDeserializationResult translations}) {
+TemplateCompiler createTemplateCompiler(AssetReader reader,
+    {ChangeDetectorGenConfig changeDetectionConfig, XmbDeserializationResult translations}) {
   var _xhr = new XhrImpl(reader);
-  var _urlResolver = createOfflineCompileUrlResolver();
+  var _urlResolver = const TransformerUrlResolver();
 
   // TODO(yjbanov): add router AST transformer when ready
   var parser = new ng.Parser(new ng.Lexer());
@@ -32,16 +32,22 @@ OfflineCompiler createTemplateCompiler(AssetReader reader,
       parser,
       new DomElementSchemaRegistry(),
       _htmlParser,
-      new Console(),
       [new RouterLinkTransform(parser)]);
 
-  return new OfflineCompiler(
-    new DirectiveNormalizer(_xhr, _urlResolver, _htmlParser),
-    templateParser,
-    new StyleCompiler(_urlResolver),
-    new ViewCompiler(compilerConfig),
-    new DartEmitter()
-  );
+  var cdCompiler = changeDetectionConfig != null
+      ? new ChangeDetectionCompiler(changeDetectionConfig)
+      : null;
+
+  return new TemplateCompiler(
+      null /* RuntimeMetadataResolver */,
+      new TemplateNormalizer(_xhr, _urlResolver, _htmlParser),
+      templateParser,
+      new StyleCompiler(_xhr, _urlResolver),
+      cdCompiler,
+      new ProtoViewCompiler(),
+      new ViewCompiler(),
+      null /* ResolvedMetadataCache */,
+      changeDetectionConfig);
 }
 
 HtmlParser _createHtmlParser(XmbDeserializationResult translations, ng.Parser parser) {

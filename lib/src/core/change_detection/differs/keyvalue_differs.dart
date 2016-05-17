@@ -25,11 +25,9 @@ abstract class KeyValueDifferFactory {
 
 /**
  * A repository of different Map diffing strategies used by NgClass, NgStyle, and others.
- * @ts2dart_const
  */
 class KeyValueDiffers {
   final List<KeyValueDifferFactory> factories;
-  /*@ts2dart_const*/
   const KeyValueDiffers(this.factories);
   static KeyValueDiffers create(List<KeyValueDifferFactory> factories,
       [KeyValueDiffers parent]) {

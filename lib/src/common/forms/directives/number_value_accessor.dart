@@ -1,12 +1,12 @@
 library angular2.src.common.forms.directives.number_value_accessor;
 
-import "package:angular2/core.dart" show Provider;
-import "package:angular2/core.dart" show Directive, ElementRef, Renderer, Self;
+import "package:angular2/core.dart"
+    show Directive, ElementRef, Renderer, Self, Provider;
 import "control_value_accessor.dart"
     show NG_VALUE_ACCESSOR, ControlValueAccessor;
 import "package:angular2/src/facade/lang.dart" show isBlank, NumberWrapper;
 
-const dynamic NUMBER_VALUE_ACCESSOR = const Provider(NG_VALUE_ACCESSOR,
+const NUMBER_VALUE_ACCESSOR = const Provider(NG_VALUE_ACCESSOR,
     useExisting: NumberValueAccessor, multi: true);
 
 /**
@@ -41,13 +41,13 @@ class NumberValueAccessor implements ControlValueAccessor {
         .setElementProperty(this._elementRef.nativeElement, "value", value);
   }
 
-  void registerOnChange(void fn(num _)) {
+  void registerOnChange(dynamic /* (_: number) => void */ fn) {
     this.onChange = (value) {
       fn(value == "" ? null : NumberWrapper.parseFloat(value));
     };
   }
 
-  void registerOnTouched(void fn()) {
+  void registerOnTouched(dynamic /* () => void */ fn) {
     this.onTouched = fn;
   }
 }
