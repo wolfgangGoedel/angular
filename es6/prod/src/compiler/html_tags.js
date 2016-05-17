@@ -1,9 +1,9 @@
-import { isPresent, isBlank, normalizeBool, RegExpWrapper } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, normalizeBool, RegExpWrapper, CONST_EXPR } from 'angular2/src/facade/lang';
 // see http://www.w3.org/TR/html51/syntax.html#named-character-references
 // see https://html.spec.whatwg.org/multipage/entities.json
 // This list is not exhaustive to keep the compiler footprint low.
 // The `&#123;` / `&#x1ab;` syntax should be used when the named character reference does not exist.
-export const NAMED_ENTITIES = {
+export const NAMED_ENTITIES = CONST_EXPR({
     'Aacute': '\u00C1',
     'aacute': '\u00E1',
     'Acirc': '\u00C2',
@@ -256,7 +256,7 @@ export const NAMED_ENTITIES = {
     'zeta': '\u03B6',
     'zwj': '\u200D',
     'zwnj': '\u200C',
-};
+});
 export var HtmlTagContentType;
 (function (HtmlTagContentType) {
     HtmlTagContentType[HtmlTagContentType["RAW_TEXT"] = 0] = "RAW_TEXT";

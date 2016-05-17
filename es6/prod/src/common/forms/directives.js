@@ -1,3 +1,4 @@
+import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { NgControlName } from './directives/ng_control_name';
 import { NgFormControl } from './directives/ng_form_control';
 import { NgModel } from './directives/ng_model';
@@ -41,7 +42,7 @@ export { NgControl } from './directives/ng_control';
  * class MyApp {}
  * ```
  */
-export const FORM_DIRECTIVES = [
+export const FORM_DIRECTIVES = CONST_EXPR([
     NgControlName,
     NgControlGroup,
     NgFormControl,
@@ -59,4 +60,4 @@ export const FORM_DIRECTIVES = [
     MinLengthValidator,
     MaxLengthValidator,
     PatternValidator
-];
+]);

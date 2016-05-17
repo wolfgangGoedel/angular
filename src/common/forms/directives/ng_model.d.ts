@@ -4,7 +4,6 @@ import { ControlValueAccessor } from './control_value_accessor';
 import { NgControl } from './ng_control';
 import { Control } from '../model';
 import { ValidatorFn, AsyncValidatorFn } from './validators';
-export declare const formControlBinding: any;
 /**
  * Binds a domain model to a form control.
  *

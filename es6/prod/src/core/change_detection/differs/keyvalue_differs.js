@@ -1,13 +1,21 @@
-import { isBlank, isPresent } from 'angular2/src/facade/lang';
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+import { isBlank, isPresent, CONST } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { Provider, SkipSelfMetadata, OptionalMetadata } from 'angular2/src/core/di';
 /**
  * A repository of different Map diffing strategies used by NgClass, NgStyle, and others.
- * @ts2dart_const
  */
-export class KeyValueDiffers {
-    /*@ts2dart_const*/
+let KeyValueDiffers_1;
+export let KeyValueDiffers = KeyValueDiffers_1 = class KeyValueDiffers {
     constructor(factories) {
         this.factories = factories;
     }
@@ -15,10 +23,10 @@ export class KeyValueDiffers {
         if (isPresent(parent)) {
             var copied = ListWrapper.clone(parent.factories);
             factories = factories.concat(copied);
-            return new KeyValueDiffers(factories);
+            return new KeyValueDiffers_1(factories);
         }
         else {
-            return new KeyValueDiffers(factories);
+            return new KeyValueDiffers_1(factories);
         }
     }
     /**
@@ -41,7 +49,7 @@ export class KeyValueDiffers {
      * ```
      */
     static extend(factories) {
-        return new Provider(KeyValueDiffers, {
+        return new Provider(KeyValueDiffers_1, {
             useFactory: (parent) => {
                 if (isBlank(parent)) {
                     // Typically would occur when calling KeyValueDiffers.extend inside of dependencies passed
@@ -49,10 +57,10 @@ export class KeyValueDiffers {
                     // bootstrap(), which would override default pipes instead of extending them.
                     throw new BaseException('Cannot extend KeyValueDiffers without a parent injector');
                 }
-                return KeyValueDiffers.create(factories, parent);
+                return KeyValueDiffers_1.create(factories, parent);
             },
             // Dependency technically isn't optional, but we can provide a better error message this way.
-            deps: [[KeyValueDiffers, new SkipSelfMetadata(), new OptionalMetadata()]]
+            deps: [[KeyValueDiffers_1, new SkipSelfMetadata(), new OptionalMetadata()]]
         });
     }
     find(kv) {
@@ -64,4 +72,8 @@ export class KeyValueDiffers {
             throw new BaseException(`Cannot find a differ supporting object '${kv}'`);
         }
     }
-}
+};
+KeyValueDiffers = KeyValueDiffers_1 = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Array])
+], KeyValueDiffers);

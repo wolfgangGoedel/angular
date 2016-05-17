@@ -25,17 +25,6 @@ export {
 
 export {ViewMetadata, ViewEncapsulation} from './metadata/view';
 
-export {
-  AfterContentInit,
-  AfterContentChecked,
-  AfterViewInit,
-  AfterViewChecked,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  DoCheck
-} from './metadata/lifecycle_hooks';
-
 import {
   QueryMetadata,
   ContentChildrenMetadata,
@@ -146,7 +135,7 @@ export interface ViewDecorator extends TypeDecorator {
  * ]
  * ```
  */
-export interface DirectiveMetadataFactory {
+export interface DirectiveFactory {
   (obj: {
     selector?: string,
     inputs?: string[],
@@ -204,7 +193,7 @@ export interface DirectiveMetadataFactory {
  * ]
  * ```
  */
-export interface ComponentMetadataFactory {
+export interface ComponentFactory {
   (obj: {
     selector?: string,
     inputs?: string[],
@@ -298,7 +287,7 @@ export interface ComponentMetadataFactory {
  * ]
  * ```
  */
-export interface ViewMetadataFactory {
+export interface ViewFactory {
   (obj: {
     templateUrl?: string,
     template?: string,
@@ -353,7 +342,7 @@ export interface ViewMetadataFactory {
  * ]
  * ```
  */
-export interface AttributeMetadataFactory {
+export interface AttributeFactory {
   (name: string): TypeDecorator;
   new (name: string): AttributeMetadata;
 }
@@ -401,44 +390,41 @@ export interface AttributeMetadataFactory {
  * ]
  * ```
  */
-export interface QueryMetadataFactory {
-  (selector: Type | string,
-   {descendants, read}?: {descendants?: boolean, read?: any}): ParameterDecorator;
-  new (selector: Type | string,
-       {descendants, read}?: {descendants?: boolean, read?: any}): QueryMetadata;
+export interface QueryFactory {
+  (selector: Type | string, {descendants}?: {descendants?: boolean}): ParameterDecorator;
+  new (selector: Type | string, {descendants}?: {descendants?: boolean}): QueryMetadata;
 }
 
 /**
  * Factory for {@link ContentChildren}.
  */
-export interface ContentChildrenMetadataFactory {
-  (selector: Type | string, {descendants, read}?: {descendants?: boolean, read?: any}): any;
-  new (selector: Type | string,
-       {descendants, read}?: {descendants?: boolean, read?: any}): ContentChildrenMetadata;
+export interface ContentChildrenFactory {
+  (selector: Type | string, {descendants}?: {descendants?: boolean}): any;
+  new (selector: Type | string, {descendants}?: {descendants?: boolean}): ContentChildrenMetadata;
 }
 
 /**
  * Factory for {@link ContentChild}.
  */
-export interface ContentChildMetadataFactory {
-  (selector: Type | string, {read}?: {read?: any}): any;
-  new (selector: Type | string, {read}?: {read?: any}): ContentChildMetadataFactory;
+export interface ContentChildFactory {
+  (selector: Type | string): any;
+  new (selector: Type | string): ContentChildFactory;
 }
 
 /**
  * Factory for {@link ViewChildren}.
  */
-export interface ViewChildrenMetadataFactory {
-  (selector: Type | string, {read}?: {read?: any}): any;
-  new (selector: Type | string, {read}?: {read?: any}): ViewChildrenMetadata;
+export interface ViewChildrenFactory {
+  (selector: Type | string): any;
+  new (selector: Type | string): ViewChildrenMetadata;
 }
 
 /**
  * Factory for {@link ViewChild}.
  */
-export interface ViewChildMetadataFactory {
-  (selector: Type | string, {read}?: {read?: any}): any;
-  new (selector: Type | string, {read}?: {read?: any}): ViewChildMetadataFactory;
+export interface ViewChildFactory {
+  (selector: Type | string): any;
+  new (selector: Type | string): ViewChildFactory;
 }
 
 
@@ -449,7 +435,7 @@ export interface ViewChildMetadataFactory {
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
  */
-export interface PipeMetadataFactory {
+export interface PipeFactory {
   (obj: {name: string, pure?: boolean}): any;
   new (obj: {name: string, pure?: boolean}): any;
 }
@@ -459,7 +445,7 @@ export interface PipeMetadataFactory {
  *
  * See {@link InputMetadata}.
  */
-export interface InputMetadataFactory {
+export interface InputFactory {
   (bindingPropertyName?: string): any;
   new (bindingPropertyName?: string): any;
 }
@@ -469,7 +455,7 @@ export interface InputMetadataFactory {
  *
  * See {@link OutputMetadata}.
  */
-export interface OutputMetadataFactory {
+export interface OutputFactory {
   (bindingPropertyName?: string): any;
   new (bindingPropertyName?: string): any;
 }
@@ -477,7 +463,7 @@ export interface OutputMetadataFactory {
 /**
  * {@link HostBindingMetadata} factory function.
  */
-export interface HostBindingMetadataFactory {
+export interface HostBindingFactory {
   (hostPropertyName?: string): any;
   new (hostPropertyName?: string): any;
 }
@@ -485,7 +471,7 @@ export interface HostBindingMetadataFactory {
 /**
  * {@link HostListenerMetadata} factory function.
  */
-export interface HostListenerMetadataFactory {
+export interface HostListenerFactory {
   (eventName: string, args?: string[]): any;
   new (eventName: string, args?: string[]): any;
 }
@@ -514,8 +500,8 @@ export interface HostListenerMetadataFactory {
  *
  * {@example core/ts/metadata/metadata.ts region='component'}
  */
-export var Component: ComponentMetadataFactory =
-    <ComponentMetadataFactory>makeDecorator(ComponentMetadata, (fn: any) => fn.View = View);
+export var Component: ComponentFactory =
+    <ComponentFactory>makeDecorator(ComponentMetadata, (fn: any) => fn.View = View);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from DirectiveMetadata.
 /**
@@ -896,8 +882,7 @@ export var Component: ComponentMetadataFactory =
  * the instantiated
  * view occurs on the second `<li></li>` which is a sibling to the `<template>` element.
  */
-export var Directive: DirectiveMetadataFactory =
-    <DirectiveMetadataFactory>makeDecorator(DirectiveMetadata);
+export var Directive: DirectiveFactory = <DirectiveFactory>makeDecorator(DirectiveMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from ViewMetadata.
 /**
@@ -929,8 +914,7 @@ export var Directive: DirectiveMetadataFactory =
  * }
  * ```
  */
-var View: ViewMetadataFactory =
-    <ViewMetadataFactory>makeDecorator(ViewMetadata, (fn: any) => fn.View = View);
+var View: ViewFactory = <ViewFactory>makeDecorator(ViewMetadata, (fn: any) => fn.View = View);
 
 /**
  * Specifies that a constant attribute value should be injected.
@@ -949,7 +933,7 @@ var View: ViewMetadataFactory =
  *
  * {@example core/ts/metadata/metadata.ts region='attributeMetadata'}
  */
-export var Attribute: AttributeMetadataFactory = makeParamDecorator(AttributeMetadata);
+export var Attribute: AttributeFactory = makeParamDecorator(AttributeMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from QueryMetadata.
 /**
@@ -964,7 +948,7 @@ export var Attribute: AttributeMetadataFactory = makeParamDecorator(AttributeMet
  * ```html
  * <tabs>
  *   <pane title="Overview">...</pane>
- *   <pane *ngFor="let o of objects" [title]="o.title">{{o.text}}</pane>
+ *   <pane *ngFor="#o of objects" [title]="o.title">{{o.text}}</pane>
  * </tabs>
  * ```
  *
@@ -983,7 +967,7 @@ export var Attribute: AttributeMetadataFactory = makeParamDecorator(AttributeMet
  *  selector: 'tabs',
  *  template: `
  *    <ul>
- *      <li *ngFor="let pane of panes">{{pane.title}}</li>
+ *      <li *ngFor="#pane of panes">{{pane.title}}</li>
  *    </ul>
  *    <ng-content></ng-content>
  *  `
@@ -1059,7 +1043,7 @@ export var Attribute: AttributeMetadataFactory = makeParamDecorator(AttributeMet
  * The injected object is an unmodifiable live list.
  * See {@link QueryList} for more details.
  */
-export var Query: QueryMetadataFactory = makeParamDecorator(QueryMetadata);
+export var Query: QueryFactory = makeParamDecorator(QueryMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from ContentChildrenMetadata.
 /**
@@ -1082,8 +1066,7 @@ export var Query: QueryMetadataFactory = makeParamDecorator(QueryMetadata);
  * }
  * ```
  */
-export var ContentChildren: ContentChildrenMetadataFactory =
-    makePropDecorator(ContentChildrenMetadata);
+export var ContentChildren: ContentChildrenFactory = makePropDecorator(ContentChildrenMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from ContentChildMetadata.
 /**
@@ -1106,7 +1089,7 @@ export var ContentChildren: ContentChildrenMetadataFactory =
  * }
  * ```
  */
-export var ContentChild: ContentChildMetadataFactory = makePropDecorator(ContentChildMetadata);
+export var ContentChild: ContentChildFactory = makePropDecorator(ContentChildMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from ViewChildrenMetadata.
 /**
@@ -1188,7 +1171,7 @@ export var ContentChild: ContentChildMetadataFactory = makePropDecorator(Content
  *
  * See also: [ViewChildrenMetadata]
  */
-export var ViewChildren: ViewChildrenMetadataFactory = makePropDecorator(ViewChildrenMetadata);
+export var ViewChildren: ViewChildrenFactory = makePropDecorator(ViewChildrenMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from ViewChildMetadata.
 /**
@@ -1261,7 +1244,7 @@ export var ViewChildren: ViewChildrenMetadataFactory = makePropDecorator(ViewChi
  * ```
  * See also: [ViewChildMetadata]
  */
-export var ViewChild: ViewChildMetadataFactory = makePropDecorator(ViewChildMetadata);
+export var ViewChild: ViewChildFactory = makePropDecorator(ViewChildMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from ViewQueryMetadata.
 /**
@@ -1299,7 +1282,7 @@ export var ViewChild: ViewChildMetadataFactory = makePropDecorator(ViewChildMeta
  * The injected object is an iterable and observable live list.
  * See {@link QueryList} for more details.
  */
-export var ViewQuery: QueryMetadataFactory = makeParamDecorator(ViewQueryMetadata);
+export var ViewQuery: QueryFactory = makeParamDecorator(ViewQueryMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from PipeMetadata.
 /**
@@ -1309,7 +1292,7 @@ export var ViewQuery: QueryMetadataFactory = makeParamDecorator(ViewQueryMetadat
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
  */
-export var Pipe: PipeMetadataFactory = <PipeMetadataFactory>makeDecorator(PipeMetadata);
+export var Pipe: PipeFactory = <PipeFactory>makeDecorator(PipeMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from InputMetadata.
 /**
@@ -1353,7 +1336,7 @@ export var Pipe: PipeMetadataFactory = <PipeMetadataFactory>makeDecorator(PipeMe
  * bootstrap(App);
  * ```
  */
-export var Input: InputMetadataFactory = makePropDecorator(InputMetadata);
+export var Input: InputFactory = makePropDecorator(InputMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from OutputMetadata.
 /**
@@ -1397,7 +1380,7 @@ export var Input: InputMetadataFactory = makePropDecorator(InputMetadata);
  * bootstrap(App);
  * ```
  */
-export var Output: OutputMetadataFactory = makePropDecorator(OutputMetadata);
+export var Output: OutputFactory = makePropDecorator(OutputMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from HostBindingMetadata.
 /**
@@ -1435,7 +1418,7 @@ export var Output: OutputMetadataFactory = makePropDecorator(OutputMetadata);
  * bootstrap(App);
  * ```
  */
-export var HostBinding: HostBindingMetadataFactory = makePropDecorator(HostBindingMetadata);
+export var HostBinding: HostBindingFactory = makePropDecorator(HostBindingMetadata);
 
 // TODO(alexeagle): remove the duplication of this doc. It is copied from HostListenerMetadata.
 /**
@@ -1472,4 +1455,4 @@ export var HostBinding: HostBindingMetadataFactory = makePropDecorator(HostBindi
  * bootstrap(App);
  * ```
  */
-export var HostListener: HostListenerMetadataFactory = makePropDecorator(HostListenerMetadata);
+export var HostListener: HostListenerFactory = makePropDecorator(HostListenerMetadata);

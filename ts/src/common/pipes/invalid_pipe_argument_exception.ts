@@ -1,4 +1,4 @@
-import {Type, stringify} from 'angular2/src/facade/lang';
+import {CONST, Type, stringify} from 'angular2/src/facade/lang';
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
 
 export class InvalidPipeArgumentException extends BaseException {

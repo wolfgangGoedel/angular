@@ -1,13 +1,27 @@
 import {unimplemented} from 'angular2/src/facade/exceptions';
-import {isPresent} from 'angular2/src/facade/lang';
 import {ChangeDetectorRef} from '../change_detection/change_detector_ref';
-import {AppView} from './view';
-import {ChangeDetectionStrategy} from 'angular2/src/core/change_detection/constants';
+import {AppView, HostViewFactory} from './view';
 
 export abstract class ViewRef {
-  get destroyed(): boolean { return <boolean>unimplemented(); }
+  /**
+   * @internal
+   */
+  get changeDetectorRef(): ChangeDetectorRef { return <ChangeDetectorRef>unimplemented(); };
 
-  abstract onDestroy(callback: Function);
+  get destroyed(): boolean { return <boolean>unimplemented(); }
+}
+
+/**
+ * Represents a View containing a single Element that is the Host Element of a {@link Component}
+ * instance.
+ *
+ * A Host View is created for every dynamically created Component that was compiled on its own (as
+ * opposed to as a part of another Component's Template) via {@link Compiler#compileInHost} or one
+ * of the higher-level APIs: {@link AppViewManager#createRootHostView},
+ * {@link AppViewManager#createHostViewInContainer}, {@link ViewContainerRef#createHostView}.
+ */
+export abstract class HostViewRef extends ViewRef {
+  get rootNodes(): any[] { return <any[]>unimplemented(); };
 }
 
 /**
@@ -29,28 +43,28 @@ export abstract class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <li *ngFor="let  item of items">{{item}}</li>
+ *   <li *ngFor="var item of items">{{item}}</li>
  * </ul>
  * ```
  *
- * ... we have two {@link TemplateRef}s:
+ * ... we have two {@link ProtoViewRef}s:
  *
- * Outer {@link TemplateRef}:
+ * Outer {@link ProtoViewRef}:
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <template ngFor let-item [ngForOf]="items"></template>
+ *   <template ngFor var-item [ngForOf]="items"></template>
  * </ul>
  * ```
  *
- * Inner {@link TemplateRef}:
+ * Inner {@link ProtoViewRef}:
  * ```
  *   <li>{{item}}</li>
  * ```
  *
- * Notice that the original template is broken down into two separate {@link TemplateRef}s.
+ * Notice that the original template is broken down into two separate {@link ProtoViewRef}s.
  *
- * The outer/inner {@link TemplateRef}s are then assembled into views like so:
+ * The outer/inner {@link ProtoViewRef}s are then assembled into views like so:
  *
  * ```
  * <!-- ViewRef: outer-0 -->
@@ -63,38 +77,43 @@ export abstract class ViewRef {
  * <!-- /ViewRef: outer-0 -->
  * ```
  */
-export abstract class EmbeddedViewRef<C> extends ViewRef {
-  get context(): C { return unimplemented(); }
-
-  get rootNodes(): any[] { return <any[]>unimplemented(); };
+export abstract class EmbeddedViewRef extends ViewRef {
+  /**
+   * Sets `value` of local variable called `variableName` in this View.
+   */
+  abstract setLocal(variableName: string, value: any): void;
 
   /**
-   * Destroys the view and all of the data structures associated with it.
+   * Checks whether this view has a local variable called `variableName`.
    */
-  abstract destroy();
+  abstract hasLocal(variableName: string): boolean;
+
+  get rootNodes(): any[] { return <any[]>unimplemented(); };
 }
 
-export class ViewRef_<C> implements EmbeddedViewRef<C>, ChangeDetectorRef {
-  constructor(private _view: AppView<C>) { this._view = _view; }
+export class ViewRef_ implements EmbeddedViewRef, HostViewRef {
+  constructor(private _view: AppView) { this._view = _view; }
 
-  get internalView(): AppView<C> { return this._view; }
+  get internalView(): AppView { return this._view; }
+
+  /**
+   * Return `ChangeDetectorRef`
+   */
+  get changeDetectorRef(): ChangeDetectorRef { return this._view.changeDetector.ref; }
 
   get rootNodes(): any[] { return this._view.flatRootNodes; }
 
-  get context() { return this._view.context; }
+  setLocal(variableName: string, value: any): void { this._view.setLocal(variableName, value); }
+
+  hasLocal(variableName: string): boolean { return this._view.hasLocal(variableName); }
 
   get destroyed(): boolean { return this._view.destroyed; }
+}
 
-  markForCheck(): void { this._view.markPathToRootAsCheckOnce(); }
-  detach(): void { this._view.cdMode = ChangeDetectionStrategy.Detached; }
-  detectChanges(): void { this._view.detectChanges(false); }
-  checkNoChanges(): void { this._view.detectChanges(true); }
-  reattach(): void {
-    this._view.cdMode = ChangeDetectionStrategy.CheckAlways;
-    this.markForCheck();
-  }
+export abstract class HostViewFactoryRef {}
 
-  onDestroy(callback: Function) { this._view.disposables.push(callback); }
+export class HostViewFactoryRef_ implements HostViewFactoryRef {
+  constructor(private _hostViewFactory: HostViewFactory) {}
 
-  destroy() { this._view.destroy(); }
+  get internalHostViewFactory(): HostViewFactory { return this._hostViewFactory; }
 }

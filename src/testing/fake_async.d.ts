@@ -1,3 +1,4 @@
+import { FunctionWithParamTokens } from './test_injector';
 /**
  * Wraps a function to be executed in the fakeAsync zone:
  * - microtasks are manually executed by calling `flushMicrotasks()`,
@@ -14,7 +15,7 @@
  * @param fn
  * @returns {Function} The function wrapped to be executed in the fakeAsync zone
  */
-export declare function fakeAsync(fn: Function): Function;
+export declare function fakeAsync(fn: Function | FunctionWithParamTokens): Function;
 /**
  * Clear the queue of pending timers and microtasks.
  * Tests no longer need to call this explicitly.

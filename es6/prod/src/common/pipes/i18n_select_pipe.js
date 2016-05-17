@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { isStringMap } from 'angular2/src/facade/lang';
+import { CONST, isStringMap } from 'angular2/src/facade/lang';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { Injectable, Pipe } from 'angular2/core';
 import { InvalidPipeArgumentException } from './invalid_pipe_argument_exception';
@@ -42,7 +42,8 @@ import { InvalidPipeArgumentException } from './invalid_pipe_argument_exception'
  */
 let I18nSelectPipe_1;
 export let I18nSelectPipe = I18nSelectPipe_1 = class I18nSelectPipe {
-    transform(value, mapping) {
+    transform(value, args = null) {
+        var mapping = (args[0]);
         if (!isStringMap(mapping)) {
             throw new InvalidPipeArgumentException(I18nSelectPipe_1, mapping);
         }
@@ -50,6 +51,7 @@ export let I18nSelectPipe = I18nSelectPipe_1 = class I18nSelectPipe {
     }
 };
 I18nSelectPipe = I18nSelectPipe_1 = __decorate([
+    CONST(),
     Pipe({ name: 'i18nSelect', pure: true }),
     Injectable(), 
     __metadata('design:paramtypes', [])

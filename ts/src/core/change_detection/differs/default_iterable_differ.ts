@@ -1,3 +1,4 @@
+import {CONST} from 'angular2/src/facade/lang';
 import {BaseException} from 'angular2/src/facade/exceptions';
 import {isListLikeIterable, iterateListLike, ListWrapper} from 'angular2/src/facade/collection';
 
@@ -13,9 +14,8 @@ import {
 import {ChangeDetectorRef} from '../change_detector_ref';
 import {IterableDiffer, IterableDifferFactory, TrackByFn} from '../differs/iterable_differs';
 
-/* @ts2dart_const */
+@CONST()
 export class DefaultIterableDifferFactory implements IterableDifferFactory {
-  constructor() {}
   supports(obj: Object): boolean { return isListLikeIterable(obj); }
   create(cdRef: ChangeDetectorRef, trackByFn?: TrackByFn): DefaultIterableDiffer {
     return new DefaultIterableDiffer(trackByFn);

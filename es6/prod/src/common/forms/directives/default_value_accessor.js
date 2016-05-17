@@ -7,15 +7,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Directive, ElementRef, Renderer, forwardRef } from 'angular2/core';
+import { Directive, ElementRef, Renderer, forwardRef, Provider } from 'angular2/core';
 import { NG_VALUE_ACCESSOR } from './control_value_accessor';
-import { isBlank } from 'angular2/src/facade/lang';
-export const DEFAULT_VALUE_ACCESSOR = 
-/* @ts2dart_Provider */ {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => DefaultValueAccessor),
-    multi: true
-};
+import { isBlank, CONST_EXPR } from 'angular2/src/facade/lang';
+const DEFAULT_VALUE_ACCESSOR = CONST_EXPR(new Provider(NG_VALUE_ACCESSOR, { useExisting: forwardRef(() => DefaultValueAccessor), multi: true }));
 /**
  * The default accessor for writing a value and listening to changes that is used by the
  * {@link NgModel}, {@link NgFormControl}, and {@link NgControlName} directives.

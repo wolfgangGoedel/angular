@@ -10,15 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Directive, Optional, Inject, Host, SkipSelf, forwardRef, Self } from 'angular2/core';
+import { Directive, Optional, Inject, Host, SkipSelf, forwardRef, Provider, Self } from 'angular2/core';
+import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { ControlContainer } from './control_container';
 import { controlPath, composeValidators, composeAsyncValidators } from './shared';
 import { NG_VALIDATORS, NG_ASYNC_VALIDATORS } from '../validators';
-export const controlGroupProvider = 
-/*@ts2dart_const*/ /* @ts2dart_Provider */ {
-    provide: ControlContainer,
-    useExisting: forwardRef(() => NgControlGroup)
-};
+const controlGroupProvider = CONST_EXPR(new Provider(ControlContainer, { useExisting: forwardRef(() => NgControlGroup) }));
 /**
  * Creates and binds a control group to a DOM element.
  *

@@ -7,16 +7,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Directive, ElementRef, Renderer, forwardRef, Input, Injector, Injectable } from 'angular2/core';
+import { Directive, ElementRef, Renderer, forwardRef, Provider, Input, Injector, Injectable } from 'angular2/core';
 import { NG_VALUE_ACCESSOR } from 'angular2/src/common/forms/directives/control_value_accessor';
 import { NgControl } from 'angular2/src/common/forms/directives/ng_control';
-import { isPresent } from 'angular2/src/facade/lang';
+import { CONST_EXPR, isPresent } from 'angular2/src/facade/lang';
 import { ListWrapper } from 'angular2/src/facade/collection';
-export const RADIO_VALUE_ACCESSOR = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => RadioControlValueAccessor),
-    multi: true
-};
+const RADIO_VALUE_ACCESSOR = CONST_EXPR(new Provider(NG_VALUE_ACCESSOR, { useExisting: forwardRef(() => RadioControlValueAccessor), multi: true }));
 /**
  * Internal class used by Angular to uncheck radio buttons with the matching name.
  */

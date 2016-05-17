@@ -57,6 +57,14 @@ export function assertionsEnabled() {
 _global.assert = function assert(condition) {
     // TODO: to be fixed properly via #2830, noop for now
 };
+// This function is needed only to properly support Dart's const expressions
+// see https://github.com/angular/ts2dart/pull/151 for more info
+export function CONST_EXPR(expr) {
+    return expr;
+}
+export function CONST() {
+    return (target) => target;
+}
 export function isPresent(obj) {
     return obj !== undefined && obj !== null;
 }
@@ -80,10 +88,6 @@ export function isType(obj) {
 }
 export function isStringMap(obj) {
     return typeof obj === 'object' && obj !== null;
-}
-const STRING_MAP_PROTO = Object.getPrototypeOf({});
-export function isStrictStringMap(obj) {
-    return isStringMap(obj) && Object.getPrototypeOf(obj) === STRING_MAP_PROTO;
 }
 export function isPromise(obj) {
     return obj instanceof _global.Promise;
@@ -299,9 +303,6 @@ export function isJsObject(o) {
 export function print(obj) {
     console.log(obj);
 }
-export function warn(obj) {
-    console.warn(obj);
-}
 // Can't be all uppercase as our transpiler would think it is a special directive...
 export class Json {
     static parse(s) { return _global.JSON.parse(s); }
@@ -340,7 +341,7 @@ export function setValueOnPath(global, path, value) {
 var _symbolIterator = null;
 export function getSymbolIterator() {
     if (isBlank(_symbolIterator)) {
-        if (isPresent(globalScope.Symbol) && isPresent(Symbol.iterator)) {
+        if (isPresent(Symbol) && isPresent(Symbol.iterator)) {
             _symbolIterator = Symbol.iterator;
         }
         else {

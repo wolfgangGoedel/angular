@@ -1,10 +1,11 @@
+import {CONST_EXPR} from 'angular2/src/facade/lang';
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
 import {Injectable, Inject, OpaqueToken} from 'angular2/src/core/di';
 import {NgZone} from 'angular2/src/core/zone/ng_zone';
 import {ListWrapper} from 'angular2/src/facade/collection';
 
 export const EVENT_MANAGER_PLUGINS: OpaqueToken =
-    /*@ts2dart_const*/ new OpaqueToken("EventManagerPlugins");
+    CONST_EXPR(new OpaqueToken("EventManagerPlugins"));
 
 @Injectable()
 export class EventManager {

@@ -1,6 +1,5 @@
 import { Renderer, ElementRef, OnDestroy } from 'angular2/core';
 import { ControlValueAccessor } from './control_value_accessor';
-export declare const SELECT_VALUE_ACCESSOR: any;
 /**
  * The accessor for writing a value and listening to changes on a select element.
  *
@@ -28,7 +27,7 @@ export declare class SelectControlValueAccessor implements ControlValueAccessor 
  *
  * ```
  * <select ngControl="city">
- *   <option *ngFor="let c of cities" [value]="c"></option>
+ *   <option *ngFor="#c of cities" [value]="c"></option>
  * </select>
  * ```
  */

@@ -11,21 +11,12 @@ export {
   disableDebugTools
 } from 'angular2/src/platform/browser_common';
 
-import {Type, isPresent, isBlank} from 'angular2/src/facade/lang';
+import {Type, isPresent} from 'angular2/src/facade/lang';
 import {
   BROWSER_PROVIDERS,
-  BROWSER_APP_COMMON_PROVIDERS,
-  BROWSER_PLATFORM_MARKER
+  BROWSER_APP_COMMON_PROVIDERS
 } from 'angular2/src/platform/browser_common';
-import {
-  ComponentRef,
-  coreLoadAndBootstrap,
-  ReflectiveInjector,
-  PlatformRef,
-  getPlatform,
-  createPlatform,
-  assertPlatform
-} from 'angular2/core';
+import {ComponentRef, platform} from 'angular2/core';
 
 /**
  * An array of providers that should be passed into `application()` when bootstrapping a component
@@ -33,28 +24,19 @@ import {
  * have been precompiled offline.
  */
 export const BROWSER_APP_PROVIDERS: Array<any /*Type | Provider | any[]*/> =
-    /*@ts2dart_const*/ BROWSER_APP_COMMON_PROVIDERS;
-
-export function browserStaticPlatform(): PlatformRef {
-  if (isBlank(getPlatform())) {
-    createPlatform(ReflectiveInjector.resolveAndCreate(BROWSER_PROVIDERS));
-  }
-  return assertPlatform(BROWSER_PLATFORM_MARKER);
-}
+    BROWSER_APP_COMMON_PROVIDERS;
 
 /**
  * See {@link bootstrap} for more information.
  */
 export function bootstrapStatic(appComponentType: Type,
                                 customProviders?: Array<any /*Type | Provider | any[]*/>,
-                                initReflector?: Function): Promise<ComponentRef<any>> {
+                                initReflector?: Function): Promise<ComponentRef> {
   if (isPresent(initReflector)) {
     initReflector();
   }
 
   let appProviders =
       isPresent(customProviders) ? [BROWSER_APP_PROVIDERS, customProviders] : BROWSER_APP_PROVIDERS;
-  var appInjector =
-      ReflectiveInjector.resolveAndCreate(appProviders, browserStaticPlatform().injector);
-  return coreLoadAndBootstrap(appInjector, appComponentType);
+  return platform(BROWSER_PROVIDERS).application(appProviders).bootstrap(appComponentType);
 }

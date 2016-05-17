@@ -1,6 +1,5 @@
 import { ElementRef, Renderer } from 'angular2/core';
 import { ControlValueAccessor } from './control_value_accessor';
-export declare const NUMBER_VALUE_ACCESSOR: any;
 /**
  * The accessor for writing a number value and listening to changes that is used by the
  * {@link NgModel}, {@link NgFormControl}, and {@link NgControlName} directives.

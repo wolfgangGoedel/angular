@@ -4,7 +4,6 @@ import { Form } from './form_interface';
 import { NgControlGroup } from './ng_control_group';
 import { ControlContainer } from './control_container';
 import { AbstractControl, ControlGroup, Control } from '../model';
-export declare const formDirectiveProvider: any;
 /**
  * If `NgForm` is bound in a component, `<form>` elements in that component will be
  * upgraded to use the Angular form system.

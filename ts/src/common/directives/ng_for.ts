@@ -16,18 +16,6 @@ import {
 } from "../../core/change_detection/differs/default_iterable_differ";
 import {BaseException} from "../../facade/exceptions";
 
-export class NgForRow {
-  constructor(public $implicit: any, public index: number, public count: number) {}
-
-  get first(): boolean { return this.index === 0; }
-
-  get last(): boolean { return this.index === this.count - 1; }
-
-  get even(): boolean { return this.index % 2 === 0; }
-
-  get odd(): boolean { return !this.even; }
-}
-
 /**
  * The `NgFor` directive instantiates a template once per item from an iterable. The context for
  * each instantiated template inherits from the outer context with the given loop variable set
@@ -70,7 +58,7 @@ export class NgForRow {
  *
  * ### Syntax
  *
- * - `<li *ngFor="let item of items; #i = index">...</li>`
+ * - `<li *ngFor="#item of items; #i = index">...</li>`
  * - `<li template="ngFor #item of items; #i = index">...</li>`
  * - `<template ngFor #item [ngForOf]="items" #i="index"><li>...</li></template>`
  *
@@ -87,7 +75,7 @@ export class NgFor implements DoCheck {
   _ngForTrackBy: TrackByFn;
   private _differ: IterableDiffer;
 
-  constructor(private _viewContainer: ViewContainerRef, private _templateRef: TemplateRef<NgForRow>,
+  constructor(private _viewContainer: ViewContainerRef, private _templateRef: TemplateRef,
               private _iterableDiffers: IterableDiffers, private _cdr: ChangeDetectorRef) {}
 
   set ngForOf(value: any) {
@@ -102,7 +90,7 @@ export class NgFor implements DoCheck {
     }
   }
 
-  set ngForTemplate(value: TemplateRef<NgForRow>) {
+  set ngForTemplate(value: TemplateRef) {
     if (isPresent(value)) {
       this._templateRef = value;
     }
@@ -139,19 +127,22 @@ export class NgFor implements DoCheck {
     }
 
     for (var i = 0, ilen = this._viewContainer.length; i < ilen; i++) {
-      var viewRef = <EmbeddedViewRef<NgForRow>>this._viewContainer.get(i);
-      viewRef.context.index = i;
-      viewRef.context.count = ilen;
+      var viewRef = <EmbeddedViewRef>this._viewContainer.get(i);
+      viewRef.setLocal('first', i === 0);
+      viewRef.setLocal('last', i === ilen - 1);
     }
 
     changes.forEachIdentityChange((record) => {
-      var viewRef = <EmbeddedViewRef<NgForRow>>this._viewContainer.get(record.currentIndex);
-      viewRef.context.$implicit = record.item;
+      var viewRef = <EmbeddedViewRef>this._viewContainer.get(record.currentIndex);
+      viewRef.setLocal('\$implicit', record.item);
     });
   }
 
-  private _perViewChange(view: EmbeddedViewRef<NgForRow>, record: CollectionChangeRecord) {
-    view.context.$implicit = record.item;
+  private _perViewChange(view: EmbeddedViewRef, record: CollectionChangeRecord) {
+    view.setLocal('\$implicit', record.item);
+    view.setLocal('index', record.currentIndex);
+    view.setLocal('even', (record.currentIndex % 2 == 0));
+    view.setLocal('odd', (record.currentIndex % 2 == 1));
   }
 
   private _bulkRemove(tuples: RecordViewTuple[]): RecordViewTuple[] {
@@ -162,8 +153,7 @@ export class NgFor implements DoCheck {
       var tuple = tuples[i];
       // separate moved views from removed views.
       if (isPresent(tuple.record.currentIndex)) {
-        tuple.view =
-            <EmbeddedViewRef<NgForRow>>this._viewContainer.detach(tuple.record.previousIndex);
+        tuple.view = this._viewContainer.detach(tuple.record.previousIndex);
         movedTuples.push(tuple);
       } else {
         this._viewContainer.remove(tuple.record.previousIndex);
@@ -179,8 +169,8 @@ export class NgFor implements DoCheck {
       if (isPresent(tuple.view)) {
         this._viewContainer.insert(tuple.view, tuple.record.currentIndex);
       } else {
-        tuple.view = this._viewContainer.createEmbeddedView(
-            this._templateRef, new NgForRow(null, null, null), tuple.record.currentIndex);
+        tuple.view =
+            this._viewContainer.createEmbeddedView(this._templateRef, tuple.record.currentIndex);
       }
     }
     return tuples;
@@ -188,9 +178,9 @@ export class NgFor implements DoCheck {
 }
 
 class RecordViewTuple {
-  view: EmbeddedViewRef<NgForRow>;
+  view: EmbeddedViewRef;
   record: any;
-  constructor(record: any, view: EmbeddedViewRef<NgForRow>) {
+  constructor(record: any, view: EmbeddedViewRef) {
     this.record = record;
     this.view = view;
   }

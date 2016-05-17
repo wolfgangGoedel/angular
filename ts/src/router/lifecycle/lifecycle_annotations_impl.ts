@@ -1,21 +1,22 @@
+import {CONST, CONST_EXPR} from 'angular2/src/facade/lang';
 
-/* @ts2dart_const */
+@CONST()
 export class RouteLifecycleHook {
   constructor(public name: string) {}
 }
 
-/* @ts2dart_const */
+@CONST()
 export class CanActivate {
   constructor(public fn: Function) {}
 }
 
 export const routerCanReuse: RouteLifecycleHook =
-    /*@ts2dart_const*/ new RouteLifecycleHook("routerCanReuse");
+    CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
 export const routerCanDeactivate: RouteLifecycleHook =
-    /*@ts2dart_const*/ new RouteLifecycleHook("routerCanDeactivate");
+    CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
 export const routerOnActivate: RouteLifecycleHook =
-    /*@ts2dart_const*/ new RouteLifecycleHook("routerOnActivate");
+    CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
 export const routerOnReuse: RouteLifecycleHook =
-    /*@ts2dart_const*/ new RouteLifecycleHook("routerOnReuse");
+    CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
 export const routerOnDeactivate: RouteLifecycleHook =
-    /*@ts2dart_const*/ new RouteLifecycleHook("routerOnDeactivate");
+    CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));

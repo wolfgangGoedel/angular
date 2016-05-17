@@ -1,7 +1,24 @@
 import { unimplemented } from 'angular2/src/facade/exceptions';
-import { ChangeDetectionStrategy } from 'angular2/src/core/change_detection/constants';
 export class ViewRef {
+    /**
+     * @internal
+     */
+    get changeDetectorRef() { return unimplemented(); }
+    ;
     get destroyed() { return unimplemented(); }
+}
+/**
+ * Represents a View containing a single Element that is the Host Element of a {@link Component}
+ * instance.
+ *
+ * A Host View is created for every dynamically created Component that was compiled on its own (as
+ * opposed to as a part of another Component's Template) via {@link Compiler#compileInHost} or one
+ * of the higher-level APIs: {@link AppViewManager#createRootHostView},
+ * {@link AppViewManager#createHostViewInContainer}, {@link ViewContainerRef#createHostView}.
+ */
+export class HostViewRef extends ViewRef {
+    get rootNodes() { return unimplemented(); }
+    ;
 }
 /**
  * Represents an Angular View.
@@ -22,28 +39,28 @@ export class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <li *ngFor="let  item of items">{{item}}</li>
+ *   <li *ngFor="var item of items">{{item}}</li>
  * </ul>
  * ```
  *
- * ... we have two {@link TemplateRef}s:
+ * ... we have two {@link ProtoViewRef}s:
  *
- * Outer {@link TemplateRef}:
+ * Outer {@link ProtoViewRef}:
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <template ngFor let-item [ngForOf]="items"></template>
+ *   <template ngFor var-item [ngForOf]="items"></template>
  * </ul>
  * ```
  *
- * Inner {@link TemplateRef}:
+ * Inner {@link ProtoViewRef}:
  * ```
  *   <li>{{item}}</li>
  * ```
  *
- * Notice that the original template is broken down into two separate {@link TemplateRef}s.
+ * Notice that the original template is broken down into two separate {@link ProtoViewRef}s.
  *
- * The outer/inner {@link TemplateRef}s are then assembled into views like so:
+ * The outer/inner {@link ProtoViewRef}s are then assembled into views like so:
  *
  * ```
  * <!-- ViewRef: outer-0 -->
@@ -57,7 +74,6 @@ export class ViewRef {
  * ```
  */
 export class EmbeddedViewRef extends ViewRef {
-    get context() { return unimplemented(); }
     get rootNodes() { return unimplemented(); }
     ;
 }
@@ -67,17 +83,20 @@ export class ViewRef_ {
         this._view = _view;
     }
     get internalView() { return this._view; }
+    /**
+     * Return `ChangeDetectorRef`
+     */
+    get changeDetectorRef() { return this._view.changeDetector.ref; }
     get rootNodes() { return this._view.flatRootNodes; }
-    get context() { return this._view.context; }
+    setLocal(variableName, value) { this._view.setLocal(variableName, value); }
+    hasLocal(variableName) { return this._view.hasLocal(variableName); }
     get destroyed() { return this._view.destroyed; }
-    markForCheck() { this._view.markPathToRootAsCheckOnce(); }
-    detach() { this._view.cdMode = ChangeDetectionStrategy.Detached; }
-    detectChanges() { this._view.detectChanges(false); }
-    checkNoChanges() { this._view.detectChanges(true); }
-    reattach() {
-        this._view.cdMode = ChangeDetectionStrategy.CheckAlways;
-        this.markForCheck();
+}
+export class HostViewFactoryRef {
+}
+export class HostViewFactoryRef_ {
+    constructor(_hostViewFactory) {
+        this._hostViewFactory = _hostViewFactory;
     }
-    onDestroy(callback) { this._view.disposables.push(callback); }
-    destroy() { this._view.destroy(); }
+    get internalHostViewFactory() { return this._hostViewFactory; }
 }

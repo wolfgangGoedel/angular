@@ -10,15 +10,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Directive, Renderer, forwardRef, ElementRef, Input, Host, Optional } from 'angular2/core';
+import { Directive, Renderer, forwardRef, Provider, ElementRef, Input, Host, Optional } from 'angular2/core';
 import { NG_VALUE_ACCESSOR } from './control_value_accessor';
-import { StringWrapper, isPrimitive, isPresent, isBlank, looseIdentical } from 'angular2/src/facade/lang';
+import { CONST_EXPR, StringWrapper, isPrimitive, isPresent, isBlank, looseIdentical } from 'angular2/src/facade/lang';
 import { MapWrapper } from 'angular2/src/facade/collection';
-export const SELECT_VALUE_ACCESSOR = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => SelectControlValueAccessor),
-    multi: true
-};
+const SELECT_VALUE_ACCESSOR = CONST_EXPR(new Provider(NG_VALUE_ACCESSOR, { useExisting: forwardRef(() => SelectControlValueAccessor), multi: true }));
 function _buildValueString(id, value) {
     if (isBlank(id))
         return `${value}`;
@@ -89,7 +85,7 @@ SelectControlValueAccessor = __decorate([
  *
  * ```
  * <select ngControl="city">
- *   <option *ngFor="let c of cities" [value]="c"></option>
+ *   <option *ngFor="#c of cities" [value]="c"></option>
  * </select>
  * ```
  */

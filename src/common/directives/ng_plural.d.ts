@@ -59,7 +59,7 @@ export declare abstract class NgLocalization {
  */
 export declare class NgPluralCase {
     value: string;
-    constructor(value: string, template: TemplateRef<Object>, viewContainer: ViewContainerRef);
+    constructor(value: string, template: TemplateRef, viewContainer: ViewContainerRef);
 }
 export declare class NgPlural implements AfterContentInit {
     private _localization;

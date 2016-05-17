@@ -1,8 +1,19 @@
 import { ChangeDetectorRef } from '../change_detection/change_detector_ref';
-import { AppView } from './view';
+import { AppView, HostViewFactory } from './view';
 export declare abstract class ViewRef {
     destroyed: boolean;
-    abstract onDestroy(callback: Function): any;
+}
+/**
+ * Represents a View containing a single Element that is the Host Element of a {@link Component}
+ * instance.
+ *
+ * A Host View is created for every dynamically created Component that was compiled on its own (as
+ * opposed to as a part of another Component's Template) via {@link Compiler#compileInHost} or one
+ * of the higher-level APIs: {@link AppViewManager#createRootHostView},
+ * {@link AppViewManager#createHostViewInContainer}, {@link ViewContainerRef#createHostView}.
+ */
+export declare abstract class HostViewRef extends ViewRef {
+    rootNodes: any[];
 }
 /**
  * Represents an Angular View.
@@ -23,28 +34,28 @@ export declare abstract class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <li *ngFor="let  item of items">{{item}}</li>
+ *   <li *ngFor="var item of items">{{item}}</li>
  * </ul>
  * ```
  *
- * ... we have two {@link TemplateRef}s:
+ * ... we have two {@link ProtoViewRef}s:
  *
- * Outer {@link TemplateRef}:
+ * Outer {@link ProtoViewRef}:
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <template ngFor let-item [ngForOf]="items"></template>
+ *   <template ngFor var-item [ngForOf]="items"></template>
  * </ul>
  * ```
  *
- * Inner {@link TemplateRef}:
+ * Inner {@link ProtoViewRef}:
  * ```
  *   <li>{{item}}</li>
  * ```
  *
- * Notice that the original template is broken down into two separate {@link TemplateRef}s.
+ * Notice that the original template is broken down into two separate {@link ProtoViewRef}s.
  *
- * The outer/inner {@link TemplateRef}s are then assembled into views like so:
+ * The outer/inner {@link ProtoViewRef}s are then assembled into views like so:
  *
  * ```
  * <!-- ViewRef: outer-0 -->
@@ -57,26 +68,34 @@ export declare abstract class ViewRef {
  * <!-- /ViewRef: outer-0 -->
  * ```
  */
-export declare abstract class EmbeddedViewRef<C> extends ViewRef {
-    context: C;
-    rootNodes: any[];
+export declare abstract class EmbeddedViewRef extends ViewRef {
     /**
-     * Destroys the view and all of the data structures associated with it.
+     * Sets `value` of local variable called `variableName` in this View.
      */
-    abstract destroy(): any;
-}
-export declare class ViewRef_<C> implements EmbeddedViewRef<C>, ChangeDetectorRef {
-    private _view;
-    constructor(_view: AppView<C>);
-    internalView: AppView<C>;
+    abstract setLocal(variableName: string, value: any): void;
+    /**
+     * Checks whether this view has a local variable called `variableName`.
+     */
+    abstract hasLocal(variableName: string): boolean;
     rootNodes: any[];
-    context: C;
+}
+export declare class ViewRef_ implements EmbeddedViewRef, HostViewRef {
+    private _view;
+    constructor(_view: AppView);
+    internalView: AppView;
+    /**
+     * Return `ChangeDetectorRef`
+     */
+    changeDetectorRef: ChangeDetectorRef;
+    rootNodes: any[];
+    setLocal(variableName: string, value: any): void;
+    hasLocal(variableName: string): boolean;
     destroyed: boolean;
-    markForCheck(): void;
-    detach(): void;
-    detectChanges(): void;
-    checkNoChanges(): void;
-    reattach(): void;
-    onDestroy(callback: Function): void;
-    destroy(): void;
+}
+export declare abstract class HostViewFactoryRef {
+}
+export declare class HostViewFactoryRef_ implements HostViewFactoryRef {
+    private _hostViewFactory;
+    constructor(_hostViewFactory: HostViewFactory);
+    internalHostViewFactory: HostViewFactory;
 }

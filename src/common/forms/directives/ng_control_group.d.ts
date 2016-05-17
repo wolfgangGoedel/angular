@@ -3,7 +3,6 @@ import { ControlContainer } from './control_container';
 import { ControlGroup } from '../model';
 import { Form } from './form_interface';
 import { AsyncValidatorFn, ValidatorFn } from './validators';
-export declare const controlGroupProvider: any;
 /**
  * Creates and binds a control group to a DOM element.
  *

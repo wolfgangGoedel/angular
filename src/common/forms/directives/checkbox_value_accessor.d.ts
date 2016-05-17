@@ -1,6 +1,5 @@
 import { Renderer, ElementRef } from 'angular2/core';
 import { ControlValueAccessor } from './control_value_accessor';
-export declare const CHECKBOX_VALUE_ACCESSOR: any;
 /**
  * The accessor for writing a value and listening to changes on a checkbox input element.
  *

@@ -4,7 +4,6 @@ import { NgControl } from './ng_control';
 import { Control } from '../model';
 import { ControlValueAccessor } from './control_value_accessor';
 import { ValidatorFn, AsyncValidatorFn } from './validators';
-export declare const formControlBinding: any;
 /**
  * Binds an existing {@link Control} to a DOM element.
  *

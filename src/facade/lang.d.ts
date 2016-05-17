@@ -52,6 +52,8 @@ export declare function lockMode(): void;
  */
 export declare function enableProdMode(): void;
 export declare function assertionsEnabled(): boolean;
+export declare function CONST_EXPR<T>(expr: T): T;
+export declare function CONST(): ClassDecorator & PropertyDecorator;
 export declare function isPresent(obj: any): boolean;
 export declare function isBlank(obj: any): boolean;
 export declare function isBoolean(obj: any): boolean;
@@ -60,7 +62,6 @@ export declare function isString(obj: any): boolean;
 export declare function isFunction(obj: any): boolean;
 export declare function isType(obj: any): boolean;
 export declare function isStringMap(obj: any): boolean;
-export declare function isStrictStringMap(obj: any): boolean;
 export declare function isPromise(obj: any): boolean;
 export declare function isArray(obj: any): boolean;
 export declare function isDate(obj: any): boolean;
@@ -131,7 +132,6 @@ export declare function normalizeBlank(obj: Object): any;
 export declare function normalizeBool(obj: boolean): boolean;
 export declare function isJsObject(o: any): boolean;
 export declare function print(obj: Error | Object): void;
-export declare function warn(obj: Error | Object): void;
 export declare class Json {
     static parse(s: string): Object;
     static stringify(data: Object): string;

@@ -13,6 +13,7 @@ import {DecimalPipe, PercentPipe, CurrencyPipe} from './number_pipe';
 import {ReplacePipe} from './replace_pipe';
 import {I18nPluralPipe} from './i18n_plural_pipe';
 import {I18nSelectPipe} from './i18n_select_pipe';
+import {CONST_EXPR} from 'angular2/src/facade/lang';
 
 /**
  * A collection of Angular core pipes that are likely to be used in each and every
@@ -21,7 +22,7 @@ import {I18nSelectPipe} from './i18n_select_pipe';
  * This collection can be used to quickly enumerate all the built-in pipes in the `pipes`
  * property of the `@Component` decorator.
  */
-export const COMMON_PIPES = /*@ts2dart_const*/[
+export const COMMON_PIPES = CONST_EXPR([
   AsyncPipe,
   UpperCasePipe,
   LowerCasePipe,
@@ -34,4 +35,4 @@ export const COMMON_PIPES = /*@ts2dart_const*/[
   ReplacePipe,
   I18nPluralPipe,
   I18nSelectPipe
-];
+]);

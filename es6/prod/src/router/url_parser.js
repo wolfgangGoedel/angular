@@ -1,5 +1,5 @@
 import { StringMapWrapper } from 'angular2/src/facade/collection';
-import { isPresent, isBlank, RegExpWrapper } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, RegExpWrapper, CONST_EXPR } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 export function convertUrlParamsToArray(urlParams) {
     var paramsArray = [];
@@ -17,7 +17,7 @@ export function serializeParams(urlParams, joiner = '&') {
  * This class represents a parsed URL
  */
 export class Url {
-    constructor(path, child = null, auxiliary = [], params = {}) {
+    constructor(path, child = null, auxiliary = CONST_EXPR([]), params = CONST_EXPR({})) {
         this.path = path;
         this.child = child;
         this.auxiliary = auxiliary;
@@ -44,7 +44,7 @@ export class Url {
     _childString() { return isPresent(this.child) ? ('/' + this.child.toString()) : ''; }
 }
 export class RootUrl extends Url {
-    constructor(path, child = null, auxiliary = [], params = null) {
+    constructor(path, child = null, auxiliary = CONST_EXPR([]), params = null) {
         super(path, child, auxiliary, params);
     }
     toString() {

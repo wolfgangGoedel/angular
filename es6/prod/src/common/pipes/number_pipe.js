@@ -7,10 +7,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { isNumber, isPresent, isBlank, NumberWrapper, RegExpWrapper } from 'angular2/src/facade/lang';
+import { isNumber, isPresent, isBlank, NumberWrapper, RegExpWrapper, CONST } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { NumberFormatter, NumberFormatStyle } from 'angular2/src/facade/intl';
 import { Injectable, Pipe } from 'angular2/core';
+import { ListWrapper } from 'angular2/src/facade/collection';
 import { InvalidPipeArgumentException } from './invalid_pipe_argument_exception';
 var defaultLocale = 'en-US';
 var _re = RegExpWrapper.create('^(\\d+)?\\.((\\d+)(\\-(\\d+))?)?$');
@@ -52,6 +53,7 @@ export let NumberPipe = NumberPipe_1 = class NumberPipe {
     }
 };
 NumberPipe = NumberPipe_1 = __decorate([
+    CONST(),
     Injectable(), 
     __metadata('design:paramtypes', [])
 ], NumberPipe);
@@ -82,11 +84,13 @@ NumberPipe = NumberPipe_1 = __decorate([
  * {@example core/pipes/ts/number_pipe/number_pipe_example.ts region='NumberPipe'}
  */
 export let DecimalPipe = class DecimalPipe extends NumberPipe {
-    transform(value, digits = null) {
+    transform(value, args) {
+        var digits = ListWrapper.first(args);
         return NumberPipe._format(value, NumberFormatStyle.Decimal, digits);
     }
 };
 DecimalPipe = __decorate([
+    CONST(),
     Pipe({ name: 'number' }),
     Injectable(), 
     __metadata('design:paramtypes', [])
@@ -108,11 +112,13 @@ DecimalPipe = __decorate([
  * {@example core/pipes/ts/number_pipe/number_pipe_example.ts region='PercentPipe'}
  */
 export let PercentPipe = class PercentPipe extends NumberPipe {
-    transform(value, digits = null) {
+    transform(value, args) {
+        var digits = ListWrapper.first(args);
         return NumberPipe._format(value, NumberFormatStyle.Percent, digits);
     }
 };
 PercentPipe = __decorate([
+    CONST(),
     Pipe({ name: 'percent' }),
     Injectable(), 
     __metadata('design:paramtypes', [])
@@ -138,11 +144,15 @@ PercentPipe = __decorate([
  * {@example core/pipes/ts/number_pipe/number_pipe_example.ts region='CurrencyPipe'}
  */
 export let CurrencyPipe = class CurrencyPipe extends NumberPipe {
-    transform(value, currencyCode = 'USD', symbolDisplay = false, digits = null) {
+    transform(value, args) {
+        var currencyCode = isPresent(args) && args.length > 0 ? args[0] : 'USD';
+        var symbolDisplay = isPresent(args) && args.length > 1 ? args[1] : false;
+        var digits = isPresent(args) && args.length > 2 ? args[2] : null;
         return NumberPipe._format(value, NumberFormatStyle.Currency, digits, currencyCode, symbolDisplay);
     }
 };
 CurrencyPipe = __decorate([
+    CONST(),
     Pipe({ name: 'currency' }),
     Injectable(), 
     __metadata('design:paramtypes', [])

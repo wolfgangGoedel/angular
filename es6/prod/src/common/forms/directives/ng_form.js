@@ -12,17 +12,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 import { PromiseWrapper, ObservableWrapper, EventEmitter } from 'angular2/src/facade/async';
 import { ListWrapper } from 'angular2/src/facade/collection';
-import { isPresent } from 'angular2/src/facade/lang';
-import { Directive, forwardRef, Optional, Inject, Self } from 'angular2/core';
+import { isPresent, CONST_EXPR } from 'angular2/src/facade/lang';
+import { Directive, forwardRef, Provider, Optional, Inject, Self } from 'angular2/core';
 import { ControlContainer } from './control_container';
 import { ControlGroup, Control } from '../model';
 import { setUpControl, setUpControlGroup, composeValidators, composeAsyncValidators } from './shared';
 import { NG_VALIDATORS, NG_ASYNC_VALIDATORS } from '../validators';
-export const formDirectiveProvider = 
-/*@ts2dart_const*/ /* @ts2dart_Provider */ {
-    provide: ControlContainer,
-    useExisting: forwardRef(() => NgForm)
-};
+const formDirectiveProvider = CONST_EXPR(new Provider(ControlContainer, { useExisting: forwardRef(() => NgForm) }));
 /**
  * If `NgForm` is bound in a component, `<form>` elements in that component will be
  * upgraded to use the Angular form system.

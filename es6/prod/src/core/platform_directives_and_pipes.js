@@ -1,4 +1,5 @@
 import { OpaqueToken } from "angular2/src/core/di";
+import { CONST_EXPR } from "angular2/src/facade/lang";
 /**
  * A token that can be provided when bootstraping an application to make an array of directives
  * available in every component of the application.
@@ -23,8 +24,7 @@ import { OpaqueToken } from "angular2/src/core/di";
  * bootstrap(MyComponent, [provide(PLATFORM_DIRECTIVES, {useValue: [OtherDirective], multi:true})]);
  * ```
  */
-export const PLATFORM_DIRECTIVES = 
-/*@ts2dart_const*/ new OpaqueToken("Platform Directives");
+export const PLATFORM_DIRECTIVES = CONST_EXPR(new OpaqueToken("Platform Directives"));
 /**
  * A token that can be provided when bootstraping an application to make an array of pipes
  * available in every component of the application.
@@ -48,4 +48,4 @@ export const PLATFORM_DIRECTIVES =
  * bootstrap(MyComponent, [provide(PLATFORM_PIPES, {useValue: [OtherPipe], multi:true})]);
  * ```
  */
-export const PLATFORM_PIPES = new OpaqueToken("Platform Pipes");
+export const PLATFORM_PIPES = CONST_EXPR(new OpaqueToken("Platform Pipes"));

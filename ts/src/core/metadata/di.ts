@@ -1,4 +1,4 @@
-import {Type, stringify, isPresent, isString} from 'angular2/src/facade/lang';
+import {CONST, Type, stringify, isPresent, isString} from 'angular2/src/facade/lang';
 import {resolveForwardRef} from 'angular2/src/core/di';
 import {DependencyMetadata} from 'angular2/src/core/di/metadata';
 
@@ -18,8 +18,8 @@ import {DependencyMetadata} from 'angular2/src/core/di/metadata';
  * A decorator can inject string literal `text` like so:
  *
  * {@example core/ts/metadata/metadata.ts region='attributeMetadata'}
- * @ts2dart_const
  */
+@CONST()
 export class AttributeMetadata extends DependencyMetadata {
   constructor(public attributeName: string) { super(); }
 
@@ -46,7 +46,7 @@ export class AttributeMetadata extends DependencyMetadata {
  * ```html
  * <tabs>
  *   <pane title="Overview">...</pane>
- *   <pane *ngFor="let o of objects" [title]="o.title">{{o.text}}</pane>
+ *   <pane *ngFor="#o of objects" [title]="o.title">{{o.text}}</pane>
  * </tabs>
  * ```
  *
@@ -65,7 +65,7 @@ export class AttributeMetadata extends DependencyMetadata {
  *  selector: 'tabs',
  *  template: `
  *    <ul>
- *      <li *ngFor="let pane of panes">{{pane.title}}</li>
+ *      <li *ngFor="#pane of panes">{{pane.title}}</li>
  *    </ul>
  *    <ng-content></ng-content>
  *  `
@@ -140,8 +140,8 @@ export class AttributeMetadata extends DependencyMetadata {
  *
  * The injected object is an unmodifiable live list.
  * See {@link QueryList} for more details.
- * @ts2dart_const
  */
+@CONST()
 export class QueryMetadata extends DependencyMetadata {
   /**
    * whether we want to query only direct children (false) or all
@@ -149,18 +149,12 @@ export class QueryMetadata extends DependencyMetadata {
    */
   descendants: boolean;
   first: boolean;
-  /**
-   * The DI token to read from an element that matches the selector.
-   */
-  read: any;
 
   constructor(private _selector: Type | string,
-              {descendants = false, first = false,
-               read = null}: {descendants?: boolean, first?: boolean, read?: any} = {}) {
+              {descendants = false, first = false}: {descendants?: boolean, first?: boolean} = {}) {
     super();
     this.descendants = descendants;
     this.first = first;
-    this.read = read;
   }
 
   /**
@@ -207,12 +201,11 @@ export class QueryMetadata extends DependencyMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
+@CONST()
 export class ContentChildrenMetadata extends QueryMetadata {
-  constructor(_selector: Type | string,
-              {descendants = false, read = null}: {descendants?: boolean, read?: any} = {}) {
-    super(_selector, {descendants: descendants, read: read});
+  constructor(_selector: Type | string, {descendants = false}: {descendants?: boolean} = {}) {
+    super(_selector, {descendants: descendants});
   }
 }
 
@@ -236,12 +229,10 @@ export class ContentChildrenMetadata extends QueryMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
+@CONST()
 export class ContentChildMetadata extends QueryMetadata {
-  constructor(_selector: Type | string, {read = null}: {read?: any} = {}) {
-    super(_selector, {descendants: true, first: true, read: read});
-  }
+  constructor(_selector: Type | string) { super(_selector, {descendants: true, first: true}); }
 }
 
 /**
@@ -278,13 +269,12 @@ export class ContentChildMetadata extends QueryMetadata {
  *
  * The injected object is an iterable and observable live list.
  * See {@link QueryList} for more details.
- * @ts2dart_const
  */
+@CONST()
 export class ViewQueryMetadata extends QueryMetadata {
   constructor(_selector: Type | string,
-              {descendants = false, first = false,
-               read = null}: {descendants?: boolean, first?: boolean, read?: any} = {}) {
-    super(_selector, {descendants: descendants, first: first, read: read});
+              {descendants = false, first = false}: {descendants?: boolean, first?: boolean} = {}) {
+    super(_selector, {descendants: descendants, first: first});
   }
 
   /**
@@ -370,12 +360,10 @@ export class ViewQueryMetadata extends QueryMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
+@CONST()
 export class ViewChildrenMetadata extends ViewQueryMetadata {
-  constructor(_selector: Type | string, {read = null}: {read?: any} = {}) {
-    super(_selector, {descendants: true, read: read});
-  }
+  constructor(_selector: Type | string) { super(_selector, {descendants: true}); }
 }
 
 /**
@@ -447,10 +435,8 @@ export class ViewChildrenMetadata extends ViewQueryMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
+@CONST()
 export class ViewChildMetadata extends ViewQueryMetadata {
-  constructor(_selector: Type | string, {read = null}: {read?: any} = {}) {
-    super(_selector, {descendants: true, first: true, read: read});
-  }
+  constructor(_selector: Type | string) { super(_selector, {descendants: true, first: true}); }
 }

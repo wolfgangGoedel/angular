@@ -1,7 +1,6 @@
 import { ChangeDetectorRef } from '../change_detector_ref';
 import { IterableDiffer, IterableDifferFactory, TrackByFn } from '../differs/iterable_differs';
 export declare class DefaultIterableDifferFactory implements IterableDifferFactory {
-    constructor();
     supports(obj: Object): boolean;
     create(cdRef: ChangeDetectorRef, trackByFn?: TrackByFn): DefaultIterableDiffer;
 }

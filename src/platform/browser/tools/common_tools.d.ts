@@ -1,5 +1,5 @@
 import { ApplicationRef } from 'angular2/src/core/application_ref';
-import { ComponentRef } from 'angular2/src/core/linker/component_factory';
+import { ComponentRef } from 'angular2/src/core/linker/dynamic_component_loader';
 export declare class ChangeDetectionPerfRecord {
     msPerTick: number;
     numTicks: number;
@@ -11,7 +11,7 @@ export declare class ChangeDetectionPerfRecord {
  */
 export declare class AngularTools {
     profiler: AngularProfiler;
-    constructor(ref: ComponentRef<any>);
+    constructor(ref: ComponentRef);
 }
 /**
  * Entry point for all Angular profiling-related debug tools. This object
@@ -19,7 +19,7 @@ export declare class AngularTools {
  */
 export declare class AngularProfiler {
     appRef: ApplicationRef;
-    constructor(ref: ComponentRef<any>);
+    constructor(ref: ComponentRef);
     /**
      * Exercises change detection in a loop and then prints the average amount of
      * time in milliseconds how long a single round of change detection takes for

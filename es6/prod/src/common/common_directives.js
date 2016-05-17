@@ -1,3 +1,4 @@
+import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { FORM_DIRECTIVES } from './forms';
 import { CORE_DIRECTIVES } from './directives';
 /**
@@ -43,4 +44,4 @@ import { CORE_DIRECTIVES } from './directives';
  * }
  * ```
  */
-export const COMMON_DIRECTIVES = [CORE_DIRECTIVES, FORM_DIRECTIVES];
+export const COMMON_DIRECTIVES = CONST_EXPR([CORE_DIRECTIVES, FORM_DIRECTIVES]);

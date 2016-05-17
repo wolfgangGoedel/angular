@@ -1,4 +1,13 @@
-import { stringify } from "angular2/src/facade/lang";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+import { CONST, stringify } from "angular2/src/facade/lang";
 /**
  * A parameter metadata that specifies a dependency.
  *
@@ -38,14 +47,17 @@ import { stringify } from "angular2/src/facade/lang";
  * var injector = Injector.resolveAndCreate([Engine, Car]);
  * expect(injector.get(Car).engine instanceof Engine).toBe(true);
  * ```
- * @ts2dart_const
  */
-export class InjectMetadata {
+export let InjectMetadata = class InjectMetadata {
     constructor(token) {
         this.token = token;
     }
     toString() { return `@Inject(${stringify(this.token)})`; }
-}
+};
+InjectMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object])
+], InjectMetadata);
 /**
  * A parameter metadata that marks a dependency as optional. {@link Injector} provides `null` if
  * the dependency is not found.
@@ -66,19 +78,25 @@ export class InjectMetadata {
  * var injector = Injector.resolveAndCreate([Car]);
  * expect(injector.get(Car).engine).toBeNull();
  * ```
- * @ts2dart_const
  */
-export class OptionalMetadata {
+export let OptionalMetadata = class OptionalMetadata {
     toString() { return `@Optional()`; }
-}
+};
+OptionalMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [])
+], OptionalMetadata);
 /**
  * `DependencyMetadata` is used by the framework to extend DI.
  * This is internal to Angular and should not be used directly.
- * @ts2dart_const
  */
-export class DependencyMetadata {
+export let DependencyMetadata = class DependencyMetadata {
     get token() { return null; }
-}
+};
+DependencyMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [])
+], DependencyMetadata);
 /**
  * A marker metadata that marks a class as available to {@link Injector} for creation.
  *
@@ -109,12 +127,15 @@ export class DependencyMetadata {
  * var injector = Injector.resolveAndCreate([NeedsService, UsefulService]);
  * expect(() => injector.get(NeedsService)).toThrowError();
  * ```
- * @ts2dart_const
  */
-export class InjectableMetadata {
+export let InjectableMetadata = class InjectableMetadata {
     constructor() {
     }
-}
+};
+InjectableMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [])
+], InjectableMetadata);
 /**
  * Specifies that an {@link Injector} should retrieve a dependency only from itself.
  *
@@ -141,11 +162,14 @@ export class InjectableMetadata {
  * var child = inj.resolveAndCreateChild([NeedsDependency]);
  * expect(() => child.get(NeedsDependency)).toThrowError();
  * ```
- * @ts2dart_const
  */
-export class SelfMetadata {
+export let SelfMetadata = class SelfMetadata {
     toString() { return `@Self()`; }
-}
+};
+SelfMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [])
+], SelfMetadata);
 /**
  * Specifies that the dependency resolution should start from the parent injector.
  *
@@ -170,11 +194,14 @@ export class SelfMetadata {
  * var inj = Injector.resolveAndCreate([Dependency, NeedsDependency]);
  * expect(() => inj.get(NeedsDependency)).toThrowError();
  * ```
- * @ts2dart_const
  */
-export class SkipSelfMetadata {
+export let SkipSelfMetadata = class SkipSelfMetadata {
     toString() { return `@SkipSelf()`; }
-}
+};
+SkipSelfMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [])
+], SkipSelfMetadata);
 /**
  * Specifies that an injector should retrieve a dependency from any injector until reaching the
  * closest host.
@@ -228,8 +255,11 @@ export class SkipSelfMetadata {
  *
  * bootstrap(App);
  *```
- * @ts2dart_const
  */
-export class HostMetadata {
+export let HostMetadata = class HostMetadata {
     toString() { return `@Host()`; }
-}
+};
+HostMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [])
+], HostMetadata);

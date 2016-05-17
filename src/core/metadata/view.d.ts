@@ -55,7 +55,6 @@ export declare var VIEW_ENCAPSULATION_VALUES: ViewEncapsulation[];
  *   }
  * }
  * ```
- * @ts2dart_const
  */
 export declare class ViewMetadata {
     /**
@@ -95,7 +94,7 @@ export declare class ViewMetadata {
      *   directives: [NgFor]
      *   template: '
      *   <ul>
-     *     <li *ngFor="let item of items">{{item}}</li>
+     *     <li *ngFor="#item of items">{{item}}</li>
      *   </ul>'
      * })
      * class MyComponent {

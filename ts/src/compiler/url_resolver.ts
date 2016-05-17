@@ -1,4 +1,4 @@
-import {Provider, Injectable, Inject} from 'angular2/src/core/di';
+import {Injectable, Inject} from 'angular2/src/core/di';
 import {
   StringWrapper,
   isPresent,
@@ -9,27 +9,19 @@ import {
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
 import {ListWrapper} from 'angular2/src/facade/collection';
 import {PACKAGE_ROOT_URL} from 'angular2/src/core/application_tokens';
-
-const _ASSET_SCHEME = 'asset:';
+import {Provider} from 'angular2/src/core/di';
 
 /**
  * Create a {@link UrlResolver} with no package prefix.
  */
-export function createUrlResolverWithoutPackagePrefix(): UrlResolver {
+export function createWithoutPackagePrefix(): UrlResolver {
   return new UrlResolver();
-}
-
-export function createOfflineCompileUrlResolver(): UrlResolver {
-  return new UrlResolver(_ASSET_SCHEME);
 }
 
 /**
  * A default provider for {@link PACKAGE_ROOT_URL} that maps to '/'.
  */
-export var DEFAULT_PACKAGE_URL_PROVIDER = {
-  provide: PACKAGE_ROOT_URL,
-  useValue: "/"
-};
+export var DEFAULT_PACKAGE_URL_PROVIDER = new Provider(PACKAGE_ROOT_URL, {useValue: "/"});
 
 /**
  * Used by the {@link Compiler} when resolving HTML and CSS template URLs.
@@ -44,7 +36,13 @@ export var DEFAULT_PACKAGE_URL_PROVIDER = {
  */
 @Injectable()
 export class UrlResolver {
-  constructor(@Inject(PACKAGE_ROOT_URL) private _packagePrefix: string = null) {}
+  private _packagePrefix: string;
+
+  constructor(@Inject(PACKAGE_ROOT_URL) packagePrefix: string = null) {
+    if (isPresent(packagePrefix)) {
+      this._packagePrefix = StringWrapper.stripRight(packagePrefix, "/") + "/";
+    }
+  }
 
   /**
    * Resolves the `url` given the `baseUrl`:
@@ -63,19 +61,8 @@ export class UrlResolver {
     if (isPresent(baseUrl) && baseUrl.length > 0) {
       resolvedUrl = _resolveUrl(baseUrl, resolvedUrl);
     }
-    var resolvedParts = _split(resolvedUrl);
-    var prefix = this._packagePrefix;
-    if (isPresent(prefix) && isPresent(resolvedParts) &&
-        resolvedParts[_ComponentIndex.Scheme] == "package") {
-      var path = resolvedParts[_ComponentIndex.Path];
-      if (this._packagePrefix === _ASSET_SCHEME) {
-        var pathSegements = path.split(/\//);
-        resolvedUrl = `asset:${pathSegements[0]}/lib/${pathSegements.slice(1).join('/')}`;
-      } else {
-        prefix = StringWrapper.stripRight(prefix, '/');
-        path = StringWrapper.stripLeft(path, '/');
-        return `${prefix}/${path}`;
-      }
+    if (isPresent(this._packagePrefix) && getUrlScheme(resolvedUrl) == "package") {
+      resolvedUrl = resolvedUrl.replace("package:", this._packagePrefix);
     }
     return resolvedUrl;
   }

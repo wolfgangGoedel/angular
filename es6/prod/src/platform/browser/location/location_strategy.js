@@ -1,3 +1,4 @@
+import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { OpaqueToken } from 'angular2/core';
 /**
  * `LocationStrategy` is responsible for representing and reading route state
@@ -46,4 +47,4 @@ export class LocationStrategy {
  * ]);
  * ```
  */
-export const APP_BASE_HREF = new OpaqueToken('appBaseHref');
+export const APP_BASE_HREF = CONST_EXPR(new OpaqueToken('appBaseHref'));

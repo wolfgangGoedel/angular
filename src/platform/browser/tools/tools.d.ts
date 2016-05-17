@@ -1,4 +1,4 @@
-import { ComponentRef } from 'angular2/src/core/linker/component_factory';
+import { ComponentRef } from 'angular2/src/core/linker/dynamic_component_loader';
 /**
  * Enabled Angular 2 debug tools that are accessible via your browser's
  * developer console.
@@ -10,7 +10,7 @@ import { ComponentRef } from 'angular2/src/core/linker/component_factory';
  * 1. Try the change detection profiler `ng.profiler.timeChangeDetection()`
  *    then hit Enter.
  */
-export declare function enableDebugTools(ref: ComponentRef<any>): void;
+export declare function enableDebugTools(ref: ComponentRef): void;
 /**
  * Disables Angular 2 tools.
  */

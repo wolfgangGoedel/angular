@@ -1,7 +1,7 @@
 import { HtmlParser, HtmlParseTreeResult } from 'angular2/src/compiler/html_parser';
 import { ParseError } from 'angular2/src/compiler/parse_util';
 import { HtmlAst } from 'angular2/src/compiler/html_ast';
-import { Parser } from 'angular2/src/compiler/expression_parser/parser';
+import { Parser } from 'angular2/src/core/change_detection/parser/parser';
 /**
  * Creates an i18n-ed version of the parsed template.
  *

@@ -5,7 +5,6 @@ import { NgControlGroup } from './ng_control_group';
 import { ControlContainer } from './control_container';
 import { Form } from './form_interface';
 import { Control, ControlGroup } from '../model';
-export declare const formDirectiveProvider: any;
 /**
  * Binds an existing control group to a DOM element.
  *

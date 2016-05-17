@@ -1,12 +1,10 @@
-import { OpaqueToken, ComponentRef, ComponentFactory, Injector, ViewMetadata, ElementRef, ChangeDetectorRef, NgZone } from 'angular2/core';
+import { ComponentRef, Injector, ViewMetadata, ElementRef } from 'angular2/core';
 import { Type } from 'angular2/src/facade/lang';
 import { DebugElement } from 'angular2/src/core/debug/debug_node';
-export declare var ComponentFixtureAutoDetect: OpaqueToken;
-export declare var ComponentFixtureNoNgZone: OpaqueToken;
 /**
  * Fixture for debugging and testing a component.
  */
-export declare class ComponentFixture<T> {
+export declare abstract class ComponentFixture {
     /**
      * The DebugElement associated with the root element of this component.
      */
@@ -24,55 +22,17 @@ export declare class ComponentFixture<T> {
      */
     elementRef: ElementRef;
     /**
-     * The ComponentRef for the component
-     */
-    componentRef: ComponentRef<T>;
-    /**
-     * The ChangeDetectorRef for the component
-     */
-    changeDetectorRef: ChangeDetectorRef;
-    /**
-     * The NgZone in which this component was instantiated.
-     */
-    ngZone: NgZone;
-    private _autoDetect;
-    private _isStable;
-    private _completer;
-    private _onUnstableSubscription;
-    private _onStableSubscription;
-    private _onMicrotaskEmptySubscription;
-    private _onErrorSubscription;
-    constructor(componentRef: ComponentRef<T>, ngZone: NgZone, autoDetect: boolean);
-    private _tick(checkNoChanges);
-    /**
      * Trigger a change detection cycle for the component.
      */
-    detectChanges(checkNoChanges?: boolean): void;
-    /**
-     * Do a change detection run to make sure there were no changes.
-     */
-    checkNoChanges(): void;
-    /**
-     * Set whether the fixture should autodetect changes.
-     *
-     * Also runs detectChanges once so that any existing change is detected.
-     */
-    autoDetectChanges(autoDetect?: boolean): void;
-    /**
-     * Return whether the fixture is currently stable or has async tasks that have not been completed
-     * yet.
-     */
-    isStable(): boolean;
-    /**
-     * Get a promise that resolves when the fixture is stable.
-     *
-     * This can be used to resume testing after events have triggered asynchronous activity or
-     * asynchronous change detection.
-     */
-    whenStable(): Promise<any>;
+    abstract detectChanges(): void;
     /**
      * Trigger component destruction.
      */
+    abstract destroy(): void;
+}
+export declare class ComponentFixture_ extends ComponentFixture {
+    constructor(componentRef: ComponentRef);
+    detectChanges(): void;
     destroy(): void;
 }
 /**
@@ -150,13 +110,10 @@ export declare class TestComponentBuilder {
      * @deprecated
      */
     overrideViewBindings(type: Type, providers: any[]): TestComponentBuilder;
-    private _create<C>(ngZone, componentFactory);
     /**
      * Builds and returns a ComponentFixture.
      *
      * @return {Promise<ComponentFixture>}
      */
-    createAsync(rootComponentType: Type): Promise<ComponentFixture<any>>;
-    createFakeAsync(rootComponentType: Type): ComponentFixture<any>;
-    createSync<C>(componentFactory: ComponentFactory<C>): ComponentFixture<C>;
+    createAsync(rootComponentType: Type): Promise<ComponentFixture>;
 }

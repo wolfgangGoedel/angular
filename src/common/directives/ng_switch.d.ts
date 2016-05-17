@@ -2,7 +2,7 @@ import { ViewContainerRef, TemplateRef } from 'angular2/core';
 export declare class SwitchView {
     private _viewContainerRef;
     private _templateRef;
-    constructor(_viewContainerRef: ViewContainerRef, _templateRef: TemplateRef<Object>);
+    constructor(_viewContainerRef: ViewContainerRef, _templateRef: TemplateRef);
     create(): void;
     destroy(): void;
 }
@@ -79,7 +79,7 @@ export declare class NgSwitch {
  */
 export declare class NgSwitchWhen {
     private _switch;
-    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef<Object>, ngSwitch: NgSwitch);
+    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef, ngSwitch: NgSwitch);
     ngSwitchWhen: any;
 }
 /**
@@ -89,5 +89,5 @@ export declare class NgSwitchWhen {
  * See {@link NgSwitch} for more details and example.
  */
 export declare class NgSwitchDefault {
-    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef<Object>, sswitch: NgSwitch);
+    constructor(viewContainer: ViewContainerRef, templateRef: TemplateRef, sswitch: NgSwitch);
 }

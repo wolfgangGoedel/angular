@@ -10,7 +10,7 @@ import {LocationType} from './serialized_types';
 
 // PRIMITIVE is any type that does not need to be serialized (string, number, boolean)
 // We set it to String so that it is considered a Type.
-export const PRIMITIVE: Type = /*@ts2dart_const*/ String;
+export const PRIMITIVE: Type = String;
 
 @Injectable()
 export class Serializer {
@@ -117,15 +117,13 @@ export class Serializer {
   private _serializeRenderComponentType(obj: RenderComponentType): Object {
     return {
       'id': obj.id,
-      'templateUrl': obj.templateUrl,
-      'slotCount': obj.slotCount,
       'encapsulation': this.serialize(obj.encapsulation, ViewEncapsulation),
       'styles': this.serialize(obj.styles, PRIMITIVE)
     };
   }
 
   private _deserializeRenderComponentType(map: {[key: string]: any}): RenderComponentType {
-    return new RenderComponentType(map['id'], map['templateUrl'], map['slotCount'],
+    return new RenderComponentType(map['id'],
                                    this.deserialize(map['encapsulation'], ViewEncapsulation),
                                    this.deserialize(map['styles'], PRIMITIVE));
   }

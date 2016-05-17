@@ -10,18 +10,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+import { CONST_EXPR } from 'angular2/src/facade/lang';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { EventEmitter, ObservableWrapper } from 'angular2/src/facade/async';
-import { Directive, forwardRef, Inject, Optional, Self } from 'angular2/core';
+import { Directive, forwardRef, Provider, Inject, Optional, Self } from 'angular2/core';
 import { NgControl } from './ng_control';
 import { NG_VALIDATORS, NG_ASYNC_VALIDATORS } from '../validators';
 import { NG_VALUE_ACCESSOR } from './control_value_accessor';
 import { setUpControl, composeValidators, composeAsyncValidators, isPropertyUpdated, selectValueAccessor } from './shared';
-export const formControlBinding = 
-/*@ts2dart_const*/ /* @ts2dart_Provider */ {
-    provide: NgControl,
-    useExisting: forwardRef(() => NgFormControl)
-};
+const formControlBinding = CONST_EXPR(new Provider(NgControl, { useExisting: forwardRef(() => NgFormControl) }));
 /**
  * Binds an existing {@link Control} to a DOM element.
  *

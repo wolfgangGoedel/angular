@@ -2,34 +2,16 @@ library reflection.reflection_capabilities;
 
 import 'dart:mirrors';
 
-import 'package:angular2/src/core/metadata/lifecycle_hooks.dart';
+import 'package:angular2/src/core/linker/interfaces.dart';
 import 'package:angular2/src/facade/lang.dart';
 
 import 'platform_reflection_capabilities.dart';
 import 'types.dart';
 
-import '../linker/template_ref.dart';
-
 var DOT_REGEX = new RegExp('\\.');
 
 class ReflectionCapabilities implements PlatformReflectionCapabilities {
-  Map<Symbol, Type> parameterizedTypeMapping = new Map<Symbol, Type>();
-
-  ReflectionCapabilities([metadataReader]) {
-    // In Dart, there is no way of getting from a parameterized Type to
-    // the underlying non parameterized type.
-    // So we need to have a separate Map for the types that are generic
-    // and used in our DI...
-    parameterizedTypeMapping[reflectType(TemplateRef).qualifiedName] = TemplateRef;
-  }
-
-  _typeFromMirror(TypeMirror typeMirror) {
-    var result = parameterizedTypeMapping[typeMirror.qualifiedName];
-    if (result == null && typeMirror.hasReflectedType && typeMirror.reflectedType != dynamic) {
-      result = typeMirror.reflectedType;
-    }
-    return result;
-  }
+  ReflectionCapabilities([metadataReader]) {}
 
   bool isReflectionEnabled() {
     return true;
@@ -263,8 +245,9 @@ class ReflectionCapabilities implements PlatformReflectionCapabilities {
 
   List _convertParameter(ParameterMirror p) {
     var t = p.type;
-    var type = _typeFromMirror(t);
-    var res = type != null ? [type] : [];
+    var res = (!t.hasReflectedType || t.reflectedType == dynamic)
+        ? <Object>[]
+        : <Object>[t.reflectedType];
     res.addAll(p.metadata.map((m) => m.reflectee));
     return res;
   }

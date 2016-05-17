@@ -1,12 +1,11 @@
 export * from 'angular2/src/core/angular_entrypoint';
 export { BROWSER_PROVIDERS, CACHED_TEMPLATE_PROVIDER, ELEMENT_PROBE_PROVIDERS, ELEMENT_PROBE_PROVIDERS_PROD_MODE, inspectNativeElement, BrowserDomAdapter, By, Title, DOCUMENT, enableDebugTools, disableDebugTools } from 'angular2/src/platform/browser_common';
 import { Type } from 'angular2/src/facade/lang';
-import { ComponentRef, PlatformRef } from 'angular2/core';
+import { ComponentRef } from 'angular2/core';
 /**
  * An array of providers that should be passed into `application()` when bootstrapping a component.
  */
 export declare const BROWSER_APP_PROVIDERS: Array<any>;
-export declare function browserPlatform(): PlatformRef;
 /**
  * Bootstrapping for Angular applications.
  *
@@ -75,4 +74,4 @@ export declare function browserPlatform(): PlatformRef;
  *
  * Returns a `Promise` of {@link ComponentRef}.
  */
-export declare function bootstrap(appComponentType: Type, customProviders?: Array<any>): Promise<ComponentRef<any>>;
+export declare function bootstrap(appComponentType: Type, customProviders?: Array<any>): Promise<ComponentRef>;

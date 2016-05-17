@@ -1,5 +1,5 @@
 import { StringMapWrapper } from 'angular2/src/facade/collection';
-import { isPresent, isBlank, normalizeBlank } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, normalizeBlank, CONST_EXPR } from 'angular2/src/facade/lang';
 import { PromiseWrapper } from 'angular2/src/facade/async';
 /**
  * `RouteParams` is an immutable map of parameters for the given route
@@ -72,7 +72,7 @@ export class RouteParams {
  * ```
  */
 export class RouteData {
-    constructor(data = {}) {
+    constructor(data = CONST_EXPR({})) {
         this.data = data;
     }
     get(key) { return normalizeBlank(StringMapWrapper.get(this.data, key)); }
@@ -216,7 +216,7 @@ export class DefaultInstruction extends ResolvedInstruction {
  * Represents a component that may need to do some redirection or lazy loading at a later time.
  */
 export class UnresolvedInstruction extends Instruction {
-    constructor(_resolver, _urlPath = '', _urlParams = []) {
+    constructor(_resolver, _urlPath = '', _urlParams = CONST_EXPR([])) {
         super(null, null, {});
         this._resolver = _resolver;
         this._urlPath = _urlPath;

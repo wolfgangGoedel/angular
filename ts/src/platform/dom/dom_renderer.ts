@@ -5,10 +5,10 @@ import {
   isBlank,
   Json,
   RegExpWrapper,
+  CONST_EXPR,
   stringify,
   StringWrapper,
-  isArray,
-  isString
+  isArray
 } from 'angular2/src/facade/lang';
 
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
@@ -29,8 +29,7 @@ import {DOM} from 'angular2/src/platform/dom/dom_adapter';
 import {camelCaseToDashCase} from './util';
 
 const NAMESPACE_URIS =
-    /*@ts2dart_const*/
-    {'xlink': 'http://www.w3.org/1999/xlink', 'svg': 'http://www.w3.org/2000/svg'};
+    CONST_EXPR({'xlink': 'http://www.w3.org/1999/xlink', 'svg': 'http://www.w3.org/2000/svg'});
 const TEMPLATE_COMMENT_TEXT = 'template bindings={}';
 var TEMPLATE_BINDINGS_EXP = /^template bindings=(.*)$/g;
 
@@ -77,21 +76,20 @@ export class DomRenderer implements Renderer {
     }
   }
 
-  selectRootElement(selectorOrNode: string | any, debugInfo: RenderDebugInfo): Element {
-    var el;
-    if (isString(selectorOrNode)) {
-      el = DOM.querySelector(this._rootRenderer.document, selectorOrNode);
-      if (isBlank(el)) {
-        throw new BaseException(`The selector "${selectorOrNode}" did not match any elements`);
-      }
-    } else {
-      el = selectorOrNode;
+  renderComponent(componentProto: RenderComponentType): Renderer {
+    return this._rootRenderer.renderComponent(componentProto);
+  }
+
+  selectRootElement(selector: string): Element {
+    var el = DOM.querySelector(this._rootRenderer.document, selector);
+    if (isBlank(el)) {
+      throw new BaseException(`The selector "${selector}" did not match any elements`);
     }
     DOM.clearNodes(el);
     return el;
   }
 
-  createElement(parent: Element, name: string, debugInfo: RenderDebugInfo): Node {
+  createElement(parent: Element, name: string): Node {
     var nsAndName = splitNamespace(name);
     var el = isPresent(nsAndName[0]) ?
                  DOM.createElementNS(NAMESPACE_URIS[nsAndName[0]], nsAndName[1]) :
@@ -122,7 +120,7 @@ export class DomRenderer implements Renderer {
     return nodesParent;
   }
 
-  createTemplateAnchor(parentElement: any, debugInfo: RenderDebugInfo): any {
+  createTemplateAnchor(parentElement: any): any {
     var comment = DOM.createComment(TEMPLATE_COMMENT_TEXT);
     if (isPresent(parentElement)) {
       DOM.appendChild(parentElement, comment);
@@ -130,7 +128,7 @@ export class DomRenderer implements Renderer {
     return comment;
   }
 
-  createText(parentElement: any, value: string, debugInfo: RenderDebugInfo): any {
+  createText(parentElement: any, value: string): any {
     var node = DOM.createTextNode(value);
     if (isPresent(parentElement)) {
       DOM.appendChild(parentElement, node);
@@ -211,6 +209,8 @@ export class DomRenderer implements Renderer {
       this.setElementAttribute(renderElement, propertyName, propertyValue);
     }
   }
+
+  setElementDebugInfo(renderElement: any, info: RenderDebugInfo) {}
 
   setElementClass(renderElement: any, className: string, isAdd: boolean): void {
     if (isAdd) {
@@ -304,8 +304,8 @@ function decoratePreventDefault(eventHandler: Function): Function {
 
 var COMPONENT_REGEX = /%COMP%/g;
 export const COMPONENT_VARIABLE = '%COMP%';
-export const HOST_ATTR = /*@ts2dart_const*/ `_nghost-${COMPONENT_VARIABLE}`;
-export const CONTENT_ATTR = /*@ts2dart_const*/ `_ngcontent-${COMPONENT_VARIABLE}`;
+export const HOST_ATTR = `_nghost-${COMPONENT_VARIABLE}`;
+export const CONTENT_ATTR = `_ngcontent-${COMPONENT_VARIABLE}`;
 
 function _shimContentAttribute(componentShortId: string): string {
   return StringWrapper.replaceAll(CONTENT_ATTR, COMPONENT_REGEX, componentShortId);

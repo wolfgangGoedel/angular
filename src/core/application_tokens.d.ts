@@ -1,3 +1,21 @@
+import { OpaqueToken, Provider } from 'angular2/src/core/di';
+/**
+ * An {@link OpaqueToken-class.html} representing the application root type in the {@link
+ * Injector}.
+ *
+ * ```
+ * @Component(...)
+ * class MyApp {
+ *   ...
+ * }
+ *
+ * bootstrap(MyApp).then((appRef:ApplicationRef) {
+ *   expect(appRef.injector.get(appComponentTypeToken)).toEqual(MyApp);
+ * });
+ *
+ * ```
+ */
+export declare const APP_COMPONENT: OpaqueToken;
 /**
  * A DI Token representing a unique string id assigned to the application by Angular and used
  * primarily for prefixing application attributes and CSS styles when
@@ -7,24 +25,20 @@
  * a custom value via a DI provider <!-- TODO: provider --> configuring the root {@link Injector}
  * using this token.
  */
-export declare const APP_ID: any;
+export declare const APP_ID: OpaqueToken;
 /**
  * Providers that will generate a random APP_ID_TOKEN.
  */
-export declare const APP_ID_RANDOM_PROVIDER: {
-    provide: any;
-    useFactory: () => string;
-    deps: any[];
-};
+export declare const APP_ID_RANDOM_PROVIDER: Provider;
 /**
  * A function that will be executed when a platform is initialized.
  */
-export declare const PLATFORM_INITIALIZER: any;
+export declare const PLATFORM_INITIALIZER: OpaqueToken;
 /**
  * A function that will be executed when an application is initialized.
  */
-export declare const APP_INITIALIZER: any;
+export declare const APP_INITIALIZER: OpaqueToken;
 /**
  * A token which indicates the root directory of the application
  */
-export declare const PACKAGE_ROOT_URL: any;
+export declare const PACKAGE_ROOT_URL: OpaqueToken;

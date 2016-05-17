@@ -379,7 +379,6 @@ import { ViewEncapsulation } from 'angular2/src/core/metadata/view';
  * Note also that although the `<li></li>` template still exists inside the `<template></template>`,
  * the instantiated
  * view occurs on the second `<li></li>` which is a sibling to the `<template>` element.
- * @ts2dart_const
  */
 export declare class DirectiveMetadata extends InjectableMetadata {
     /**
@@ -760,7 +759,6 @@ export declare class DirectiveMetadata extends InjectableMetadata {
  * ### Example
  *
  * {@example core/ts/metadata/metadata.ts region='component'}
- * @ts2dart_const
  */
 export declare class ComponentMetadata extends DirectiveMetadata {
     /**
@@ -879,7 +877,6 @@ export declare class ComponentMetadata extends DirectiveMetadata {
  * ### Example
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
- * @ts2dart_const
  */
 export declare class PipeMetadata extends InjectableMetadata {
     name: string;
@@ -929,7 +926,6 @@ export declare class PipeMetadata extends InjectableMetadata {
  *
  * bootstrap(App);
  * ```
- * @ts2dart_const
  */
 export declare class InputMetadata {
     /**
@@ -982,7 +978,6 @@ export declare class InputMetadata {
  * }
  * bootstrap(App);
  * ```
- * @ts2dart_const
  */
 export declare class OutputMetadata {
     bindingPropertyName: string;
@@ -1022,7 +1017,6 @@ export declare class OutputMetadata {
  *
  * bootstrap(App);
  * ```
- * @ts2dart_const
  */
 export declare class HostBindingMetadata {
     hostPropertyName: string;
@@ -1061,7 +1055,6 @@ export declare class HostBindingMetadata {
  *
  * bootstrap(App);
  * ```
- * @ts2dart_const
  */
 export declare class HostListenerMetadata {
     eventName: string;

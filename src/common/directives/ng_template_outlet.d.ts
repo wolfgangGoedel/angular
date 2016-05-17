@@ -9,5 +9,5 @@ export declare class NgTemplateOutlet {
     private _viewContainerRef;
     private _insertedViewRef;
     constructor(_viewContainerRef: ViewContainerRef);
-    ngTemplateOutlet: TemplateRef<Object>;
+    ngTemplateOutlet: TemplateRef;
 }

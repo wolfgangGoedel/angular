@@ -1,13 +1,21 @@
-import { isBlank, isPresent, getTypeNameForDebugging } from 'angular2/src/facade/lang';
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+import { isBlank, isPresent, CONST, getTypeNameForDebugging } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { Provider, SkipSelfMetadata, OptionalMetadata } from 'angular2/src/core/di';
 /**
  * A repository of different iterable diffing strategies used by NgFor, NgClass, and others.
- * @ts2dart_const
  */
-export class IterableDiffers {
-    /*@ts2dart_const*/
+let IterableDiffers_1;
+export let IterableDiffers = IterableDiffers_1 = class IterableDiffers {
     constructor(factories) {
         this.factories = factories;
     }
@@ -15,10 +23,10 @@ export class IterableDiffers {
         if (isPresent(parent)) {
             var copied = ListWrapper.clone(parent.factories);
             factories = factories.concat(copied);
-            return new IterableDiffers(factories);
+            return new IterableDiffers_1(factories);
         }
         else {
-            return new IterableDiffers(factories);
+            return new IterableDiffers_1(factories);
         }
     }
     /**
@@ -41,7 +49,7 @@ export class IterableDiffers {
      * ```
      */
     static extend(factories) {
-        return new Provider(IterableDiffers, {
+        return new Provider(IterableDiffers_1, {
             useFactory: (parent) => {
                 if (isBlank(parent)) {
                     // Typically would occur when calling IterableDiffers.extend inside of dependencies passed
@@ -49,10 +57,10 @@ export class IterableDiffers {
                     // bootstrap(), which would override default pipes instead of extending them.
                     throw new BaseException('Cannot extend IterableDiffers without a parent injector');
                 }
-                return IterableDiffers.create(factories, parent);
+                return IterableDiffers_1.create(factories, parent);
             },
             // Dependency technically isn't optional, but we can provide a better error message this way.
-            deps: [[IterableDiffers, new SkipSelfMetadata(), new OptionalMetadata()]]
+            deps: [[IterableDiffers_1, new SkipSelfMetadata(), new OptionalMetadata()]]
         });
     }
     find(iterable) {
@@ -64,4 +72,8 @@ export class IterableDiffers {
             throw new BaseException(`Cannot find a differ supporting object '${iterable}' of type '${getTypeNameForDebugging(iterable)}'`);
         }
     }
-}
+};
+IterableDiffers = IterableDiffers_1 = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Array])
+], IterableDiffers);

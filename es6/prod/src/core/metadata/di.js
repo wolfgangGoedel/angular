@@ -1,4 +1,13 @@
-import { stringify, isString } from 'angular2/src/facade/lang';
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+import { CONST, stringify, isString } from 'angular2/src/facade/lang';
 import { resolveForwardRef } from 'angular2/src/core/di';
 import { DependencyMetadata } from 'angular2/src/core/di/metadata';
 /**
@@ -17,9 +26,8 @@ import { DependencyMetadata } from 'angular2/src/core/di/metadata';
  * A decorator can inject string literal `text` like so:
  *
  * {@example core/ts/metadata/metadata.ts region='attributeMetadata'}
- * @ts2dart_const
  */
-export class AttributeMetadata extends DependencyMetadata {
+export let AttributeMetadata = class AttributeMetadata extends DependencyMetadata {
     constructor(attributeName) {
         super();
         this.attributeName = attributeName;
@@ -33,7 +41,11 @@ export class AttributeMetadata extends DependencyMetadata {
         return this;
     }
     toString() { return `@Attribute(${stringify(this.attributeName)})`; }
-}
+};
+AttributeMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [String])
+], AttributeMetadata);
 /**
  * Declares an injectable parameter to be a live list of directives or variable
  * bindings from the content children of a directive.
@@ -46,7 +58,7 @@ export class AttributeMetadata extends DependencyMetadata {
  * ```html
  * <tabs>
  *   <pane title="Overview">...</pane>
- *   <pane *ngFor="let o of objects" [title]="o.title">{{o.text}}</pane>
+ *   <pane *ngFor="#o of objects" [title]="o.title">{{o.text}}</pane>
  * </tabs>
  * ```
  *
@@ -65,7 +77,7 @@ export class AttributeMetadata extends DependencyMetadata {
  *  selector: 'tabs',
  *  template: `
  *    <ul>
- *      <li *ngFor="let pane of panes">{{pane.title}}</li>
+ *      <li *ngFor="#pane of panes">{{pane.title}}</li>
  *    </ul>
  *    <ng-content></ng-content>
  *  `
@@ -140,15 +152,13 @@ export class AttributeMetadata extends DependencyMetadata {
  *
  * The injected object is an unmodifiable live list.
  * See {@link QueryList} for more details.
- * @ts2dart_const
  */
-export class QueryMetadata extends DependencyMetadata {
-    constructor(_selector, { descendants = false, first = false, read = null } = {}) {
+export let QueryMetadata = class QueryMetadata extends DependencyMetadata {
+    constructor(_selector, { descendants = false, first = false } = {}) {
         super();
         this._selector = _selector;
         this.descendants = descendants;
         this.first = first;
-        this.read = read;
     }
     /**
      * always `false` to differentiate it with {@link ViewQueryMetadata}.
@@ -168,7 +178,11 @@ export class QueryMetadata extends DependencyMetadata {
      */
     get varBindings() { return this.selector.split(','); }
     toString() { return `@Query(${stringify(this.selector)})`; }
-}
+};
+QueryMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object, Object])
+], QueryMetadata);
 // TODO: add an example after ContentChildren and ViewChildren are in master
 /**
  * Configures a content query.
@@ -189,13 +203,16 @@ export class QueryMetadata extends DependencyMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
-export class ContentChildrenMetadata extends QueryMetadata {
-    constructor(_selector, { descendants = false, read = null } = {}) {
-        super(_selector, { descendants: descendants, read: read });
+export let ContentChildrenMetadata = class ContentChildrenMetadata extends QueryMetadata {
+    constructor(_selector, { descendants = false } = {}) {
+        super(_selector, { descendants: descendants });
     }
-}
+};
+ContentChildrenMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object, Object])
+], ContentChildrenMetadata);
 // TODO: add an example after ContentChild and ViewChild are in master
 /**
  * Configures a content query.
@@ -216,13 +233,16 @@ export class ContentChildrenMetadata extends QueryMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
-export class ContentChildMetadata extends QueryMetadata {
-    constructor(_selector, { read = null } = {}) {
-        super(_selector, { descendants: true, first: true, read: read });
+export let ContentChildMetadata = class ContentChildMetadata extends QueryMetadata {
+    constructor(_selector) {
+        super(_selector, { descendants: true, first: true });
     }
-}
+};
+ContentChildMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object])
+], ContentChildMetadata);
 /**
  * Similar to {@link QueryMetadata}, but querying the component view, instead of
  * the content children.
@@ -257,18 +277,21 @@ export class ContentChildMetadata extends QueryMetadata {
  *
  * The injected object is an iterable and observable live list.
  * See {@link QueryList} for more details.
- * @ts2dart_const
  */
-export class ViewQueryMetadata extends QueryMetadata {
-    constructor(_selector, { descendants = false, first = false, read = null } = {}) {
-        super(_selector, { descendants: descendants, first: first, read: read });
+export let ViewQueryMetadata = class ViewQueryMetadata extends QueryMetadata {
+    constructor(_selector, { descendants = false, first = false } = {}) {
+        super(_selector, { descendants: descendants, first: first });
     }
     /**
      * always `true` to differentiate it with {@link QueryMetadata}.
      */
     get isViewQuery() { return true; }
     toString() { return `@ViewQuery(${stringify(this.selector)})`; }
-}
+};
+ViewQueryMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object, Object])
+], ViewQueryMetadata);
 /**
  * Declares a list of child element references.
  *
@@ -345,13 +368,16 @@ export class ViewQueryMetadata extends QueryMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
-export class ViewChildrenMetadata extends ViewQueryMetadata {
-    constructor(_selector, { read = null } = {}) {
-        super(_selector, { descendants: true, read: read });
+export let ViewChildrenMetadata = class ViewChildrenMetadata extends ViewQueryMetadata {
+    constructor(_selector) {
+        super(_selector, { descendants: true });
     }
-}
+};
+ViewChildrenMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object])
+], ViewChildrenMetadata);
 /**
  *
  * Declares a reference of child element.
@@ -421,10 +447,13 @@ export class ViewChildrenMetadata extends ViewQueryMetadata {
  *   }
  * }
  * ```
- * @ts2dart_const
  */
-export class ViewChildMetadata extends ViewQueryMetadata {
-    constructor(_selector, { read = null } = {}) {
-        super(_selector, { descendants: true, first: true, read: read });
+export let ViewChildMetadata = class ViewChildMetadata extends ViewQueryMetadata {
+    constructor(_selector) {
+        super(_selector, { descendants: true, first: true });
     }
-}
+};
+ViewChildMetadata = __decorate([
+    CONST(), 
+    __metadata('design:paramtypes', [Object])
+], ViewChildMetadata);

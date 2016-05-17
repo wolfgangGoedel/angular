@@ -1,6 +1,4 @@
-import { ElementRef } from './element_ref';
-import { AppElement } from './element';
-import { EmbeddedViewRef } from './view_ref';
+import { ElementRef, ElementRef_ } from './element_ref';
 /**
  * Represents an Embedded Template that can be used to instantiate Embedded Views.
  *
@@ -13,7 +11,7 @@ import { EmbeddedViewRef } from './view_ref';
  * {@link ViewContainerRef#createEmbeddedView}, which will create the View and attach it to the
  * View Container.
  */
-export declare abstract class TemplateRef<C> {
+export declare abstract class TemplateRef {
     /**
      * The location in the View where the Embedded View logically belongs to.
      *
@@ -26,12 +24,9 @@ export declare abstract class TemplateRef<C> {
      *
      */
     elementRef: ElementRef;
-    abstract createEmbeddedView(context: C): EmbeddedViewRef<C>;
 }
-export declare class TemplateRef_<C> extends TemplateRef<C> {
-    private _appElement;
-    private _viewFactory;
-    constructor(_appElement: AppElement, _viewFactory: Function);
-    createEmbeddedView(context: C): EmbeddedViewRef<C>;
-    elementRef: ElementRef;
+export declare class TemplateRef_ extends TemplateRef {
+    private _elementRef;
+    constructor(_elementRef: ElementRef_);
+    elementRef: ElementRef_;
 }
