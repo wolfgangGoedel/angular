@@ -38,34 +38,38 @@ import {ElementRef_} from 'angular2/src/core/linker/element_ref';
  * Construct providers specific to an individual root component.
  */
 function _componentProviders(appComponentType: Type): Array<Type | Provider | any[]> {
-  return [
-    provide(APP_COMPONENT, {useValue: appComponentType}),
-    provide(APP_COMPONENT_REF_PROMISE,
-            {
-              useFactory: (dynamicComponentLoader: DynamicComponentLoader, appRef: ApplicationRef_,
-                           injector: Injector) => {
-                // Save the ComponentRef for disposal later.
-                var ref: ComponentRef;
-                // TODO(rado): investigate whether to support providers on root component.
-                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector,
-                                                         () => { appRef._unloadComponent(ref); })
-                    .then((componentRef) => {
-                      ref = componentRef;
-                      var testability = injector.getOptional(Testability);
-                      if (isPresent(testability)) {
-                        injector.get(TestabilityRegistry)
-                            .registerApplication(componentRef.location.nativeElement, testability);
-                      }
-                      return componentRef;
-                    });
-              },
-              deps: [DynamicComponentLoader, ApplicationRef, Injector]
-            }),
-    provide(appComponentType,
-            {
-              useFactory: (p: Promise<any>) => p.then(ref => ref.instance),
-              deps: [APP_COMPONENT_REF_PROMISE]
-            }),
+  return <any[]>[provide(APP_COMPONENT, {useValue: appComponentType}),
+                 provide(APP_COMPONENT_REF_PROMISE,
+                         {
+                           useFactory: (dynamicComponentLoader: DynamicComponentLoader,
+                                        appRef: ApplicationRef_, injector: Injector) => {
+                             // Save the ComponentRef for disposal later.
+                             var ref: ComponentRef;
+                             // TODO(rado): investigate whether to support providers on root
+                             // component.
+                             return dynamicComponentLoader.loadAsRoot(
+                                                              appComponentType, null, injector,
+                                                              () => {
+                                                                appRef._unloadComponent(ref);
+                                                              })
+                                 .then((componentRef) => {
+                                   ref = componentRef;
+                                   var testability = injector.getOptional(Testability);
+                                   if (isPresent(testability)) {
+                                     injector.get(TestabilityRegistry)
+                                         .registerApplication(componentRef.location.nativeElement,
+                                                              testability);
+                                   }
+                                   return componentRef;
+                                 });
+                           },
+                           deps: [DynamicComponentLoader, ApplicationRef, Injector]
+                         }),
+                 provide(appComponentType,
+                         {
+                           useFactory: (p: Promise<any>) => p.then(ref => ref.instance),
+                           deps: [APP_COMPONENT_REF_PROMISE]
+                         }),
   ];
 }
 
@@ -446,7 +450,7 @@ export class ApplicationRef_ extends ApplicationRef {
       }
     });
     return completer.promise.then<ComponentRef>((ref: ComponentRef) => {
-      let c = this._injector.get(Console);
+      let c: Console = this._injector.get(Console);
       if (assertionsEnabled()) {
         c.log(
             "Angular 2 is running in the development mode. Call enableProdMode() to enable the production mode.");

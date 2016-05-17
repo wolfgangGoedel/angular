@@ -1,7 +1,7 @@
 import { Map, ListWrapper } from 'angular2/src/facade/collection';
-import { isPresent, isBlank, RegExpWrapper, RegExpMatcherWrapper, StringWrapper } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, RegExpWrapper, RegExpMatcherWrapper, StringWrapper, CONST_EXPR } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
-const _EMPTY_ATTR_VALUE = '';
+const _EMPTY_ATTR_VALUE = CONST_EXPR('');
 // TODO: Can't use `const` here as
 // in Dart this is not transpiled into `final` yet...
 var _SELECTOR_REGEXP = RegExpWrapper.create('(\\:not\\()|' +
