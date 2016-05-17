@@ -369,11 +369,11 @@ class StaticReflector {
                 case "||":
                   return left || right;
                 case "|":
-                  return left | right;
+                  return (left as int) | (right as int);
                 case "^":
-                  return left ^ right;
+                  return (left as int) ^ (right as int);
                 case "&":
-                  return left & right;
+                  return (left as int) & (right as int);
                 case "==":
                   return left == right;
                 case "!=":
@@ -391,9 +391,9 @@ class StaticReflector {
                 case ">=":
                   return left >= right;
                 case "<<":
-                  return left << right;
+                  return (left as int) << (right as int);
                 case ">>":
-                  return left >> right;
+                  return (left as int) >> (right as int);
                 case "+":
                   return left + right;
                 case "-":
@@ -416,7 +416,7 @@ class StaticReflector {
                 case "!":
                   return !operand;
                 case "~":
-                  return ~operand;
+                  return ~(operand as int);
               }
               return null;
             case "index":

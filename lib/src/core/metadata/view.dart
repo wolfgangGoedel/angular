@@ -119,13 +119,13 @@ class ViewMetadata {
    */
   final ViewEncapsulation encapsulation;
   const ViewMetadata(
-      {templateUrl,
-      template,
-      directives,
-      pipes,
-      encapsulation,
-      styles,
-      styleUrls})
+      {String templateUrl,
+      String template,
+      List<dynamic /* Type | List < dynamic > */ > directives,
+      List<dynamic /* Type | List < dynamic > */ > pipes,
+      ViewEncapsulation encapsulation,
+      List<String> styles,
+      List<String> styleUrls})
       : templateUrl = templateUrl,
         template = template,
         styleUrls = styleUrls,

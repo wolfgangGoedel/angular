@@ -8,12 +8,12 @@ import "package:angular2/src/core/change_detection/proto_record.dart"
 
 main() {
   r(
-      {lastInBinding,
-      mode,
-      name,
-      directiveIndex,
-      argumentToPureFunction,
-      referencedBySelf}) {
+      {dynamic lastInBinding,
+      dynamic mode,
+      dynamic name,
+      dynamic directiveIndex,
+      bool argumentToPureFunction,
+      bool referencedBySelf}) {
     if (isBlank(lastInBinding)) lastInBinding = false;
     if (isBlank(mode)) mode = RecordType.PropertyRead;
     if (isBlank(name)) name = "name";

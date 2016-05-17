@@ -11,7 +11,6 @@ import "package:angular2/testing_internal.dart"
         beforeEach,
         beforeEachProviders,
         SpyObject,
-        proxy,
         browserDetection;
 import "../shared/web_worker_test_util.dart" show createPairedMessageBuses;
 import "package:angular2/src/web_workers/shared/serializer.dart"
@@ -26,12 +25,12 @@ import "package:angular2/src/web_workers/shared/render_store.dart"
     show RenderStore;
 
 main() {
-  const CHANNEL = "UIMessageBroker Test Channel";
-  const TEST_METHOD = "TEST_METHOD";
-  const PASSED_ARG_1 = 5;
-  const PASSED_ARG_2 = "TEST";
-  const RESULT = 20;
-  const ID = "methodId";
+  final CHANNEL = "UIMessageBroker Test Channel";
+  final TEST_METHOD = "TEST_METHOD";
+  final PASSED_ARG_1 = 5;
+  final PASSED_ARG_2 = "TEST";
+  final RESULT = 20;
+  final ID = "methodId";
   beforeEachProviders(
       () => [Serializer, provide(ON_WEB_WORKER, useValue: true), RenderStore]);
   describe("UIMessageBroker", () {

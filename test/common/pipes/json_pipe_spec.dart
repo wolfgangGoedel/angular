@@ -12,7 +12,6 @@ import "package:angular2/testing_internal.dart"
         afterEach,
         AsyncTestCompleter,
         inject,
-        proxy,
         TestComponentBuilder;
 import "package:angular2/src/facade/lang.dart"
     show Json, RegExp, NumberWrapper, StringWrapper;

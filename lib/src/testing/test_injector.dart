@@ -143,7 +143,7 @@ class InjectSetupWrapper {
   }
 }
 
-withProviders(dynamic /* () => any */ providers) {
+withProviders(dynamic providers()) {
   return new InjectSetupWrapper(providers);
 }
 

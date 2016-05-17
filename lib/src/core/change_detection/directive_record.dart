@@ -28,17 +28,17 @@ class DirectiveRecord {
   // array of [emitter property name, eventName]
   List<List<String>> outputs;
   DirectiveRecord(
-      {directiveIndex,
-      callAfterContentInit,
-      callAfterContentChecked,
-      callAfterViewInit,
-      callAfterViewChecked,
-      callOnChanges,
-      callDoCheck,
-      callOnInit,
-      callOnDestroy,
-      changeDetection,
-      outputs}) {
+      {DirectiveIndex directiveIndex,
+      bool callAfterContentInit,
+      bool callAfterContentChecked,
+      bool callAfterViewInit,
+      bool callAfterViewChecked,
+      bool callOnChanges,
+      bool callDoCheck,
+      bool callOnInit,
+      bool callOnDestroy,
+      ChangeDetectionStrategy changeDetection,
+      List<List<String>> outputs}) {
     this.directiveIndex = directiveIndex;
     this.callAfterContentInit = normalizeBool(callAfterContentInit);
     this.callAfterContentChecked = normalizeBool(callAfterContentChecked);

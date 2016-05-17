@@ -158,7 +158,8 @@ class QueryMetadata extends DependencyMetadata {
    */
   final bool descendants;
   final bool first;
-  const QueryMetadata(this._selector, {descendants: false, first: false})
+  const QueryMetadata(this._selector,
+      {bool descendants: false, bool first: false})
       : descendants = descendants,
         first = first,
         super();
@@ -219,7 +220,7 @@ class QueryMetadata extends DependencyMetadata {
  */
 class ContentChildrenMetadata extends QueryMetadata {
   const ContentChildrenMetadata(dynamic /* Type | String */ _selector,
-      {descendants: false})
+      {bool descendants: false})
       : super(_selector, descendants: descendants);
 }
 // TODO: add an example after ContentChild and ViewChild are in master
@@ -286,7 +287,7 @@ class ContentChildMetadata extends QueryMetadata {
  */
 class ViewQueryMetadata extends QueryMetadata {
   const ViewQueryMetadata(dynamic /* Type | String */ _selector,
-      {descendants: false, first: false})
+      {bool descendants: false, bool first: false})
       : super(_selector, descendants: descendants, first: first);
   /**
    * always `true` to differentiate it with [QueryMetadata].

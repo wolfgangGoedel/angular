@@ -25,7 +25,13 @@ abstract class AbstractRoute implements RouteDefinition {
   final String regex;
   final RegexSerializer serializer;
   final Map<String, dynamic> data;
-  const AbstractRoute({name, useAsDefault, path, regex, serializer, data})
+  const AbstractRoute(
+      {String name,
+      bool useAsDefault,
+      String path,
+      String regex,
+      RegexSerializer serializer,
+      dynamic data})
       : name = name,
         useAsDefault = useAsDefault,
         path = path,
@@ -59,7 +65,14 @@ abstract class AbstractRoute implements RouteDefinition {
 class Route extends AbstractRoute {
   final dynamic component;
   final String aux = null;
-  const Route({name, useAsDefault, path, regex, serializer, data, component})
+  const Route(
+      {String name,
+      bool useAsDefault,
+      String path,
+      String regex,
+      RegexSerializer serializer,
+      dynamic data,
+      dynamic /* Type | ComponentDefinition */ component})
       : component = component,
         super(
             name: name,
@@ -92,7 +105,14 @@ class Route extends AbstractRoute {
  */
 class AuxRoute extends AbstractRoute {
   final dynamic component;
-  const AuxRoute({name, useAsDefault, path, regex, serializer, data, component})
+  const AuxRoute(
+      {String name,
+      bool useAsDefault,
+      String path,
+      String regex,
+      RegexSerializer serializer,
+      dynamic data,
+      dynamic /* Type | ComponentDefinition */ component})
       : component = component,
         super(
             name: name,
@@ -130,7 +150,14 @@ class AuxRoute extends AbstractRoute {
 class AsyncRoute extends AbstractRoute {
   final dynamic /* () => Promise<Type> */ loader;
   final String aux = null;
-  const AsyncRoute({name, useAsDefault, path, regex, serializer, data, loader})
+  const AsyncRoute(
+      {String name,
+      bool useAsDefault,
+      String path,
+      String regex,
+      RegexSerializer serializer,
+      dynamic data,
+      dynamic /* () => Promise<Type> */ loader})
       : loader = loader,
         super(
             name: name,
@@ -165,7 +192,13 @@ class AsyncRoute extends AbstractRoute {
 class Redirect extends AbstractRoute {
   final List<dynamic> redirectTo;
   const Redirect(
-      {name, useAsDefault, path, regex, serializer, data, redirectTo})
+      {String name,
+      bool useAsDefault,
+      String path,
+      String regex,
+      RegexSerializer serializer,
+      dynamic data,
+      List<dynamic> redirectTo})
       : redirectTo = redirectTo,
         super(
             name: name,

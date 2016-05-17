@@ -41,13 +41,13 @@ class NumberValueAccessor implements ControlValueAccessor {
         .setElementProperty(this._elementRef.nativeElement, "value", value);
   }
 
-  void registerOnChange(dynamic /* (_: number) => void */ fn) {
+  void registerOnChange(void fn(num _)) {
     this.onChange = (value) {
       fn(value == "" ? null : NumberWrapper.parseFloat(value));
     };
   }
 
-  void registerOnTouched(dynamic /* () => void */ fn) {
+  void registerOnTouched(void fn()) {
     this.onTouched = fn;
   }
 }

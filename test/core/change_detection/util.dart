@@ -29,7 +29,12 @@ iterableChangesAsString(
       "\n";
 }
 
-String kvChangesAsString({map, previous, additions, changes, removals}) {
+String kvChangesAsString(
+    {List<dynamic> map,
+    List<dynamic> previous,
+    List<dynamic> additions,
+    List<dynamic> changes,
+    List<dynamic> removals}) {
   if (isBlank(map)) map = [];
   if (isBlank(previous)) previous = [];
   if (isBlank(additions)) additions = [];

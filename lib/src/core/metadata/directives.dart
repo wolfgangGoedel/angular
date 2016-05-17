@@ -744,16 +744,16 @@ class DirectiveMetadata extends InjectableMetadata {
    */
   final Map<String, dynamic> queries;
   const DirectiveMetadata(
-      {selector,
-      inputs,
-      outputs,
-      properties,
-      events,
-      host,
-      bindings,
-      providers,
-      exportAs,
-      queries})
+      {String selector,
+      List<String> inputs,
+      List<String> outputs,
+      List<String> properties,
+      List<String> events,
+      Map<String, String> host,
+      List<dynamic> bindings,
+      List<dynamic> providers,
+      String exportAs,
+      Map<String, dynamic> queries})
       : selector = selector,
         _inputs = inputs,
         _properties = properties,
@@ -881,27 +881,27 @@ class ComponentMetadata extends DirectiveMetadata {
   final List<dynamic /* Type | List < dynamic > */ > pipes;
   final ViewEncapsulation encapsulation;
   const ComponentMetadata(
-      {selector,
-      inputs,
-      outputs,
-      properties,
-      events,
-      host,
-      exportAs,
-      moduleId,
-      bindings,
-      providers,
-      viewBindings,
-      viewProviders,
-      changeDetection: ChangeDetectionStrategy.Default,
-      queries,
-      templateUrl,
-      template,
-      styleUrls,
-      styles,
-      directives,
-      pipes,
-      encapsulation})
+      {String selector,
+      List<String> inputs,
+      List<String> outputs,
+      List<String> properties,
+      List<String> events,
+      Map<String, String> host,
+      String exportAs,
+      String moduleId,
+      List<dynamic> bindings,
+      List<dynamic> providers,
+      List<dynamic> viewBindings,
+      List<dynamic> viewProviders,
+      ChangeDetectionStrategy changeDetection: ChangeDetectionStrategy.Default,
+      Map<String, dynamic> queries,
+      String templateUrl,
+      String template,
+      List<String> styleUrls,
+      List<String> styles,
+      List<dynamic /* Type | List < dynamic > */ > directives,
+      List<dynamic /* Type | List < dynamic > */ > pipes,
+      ViewEncapsulation encapsulation})
       : changeDetection = changeDetection,
         _viewProviders = viewProviders,
         _viewBindings = viewBindings,
@@ -941,7 +941,7 @@ class PipeMetadata extends InjectableMetadata {
   final String name;
   /** @internal */
   final bool _pure;
-  const PipeMetadata({name, pure})
+  const PipeMetadata({String name, bool pure})
       : name = name,
         _pure = pure,
         super();

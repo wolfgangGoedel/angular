@@ -11,9 +11,9 @@ import "package:angular2/src/compiler/parse_util.dart"
 
 var _PLACEHOLDER_REGEXP =
     RegExpWrapper.create('''\\<ph(\\s)+name=("(\\w)+")\\/\\>''');
-const _ID_ATTR = "id";
-const _MSG_ELEMENT = "msg";
-const _BUNDLE_ELEMENT = "message-bundle";
+final _ID_ATTR = "id";
+final _MSG_ELEMENT = "msg";
+final _BUNDLE_ELEMENT = "message-bundle";
 String serializeXmb(List<Message> messages) {
   var ms = messages.map((m) => _serializeMessage(m)).toList().join("");
   return '''<message-bundle>${ ms}</message-bundle>''';
@@ -51,8 +51,7 @@ XmbDeserializationResult deserializeXmb(String content, String url) {
   _createMessages(bundleEl.children, messages, errors);
   return (errors.length == 0)
       ? new XmbDeserializationResult(normalizedContent, messages, [])
-      : new XmbDeserializationResult(
-          null, ({} as Map<String, List<HtmlAst>>), errors);
+      : new XmbDeserializationResult(null, <String, List<HtmlAst>>{}, errors);
 }
 
 bool _checkRootElement(List<HtmlAst> nodes) {

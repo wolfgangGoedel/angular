@@ -37,10 +37,10 @@ import "shared.dart"
         getPhNameFromBinding,
         dedupePhName;
 
-const _I18N_ATTR = "i18n";
-const _PLACEHOLDER_ELEMENT = "ph";
-const _NAME_ATTR = "name";
-const _I18N_ATTR_PREFIX = "i18n-";
+final _I18N_ATTR = "i18n";
+final _PLACEHOLDER_ELEMENT = "ph";
+final _NAME_ATTR = "name";
+final _I18N_ATTR_PREFIX = "i18n-";
 var _PLACEHOLDER_EXPANDED_REGEXP =
     RegExpWrapper.create('''\\<ph(\\s)+name=("(\\w)+")\\>\\<\\/ph\\>''');
 

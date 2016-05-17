@@ -65,4 +65,4 @@ const List<Type> FORM_PROVIDERS = const [FormBuilder, RadioControlRegistry];
  *
  * 
  */
-const FORM_BINDINGS = FORM_PROVIDERS;
+final FORM_BINDINGS = FORM_PROVIDERS;

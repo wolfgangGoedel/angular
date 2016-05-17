@@ -14,7 +14,7 @@ import "package:angular2/src/facade/lang.dart" show isPresent, NumberWrapper;
 import "package:angular2/src/facade/collection.dart" show Map;
 import "ng_switch.dart" show SwitchView;
 
-const _CATEGORY_DEFAULT = "other";
+final _CATEGORY_DEFAULT = "other";
 
 abstract class NgLocalization {
   String getPluralCategory(dynamic value);

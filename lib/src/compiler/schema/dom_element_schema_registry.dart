@@ -5,11 +5,11 @@ import "package:angular2/src/facade/lang.dart" show isPresent;
 import "package:angular2/src/facade/collection.dart" show StringMapWrapper;
 import "element_schema_registry.dart" show ElementSchemaRegistry;
 
-const EVENT = "event";
-const BOOLEAN = "boolean";
-const NUMBER = "number";
-const STRING = "string";
-const OBJECT = "object";
+final EVENT = "event";
+final BOOLEAN = "boolean";
+final NUMBER = "number";
+final STRING = "string";
+final OBJECT = "object";
 /**
  * This array represents the DOM schema. It encodes inheritance, properties, and events.
  *
@@ -206,14 +206,14 @@ Map<String, String> attrToPropMap = ({
 
 @Injectable()
 class DomElementSchemaRegistry implements ElementSchemaRegistry {
-  var schema = ({} as Map<String, Map<String, String>>);
+  var schema = <String, Map<String, String>>{};
   DomElementSchemaRegistry() {
     SCHEMA.forEach((encodedType) {
       var parts = encodedType.split("|");
       var properties = parts[1].split(",");
       var typeParts = (parts[0] + "^").split("^");
       var typeName = typeParts[0];
-      var type = ({} as Map<String, String>);
+      var type = <String, String>{};
       typeName.split(",").forEach((tag) => this.schema[tag] = type);
       var superType = this.schema[typeParts[1]];
       if (isPresent(superType)) {

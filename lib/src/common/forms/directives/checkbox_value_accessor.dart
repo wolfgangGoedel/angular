@@ -38,11 +38,11 @@ class CheckboxControlValueAccessor implements ControlValueAccessor {
         .setElementProperty(this._elementRef.nativeElement, "checked", value);
   }
 
-  void registerOnChange(dynamic /* (_: any) => {} */ fn) {
+  void registerOnChange(dynamic fn(dynamic _)) {
     this.onChange = fn;
   }
 
-  void registerOnTouched(dynamic /* () => {} */ fn) {
+  void registerOnTouched(dynamic fn()) {
     this.onTouched = fn;
   }
 }

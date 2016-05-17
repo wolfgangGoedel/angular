@@ -61,9 +61,9 @@ var APP_EL_MODULE_REF =
     moduleRef("package:angular2/src/core/linker/element" + MODULE_SUFFIX);
 var METADATA_MODULE_REF =
     moduleRef("package:angular2/src/core/metadata/view" + MODULE_SUFFIX);
-const IMPLICIT_TEMPLATE_VAR = "\$implicit";
-const CLASS_ATTR = "class";
-const STYLE_ATTR = "style";
+final IMPLICIT_TEMPLATE_VAR = "\$implicit";
+final CLASS_ATTR = "class";
+final STYLE_ATTR = "style";
 
 @Injectable()
 class ProtoViewCompiler {

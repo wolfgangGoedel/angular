@@ -26,7 +26,7 @@ var needsLongerTimers = browserDetection.isSlow || browserDetection.isEdge;
 var resultTimer = 1000;
 var testTimeout = browserDetection.isEdge ? 1200 : 500;
 // Schedules a macrotask (using a timer)
-void macroTask(dynamic /* (...args: any[]) => void */ fn, [timer = 1]) {
+void macroTask(Function fn, [timer = 1]) {
   // adds longer timers for passing tests in IE and Edge
   TimerWrapper.setTimeout(fn, needsLongerTimers ? timer : 1);
 }
@@ -55,7 +55,7 @@ logOnStable() {
   ObservableWrapper.subscribe(_zone.onStable, _log.fn("onStable"));
 }
 
-runNgZoneNoLog(dynamic /* () => any */ fn) {
+runNgZoneNoLog(dynamic fn()) {
   var length = _log.logItems.length;
   try {
     return _zone.run(fn);

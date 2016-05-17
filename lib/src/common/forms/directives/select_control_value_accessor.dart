@@ -64,13 +64,13 @@ class SelectControlValueAccessor implements ControlValueAccessor {
         this._elementRef.nativeElement, "value", valueString);
   }
 
-  void registerOnChange(dynamic /* (value: any) => any */ fn) {
+  void registerOnChange(dynamic fn(dynamic value)) {
     this.onChange = (String valueString) {
       fn(this._getOptionValue(valueString));
     };
   }
 
-  void registerOnTouched(dynamic /* () => any */ fn) {
+  void registerOnTouched(dynamic fn()) {
     this.onTouched = fn;
   }
 

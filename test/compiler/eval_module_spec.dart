@@ -19,7 +19,7 @@ import "eval_module.dart" show evalModule;
 
 // when evaling the test module!
 var TEST_VALUE = 23;
-const THIS_MODULE_URL =
+final THIS_MODULE_URL =
     '''package:angular2/test/compiler/eval_module_spec${ IS_DART ? ".dart" : ".js"}''';
 main() {
   // Dart's isolate support is broken, and these tests will be obsolote soon with

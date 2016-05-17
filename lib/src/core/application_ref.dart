@@ -34,14 +34,16 @@ import "package:angular2/src/core/linker/element_ref.dart" show ElementRef_;
  */
 List<dynamic /* Type | Provider | List < dynamic > */ > _componentProviders(
     Type appComponentType) {
-  return [
+  return <dynamic>[
     provide(APP_COMPONENT, useValue: appComponentType),
     provide(APP_COMPONENT_REF_PROMISE, useFactory:
         (DynamicComponentLoader dynamicComponentLoader, ApplicationRef_ appRef,
             Injector injector) {
       // Save the ComponentRef for disposal later.
       ComponentRef ref;
-      // TODO(rado): investigate whether to support providers on root component.
+      // TODO(rado): investigate whether to support providers on root
+
+      // component.
       return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector,
           () {
         appRef._unloadComponent(ref);
@@ -139,7 +141,7 @@ abstract class PlatformRef {
   /**
    * Register a listener to be called when the platform is disposed.
    */
-  void registerDisposeListener(dynamic /* () => void */ dispose);
+  void registerDisposeListener(void dispose());
   /**
    * Retrieve the platform [Injector], which is the parent injector for
    * every Angular application on the page and provides singleton providers.
@@ -186,7 +188,8 @@ abstract class PlatformRef {
    * constructed in the same manner as a normal `application()`.
    */
   Future<ApplicationRef> asyncApplication(
-      dynamic /* (zone: NgZone) => Promise<Array<Type | Provider | any[]>> */ bindingFn,
+      Future<List<dynamic /* Type | Provider | List < dynamic > */ >> bindingFn(
+          NgZone zone),
       [List<dynamic /* Type | Provider | List < dynamic > */ > providers]);
   /**
    * Destroy the Angular platform and all Angular applications on the page.
@@ -204,7 +207,7 @@ class PlatformRef_ extends PlatformRef {
   PlatformRef_(this._injector, this._dispose) : super() {
     /* super call moved to initializer */;
   }
-  void registerDisposeListener(dynamic /* () => void */ dispose) {
+  void registerDisposeListener(void dispose()) {
     this._disposeListeners.add(dispose);
   }
 
@@ -223,7 +226,8 @@ class PlatformRef_ extends PlatformRef {
   }
 
   Future<ApplicationRef> asyncApplication(
-      dynamic /* (zone: NgZone) => Promise<Array<Type | Provider | any[]>> */ bindingFn,
+      Future<List<dynamic /* Type | Provider | List < dynamic > */ >> bindingFn(
+          NgZone zone),
       [List<
           dynamic /* Type | Provider | List < dynamic > */ > additionalProviders]) {
     var zone = createNgZone();
@@ -319,12 +323,11 @@ abstract class ApplicationRef {
    * Register a listener to be called each time `bootstrap()` is called to bootstrap
    * a new root component.
    */
-  void registerBootstrapListener(
-      dynamic /* (ref: ComponentRef) => void */ listener);
+  void registerBootstrapListener(void listener(ComponentRef ref));
   /**
    * Register a listener to be called when the application is disposed.
    */
-  void registerDisposeListener(dynamic /* () => void */ dispose);
+  void registerDisposeListener(void dispose());
   /**
    * Bootstrap a new component at the root level of the application.
    *
@@ -413,12 +416,11 @@ class ApplicationRef_ extends ApplicationRef {
     }
     this._enforceNoNewChanges = assertionsEnabled();
   }
-  void registerBootstrapListener(
-      dynamic /* (ref: ComponentRef) => void */ listener) {
+  void registerBootstrapListener(void listener(ComponentRef ref)) {
     this._bootstrapListeners.add(listener);
   }
 
-  void registerDisposeListener(dynamic /* () => void */ dispose) {
+  void registerDisposeListener(void dispose()) {
     this._disposeListeners.add(dispose);
   }
 
@@ -460,7 +462,7 @@ class ApplicationRef_ extends ApplicationRef {
       }
     });
     return completer.promise.then((ComponentRef ref) {
-      var c = this._injector.get(Console);
+      Console c = this._injector.get(Console);
       if (assertionsEnabled()) {
         c.log(
             "Angular 2 is running in the development mode. Call enableProdMode() to enable the production mode.");

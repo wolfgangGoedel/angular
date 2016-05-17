@@ -342,7 +342,8 @@ main() {
             (TestComponentBuilder tcb, async) {
           tcb.createAsync(ParentComp).then((fixture) {
             fixture.detectChanges();
-            expect(fixture.debugElement.children[0].inject(Logger).log)
+            Logger logger = fixture.debugElement.children[0].inject(Logger);
+            expect(logger.log)
                 .toEqual(["parent", "nestedparent", "child", "nestedchild"]);
             async.done();
           });

@@ -72,9 +72,8 @@ class SpyLocation implements Location {
 
   forward() {}
   back() {}
-  Object subscribe(dynamic /* (value: any) => void */ onNext,
-      [dynamic /* (error: any) => void */ onThrow = null,
-      dynamic /* () => void */ onReturn = null]) {
+  Object subscribe(void onNext(dynamic value),
+      [void onThrow(dynamic error) = null, void onReturn() = null]) {
     return ObservableWrapper.subscribe(
         this._subject, onNext, onThrow, onReturn);
   }

@@ -20,9 +20,9 @@ import "util.dart"
         MODULE_SUFFIX;
 import "package:angular2/src/core/di.dart" show Injectable;
 
-const COMPONENT_VARIABLE = "%COMP%";
-const HOST_ATTR = '''_nghost-${ COMPONENT_VARIABLE}''';
-const CONTENT_ATTR = '''_ngcontent-${ COMPONENT_VARIABLE}''';
+final COMPONENT_VARIABLE = "%COMP%";
+final HOST_ATTR = '''_nghost-${ COMPONENT_VARIABLE}''';
+final CONTENT_ATTR = '''_ngcontent-${ COMPONENT_VARIABLE}''';
 
 @Injectable()
 class StyleCompiler {

@@ -4,16 +4,16 @@ import "html_ast.dart" show HtmlElementAst;
 import "package:angular2/src/facade/lang.dart" show isBlank, isPresent;
 import "html_tags.dart" show splitNsName;
 
-const NG_CONTENT_SELECT_ATTR = "select";
-const NG_CONTENT_ELEMENT = "ng-content";
-const LINK_ELEMENT = "link";
-const LINK_STYLE_REL_ATTR = "rel";
-const LINK_STYLE_HREF_ATTR = "href";
-const LINK_STYLE_REL_VALUE = "stylesheet";
-const STYLE_ELEMENT = "style";
-const SCRIPT_ELEMENT = "script";
-const NG_NON_BINDABLE_ATTR = "ngNonBindable";
-const NG_PROJECT_AS = "ngProjectAs";
+final NG_CONTENT_SELECT_ATTR = "select";
+final NG_CONTENT_ELEMENT = "ng-content";
+final LINK_ELEMENT = "link";
+final LINK_STYLE_REL_ATTR = "rel";
+final LINK_STYLE_HREF_ATTR = "href";
+final LINK_STYLE_REL_VALUE = "stylesheet";
+final STYLE_ELEMENT = "style";
+final SCRIPT_ELEMENT = "script";
+final NG_NON_BINDABLE_ATTR = "ngNonBindable";
+final NG_PROJECT_AS = "ngProjectAs";
 PreparsedElement preparseElement(HtmlElementAst ast) {
   var selectAttr = null;
   var hrefAttr = null;

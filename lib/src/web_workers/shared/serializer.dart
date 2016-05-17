@@ -16,7 +16,7 @@ import "serialized_types.dart" show LocationType;
 // PRIMITIVE is any type that does not need to be serialized (string, number, boolean)
 
 // We set it to String so that it is considered a Type.
-const Type PRIMITIVE = String;
+final Type PRIMITIVE = String;
 
 @Injectable()
 class Serializer {

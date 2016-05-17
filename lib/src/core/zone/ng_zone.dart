@@ -215,7 +215,7 @@ class NgZone {
    * Any future tasks or microtasks scheduled from within this function will continue executing from
    * within the Angular zone.
    */
-  dynamic run(dynamic /* () => any */ fn) {
+  dynamic run(dynamic fn()) {
     return this._zoneImpl.runInner(fn);
   }
 
@@ -231,7 +231,7 @@ class NgZone {
    *
    * Use [#run] to reenter the Angular zone and do work that updates the application model.
    */
-  dynamic runOutsideAngular(dynamic /* () => any */ fn) {
+  dynamic runOutsideAngular(dynamic fn()) {
     return this._zoneImpl.runOuter(fn);
   }
 }

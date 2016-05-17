@@ -190,7 +190,12 @@ class Provider {
   /** @internal */
   final bool _multi;
   const Provider(token,
-      {useClass, useValue, useExisting, useFactory, deps, multi})
+      {Type useClass,
+      dynamic useValue,
+      dynamic useExisting,
+      Function useFactory,
+      List<Object> deps,
+      bool multi})
       : token = token,
         useClass = useClass,
         useValue = useValue,
@@ -240,7 +245,13 @@ class Provider {
  * 
  */
 class Binding extends Provider {
-  const Binding(token, {toClass, toValue, toAlias, toFactory, deps, multi})
+  const Binding(token,
+      {Type toClass,
+      dynamic toValue,
+      dynamic toAlias,
+      Function toFactory,
+      List<Object> deps,
+      bool multi})
       : super(token,
             useClass: toClass,
             useValue: toValue,
@@ -366,7 +377,12 @@ ProviderBuilder bind(token) {
  * <!-- TODO: improve the docs -->
  */
 Provider provide(token,
-    {useClass, useValue, useExisting, useFactory, deps, multi}) {
+    {Type useClass,
+    dynamic useValue,
+    dynamic useExisting,
+    Function useFactory,
+    List<Object> deps,
+    bool multi}) {
   return new Provider(token,
       useClass: useClass,
       useValue: useValue,

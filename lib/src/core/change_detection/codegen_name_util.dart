@@ -10,19 +10,19 @@ import "event_binding.dart" show EventBinding;
 // The names of these fields must be kept in sync with abstract_change_detector.ts or change
 
 // detection will fail.
-const _STATE_ACCESSOR = "state";
-const _CONTEXT_ACCESSOR = "context";
-const _PROP_BINDING_INDEX = "propertyBindingIndex";
-const _DIRECTIVES_ACCESSOR = "directiveIndices";
-const _DISPATCHER_ACCESSOR = "dispatcher";
-const _LOCALS_ACCESSOR = "locals";
-const _MODE_ACCESSOR = "mode";
-const _PIPES_ACCESSOR = "pipes";
-const _PROTOS_ACCESSOR = "protos";
-const CONTEXT_ACCESSOR = "context";
+final _STATE_ACCESSOR = "state";
+final _CONTEXT_ACCESSOR = "context";
+final _PROP_BINDING_INDEX = "propertyBindingIndex";
+final _DIRECTIVES_ACCESSOR = "directiveIndices";
+final _DISPATCHER_ACCESSOR = "dispatcher";
+final _LOCALS_ACCESSOR = "locals";
+final _MODE_ACCESSOR = "mode";
+final _PIPES_ACCESSOR = "pipes";
+final _PROTOS_ACCESSOR = "protos";
+final CONTEXT_ACCESSOR = "context";
 // `context` is always first.
-const CONTEXT_INDEX = 0;
-const _FIELD_PREFIX = "this.";
+final CONTEXT_INDEX = 0;
+final _FIELD_PREFIX = "this.";
 var _whiteSpaceRegExp = new RegExp(r'\W');
 /**
  * Returns `s` with all non-identifier characters removed.

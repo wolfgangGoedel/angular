@@ -11,12 +11,12 @@ import "package:angular2/src/core/change_detection/directive_record.dart"
 
 main() {
   r(funcOrValue, args, contextIndex, selfIndex,
-      {lastInBinding,
-      mode,
-      name,
-      directiveIndex,
-      argumentToPureFunction,
-      fixedArgs}) {
+      {dynamic lastInBinding,
+      dynamic mode,
+      dynamic name,
+      dynamic directiveIndex,
+      bool argumentToPureFunction,
+      List<dynamic> fixedArgs}) {
     if (isBlank(lastInBinding)) lastInBinding = false;
     if (isBlank(mode)) mode = RecordType.PropertyRead;
     if (isBlank(name)) name = "name";

@@ -500,9 +500,9 @@ String stripComments(String input) {
 var _ruleRe =
     new RegExp(r'(\s*)([^;\{\}]+?)(\s*)((?:{%BLOCK%}?\s*;?)|(?:\s*;))');
 var _curlyRe = new RegExp(r'([{}])');
-const OPEN_CURLY = "{";
-const CLOSE_CURLY = "}";
-const BLOCK_PLACEHOLDER = "%BLOCK%";
+final OPEN_CURLY = "{";
+final CLOSE_CURLY = "}";
+final BLOCK_PLACEHOLDER = "%BLOCK%";
 
 class CssRule {
   String selector;

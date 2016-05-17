@@ -16,7 +16,6 @@ import "package:angular2/testing_internal.dart"
         it,
         xit,
         TestComponentBuilder,
-        proxy,
         SpyObject;
 import "package:angular2/platform/common_dom.dart" show By;
 import "package:angular2/platform/common.dart" show Location;

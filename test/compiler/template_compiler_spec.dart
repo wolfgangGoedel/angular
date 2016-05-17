@@ -71,7 +71,7 @@ main() {
       runtimeMetadataResolver = _runtimeMetadataResolver;
     }));
     describe("compile templates", () {
-      runTests(dynamic /* (components: Type[]) => Promise<any[]> */ compile) {
+      runTests(Future<List<dynamic>> compile(List<Type> components)) {
         it(
             "should throw for non components",
             inject([AsyncTestCompleter], (async) {

@@ -40,11 +40,11 @@ class DefaultValueAccessor implements ControlValueAccessor {
         this._elementRef.nativeElement, "value", normalizedValue);
   }
 
-  void registerOnChange(dynamic /* (_: any) => void */ fn) {
+  void registerOnChange(void fn(dynamic _)) {
     this.onChange = fn;
   }
 
-  void registerOnTouched(dynamic /* () => void */ fn) {
+  void registerOnTouched(void fn()) {
     this.onTouched = fn;
   }
 }

@@ -121,7 +121,7 @@ class RadioControlValueAccessor
     }
   }
 
-  void registerOnChange(dynamic /* (_: any) => {} */ fn) {
+  void registerOnChange(dynamic fn(dynamic _)) {
     this._fn = fn;
     this.onChange = () {
       fn(new RadioButtonState(true, this._state.value));
@@ -133,7 +133,7 @@ class RadioControlValueAccessor
     this._fn(new RadioButtonState(false, this._state.value));
   }
 
-  void registerOnTouched(dynamic /* () => {} */ fn) {
+  void registerOnTouched(dynamic fn()) {
     this.onTouched = fn;
   }
 }

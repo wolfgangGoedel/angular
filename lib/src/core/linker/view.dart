@@ -32,7 +32,7 @@ import "view_manager.dart" show AppViewManager_, AppViewManager;
 import "resolved_metadata_cache.dart" show ResolvedMetadataCache;
 import "view_type.dart" show ViewType;
 
-const String REFLECT_PREFIX = "ng-reflect-";
+final String REFLECT_PREFIX = "ng-reflect-";
 const EMPTY_CONTEXT = const Object();
 
 /**

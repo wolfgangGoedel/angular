@@ -393,8 +393,7 @@ class Router {
   /**
    * Subscribe to URL updates from the router
    */
-  Object subscribe(dynamic /* (value: any) => void */ onNext,
-      [dynamic /* (value: any) => void */ onError]) {
+  Object subscribe(void onNext(dynamic value), [void onError(dynamic value)]) {
     return ObservableWrapper.subscribe(this._subject, onNext, onError);
   }
 

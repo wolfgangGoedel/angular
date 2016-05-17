@@ -52,8 +52,8 @@ main() {
     }
     testPushOrReplaceState(bool pushState) {
       var platformLocation = createWebWorkerPlatformLocation(null);
-      const TITLE = "foo";
-      const URL = "http://www.example.com/foo";
+      final TITLE = "foo";
+      final URL = "http://www.example.com/foo";
       expectBrokerCall(
           broker, pushState ? "pushState" : "replaceState", [null, TITLE, URL]);
       if (pushState) {

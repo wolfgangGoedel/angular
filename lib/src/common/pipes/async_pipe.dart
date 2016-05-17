@@ -33,7 +33,7 @@ class ObservableStrategy {
 
 class PromiseStrategy {
   dynamic createSubscription(
-      Future<dynamic> async, dynamic /* (v: any) => any */ updateLatestValue) {
+      Future<dynamic> async, dynamic updateLatestValue(dynamic v)) {
     return async.then(updateLatestValue);
   }
 

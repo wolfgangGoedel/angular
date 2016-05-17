@@ -15,8 +15,7 @@ import "package:angular2/testing_internal.dart"
         beforeEachProviders,
         it,
         xit,
-        SpyObject,
-        proxy;
+        SpyObject;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 import "package:angular2/src/platform/dom/shared_styles_host.dart"
     show DomSharedStylesHost;

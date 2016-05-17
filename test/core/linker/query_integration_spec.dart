@@ -88,7 +88,7 @@ main() {
                 .then((view) {
               view.debugElement.componentInstance.shouldShow = true;
               view.detectChanges();
-              var q = view.debugElement.children[0].getLocal("q");
+              NeedsContentChild q = view.debugElement.children[0].getLocal("q");
               expect(q.log).toEqual([
                 ["setter", "foo"],
                 ["init", "foo"],
@@ -119,7 +119,7 @@ main() {
                 .createAsync(MyComp)
                 .then((view) {
               view.detectChanges();
-              var q = view.debugElement.children[0].getLocal("q");
+              NeedsViewChild q = view.debugElement.children[0].getLocal("q");
               expect(q.log).toEqual([
                 ["setter", "foo"],
                 ["init", "foo"],
@@ -149,7 +149,7 @@ main() {
                 .createAsync(MyComp)
                 .then((view) {
               view.detectChanges();
-              var q = view.debugElement.children[0].getLocal("q");
+              NeedsViewChild q = view.debugElement.children[0].getLocal("q");
               expect(q.log).toEqual([
                 ["setter", "foo"],
                 ["init", "foo"],

@@ -150,8 +150,7 @@ abstract class DynamicComponentLoader {
    */
   Future<ComponentRef> loadAsRoot(
       Type type, String overrideSelector, Injector injector,
-      [dynamic /* () => void */ onDispose,
-      List<List<dynamic>> projectableNodes]);
+      [void onDispose(), List<List<dynamic>> projectableNodes]);
   /**
    * Creates an instance of a Component and attaches it to a View Container located inside of the
    * Component View of another Component instance.
@@ -255,8 +254,7 @@ class DynamicComponentLoader_ extends DynamicComponentLoader {
   }
   Future<ComponentRef> loadAsRoot(
       Type type, String overrideSelector, Injector injector,
-      [dynamic /* () => void */ onDispose,
-      List<List<dynamic>> projectableNodes]) {
+      [void onDispose(), List<List<dynamic>> projectableNodes]) {
     return this._compiler.compileInHost(type).then((hostProtoViewRef) {
       var hostViewRef = this._viewManager.createRootHostView(
           hostProtoViewRef, overrideSelector, injector, projectableNodes);
