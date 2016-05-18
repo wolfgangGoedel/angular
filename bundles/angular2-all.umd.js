@@ -13607,14 +13607,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Construct providers specific to an individual root component.
 	 */
 	function _componentProviders(appComponentType) {
-	    return [
-	        di_1.provide(application_tokens_1.APP_COMPONENT, { useValue: appComponentType }),
+	    return [di_1.provide(application_tokens_1.APP_COMPONENT, { useValue: appComponentType }),
 	        di_1.provide(application_tokens_1.APP_COMPONENT_REF_PROMISE, {
 	            useFactory: function (dynamicComponentLoader, appRef, injector) {
 	                // Save the ComponentRef for disposal later.
 	                var ref;
-	                // TODO(rado): investigate whether to support providers on root component.
-	                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, function () { appRef._unloadComponent(ref); })
+	                // TODO(rado): investigate whether to support providers on root
+	                // component.
+	                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, function () {
+	                    appRef._unloadComponent(ref);
+	                })
 	                    .then(function (componentRef) {
 	                    ref = componentRef;
 	                    var testability = injector.getOptional(testability_1.Testability);
@@ -19958,7 +19960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @deprecated
 	 */
-	exports.FORM_BINDINGS = exports.FORM_PROVIDERS;
+	exports.FORM_BINDINGS = lang_1.CONST_EXPR(exports.FORM_PROVIDERS);
 
 
 /***/ },
@@ -22533,7 +22535,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var lang_1 = __webpack_require__(5);
 	var validators_1 = __webpack_require__(145);
 	var lang_2 = __webpack_require__(5);
-	var REQUIRED = validators_1.Validators.required;
+	var REQUIRED = lang_1.CONST_EXPR(validators_1.Validators.required);
 	var REQUIRED_VALIDATOR = lang_1.CONST_EXPR(new core_1.Provider(validators_1.NG_VALIDATORS, { useValue: REQUIRED, multi: true }));
 	/**
 	 * A Directive that adds the `required` validator to any controls marked with the
@@ -34649,8 +34651,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                next = this._outlet.reuse(componentInstruction);
 	            }
 	            else {
-	                next =
-	                    this.deactivate(instruction).then(function (_) { return _this._outlet.activate(componentInstruction); });
+	                var outlet_1 = this._outlet;
+	                next = this.deactivate(instruction).then(function (_) { return outlet_1.activate(componentInstruction); });
 	            }
 	            if (lang_1.isPresent(instruction.child)) {
 	                next = next.then(function (_) {
@@ -34682,7 +34684,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Removes the contents of this router's outlet and all descendant outlets
 	     */
 	    Router.prototype.deactivate = function (instruction) {
-	        var _this = this;
 	        var childInstruction = null;
 	        var componentInstruction = null;
 	        if (lang_1.isPresent(instruction)) {
@@ -34694,7 +34695,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            next = this._childRouter.deactivate(childInstruction);
 	        }
 	        if (lang_1.isPresent(this._outlet)) {
-	            next = next.then(function (_) { return _this._outlet.deactivate(componentInstruction); });
+	            var outlet_2 = this._outlet;
+	            next = next.then(function (_) { return outlet_2.deactivate(componentInstruction); });
 	        }
 	        // TODO: handle aux routes
 	        return next;
@@ -38040,7 +38042,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @deprecated
 	 */
-	exports.ROUTER_BINDINGS = exports.ROUTER_PROVIDERS;
+	exports.ROUTER_BINDINGS = lang_1.CONST_EXPR(exports.ROUTER_PROVIDERS);
 
 
 /***/ },

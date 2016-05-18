@@ -48,4 +48,4 @@ export const FORM_PROVIDERS = CONST_EXPR([FormBuilder, RadioControlRegistry]);
  *
  * @deprecated
  */
-export const FORM_BINDINGS = FORM_PROVIDERS;
+export const FORM_BINDINGS = CONST_EXPR(FORM_PROVIDERS);

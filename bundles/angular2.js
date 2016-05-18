@@ -17678,7 +17678,7 @@ System.register("angular2/src/common/forms/directives/validators", ["angular2/co
   var lang_1 = require("angular2/src/facade/lang");
   var validators_1 = require("angular2/src/common/forms/validators");
   var lang_2 = require("angular2/src/facade/lang");
-  var REQUIRED = validators_1.Validators.required;
+  var REQUIRED = lang_1.CONST_EXPR(validators_1.Validators.required);
   var REQUIRED_VALIDATOR = lang_1.CONST_EXPR(new core_1.Provider(validators_1.NG_VALIDATORS, {
     useValue: REQUIRED,
     multi: true
@@ -24991,7 +24991,7 @@ System.register("angular2/src/common/forms", ["angular2/src/common/forms/model",
   var radio_control_value_accessor_1 = require("angular2/src/common/forms/directives/radio_control_value_accessor");
   var lang_1 = require("angular2/src/facade/lang");
   exports.FORM_PROVIDERS = lang_1.CONST_EXPR([form_builder_2.FormBuilder, radio_control_value_accessor_1.RadioControlRegistry]);
-  exports.FORM_BINDINGS = exports.FORM_PROVIDERS;
+  exports.FORM_BINDINGS = lang_1.CONST_EXPR(exports.FORM_PROVIDERS);
   global.define = __define;
   return module.exports;
 });

@@ -14,14 +14,16 @@ import { lockMode } from 'angular2/src/facade/lang';
  * Construct providers specific to an individual root component.
  */
 function _componentProviders(appComponentType) {
-    return [
-        provide(APP_COMPONENT, { useValue: appComponentType }),
+    return [provide(APP_COMPONENT, { useValue: appComponentType }),
         provide(APP_COMPONENT_REF_PROMISE, {
             useFactory: (dynamicComponentLoader, appRef, injector) => {
                 // Save the ComponentRef for disposal later.
                 var ref;
-                // TODO(rado): investigate whether to support providers on root component.
-                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, () => { appRef._unloadComponent(ref); })
+                // TODO(rado): investigate whether to support providers on root
+                // component.
+                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, () => {
+                    appRef._unloadComponent(ref);
+                })
                     .then((componentRef) => {
                     ref = componentRef;
                     var testability = injector.getOptional(Testability);
