@@ -379,6 +379,12 @@ class _NgMetaIdentifierResolver {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:html');
     } else if (id.name == "Random") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:math');
+    } else if (id.name == "Profiler") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:perf_api/lib/perf_api.dart');
+    } else if (id.name == "Logger") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:logging/lib/logging.dart');
+    } else if (id.name == "Clock") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:quiver/lib/time.dart');
     } else if (id.name == "Log") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/utils.dart');
     } else if (id.name == "TestComponentBuilder") {
@@ -387,12 +393,20 @@ class _NgMetaIdentifierResolver {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:async');
     } else if (id.name == "StreamController") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:async');
-    } else if (id.name == "AudioContext") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:web_audio');
-    } else if (id.name == "Stopwatch" || id.name == "Map") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:core');
     } else if (id.name == "FakeAsync") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/fake_async.dart');
+    } else if (id.name == "StreamTracer") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/core/tracing.dart');
+    } else if (id.name == "Tracer") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/core/tracing.dart');
+    } else if (id.name == "RequestHandler") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/core/request_handler.dart');
+    } else if (id.name == "BatchingStrategy") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/extra/request_handler/batching.dart');
+    } else if (id.name == "ProxyClient") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/extra/request_handler/proxy.dart');
+    } else if (id.name == "StreamyHttpService") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/toolbox/http.dart');
     } else {
       return null;
     }
