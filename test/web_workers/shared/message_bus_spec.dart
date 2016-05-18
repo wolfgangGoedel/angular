@@ -30,8 +30,8 @@ main() {
     it(
         "should pass messages in the same channel from sink to source",
         inject([AsyncTestCompleter], (async) {
-          final CHANNEL = "CHANNEL 1";
-          final MESSAGE = "Test message";
+          const CHANNEL = "CHANNEL 1";
+          const MESSAGE = "Test message";
           bus.initChannel(CHANNEL, false);
           var fromEmitter = bus.from(CHANNEL);
           ObservableWrapper.subscribe(fromEmitter, (dynamic message) {
@@ -44,9 +44,9 @@ main() {
     it(
         "should broadcast",
         inject([AsyncTestCompleter], (async) {
-          final CHANNEL = "CHANNEL 1";
-          final MESSAGE = "TESTING";
-          final NUM_LISTENERS = 2;
+          const CHANNEL = "CHANNEL 1";
+          const MESSAGE = "TESTING";
+          const NUM_LISTENERS = 2;
           bus.initChannel(CHANNEL, false);
           var callCount = 0;
           var emitHandler = (dynamic message) {
@@ -66,10 +66,10 @@ main() {
     it(
         "should keep channels independent",
         inject([AsyncTestCompleter], (async) {
-          final CHANNEL_ONE = "CHANNEL 1";
-          final CHANNEL_TWO = "CHANNEL 2";
-          final MESSAGE_ONE = "This is a message on CHANNEL 1";
-          final MESSAGE_TWO = "This is a message on CHANNEL 2";
+          const CHANNEL_ONE = "CHANNEL 1";
+          const CHANNEL_TWO = "CHANNEL 2";
+          const MESSAGE_ONE = "This is a message on CHANNEL 1";
+          const MESSAGE_TWO = "This is a message on CHANNEL 2";
           var callCount = 0;
           bus.initChannel(CHANNEL_ONE, false);
           bus.initChannel(CHANNEL_TWO, false);
@@ -97,7 +97,7 @@ main() {
   });
   describe("PostMessageBusSink", () {
     MessageBus bus;
-    final CHANNEL = "Test Channel";
+    const CHANNEL = "Test Channel";
     setup(bool runInZone, NgZone zone) {
       bus.attachToZone(zone);
       bus.initChannel(CHANNEL, runInZone);

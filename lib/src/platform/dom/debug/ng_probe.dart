@@ -13,8 +13,8 @@ import "package:angular2/src/core/debug/debug_renderer.dart"
     show DebugDomRootRenderer;
 
 const CORE_TOKENS = const {"ApplicationRef": ApplicationRef, "NgZone": NgZone};
-final INSPECT_GLOBAL_NAME = "ng.probe";
-final CORE_TOKENS_GLOBAL_NAME = "ng.coreTokens";
+const INSPECT_GLOBAL_NAME = "ng.probe";
+const CORE_TOKENS_GLOBAL_NAME = "ng.coreTokens";
 /**
  * Returns a [DebugElement] for the given native DOM element, or
  * null if the given native element does not have an Angular view associated

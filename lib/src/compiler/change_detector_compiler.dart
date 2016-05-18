@@ -24,9 +24,9 @@ import "package:angular2/src/transform/template_compiler/change_detector_codegen
 import "util.dart" show MODULE_SUFFIX;
 import "package:angular2/src/core/di.dart" show Injectable;
 
-final ABSTRACT_CHANGE_DETECTOR = "AbstractChangeDetector";
-final UTIL = "ChangeDetectionUtil";
-final CHANGE_DETECTOR_STATE = "ChangeDetectorState";
+const ABSTRACT_CHANGE_DETECTOR = "AbstractChangeDetector";
+const UTIL = "ChangeDetectionUtil";
+const CHANGE_DETECTOR_STATE = "ChangeDetectorState";
 const CHANGE_DETECTION_JIT_IMPORTS = const {
   "AbstractChangeDetector": AbstractChangeDetector,
   "ChangeDetectionUtil": ChangeDetectionUtil,

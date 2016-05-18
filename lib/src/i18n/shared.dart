@@ -19,8 +19,8 @@ import "message.dart" show Message;
 import "package:angular2/src/core/change_detection/parser/parser.dart"
     show Parser;
 
-final I18N_ATTR = "i18n";
-final I18N_ATTR_PREFIX = "i18n-";
+const I18N_ATTR = "i18n";
+const I18N_ATTR_PREFIX = "i18n-";
 var CUSTOM_PH_EXP = new RegExp(
     r'\/\/[\s\S]*i18n[\s\S]*\([\s\S]*ph[\s\S]*=[\s\S]*"([\s\S]*?)"[\s\S]*\)');
 

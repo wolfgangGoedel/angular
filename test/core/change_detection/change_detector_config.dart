@@ -60,7 +60,7 @@ List<dynamic> _convertLocalsToVariableBindings(Locals locals) {
   return variableBindings;
 }
 
-final PROP_NAME = "propName";
+const PROP_NAME = "propName";
 /**
  * In this case, we expect `id` and `expression` to be the same string.
  */

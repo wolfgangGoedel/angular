@@ -21,8 +21,8 @@ main() {
     it(
         "should pass requests through the broker and return the response",
         inject([AsyncTestCompleter], (async) {
-          final URL = "http://www.example.com/test";
-          final RESPONSE = "Example response text";
+          const URL = "http://www.example.com/test";
+          const RESPONSE = "Example response text";
           var messageBroker = new SpyMessageBroker();
           expectBrokerCall(messageBroker, "get", [URL], (_) {
             return PromiseWrapper.wrap(() {

@@ -40,14 +40,14 @@ enum BlockType {
   Viewport,
   Unsupported
 }
-final EOF_DELIM = 1;
-final RBRACE_DELIM = 2;
-final LBRACE_DELIM = 4;
-final COMMA_DELIM = 8;
-final COLON_DELIM = 16;
-final SEMICOLON_DELIM = 32;
-final NEWLINE_DELIM = 64;
-final RPAREN_DELIM = 128;
+const EOF_DELIM = 1;
+const RBRACE_DELIM = 2;
+const LBRACE_DELIM = 4;
+const COMMA_DELIM = 8;
+const COLON_DELIM = 16;
+const SEMICOLON_DELIM = 32;
+const NEWLINE_DELIM = 64;
+const RPAREN_DELIM = 128;
 CssToken mergeTokens(List<CssToken> tokens, [String separator = ""]) {
   var mainToken = tokens[0];
   var str = mainToken.strValue;

@@ -71,14 +71,14 @@ import "util.dart" show splitAtColon;
 // Group 8 = identifier inside ()
 var BIND_NAME_REGEXP = new RegExp(
     r'^(?:(?:(?:(bind-)|(var-|#)|(on-)|(bindon-))(.+))|\[\(([^\)]+)\)\]|\[([^\]]+)\]|\(([^\)]+)\))$');
-final TEMPLATE_ELEMENT = "template";
-final TEMPLATE_ATTR = "template";
-final TEMPLATE_ATTR_PREFIX = "*";
-final CLASS_ATTR = "class";
+const TEMPLATE_ELEMENT = "template";
+const TEMPLATE_ATTR = "template";
+const TEMPLATE_ATTR_PREFIX = "*";
+const CLASS_ATTR = "class";
 var PROPERTY_PARTS_SEPARATOR = ".";
-final ATTRIBUTE_PREFIX = "attr";
-final CLASS_PREFIX = "class";
-final STYLE_PREFIX = "style";
+const ATTRIBUTE_PREFIX = "attr";
+const CLASS_PREFIX = "class";
+const STYLE_PREFIX = "style";
 var TEXT_CSS_SELECTOR = CssSelector.parse("*")[0];
 /**
  * Provides an array of [TemplateAstVisitor]s which will be used to transform

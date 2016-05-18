@@ -27,7 +27,7 @@ const NAMESPACE_URIS = const {
   "xlink": "http://www.w3.org/1999/xlink",
   "svg": "http://www.w3.org/2000/svg"
 };
-final TEMPLATE_COMMENT_TEXT = "template bindings={}";
+const TEMPLATE_COMMENT_TEXT = "template bindings={}";
 var TEMPLATE_BINDINGS_EXP = new RegExp(r'^template bindings=(.*)$');
 
 abstract class DomRootRenderer implements RootRenderer {
@@ -336,7 +336,7 @@ Function decoratePreventDefault(Function eventHandler) {
 }
 
 var COMPONENT_REGEX = new RegExp(r'%COMP%');
-final COMPONENT_VARIABLE = "%COMP%";
+const COMPONENT_VARIABLE = "%COMP%";
 final HOST_ATTR = '''_nghost-${ COMPONENT_VARIABLE}''';
 final CONTENT_ATTR = '''_ngcontent-${ COMPONENT_VARIABLE}''';
 String _shimContentAttribute(String componentShortId) {

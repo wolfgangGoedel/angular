@@ -5,11 +5,11 @@ import "package:angular2/src/facade/lang.dart" show isPresent;
 import "package:angular2/src/facade/collection.dart" show StringMapWrapper;
 import "element_schema_registry.dart" show ElementSchemaRegistry;
 
-final EVENT = "event";
-final BOOLEAN = "boolean";
-final NUMBER = "number";
-final STRING = "string";
-final OBJECT = "object";
+const EVENT = "event";
+const BOOLEAN = "boolean";
+const NUMBER = "number";
+const STRING = "string";
+const OBJECT = "object";
 /**
  * This array represents the DOM schema. It encodes inheritance, properties, and events.
  *

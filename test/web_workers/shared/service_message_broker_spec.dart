@@ -25,12 +25,12 @@ import "package:angular2/src/web_workers/shared/render_store.dart"
     show RenderStore;
 
 main() {
-  final CHANNEL = "UIMessageBroker Test Channel";
-  final TEST_METHOD = "TEST_METHOD";
-  final PASSED_ARG_1 = 5;
-  final PASSED_ARG_2 = "TEST";
-  final RESULT = 20;
-  final ID = "methodId";
+  const CHANNEL = "UIMessageBroker Test Channel";
+  const TEST_METHOD = "TEST_METHOD";
+  const PASSED_ARG_1 = 5;
+  const PASSED_ARG_2 = "TEST";
+  const RESULT = 20;
+  const ID = "methodId";
   beforeEachProviders(
       () => [Serializer, provide(ON_WEB_WORKER, useValue: true), RenderStore]);
   describe("UIMessageBroker", () {

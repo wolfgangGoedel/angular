@@ -5,16 +5,16 @@ import "package:angular2/src/core/reflection/types.dart" show SetterFn;
 import "parser/ast.dart" show AST;
 import "directive_record.dart" show DirectiveIndex, DirectiveRecord;
 
-final DIRECTIVE_LIFECYCLE = "directiveLifecycle";
-final BINDING = "native";
-final DIRECTIVE = "directive";
-final ELEMENT_PROPERTY = "elementProperty";
-final ELEMENT_ATTRIBUTE = "elementAttribute";
-final ELEMENT_CLASS = "elementClass";
-final ELEMENT_STYLE = "elementStyle";
-final TEXT_NODE = "textNode";
-final EVENT = "event";
-final HOST_EVENT = "hostEvent";
+const DIRECTIVE_LIFECYCLE = "directiveLifecycle";
+const BINDING = "native";
+const DIRECTIVE = "directive";
+const ELEMENT_PROPERTY = "elementProperty";
+const ELEMENT_ATTRIBUTE = "elementAttribute";
+const ELEMENT_CLASS = "elementClass";
+const ELEMENT_STYLE = "elementStyle";
+const TEXT_NODE = "textNode";
+const EVENT = "event";
+const HOST_EVENT = "hostEvent";
 
 class BindingTarget {
   String mode;

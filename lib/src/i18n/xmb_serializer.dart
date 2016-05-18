@@ -11,9 +11,9 @@ import "package:angular2/src/compiler/parse_util.dart"
 
 var _PLACEHOLDER_REGEXP =
     RegExpWrapper.create('''\\<ph(\\s)+name=("(\\w)+")\\/\\>''');
-final _ID_ATTR = "id";
-final _MSG_ELEMENT = "msg";
-final _BUNDLE_ELEMENT = "message-bundle";
+const _ID_ATTR = "id";
+const _MSG_ELEMENT = "msg";
+const _BUNDLE_ELEMENT = "message-bundle";
 String serializeXmb(List<Message> messages) {
   var ms = messages.map((m) => _serializeMessage(m)).toList().join("");
   return '''<message-bundle>${ ms}</message-bundle>''';

@@ -20,7 +20,7 @@ import "util.dart"
         MODULE_SUFFIX;
 import "package:angular2/src/core/di.dart" show Injectable;
 
-final COMPONENT_VARIABLE = "%COMP%";
+const COMPONENT_VARIABLE = "%COMP%";
 final HOST_ATTR = '''_nghost-${ COMPONENT_VARIABLE}''';
 final CONTENT_ATTR = '''_ngcontent-${ COMPONENT_VARIABLE}''';
 

@@ -385,6 +385,8 @@ class _NgMetaIdentifierResolver {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:logging/lib/logging.dart');
     } else if (id.name == "Clock") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:quiver/lib/time.dart');
+    } else if (id.name == "Cache") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:quiver/cache.dart');
     } else if (id.name == "Log") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/utils.dart');
     } else if (id.name == "TestComponentBuilder") {
@@ -393,6 +395,10 @@ class _NgMetaIdentifierResolver {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:async');
     } else if (id.name == "StreamController") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:async');
+    } else if (id.name == "AudioContext") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:web_audio');
+    } else if (id.name == "Stopwatch" || id.name == "Map") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:core');
     } else if (id.name == "FakeAsync") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/fake_async.dart');
     } else if (id.name == "StreamTracer") {
@@ -406,7 +412,55 @@ class _NgMetaIdentifierResolver {
     } else if (id.name == "ProxyClient") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/extra/request_handler/proxy.dart');
     } else if (id.name == "StreamyHttpService") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/toolbox/http.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/toolbox.dart');
+    } else if (id.name == "TransactionStrategy") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/extra.dart');
+    } else if (id.name == "BrowserClient") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:http/browser_client.dart');
+    } else if (id.name == "ActivityController") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx.tracking.activity/activity.dart');
+    } else if (id.name == "DataService") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.ds3.frontend.common.service.column_data/data_service.dart');
+    } else if (id.name == "EssCell") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx.ess.framework/framework.dart');
+    } else if (id.name == "Publishing") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.cms.admin.api/publishing.dart');
+    } else if (id.name == "RepositoryImportStatusStore") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.cms.admin.stores/import_status_store.dart');
+    } else if (id.name == "NeatAppInfo") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:commerce.merchantcenter.frontend.apps.neat.proto/app_info.pb.dart');
+    } else if (id.name == "NeatAppInfo") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:commerce.merchantcenter.frontend.apps.neat.proto/app_info.pb.dart');
+    } else if (id.name == "BrowserCookies" || id.name == "LocationWrapper" || id.name == "UrlRewriter" || id.name == "HttpBackend" ||
+              id.name == "HttpDefaults" || id.name == "HttpInterceptors" || id.name == "RootScope" || id.name == "HttpConfig" ||
+              id.name == "VmTurnZone" || id.name == "PendingAsync" || id.name == "Http") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:angular/angular.dart');
+    } else if (id.name == "Analytics") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx2.tracking.analytics/analytics.dart');
+    } else if (id.name == "MiniApp") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.apps.video.common.miniapp/mini_app.dart');
+    } else if (id.name == "NiRpc") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.apps.video.common.data.core/ni_rpc.dart');
+    } else if (id.name == "AbstractActivityController") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx2.tracking.activity/activity.dart');
+    } else if (id.name == "LoggingClient") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx2.tracking.activity/logging_client.dart');
+    } else if (id.name == "RpcTracer") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx2.tracking.activity/rpc_trace.dart');
+    } else if (id.name == "AdwordsAccount") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.apps.video.common.data.account/adwords_account.dart');
+    } else if (id.name == "RpcModel") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.apps.video.common2.model.rpc/rpc_model.dart');
+    } else if (id.name == "Extension") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.acx2.sharding.extensions/extensions.dart');
+    } else if (id.name == "Campaign") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.awapps.anji.proto.infra.campaign/anjicampaign.pb.dart');
+    } else if (id.name == "FeApi") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.ds3.frontend.api.streamy/feapi.dart');
+    } else if (id.name == "VisUrlApi") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.ds3.frontend.api.streamy/visurlapi.dart');
+    } else if (id.name == "SyncApi") {
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:ads.ds3.frontend.api.streamy/syncapi.dart');
     } else {
       return null;
     }

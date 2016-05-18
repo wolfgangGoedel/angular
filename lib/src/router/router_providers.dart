@@ -39,4 +39,4 @@ const List<dynamic> ROUTER_PROVIDERS = const [
  *
  * 
  */
-final ROUTER_BINDINGS = ROUTER_PROVIDERS;
+const ROUTER_BINDINGS = ROUTER_PROVIDERS;

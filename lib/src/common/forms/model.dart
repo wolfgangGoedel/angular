@@ -12,16 +12,16 @@ import "directives/validators.dart" show ValidatorFn, AsyncValidatorFn;
 /**
  * Indicates that a Control is valid, i.e. that no errors exist in the input value.
  */
-final VALID = "VALID";
+const VALID = "VALID";
 /**
  * Indicates that a Control is invalid, i.e. that an error exists in the input value.
  */
-final INVALID = "INVALID";
+const INVALID = "INVALID";
 /**
  * Indicates that a Control is pending, i.e. that async validation is occurring and
  * errors are not yet available for the input value.
  */
-final PENDING = "PENDING";
+const PENDING = "PENDING";
 bool isControl(Object control) {
   return control is AbstractControl;
 }

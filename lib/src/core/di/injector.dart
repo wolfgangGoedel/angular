@@ -26,7 +26,7 @@ import "key.dart" show Key;
 import "metadata.dart" show SelfMetadata, HostMetadata, SkipSelfMetadata;
 
 // Threshold for the dynamic version
-final _MAX_CONSTRUCTION_COUNTER = 10;
+const _MAX_CONSTRUCTION_COUNTER = 10;
 const Object UNDEFINED = const Object();
 /**
  * Visibility of a [Provider].
