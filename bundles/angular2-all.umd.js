@@ -8512,48 +8512,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return new Token(index, TokenType.Number, n, "");
 	}
 	exports.EOF = new Token(-1, TokenType.Character, 0, "");
-	exports.$EOF = lang_1.CONST_EXPR(lang_1.CONST_EXPR(0));
-	exports.$TAB = lang_1.CONST_EXPR(9);
-	exports.$LF = lang_1.CONST_EXPR(10);
-	exports.$VTAB = lang_1.CONST_EXPR(11);
-	exports.$FF = lang_1.CONST_EXPR(12);
-	exports.$CR = lang_1.CONST_EXPR(13);
-	exports.$SPACE = lang_1.CONST_EXPR(32);
-	exports.$BANG = lang_1.CONST_EXPR(33);
-	exports.$DQ = lang_1.CONST_EXPR(34);
-	exports.$HASH = lang_1.CONST_EXPR(35);
-	exports.$$ = lang_1.CONST_EXPR(36);
-	exports.$PERCENT = lang_1.CONST_EXPR(37);
-	exports.$AMPERSAND = lang_1.CONST_EXPR(38);
-	exports.$SQ = lang_1.CONST_EXPR(39);
-	exports.$LPAREN = lang_1.CONST_EXPR(40);
-	exports.$RPAREN = lang_1.CONST_EXPR(41);
-	exports.$STAR = lang_1.CONST_EXPR(42);
-	exports.$PLUS = lang_1.CONST_EXPR(43);
-	exports.$COMMA = lang_1.CONST_EXPR(44);
-	exports.$MINUS = lang_1.CONST_EXPR(45);
-	exports.$PERIOD = lang_1.CONST_EXPR(46);
-	exports.$SLASH = lang_1.CONST_EXPR(47);
-	exports.$COLON = lang_1.CONST_EXPR(58);
-	exports.$SEMICOLON = lang_1.CONST_EXPR(59);
-	exports.$LT = lang_1.CONST_EXPR(60);
-	exports.$EQ = lang_1.CONST_EXPR(61);
-	exports.$GT = lang_1.CONST_EXPR(62);
-	exports.$QUESTION = lang_1.CONST_EXPR(63);
-	var $0 = lang_1.CONST_EXPR(48);
-	var $9 = lang_1.CONST_EXPR(57);
-	var $A = lang_1.CONST_EXPR(65), $E = lang_1.CONST_EXPR(69), $Z = lang_1.CONST_EXPR(90);
-	exports.$LBRACKET = lang_1.CONST_EXPR(91);
-	exports.$BACKSLASH = lang_1.CONST_EXPR(92);
-	exports.$RBRACKET = lang_1.CONST_EXPR(93);
-	var $CARET = lang_1.CONST_EXPR(94);
-	var $_ = lang_1.CONST_EXPR(95);
-	exports.$BT = lang_1.CONST_EXPR(96);
-	var $a = lang_1.CONST_EXPR(97), $e = lang_1.CONST_EXPR(101), $f = lang_1.CONST_EXPR(102), $n = lang_1.CONST_EXPR(110), $r = lang_1.CONST_EXPR(114), $t = lang_1.CONST_EXPR(116), $u = lang_1.CONST_EXPR(117), $v = lang_1.CONST_EXPR(118), $z = lang_1.CONST_EXPR(122);
-	exports.$LBRACE = lang_1.CONST_EXPR(123);
-	exports.$BAR = lang_1.CONST_EXPR(124);
-	exports.$RBRACE = lang_1.CONST_EXPR(125);
-	var $NBSP = lang_1.CONST_EXPR(160);
+	exports.$EOF = 0;
+	exports.$TAB = 9;
+	exports.$LF = 10;
+	exports.$VTAB = 11;
+	exports.$FF = 12;
+	exports.$CR = 13;
+	exports.$SPACE = 32;
+	exports.$BANG = 33;
+	exports.$DQ = 34;
+	exports.$HASH = 35;
+	exports.$$ = 36;
+	exports.$PERCENT = 37;
+	exports.$AMPERSAND = 38;
+	exports.$SQ = 39;
+	exports.$LPAREN = 40;
+	exports.$RPAREN = 41;
+	exports.$STAR = 42;
+	exports.$PLUS = 43;
+	exports.$COMMA = 44;
+	exports.$MINUS = 45;
+	exports.$PERIOD = 46;
+	exports.$SLASH = 47;
+	exports.$COLON = 58;
+	exports.$SEMICOLON = 59;
+	exports.$LT = 60;
+	exports.$EQ = 61;
+	exports.$GT = 62;
+	exports.$QUESTION = 63;
+	var $0 = 48;
+	var $9 = 57;
+	var $A = 65, $E = 69, $Z = 90;
+	exports.$LBRACKET = 91;
+	exports.$BACKSLASH = 92;
+	exports.$RBRACKET = 93;
+	var $CARET = 94;
+	var $_ = 95;
+	exports.$BT = 96;
+	var $a = 97, $e = 101, $f = 102, $n = 110, $r = 114, $t = 116, $u = 117, $v = 118, $z = 122;
+	exports.$LBRACE = 123;
+	exports.$BAR = 124;
+	exports.$RBRACE = 125;
+	var $NBSP = 160;
 	var ScannerError = (function (_super) {
 	    __extends(ScannerError, _super);
 	    function ScannerError(message) {
@@ -13607,16 +13607,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Construct providers specific to an individual root component.
 	 */
 	function _componentProviders(appComponentType) {
-	    return [di_1.provide(application_tokens_1.APP_COMPONENT, { useValue: appComponentType }),
+	    return [
+	        di_1.provide(application_tokens_1.APP_COMPONENT, { useValue: appComponentType }),
 	        di_1.provide(application_tokens_1.APP_COMPONENT_REF_PROMISE, {
 	            useFactory: function (dynamicComponentLoader, appRef, injector) {
 	                // Save the ComponentRef for disposal later.
 	                var ref;
-	                // TODO(rado): investigate whether to support providers on root
-	                // component.
-	                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, function () {
-	                    appRef._unloadComponent(ref);
-	                })
+	                // TODO(rado): investigate whether to support providers on root component.
+	                return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, function () { appRef._unloadComponent(ref); })
 	                    .then(function (componentRef) {
 	                    ref = componentRef;
 	                    var testability = injector.getOptional(testability_1.Testability);
@@ -22535,7 +22533,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var lang_1 = __webpack_require__(5);
 	var validators_1 = __webpack_require__(145);
 	var lang_2 = __webpack_require__(5);
-	var REQUIRED = lang_1.CONST_EXPR(validators_1.Validators.required);
+	var REQUIRED = validators_1.Validators.required;
 	var REQUIRED_VALIDATOR = lang_1.CONST_EXPR(new core_1.Provider(validators_1.NG_VALIDATORS, { useValue: REQUIRED, multi: true }));
 	/**
 	 * A Directive that adds the `required` validator to any controls marked with the
@@ -24239,7 +24237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var collection_1 = __webpack_require__(12);
 	var lang_1 = __webpack_require__(5);
 	var exceptions_1 = __webpack_require__(14);
-	var _EMPTY_ATTR_VALUE = lang_1.CONST_EXPR('');
+	var _EMPTY_ATTR_VALUE = '';
 	// TODO: Can't use `const` here as
 	// in Dart this is not transpiled into `final` yet...
 	var _SELECTOR_REGEXP = lang_1.RegExpWrapper.create('(\\:not\\()|' +
@@ -34651,8 +34649,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                next = this._outlet.reuse(componentInstruction);
 	            }
 	            else {
-	                var outlet_1 = this._outlet;
-	                next = this.deactivate(instruction).then(function (_) { return outlet_1.activate(componentInstruction); });
+	                next =
+	                    this.deactivate(instruction).then(function (_) { return _this._outlet.activate(componentInstruction); });
 	            }
 	            if (lang_1.isPresent(instruction.child)) {
 	                next = next.then(function (_) {
@@ -34684,6 +34682,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Removes the contents of this router's outlet and all descendant outlets
 	     */
 	    Router.prototype.deactivate = function (instruction) {
+	        var _this = this;
 	        var childInstruction = null;
 	        var componentInstruction = null;
 	        if (lang_1.isPresent(instruction)) {
@@ -34695,8 +34694,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            next = this._childRouter.deactivate(childInstruction);
 	        }
 	        if (lang_1.isPresent(this._outlet)) {
-	            var outlet_2 = this._outlet;
-	            next = next.then(function (_) { return outlet_2.deactivate(componentInstruction); });
+	            next = next.then(function (_) { return _this._outlet.deactivate(componentInstruction); });
 	        }
 	        // TODO: handle aux routes
 	        return next;

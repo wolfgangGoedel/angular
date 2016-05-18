@@ -4,12 +4,11 @@ import {
   isBlank,
   RegExpWrapper,
   RegExpMatcherWrapper,
-  StringWrapper,
-  CONST_EXPR
+  StringWrapper
 } from 'angular2/src/facade/lang';
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
 
-const _EMPTY_ATTR_VALUE = CONST_EXPR('');
+const _EMPTY_ATTR_VALUE = '';
 
 // TODO: Can't use `const` here as
 // in Dart this is not transpiled into `final` yet...

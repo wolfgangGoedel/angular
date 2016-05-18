@@ -1,6 +1,6 @@
 export * from 'angular2/src/core/angular_entrypoint';
 export { BROWSER_PROVIDERS, ELEMENT_PROBE_PROVIDERS, ELEMENT_PROBE_PROVIDERS_PROD_MODE, inspectNativeElement, BrowserDomAdapter, By, Title, enableDebugTools, disableDebugTools } from 'angular2/src/platform/browser_common';
-import { isPresent, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent } from 'angular2/src/facade/lang';
 import { BROWSER_PROVIDERS, BROWSER_APP_COMMON_PROVIDERS } from 'angular2/src/platform/browser_common';
 import { platform } from 'angular2/core';
 /**
@@ -8,7 +8,7 @@ import { platform } from 'angular2/core';
  * when all templates
  * have been precompiled offline.
  */
-export const BROWSER_APP_PROVIDERS = CONST_EXPR(BROWSER_APP_COMMON_PROVIDERS);
+export const BROWSER_APP_PROVIDERS = BROWSER_APP_COMMON_PROVIDERS;
 /**
  * See {@link bootstrap} for more information.
  */

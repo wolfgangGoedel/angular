@@ -318,8 +318,8 @@ export let Router = class Router {
                 next = this._outlet.reuse(componentInstruction);
             }
             else {
-                let outlet = this._outlet;
-                next = this.deactivate(instruction).then((_) => outlet.activate(componentInstruction));
+                next =
+                    this.deactivate(instruction).then((_) => this._outlet.activate(componentInstruction));
             }
             if (isPresent(instruction.child)) {
                 next = next.then((_) => {
@@ -362,8 +362,7 @@ export let Router = class Router {
             next = this._childRouter.deactivate(childInstruction);
         }
         if (isPresent(this._outlet)) {
-            let outlet = this._outlet;
-            next = next.then((_) => outlet.deactivate(componentInstruction));
+            next = next.then((_) => this._outlet.deactivate(componentInstruction));
         }
         // TODO: handle aux routes
         return next;
