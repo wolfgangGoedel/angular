@@ -3226,8 +3226,9 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
         if (componentInstruction.reuse) {
           next = this._outlet.reuse(componentInstruction);
         } else {
+          var outlet_1 = this._outlet;
           next = this.deactivate(instruction).then(function(_) {
-            return _this._outlet.activate(componentInstruction);
+            return outlet_1.activate(componentInstruction);
           });
         }
         if (lang_1.isPresent(instruction.child)) {
@@ -3258,7 +3259,6 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
       return async_1.ObservableWrapper.subscribe(this._subject, onNext, onError);
     };
     Router.prototype.deactivate = function(instruction) {
-      var _this = this;
       var childInstruction = null;
       var componentInstruction = null;
       if (lang_1.isPresent(instruction)) {
@@ -3270,8 +3270,9 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
         next = this._childRouter.deactivate(childInstruction);
       }
       if (lang_1.isPresent(this._outlet)) {
+        var outlet_2 = this._outlet;
         next = next.then(function(_) {
-          return _this._outlet.deactivate(componentInstruction);
+          return outlet_2.deactivate(componentInstruction);
         });
       }
       return next;

@@ -34651,8 +34651,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                next = this._outlet.reuse(componentInstruction);
 	            }
 	            else {
-	                next =
-	                    this.deactivate(instruction).then(function (_) { return _this._outlet.activate(componentInstruction); });
+	                var outlet_1 = this._outlet;
+	                next = this.deactivate(instruction).then(function (_) { return outlet_1.activate(componentInstruction); });
 	            }
 	            if (lang_1.isPresent(instruction.child)) {
 	                next = next.then(function (_) {
@@ -34684,7 +34684,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Removes the contents of this router's outlet and all descendant outlets
 	     */
 	    Router.prototype.deactivate = function (instruction) {
-	        var _this = this;
 	        var childInstruction = null;
 	        var componentInstruction = null;
 	        if (lang_1.isPresent(instruction)) {
@@ -34696,7 +34695,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            next = this._childRouter.deactivate(childInstruction);
 	        }
 	        if (lang_1.isPresent(this._outlet)) {
-	            next = next.then(function (_) { return _this._outlet.deactivate(componentInstruction); });
+	            var outlet_2 = this._outlet;
+	            next = next.then(function (_) { return outlet_2.deactivate(componentInstruction); });
 	        }
 	        // TODO: handle aux routes
 	        return next;
