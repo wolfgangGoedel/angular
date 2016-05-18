@@ -359,9 +359,10 @@ class Router {
       if (componentInstruction.reuse) {
         next = this._outlet.reuse(componentInstruction);
       } else {
+        var outlet = this._outlet;
         next = this
             .deactivate(instruction)
-            .then((_) => this._outlet.activate(componentInstruction));
+            .then((_) => outlet.activate(componentInstruction));
       }
       if (isPresent(instruction.child)) {
         next = next.then((_) {
@@ -412,7 +413,8 @@ class Router {
       next = this._childRouter.deactivate(childInstruction);
     }
     if (isPresent(this._outlet)) {
-      next = next.then((_) => this._outlet.deactivate(componentInstruction));
+      var outlet = this._outlet;
+      next = next.then((_) => outlet.deactivate(componentInstruction));
     }
     // TODO: handle aux routes
     return next;
