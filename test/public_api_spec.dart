@@ -130,7 +130,8 @@ var NG_COMPILER = [
   "VariableAst",
   "XHR",
   "createWithoutPackagePrefix",
-  "templateVisitAll"
+  "templateVisitAll",
+  "createChangeDetectorGenConfig:dart"
 ];
 var NG_CORE = [
   "APP_COMPONENT",

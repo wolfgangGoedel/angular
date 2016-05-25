@@ -24,14 +24,14 @@ DebugNode inspectNativeElement(element) {
   return getDebugNode(element);
 }
 
-_createConditionalRootRenderer(rootRenderer) {
+RootRenderer createConditionalRootRenderer(rootRenderer) {
   if (assertionsEnabled()) {
-    return _createRootRenderer(rootRenderer);
+    return createRootRenderer(rootRenderer);
   }
   return rootRenderer;
 }
 
-_createRootRenderer(rootRenderer) {
+RootRenderer createRootRenderer(rootRenderer) {
   DOM.setGlobalVar(INSPECT_GLOBAL_NAME, inspectNativeElement);
   DOM.setGlobalVar(CORE_TOKENS_GLOBAL_NAME, CORE_TOKENS);
   return new DebugDomRootRenderer(rootRenderer);
@@ -42,9 +42,9 @@ _createRootRenderer(rootRenderer) {
  */
 const List<dynamic> ELEMENT_PROBE_PROVIDERS = const [
   const Provider(RootRenderer,
-      useFactory: _createConditionalRootRenderer, deps: const [DomRootRenderer])
+      useFactory: createConditionalRootRenderer, deps: const [DomRootRenderer])
 ];
 const List<dynamic> ELEMENT_PROBE_PROVIDERS_PROD_MODE = const [
   const Provider(RootRenderer,
-      useFactory: _createRootRenderer, deps: const [DomRootRenderer])
+      useFactory: createRootRenderer, deps: const [DomRootRenderer])
 ];

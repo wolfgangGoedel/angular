@@ -34,7 +34,7 @@ const OpaqueToken APP_COMPONENT = const OpaqueToken("AppComponent");
  * using this token.
  */
 const OpaqueToken APP_ID = const OpaqueToken("AppId");
-_appIdRandomProviderFactory() {
+String appIdRandomProviderFactory() {
   return '''${ _randomChar ( )}${ _randomChar ( )}${ _randomChar ( )}''';
 }
 
@@ -42,7 +42,7 @@ _appIdRandomProviderFactory() {
  * Providers that will generate a random APP_ID_TOKEN.
  */
 const Provider APP_ID_RANDOM_PROVIDER = const Provider(APP_ID,
-    useFactory: _appIdRandomProviderFactory, deps: const []);
+    useFactory: appIdRandomProviderFactory, deps: const []);
 String _randomChar() {
   return StringWrapper.fromCharCode(97 + Math.floor(Math.random() * 25));
 }

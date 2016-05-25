@@ -217,7 +217,7 @@ class _NgMetaIdentifierResolver {
       if (resolved == null) return [];
 
       if (resolved is CompileTypeMetadata) {
-        return [new CompileProviderMetadata(token: resolved, useClass: resolved)];
+        return [new CompileProviderMetadata(token: new CompileTokenMetadata(identifier: resolved), useClass: resolved)];
 
       } else if (resolved is CompileIdentifierMetadata && resolved.value is List) {
         return _resolveProviders(ngMetaMap, resolved.value, neededBy);
@@ -259,20 +259,20 @@ class _NgMetaIdentifierResolver {
 
   void _resolveQueries(Map<String, NgMeta> ngMetaMap, List queries, String neededBy) {
     queries.forEach((q) {
-      q.selectors = q.selectors.map((s) => _resolveIdentifier(ngMetaMap, neededBy, s)).toList();
+      q.selectors.forEach((s) => s.identifier = _resolveIdentifier(ngMetaMap, neededBy, s.identifier));
     });
   }
 
   void _resolveProvider(Map<String, NgMeta> ngMetaMap,
       String neededBy, CompileProviderMetadata provider) {
-    provider.token = _resolveIdentifier(ngMetaMap, neededBy, provider.token);
+    provider.token.identifier = _resolveIdentifier(ngMetaMap, neededBy, provider.token.identifier);
     if (provider.useClass != null) {
       provider.useClass =
           _resolveIdentifier(ngMetaMap, neededBy, provider.useClass);
     }
     if (provider.useExisting != null) {
-      provider.useExisting =
-          _resolveIdentifier(ngMetaMap, neededBy, provider.useExisting);
+      provider.useExisting.identifier =
+          _resolveIdentifier(ngMetaMap, neededBy, provider.useExisting.identifier);
     }
     if (provider.useValue != null) {
       provider.useValue =
@@ -290,14 +290,16 @@ class _NgMetaIdentifierResolver {
       String neededBy, List<CompileDiDependencyMetadata> deps) {
     if (deps == null) return;
     for (var dep in deps) {
-      _setModuleUrl(ngMetaMap, neededBy, dep.token);
+      if (dep.token != null) {
+        _setModuleUrl(ngMetaMap, neededBy, dep.token.identifier);
+      }
       if (dep.query != null) {
         dep.query.selectors
-            .forEach((s) => _setModuleUrl(ngMetaMap, neededBy, s));
+            .forEach((s) => _setModuleUrl(ngMetaMap, neededBy, s.identifier));
       }
       if (dep.viewQuery != null) {
         dep.viewQuery.selectors
-            .forEach((s) => _setModuleUrl(ngMetaMap, neededBy, s));
+            .forEach((s) => _setModuleUrl(ngMetaMap, neededBy, s.identifier));
       }
     }
   }
@@ -380,17 +382,17 @@ class _NgMetaIdentifierResolver {
     } else if (id.name == "Random") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:math');
     } else if (id.name == "Profiler") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:perf_api/lib/perf_api.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:perf_api/perf_api.dart');
     } else if (id.name == "Logger") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:logging/lib/logging.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:logging/logging.dart');
     } else if (id.name == "Clock") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:quiver/lib/time.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:quiver/time.dart');
     } else if (id.name == "Cache") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:quiver/cache.dart');
     } else if (id.name == "Log") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/utils.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:angular2/src/testing/utils.dart');
     } else if (id.name == "TestComponentBuilder") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/test_component_builder.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:angular2/src/testing/test_component_builder.dart');
     } else if (id.name == "Stream") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:async');
     } else if (id.name == "StreamController") {
@@ -400,17 +402,17 @@ class _NgMetaIdentifierResolver {
     } else if (id.name == "Stopwatch" || id.name == "Map") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'dart:core');
     } else if (id.name == "FakeAsync") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:angular2/lib/src/testing/fake_async.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:angular2/src/testing/fake_async.dart');
     } else if (id.name == "StreamTracer") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/core/tracing.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/core.dart');
     } else if (id.name == "Tracer") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/core/tracing.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/core.dart');
     } else if (id.name == "RequestHandler") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/core/request_handler.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/core.dart');
     } else if (id.name == "BatchingStrategy") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/extra/request_handler/batching.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/extra.dart');
     } else if (id.name == "ProxyClient") {
-      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'asset:streamy/lib/src/extra/request_handler/proxy.dart');
+      return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/extra.dart');
     } else if (id.name == "StreamyHttpService") {
       return new CompileIdentifierMetadata(name: id.name, moduleUrl: 'package:streamy/toolbox.dart');
     } else if (id.name == "TransactionStrategy") {

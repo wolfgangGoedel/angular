@@ -23,6 +23,7 @@ export './src/core/debug/debug_node.dart'
 export './src/core/testability/testability.dart';
 export './src/core/change_detection.dart';
 export './src/core/platform_directives_and_pipes.dart';
-export './src/core/platform_common_providers.dart';
+export './src/core/platform_common_providers.dart'
+    show PLATFORM_COMMON_PROVIDERS;
 export './src/core/application_common_providers.dart';
 export './src/core/reflection/reflection.dart';

@@ -10,7 +10,7 @@ import "reflection/reflector_reader.dart" show ReflectorReader;
 import "package:angular2/src/core/testability/testability.dart"
     show TestabilityRegistry;
 
-Reflector _reflector() {
+Reflector reflectorFactory() {
   return reflector;
 }
 
@@ -19,7 +19,7 @@ Reflector _reflector() {
  */
 const List<dynamic /* Type | Provider | List < dynamic > */ >
     PLATFORM_COMMON_PROVIDERS = const [
-  const Provider(Reflector, useFactory: _reflector, deps: const []),
+  const Provider(Reflector, useFactory: reflectorFactory, deps: const []),
   const Provider(ReflectorReader, useExisting: Reflector),
   TestabilityRegistry,
   Console

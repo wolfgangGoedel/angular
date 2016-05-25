@@ -22,7 +22,8 @@ import "package:angular2/src/compiler/directive_metadata.dart"
         CompileDiDependencyMetadata,
         CompileQueryMetadata,
         CompileIdentifierMetadata,
-        CompileFactoryMetadata;
+        CompileFactoryMetadata,
+        CompileTokenMetadata;
 import "package:angular2/src/core/metadata/view.dart" show ViewEncapsulation;
 import "package:angular2/src/core/change_detection.dart"
     show ChangeDetectionStrategy;
@@ -40,14 +41,14 @@ main() {
           isHost: true,
           isSkipSelf: true,
           isOptional: true,
-          token: "someToken",
+          token: new CompileTokenMetadata(value: "someToken"),
           query: new CompileQueryMetadata(
-              selectors: ["one"],
+              selectors: [new CompileTokenMetadata(value: "one")],
               descendants: true,
               first: true,
               propertyName: "one"),
           viewQuery: new CompileQueryMetadata(
-              selectors: ["one"],
+              selectors: [new CompileTokenMetadata(value: "one")],
               descendants: true,
               first: true,
               propertyName: "one"));
@@ -86,32 +87,37 @@ main() {
           ],
           providers: [
             new CompileProviderMetadata(
-                token: "token",
+                token: new CompileTokenMetadata(value: "token"),
+                multi: true,
                 useClass: fullTypeMeta,
-                useExisting: new CompileIdentifierMetadata(name: "someName"),
+                useExisting: new CompileTokenMetadata(
+                    identifier: new CompileIdentifierMetadata(name: "someName"),
+                    identifierIsInstance: true),
                 useFactory: new CompileFactoryMetadata(
                     name: "someName", diDeps: [diDep]),
                 useValue: "someValue")
           ],
           viewProviders: [
             new CompileProviderMetadata(
-                token: "token",
+                token: new CompileTokenMetadata(value: "token"),
                 useClass: fullTypeMeta,
-                useExisting: new CompileIdentifierMetadata(name: "someName"),
+                useExisting: new CompileTokenMetadata(
+                    identifier:
+                        new CompileIdentifierMetadata(name: "someName")),
                 useFactory: new CompileFactoryMetadata(
                     name: "someName", diDeps: [diDep]),
                 useValue: "someValue")
           ],
           queries: [
             new CompileQueryMetadata(
-                selectors: ["selector"],
+                selectors: [new CompileTokenMetadata(value: "selector")],
                 descendants: true,
                 first: false,
                 propertyName: "prop")
           ],
           viewQueries: [
             new CompileQueryMetadata(
-                selectors: ["selector"],
+                selectors: [new CompileTokenMetadata(value: "selector")],
                 descendants: true,
                 first: false,
                 propertyName: "prop")
@@ -122,7 +128,6 @@ main() {
         var full = new CompileIdentifierMetadata(
             name: "name",
             moduleUrl: "module",
-            constConstructor: true,
             value: [
               "one",
               ["two"]

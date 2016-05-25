@@ -71,14 +71,14 @@ const List<dynamic> BROWSER_PROVIDERS = const [
   PLATFORM_COMMON_PROVIDERS,
   const Provider(PLATFORM_INITIALIZER, useValue: initDomAdapter, multi: true)
 ];
-ExceptionHandler _exceptionHandler() {
+ExceptionHandler exceptionHandler() {
   // !IS_DART is required because we must rethrow exceptions in JS,
 
   // but must not rethrow exceptions in Dart
   return new ExceptionHandler(DOM, !IS_DART);
 }
 
-dynamic _document() {
+dynamic document() {
   return DOM.defaultDoc();
 }
 
@@ -93,8 +93,8 @@ const List<dynamic> BROWSER_APP_COMMON_PROVIDERS = const [
   const Provider(PLATFORM_PIPES, useValue: COMMON_PIPES, multi: true),
   const Provider(PLATFORM_DIRECTIVES, useValue: COMMON_DIRECTIVES, multi: true),
   const Provider(ExceptionHandler,
-      useFactory: _exceptionHandler, deps: const []),
-  const Provider(DOCUMENT, useFactory: _document, deps: const []),
+      useFactory: exceptionHandler, deps: const []),
+  const Provider(DOCUMENT, useFactory: document, deps: const []),
   const Provider(EVENT_MANAGER_PLUGINS, useClass: DomEventsPlugin, multi: true),
   const Provider(EVENT_MANAGER_PLUGINS, useClass: KeyEventsPlugin, multi: true),
   const Provider(EVENT_MANAGER_PLUGINS,

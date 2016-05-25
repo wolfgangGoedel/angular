@@ -86,8 +86,8 @@ const List<dynamic> WORKER_RENDER_APPLICATION_COMMON = const [
   APPLICATION_COMMON_PROVIDERS,
   WORKER_RENDER_MESSAGING_PROVIDERS,
   const Provider(ExceptionHandler,
-      useFactory: _exceptionHandler, deps: const []),
-  const Provider(DOCUMENT, useFactory: _document, deps: const []),
+      useFactory: exceptionHandler, deps: const []),
+  const Provider(DOCUMENT, useFactory: document, deps: const []),
   // TODO(jteplitz602): Investigate if we definitely need EVENT_MANAGER on the render thread
 
   // #5298
@@ -131,10 +131,10 @@ void initWebWorkerRenderPlatform() {
   BrowserGetTestability.init();
 }
 
-ExceptionHandler _exceptionHandler() {
+ExceptionHandler exceptionHandler() {
   return new ExceptionHandler(DOM, !IS_DART);
 }
 
-dynamic _document() {
+dynamic document() {
   return DOM.defaultDoc();
 }

@@ -40,7 +40,7 @@ import "package:angular2/src/compiler/url_resolver.dart"
 import "package:angular2/src/core/change_detection/change_detection.dart"
     show Parser, Lexer;
 
-_createChangeDetectorGenConfig() {
+ChangeDetectorGenConfig createChangeDetectorGenConfig() {
   return new ChangeDetectorGenConfig(assertionsEnabled(), false, true);
 }
 
@@ -62,7 +62,7 @@ const List<dynamic /* Type | Provider | List < dynamic > */ >
   ViewCompiler,
   ChangeDetectionCompiler,
   const Provider(ChangeDetectorGenConfig,
-      useFactory: _createChangeDetectorGenConfig, deps: const []),
+      useFactory: createChangeDetectorGenConfig, deps: const []),
   TemplateCompiler,
   const Provider(RuntimeCompiler, useClass: RuntimeCompiler_),
   const Provider(Compiler, useExisting: RuntimeCompiler),

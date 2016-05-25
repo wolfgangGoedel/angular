@@ -50,10 +50,10 @@ const List<dynamic> WORKER_APP_APPLICATION_COMMON = const [
   const Provider(ON_WEB_WORKER, useValue: true),
   RenderStore,
   const Provider(ExceptionHandler,
-      useFactory: _exceptionHandler, deps: const []),
+      useFactory: exceptionHandler, deps: const []),
   WebWorkerXHRImpl,
   const Provider(XHR, useExisting: WebWorkerXHRImpl)
 ];
-ExceptionHandler _exceptionHandler() {
+ExceptionHandler exceptionHandler() {
   return new ExceptionHandler(new PrintLogger());
 }
