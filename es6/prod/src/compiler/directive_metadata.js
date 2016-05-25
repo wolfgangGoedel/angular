@@ -1,11 +1,12 @@
 import { isPresent, isBlank, isNumber, isBoolean, normalizeBool, normalizeBlank, serializeEnum, isString, RegExpWrapper, isArray } from 'angular2/src/facade/lang';
-import { unimplemented } from 'angular2/src/facade/exceptions';
+import { unimplemented, BaseException } from 'angular2/src/facade/exceptions';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { ChangeDetectionStrategy, CHANGE_DETECTION_STRATEGY_VALUES } from 'angular2/src/core/change_detection/change_detection';
 import { ViewEncapsulation, VIEW_ENCAPSULATION_VALUES } from 'angular2/src/core/metadata/view';
 import { CssSelector } from 'angular2/src/compiler/selector';
 import { splitAtColon } from './util';
 import { LIFECYCLE_HOOKS_VALUES } from 'angular2/src/core/linker/interfaces';
+import { getUrlScheme } from './url_resolver';
 // group 1: "property" from "[property]"
 // group 2: "event" from "(event)"
 var HOST_REG_EXP = /^(?:(?:\[([^\]]+)\])|(?:\(([^\)]+)\)))$/g;
@@ -20,73 +21,70 @@ export function metadataFromJson(data) {
     return _COMPILE_METADATA_FROM_JSON[data['class']](data);
 }
 export class CompileIdentifierMetadata {
-    constructor({ runtime, name, moduleUrl, prefix, constConstructor, value } = {}) {
+    constructor({ runtime, name, moduleUrl, prefix, value } = {}) {
         this.runtime = runtime;
         this.name = name;
         this.prefix = prefix;
         this.moduleUrl = moduleUrl;
-        this.constConstructor = constConstructor;
         this.value = value;
     }
     static fromJson(data) {
-        let value = isArray(data['value']) ? arrayFromJson(data['value'], metadataFromJson) :
-            objFromJson(data['value'], metadataFromJson);
-        return new CompileIdentifierMetadata({
-            name: data['name'],
-            prefix: data['prefix'],
-            moduleUrl: data['moduleUrl'],
-            constConstructor: data['constConstructor'],
-            value: value
-        });
+        let value = isArray(data['value']) ? _arrayFromJson(data['value'], metadataFromJson) :
+            _objFromJson(data['value'], metadataFromJson);
+        return new CompileIdentifierMetadata({ name: data['name'], prefix: data['prefix'], moduleUrl: data['moduleUrl'], value: value });
     }
     toJson() {
-        let value = isArray(this.value) ? arrayToJson(this.value) : objToJson(this.value);
+        let value = isArray(this.value) ? _arrayToJson(this.value) : _objToJson(this.value);
         return {
             // Note: Runtime type can't be serialized...
             'class': 'Identifier',
             'name': this.name,
             'moduleUrl': this.moduleUrl,
             'prefix': this.prefix,
-            'constConstructor': this.constConstructor,
             'value': value
         };
     }
     get identifier() { return this; }
 }
 export class CompileDiDependencyMetadata {
-    constructor({ isAttribute, isSelf, isHost, isSkipSelf, isOptional, query, viewQuery, token } = {}) {
+    constructor({ isAttribute, isSelf, isHost, isSkipSelf, isOptional, isValue, query, viewQuery, token, value } = {}) {
         this.isAttribute = normalizeBool(isAttribute);
         this.isSelf = normalizeBool(isSelf);
         this.isHost = normalizeBool(isHost);
         this.isSkipSelf = normalizeBool(isSkipSelf);
         this.isOptional = normalizeBool(isOptional);
+        this.isValue = normalizeBool(isValue);
         this.query = query;
         this.viewQuery = viewQuery;
         this.token = token;
+        this.value = value;
     }
     static fromJson(data) {
         return new CompileDiDependencyMetadata({
-            token: objFromJson(data['token'], CompileIdentifierMetadata.fromJson),
-            query: objFromJson(data['query'], CompileQueryMetadata.fromJson),
-            viewQuery: objFromJson(data['viewQuery'], CompileQueryMetadata.fromJson),
+            token: _objFromJson(data['token'], CompileTokenMetadata.fromJson),
+            query: _objFromJson(data['query'], CompileQueryMetadata.fromJson),
+            viewQuery: _objFromJson(data['viewQuery'], CompileQueryMetadata.fromJson),
+            value: data['value'],
             isAttribute: data['isAttribute'],
             isSelf: data['isSelf'],
             isHost: data['isHost'],
             isSkipSelf: data['isSkipSelf'],
-            isOptional: data['isOptional']
+            isOptional: data['isOptional'],
+            isValue: data['isValue']
         });
     }
     toJson() {
         return {
-            // Note: Runtime type can't be serialized...
-            'token': objToJson(this.token),
-            'query': objToJson(this.query),
-            'viewQuery': objToJson(this.viewQuery),
+            'token': _objToJson(this.token),
+            'query': _objToJson(this.query),
+            'viewQuery': _objToJson(this.viewQuery),
+            'value': this.value,
             'isAttribute': this.isAttribute,
             'isSelf': this.isSelf,
             'isHost': this.isHost,
             'isSkipSelf': this.isSkipSelf,
-            'isOptional': this.isOptional
+            'isOptional': this.isOptional,
+            'isValue': this.isValue
         };
     }
 }
@@ -97,38 +95,41 @@ export class CompileProviderMetadata {
         this.useValue = useValue;
         this.useExisting = useExisting;
         this.useFactory = useFactory;
-        this.deps = deps;
-        this.multi = multi;
+        this.deps = normalizeBlank(deps);
+        this.multi = normalizeBool(multi);
     }
     static fromJson(data) {
         return new CompileProviderMetadata({
-            token: objFromJson(data['token'], CompileIdentifierMetadata.fromJson),
-            useClass: objFromJson(data['useClass'], CompileTypeMetadata.fromJson),
-            useExisting: objFromJson(data['useExisting'], CompileIdentifierMetadata.fromJson),
-            useValue: objFromJson(data['useValue'], CompileIdentifierMetadata.fromJson),
-            useFactory: objFromJson(data['useFactory'], CompileFactoryMetadata.fromJson)
+            token: _objFromJson(data['token'], CompileTokenMetadata.fromJson),
+            useClass: _objFromJson(data['useClass'], CompileTypeMetadata.fromJson),
+            useExisting: _objFromJson(data['useExisting'], CompileTokenMetadata.fromJson),
+            useValue: _objFromJson(data['useValue'], CompileIdentifierMetadata.fromJson),
+            useFactory: _objFromJson(data['useFactory'], CompileFactoryMetadata.fromJson),
+            multi: data['multi'],
+            deps: _arrayFromJson(data['deps'], CompileDiDependencyMetadata.fromJson)
         });
     }
     toJson() {
         return {
             // Note: Runtime type can't be serialized...
             'class': 'Provider',
-            'token': objToJson(this.token),
-            'useClass': objToJson(this.useClass),
-            'useExisting': objToJson(this.useExisting),
-            'useValue': objToJson(this.useValue),
-            'useFactory': objToJson(this.useFactory)
+            'token': _objToJson(this.token),
+            'useClass': _objToJson(this.useClass),
+            'useExisting': _objToJson(this.useExisting),
+            'useValue': _objToJson(this.useValue),
+            'useFactory': _objToJson(this.useFactory),
+            'multi': this.multi,
+            'deps': _arrayToJson(this.deps)
         };
     }
 }
 export class CompileFactoryMetadata {
-    constructor({ runtime, name, moduleUrl, prefix, constConstructor, diDeps, value }) {
+    constructor({ runtime, name, moduleUrl, prefix, diDeps, value }) {
         this.runtime = runtime;
         this.name = name;
         this.prefix = prefix;
         this.moduleUrl = moduleUrl;
-        this.diDeps = diDeps;
-        this.constConstructor = constConstructor;
+        this.diDeps = _normalizeArray(diDeps);
         this.value = value;
     }
     get identifier() { return this; }
@@ -137,9 +138,8 @@ export class CompileFactoryMetadata {
             name: data['name'],
             prefix: data['prefix'],
             moduleUrl: data['moduleUrl'],
-            constConstructor: data['constConstructor'],
             value: data['value'],
-            diDeps: arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
+            diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
         });
     }
     toJson() {
@@ -148,25 +148,105 @@ export class CompileFactoryMetadata {
             'name': this.name,
             'prefix': this.prefix,
             'moduleUrl': this.moduleUrl,
-            'constConstructor': this.constConstructor,
             'value': this.value,
-            'diDeps': arrayToJson(this.diDeps)
+            'diDeps': _arrayToJson(this.diDeps)
         };
     }
+}
+export class CompileTokenMetadata {
+    constructor({ value, identifier, identifierIsInstance }) {
+        this.value = value;
+        this.identifier = identifier;
+        this.identifierIsInstance = normalizeBool(identifierIsInstance);
+    }
+    static fromJson(data) {
+        return new CompileTokenMetadata({
+            value: data['value'],
+            identifier: _objFromJson(data['identifier'], CompileIdentifierMetadata.fromJson),
+            identifierIsInstance: data['identifierIsInstance']
+        });
+    }
+    toJson() {
+        return {
+            'value': this.value,
+            'identifier': _objToJson(this.identifier),
+            'identifierIsInstance': this.identifierIsInstance
+        };
+    }
+    get runtimeCacheKey() {
+        if (isPresent(this.identifier)) {
+            return this.identifier.runtime;
+        }
+        else {
+            return this.value;
+        }
+    }
+    get assetCacheKey() {
+        if (isPresent(this.identifier)) {
+            return isPresent(this.identifier.moduleUrl) &&
+                isPresent(getUrlScheme(this.identifier.moduleUrl)) ?
+                `${this.identifier.name}|${this.identifier.moduleUrl}|${this.identifierIsInstance}` :
+                null;
+        }
+        else {
+            return this.value;
+        }
+    }
+    equalsTo(token2) {
+        var rk = this.runtimeCacheKey;
+        var ak = this.assetCacheKey;
+        return (isPresent(rk) && rk == token2.runtimeCacheKey) ||
+            (isPresent(ak) && ak == token2.assetCacheKey);
+    }
+    get name() { return isPresent(this.value) ? this.value : this.identifier.name; }
+}
+export class CompileTokenMap {
+    constructor() {
+        this._valueMap = new Map();
+        this._values = [];
+    }
+    add(token, value) {
+        var existing = this.get(token);
+        if (isPresent(existing)) {
+            throw new BaseException(`Can only add to a TokenMap! Token: ${token.name}`);
+        }
+        this._values.push(value);
+        var rk = token.runtimeCacheKey;
+        if (isPresent(rk)) {
+            this._valueMap.set(rk, value);
+        }
+        var ak = token.assetCacheKey;
+        if (isPresent(ak)) {
+            this._valueMap.set(ak, value);
+        }
+    }
+    get(token) {
+        var rk = token.runtimeCacheKey;
+        var ak = token.assetCacheKey;
+        var result;
+        if (isPresent(rk)) {
+            result = this._valueMap.get(rk);
+        }
+        if (isBlank(result) && isPresent(ak)) {
+            result = this._valueMap.get(ak);
+        }
+        return result;
+    }
+    values() { return this._values; }
+    get size() { return this._values.length; }
 }
 /**
  * Metadata regarding compilation of a type.
  */
 export class CompileTypeMetadata {
-    constructor({ runtime, name, moduleUrl, prefix, isHost, constConstructor, value, diDeps } = {}) {
+    constructor({ runtime, name, moduleUrl, prefix, isHost, value, diDeps } = {}) {
         this.runtime = runtime;
         this.name = name;
         this.moduleUrl = moduleUrl;
         this.prefix = prefix;
         this.isHost = normalizeBool(isHost);
-        this.constConstructor = constConstructor;
         this.value = value;
-        this.diDeps = normalizeBlank(diDeps);
+        this.diDeps = _normalizeArray(diDeps);
     }
     static fromJson(data) {
         return new CompileTypeMetadata({
@@ -174,9 +254,8 @@ export class CompileTypeMetadata {
             moduleUrl: data['moduleUrl'],
             prefix: data['prefix'],
             isHost: data['isHost'],
-            constConstructor: data['constConstructor'],
             value: data['value'],
-            diDeps: arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
+            diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
         });
     }
     get identifier() { return this; }
@@ -189,22 +268,21 @@ export class CompileTypeMetadata {
             'moduleUrl': this.moduleUrl,
             'prefix': this.prefix,
             'isHost': this.isHost,
-            'constConstructor': this.constConstructor,
             'value': this.value,
-            'diDeps': arrayToJson(this.diDeps)
+            'diDeps': _arrayToJson(this.diDeps)
         };
     }
 }
 export class CompileQueryMetadata {
     constructor({ selectors, descendants, first, propertyName } = {}) {
         this.selectors = selectors;
-        this.descendants = descendants;
+        this.descendants = normalizeBool(descendants);
         this.first = normalizeBool(first);
         this.propertyName = propertyName;
     }
     static fromJson(data) {
         return new CompileQueryMetadata({
-            selectors: arrayFromJson(data['selectors'], CompileIdentifierMetadata.fromJson),
+            selectors: _arrayFromJson(data['selectors'], CompileTokenMetadata.fromJson),
             descendants: data['descendants'],
             first: data['first'],
             propertyName: data['propertyName']
@@ -212,8 +290,7 @@ export class CompileQueryMetadata {
     }
     toJson() {
         return {
-            // Note: Runtime type can't be serialized...
-            'selectors': arrayToJson(this.selectors),
+            'selectors': _arrayToJson(this.selectors),
             'descendants': this.descendants,
             'first': this.first,
             'propertyName': this.propertyName
@@ -271,11 +348,11 @@ export class CompileDirectiveMetadata {
         this.hostListeners = hostListeners;
         this.hostProperties = hostProperties;
         this.hostAttributes = hostAttributes;
-        this.lifecycleHooks = lifecycleHooks;
-        this.providers = normalizeBlank(providers);
-        this.viewProviders = normalizeBlank(viewProviders);
-        this.queries = normalizeBlank(queries);
-        this.viewQueries = normalizeBlank(viewQueries);
+        this.lifecycleHooks = _normalizeArray(lifecycleHooks);
+        this.providers = _normalizeArray(providers);
+        this.viewProviders = _normalizeArray(viewProviders);
+        this.queries = _normalizeArray(queries);
+        this.viewQueries = _normalizeArray(viewQueries);
         this.template = template;
     }
     static create({ type, isComponent, dynamicLoadable, selector, exportAs, changeDetection, inputs, outputs, host, lifecycleHooks, providers, viewProviders, queries, viewQueries, template } = {}) {
@@ -353,10 +430,10 @@ export class CompileDirectiveMetadata {
             lifecycleHooks: data['lifecycleHooks'].map(hookValue => LIFECYCLE_HOOKS_VALUES[hookValue]),
             template: isPresent(data['template']) ? CompileTemplateMetadata.fromJson(data['template']) :
                 data['template'],
-            providers: arrayFromJson(data['providers'], metadataFromJson),
-            viewProviders: arrayFromJson(data['viewProviders'], metadataFromJson),
-            queries: arrayFromJson(data['queries'], CompileQueryMetadata.fromJson),
-            viewQueries: arrayFromJson(data['viewQueries'], CompileQueryMetadata.fromJson)
+            providers: _arrayFromJson(data['providers'], metadataFromJson),
+            viewProviders: _arrayFromJson(data['viewProviders'], metadataFromJson),
+            queries: _arrayFromJson(data['queries'], CompileQueryMetadata.fromJson),
+            viewQueries: _arrayFromJson(data['viewQueries'], CompileQueryMetadata.fromJson)
         });
     }
     toJson() {
@@ -376,10 +453,10 @@ export class CompileDirectiveMetadata {
             'hostAttributes': this.hostAttributes,
             'lifecycleHooks': this.lifecycleHooks.map(hook => serializeEnum(hook)),
             'template': isPresent(this.template) ? this.template.toJson() : this.template,
-            'providers': arrayToJson(this.providers),
-            'viewProviders': arrayToJson(this.viewProviders),
-            'queries': arrayToJson(this.queries),
-            'viewQueries': arrayToJson(this.viewQueries)
+            'providers': _arrayToJson(this.providers),
+            'viewProviders': _arrayToJson(this.viewProviders),
+            'queries': _arrayToJson(this.queries),
+            'viewQueries': _arrayToJson(this.viewQueries)
         };
     }
 }
@@ -391,7 +468,7 @@ export function createHostComponentMeta(componentType, componentSelector) {
     return CompileDirectiveMetadata.create({
         type: new CompileTypeMetadata({
             runtime: Object,
-            name: `Host${componentType.name}`,
+            name: `${componentType.name}_Host`,
             moduleUrl: componentType.moduleUrl,
             isHost: true
         }),
@@ -411,10 +488,11 @@ export function createHostComponentMeta(componentType, componentSelector) {
     });
 }
 export class CompilePipeMetadata {
-    constructor({ type, name, pure } = {}) {
+    constructor({ type, name, pure, lifecycleHooks } = {}) {
         this.type = type;
         this.name = name;
         this.pure = normalizeBool(pure);
+        this.lifecycleHooks = _normalizeArray(lifecycleHooks);
     }
     get identifier() { return this.type; }
     static fromJson(data) {
@@ -441,23 +519,26 @@ var _COMPILE_METADATA_FROM_JSON = {
     'Identifier': CompileIdentifierMetadata.fromJson,
     'Factory': CompileFactoryMetadata.fromJson
 };
-function arrayFromJson(obj, fn) {
-    return isBlank(obj) ? null : obj.map(o => objFromJson(o, fn));
+function _arrayFromJson(obj, fn) {
+    return isBlank(obj) ? null : obj.map(o => _objFromJson(o, fn));
 }
-function arrayToJson(obj) {
-    return isBlank(obj) ? null : obj.map(objToJson);
+function _arrayToJson(obj) {
+    return isBlank(obj) ? null : obj.map(_objToJson);
 }
-function objFromJson(obj, fn) {
+function _objFromJson(obj, fn) {
     if (isArray(obj))
-        return arrayFromJson(obj, fn);
+        return _arrayFromJson(obj, fn);
     if (isString(obj) || isBlank(obj) || isBoolean(obj) || isNumber(obj))
         return obj;
     return fn(obj);
 }
-function objToJson(obj) {
+function _objToJson(obj) {
     if (isArray(obj))
-        return arrayToJson(obj);
+        return _arrayToJson(obj);
     if (isString(obj) || isBlank(obj) || isBoolean(obj) || isNumber(obj))
         return obj;
     return obj.toJson();
+}
+function _normalizeArray(obj) {
+    return isPresent(obj) ? obj : [];
 }

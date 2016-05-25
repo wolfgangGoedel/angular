@@ -16,13 +16,13 @@ const CORE_TOKENS_GLOBAL_NAME = 'ng.coreTokens';
 export function inspectNativeElement(element) {
     return getDebugNode(element);
 }
-function _createConditionalRootRenderer(rootRenderer) {
+function createConditionalRootRenderer(rootRenderer) {
     if (assertionsEnabled()) {
-        return _createRootRenderer(rootRenderer);
+        return createRootRenderer(rootRenderer);
     }
     return rootRenderer;
 }
-function _createRootRenderer(rootRenderer) {
+function createRootRenderer(rootRenderer) {
     DOM.setGlobalVar(INSPECT_GLOBAL_NAME, inspectNativeElement);
     DOM.setGlobalVar(CORE_TOKENS_GLOBAL_NAME, CORE_TOKENS);
     return new DebugDomRootRenderer(rootRenderer);
@@ -31,6 +31,6 @@ function _createRootRenderer(rootRenderer) {
  * Providers which support debugging Angular applications (e.g. via `ng.probe`).
  */
 export const ELEMENT_PROBE_PROVIDERS = CONST_EXPR([
-    new Provider(RootRenderer, { useFactory: _createConditionalRootRenderer, deps: [DomRootRenderer] })
+    new Provider(RootRenderer, { useFactory: createConditionalRootRenderer, deps: [DomRootRenderer] })
 ]);
-export const ELEMENT_PROBE_PROVIDERS_PROD_MODE = CONST_EXPR([new Provider(RootRenderer, { useFactory: _createRootRenderer, deps: [DomRootRenderer] })]);
+export const ELEMENT_PROBE_PROVIDERS_PROD_MODE = CONST_EXPR([new Provider(RootRenderer, { useFactory: createRootRenderer, deps: [DomRootRenderer] })]);

@@ -23,7 +23,7 @@ import { ElementSchemaRegistry } from 'angular2/src/compiler/schema/element_sche
 import { DomElementSchemaRegistry } from 'angular2/src/compiler/schema/dom_element_schema_registry';
 import { UrlResolver, DEFAULT_PACKAGE_URL_PROVIDER } from 'angular2/src/compiler/url_resolver';
 import { Parser, Lexer } from 'angular2/src/core/change_detection/change_detection';
-function _createChangeDetectorGenConfig() {
+function createChangeDetectorGenConfig() {
     return new ChangeDetectorGenConfig(assertionsEnabled(), false, true);
 }
 /**
@@ -42,7 +42,7 @@ export const COMPILER_PROVIDERS = CONST_EXPR([
     ProtoViewCompiler,
     ViewCompiler,
     ChangeDetectionCompiler,
-    new Provider(ChangeDetectorGenConfig, { useFactory: _createChangeDetectorGenConfig, deps: [] }),
+    new Provider(ChangeDetectorGenConfig, { useFactory: createChangeDetectorGenConfig, deps: [] }),
     TemplateCompiler,
     new Provider(RuntimeCompiler, { useClass: RuntimeCompiler_ }),
     new Provider(Compiler, { useExisting: RuntimeCompiler }),

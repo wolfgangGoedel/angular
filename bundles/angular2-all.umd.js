@@ -14371,13 +14371,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * using this token.
 	 */
 	exports.APP_ID = lang_1.CONST_EXPR(new di_1.OpaqueToken('AppId'));
-	function _appIdRandomProviderFactory() {
+	function appIdRandomProviderFactory() {
 	    return "" + _randomChar() + _randomChar() + _randomChar();
 	}
 	/**
 	 * Providers that will generate a random APP_ID_TOKEN.
 	 */
-	exports.APP_ID_RANDOM_PROVIDER = lang_1.CONST_EXPR(new di_1.Provider(exports.APP_ID, { useFactory: _appIdRandomProviderFactory, deps: [] }));
+	exports.APP_ID_RANDOM_PROVIDER = lang_1.CONST_EXPR(new di_1.Provider(exports.APP_ID, { useFactory: appIdRandomProviderFactory, deps: [] }));
 	function _randomChar() {
 	    return lang_1.StringWrapper.fromCharCode(97 + lang_1.Math.floor(lang_1.Math.random() * 25));
 	}
@@ -17420,14 +17420,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	var reflection_1 = __webpack_require__(17);
 	var reflector_reader_1 = __webpack_require__(19);
 	var testability_1 = __webpack_require__(83);
-	function _reflector() {
+	function reflectorFactory() {
 	    return reflection_1.reflector;
 	}
 	/**
 	 * A default set of providers which should be included in any Angular platform.
 	 */
 	exports.PLATFORM_COMMON_PROVIDERS = lang_1.CONST_EXPR([
-	    new di_1.Provider(reflection_1.Reflector, { useFactory: _reflector, deps: [] }),
+	    new di_1.Provider(reflection_1.Reflector, { useFactory: reflectorFactory, deps: [] }),
 	    new di_1.Provider(reflector_reader_1.ReflectorReader, { useExisting: reflection_1.Reflector }),
 	    testability_1.TestabilityRegistry,
 	    console_1.Console
@@ -23241,7 +23241,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var dom_element_schema_registry_1 = __webpack_require__(194);
 	var url_resolver_1 = __webpack_require__(163);
 	var change_detection_2 = __webpack_require__(26);
-	function _createChangeDetectorGenConfig() {
+	function createChangeDetectorGenConfig() {
 	    return new change_detection_1.ChangeDetectorGenConfig(lang_1.assertionsEnabled(), false, true);
 	}
 	/**
@@ -23260,7 +23260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    proto_view_compiler_1.ProtoViewCompiler,
 	    view_compiler_1.ViewCompiler,
 	    change_detector_compiler_1.ChangeDetectionCompiler,
-	    new di_1.Provider(change_detection_1.ChangeDetectorGenConfig, { useFactory: _createChangeDetectorGenConfig, deps: [] }),
+	    new di_1.Provider(change_detection_1.ChangeDetectorGenConfig, { useFactory: createChangeDetectorGenConfig, deps: [] }),
 	    template_compiler_2.TemplateCompiler,
 	    new di_1.Provider(runtime_compiler_2.RuntimeCompiler, { useClass: runtime_compiler_1.RuntimeCompiler_ }),
 	    new di_1.Provider(compiler_1.Compiler, { useExisting: runtime_compiler_2.RuntimeCompiler }),
@@ -23698,6 +23698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var selector_1 = __webpack_require__(169);
 	var util_1 = __webpack_require__(170);
 	var interfaces_1 = __webpack_require__(171);
+	var url_resolver_1 = __webpack_require__(163);
 	// group 1: "property" from "[property]"
 	// group 2: "event" from "(event)"
 	var HOST_REG_EXP = /^(?:(?:\[([^\]]+)\])|(?:\(([^\)]+)\)))$/g;
@@ -23736,34 +23737,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.metadataFromJson = metadataFromJson;
 	var CompileIdentifierMetadata = (function () {
 	    function CompileIdentifierMetadata(_a) {
-	        var _b = _a === void 0 ? {} : _a, runtime = _b.runtime, name = _b.name, moduleUrl = _b.moduleUrl, prefix = _b.prefix, constConstructor = _b.constConstructor, value = _b.value;
+	        var _b = _a === void 0 ? {} : _a, runtime = _b.runtime, name = _b.name, moduleUrl = _b.moduleUrl, prefix = _b.prefix, value = _b.value;
 	        this.runtime = runtime;
 	        this.name = name;
 	        this.prefix = prefix;
 	        this.moduleUrl = moduleUrl;
-	        this.constConstructor = constConstructor;
 	        this.value = value;
 	    }
 	    CompileIdentifierMetadata.fromJson = function (data) {
-	        var value = lang_1.isArray(data['value']) ? arrayFromJson(data['value'], metadataFromJson) :
-	            objFromJson(data['value'], metadataFromJson);
-	        return new CompileIdentifierMetadata({
-	            name: data['name'],
-	            prefix: data['prefix'],
-	            moduleUrl: data['moduleUrl'],
-	            constConstructor: data['constConstructor'],
-	            value: value
-	        });
+	        var value = lang_1.isArray(data['value']) ? _arrayFromJson(data['value'], metadataFromJson) :
+	            _objFromJson(data['value'], metadataFromJson);
+	        return new CompileIdentifierMetadata({ name: data['name'], prefix: data['prefix'], moduleUrl: data['moduleUrl'], value: value });
 	    };
 	    CompileIdentifierMetadata.prototype.toJson = function () {
-	        var value = lang_1.isArray(this.value) ? arrayToJson(this.value) : objToJson(this.value);
+	        var value = lang_1.isArray(this.value) ? _arrayToJson(this.value) : _objToJson(this.value);
 	        return {
 	            // Note: Runtime type can't be serialized...
 	            'class': 'Identifier',
 	            'name': this.name,
 	            'moduleUrl': this.moduleUrl,
 	            'prefix': this.prefix,
-	            'constConstructor': this.constConstructor,
 	            'value': value
 	        };
 	    };
@@ -23777,39 +23770,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.CompileIdentifierMetadata = CompileIdentifierMetadata;
 	var CompileDiDependencyMetadata = (function () {
 	    function CompileDiDependencyMetadata(_a) {
-	        var _b = _a === void 0 ? {} : _a, isAttribute = _b.isAttribute, isSelf = _b.isSelf, isHost = _b.isHost, isSkipSelf = _b.isSkipSelf, isOptional = _b.isOptional, query = _b.query, viewQuery = _b.viewQuery, token = _b.token;
+	        var _b = _a === void 0 ? {} : _a, isAttribute = _b.isAttribute, isSelf = _b.isSelf, isHost = _b.isHost, isSkipSelf = _b.isSkipSelf, isOptional = _b.isOptional, isValue = _b.isValue, query = _b.query, viewQuery = _b.viewQuery, token = _b.token, value = _b.value;
 	        this.isAttribute = lang_1.normalizeBool(isAttribute);
 	        this.isSelf = lang_1.normalizeBool(isSelf);
 	        this.isHost = lang_1.normalizeBool(isHost);
 	        this.isSkipSelf = lang_1.normalizeBool(isSkipSelf);
 	        this.isOptional = lang_1.normalizeBool(isOptional);
+	        this.isValue = lang_1.normalizeBool(isValue);
 	        this.query = query;
 	        this.viewQuery = viewQuery;
 	        this.token = token;
+	        this.value = value;
 	    }
 	    CompileDiDependencyMetadata.fromJson = function (data) {
 	        return new CompileDiDependencyMetadata({
-	            token: objFromJson(data['token'], CompileIdentifierMetadata.fromJson),
-	            query: objFromJson(data['query'], CompileQueryMetadata.fromJson),
-	            viewQuery: objFromJson(data['viewQuery'], CompileQueryMetadata.fromJson),
+	            token: _objFromJson(data['token'], CompileTokenMetadata.fromJson),
+	            query: _objFromJson(data['query'], CompileQueryMetadata.fromJson),
+	            viewQuery: _objFromJson(data['viewQuery'], CompileQueryMetadata.fromJson),
+	            value: data['value'],
 	            isAttribute: data['isAttribute'],
 	            isSelf: data['isSelf'],
 	            isHost: data['isHost'],
 	            isSkipSelf: data['isSkipSelf'],
-	            isOptional: data['isOptional']
+	            isOptional: data['isOptional'],
+	            isValue: data['isValue']
 	        });
 	    };
 	    CompileDiDependencyMetadata.prototype.toJson = function () {
 	        return {
-	            // Note: Runtime type can't be serialized...
-	            'token': objToJson(this.token),
-	            'query': objToJson(this.query),
-	            'viewQuery': objToJson(this.viewQuery),
+	            'token': _objToJson(this.token),
+	            'query': _objToJson(this.query),
+	            'viewQuery': _objToJson(this.viewQuery),
+	            'value': this.value,
 	            'isAttribute': this.isAttribute,
 	            'isSelf': this.isSelf,
 	            'isHost': this.isHost,
 	            'isSkipSelf': this.isSkipSelf,
-	            'isOptional': this.isOptional
+	            'isOptional': this.isOptional,
+	            'isValue': this.isValue
 	        };
 	    };
 	    return CompileDiDependencyMetadata;
@@ -23823,27 +23821,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.useValue = useValue;
 	        this.useExisting = useExisting;
 	        this.useFactory = useFactory;
-	        this.deps = deps;
-	        this.multi = multi;
+	        this.deps = lang_1.normalizeBlank(deps);
+	        this.multi = lang_1.normalizeBool(multi);
 	    }
 	    CompileProviderMetadata.fromJson = function (data) {
 	        return new CompileProviderMetadata({
-	            token: objFromJson(data['token'], CompileIdentifierMetadata.fromJson),
-	            useClass: objFromJson(data['useClass'], CompileTypeMetadata.fromJson),
-	            useExisting: objFromJson(data['useExisting'], CompileIdentifierMetadata.fromJson),
-	            useValue: objFromJson(data['useValue'], CompileIdentifierMetadata.fromJson),
-	            useFactory: objFromJson(data['useFactory'], CompileFactoryMetadata.fromJson)
+	            token: _objFromJson(data['token'], CompileTokenMetadata.fromJson),
+	            useClass: _objFromJson(data['useClass'], CompileTypeMetadata.fromJson),
+	            useExisting: _objFromJson(data['useExisting'], CompileTokenMetadata.fromJson),
+	            useValue: _objFromJson(data['useValue'], CompileIdentifierMetadata.fromJson),
+	            useFactory: _objFromJson(data['useFactory'], CompileFactoryMetadata.fromJson),
+	            multi: data['multi'],
+	            deps: _arrayFromJson(data['deps'], CompileDiDependencyMetadata.fromJson)
 	        });
 	    };
 	    CompileProviderMetadata.prototype.toJson = function () {
 	        return {
 	            // Note: Runtime type can't be serialized...
 	            'class': 'Provider',
-	            'token': objToJson(this.token),
-	            'useClass': objToJson(this.useClass),
-	            'useExisting': objToJson(this.useExisting),
-	            'useValue': objToJson(this.useValue),
-	            'useFactory': objToJson(this.useFactory)
+	            'token': _objToJson(this.token),
+	            'useClass': _objToJson(this.useClass),
+	            'useExisting': _objToJson(this.useExisting),
+	            'useValue': _objToJson(this.useValue),
+	            'useFactory': _objToJson(this.useFactory),
+	            'multi': this.multi,
+	            'deps': _arrayToJson(this.deps)
 	        };
 	    };
 	    return CompileProviderMetadata;
@@ -23851,13 +23853,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.CompileProviderMetadata = CompileProviderMetadata;
 	var CompileFactoryMetadata = (function () {
 	    function CompileFactoryMetadata(_a) {
-	        var runtime = _a.runtime, name = _a.name, moduleUrl = _a.moduleUrl, prefix = _a.prefix, constConstructor = _a.constConstructor, diDeps = _a.diDeps, value = _a.value;
+	        var runtime = _a.runtime, name = _a.name, moduleUrl = _a.moduleUrl, prefix = _a.prefix, diDeps = _a.diDeps, value = _a.value;
 	        this.runtime = runtime;
 	        this.name = name;
 	        this.prefix = prefix;
 	        this.moduleUrl = moduleUrl;
-	        this.diDeps = diDeps;
-	        this.constConstructor = constConstructor;
+	        this.diDeps = _normalizeArray(diDeps);
 	        this.value = value;
 	    }
 	    Object.defineProperty(CompileFactoryMetadata.prototype, "identifier", {
@@ -23870,9 +23871,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            name: data['name'],
 	            prefix: data['prefix'],
 	            moduleUrl: data['moduleUrl'],
-	            constConstructor: data['constConstructor'],
 	            value: data['value'],
-	            diDeps: arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
+	            diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
 	        });
 	    };
 	    CompileFactoryMetadata.prototype.toJson = function () {
@@ -23881,28 +23881,129 @@ return /******/ (function(modules) { // webpackBootstrap
 	            'name': this.name,
 	            'prefix': this.prefix,
 	            'moduleUrl': this.moduleUrl,
-	            'constConstructor': this.constConstructor,
 	            'value': this.value,
-	            'diDeps': arrayToJson(this.diDeps)
+	            'diDeps': _arrayToJson(this.diDeps)
 	        };
 	    };
 	    return CompileFactoryMetadata;
 	}());
 	exports.CompileFactoryMetadata = CompileFactoryMetadata;
+	var CompileTokenMetadata = (function () {
+	    function CompileTokenMetadata(_a) {
+	        var value = _a.value, identifier = _a.identifier, identifierIsInstance = _a.identifierIsInstance;
+	        this.value = value;
+	        this.identifier = identifier;
+	        this.identifierIsInstance = lang_1.normalizeBool(identifierIsInstance);
+	    }
+	    CompileTokenMetadata.fromJson = function (data) {
+	        return new CompileTokenMetadata({
+	            value: data['value'],
+	            identifier: _objFromJson(data['identifier'], CompileIdentifierMetadata.fromJson),
+	            identifierIsInstance: data['identifierIsInstance']
+	        });
+	    };
+	    CompileTokenMetadata.prototype.toJson = function () {
+	        return {
+	            'value': this.value,
+	            'identifier': _objToJson(this.identifier),
+	            'identifierIsInstance': this.identifierIsInstance
+	        };
+	    };
+	    Object.defineProperty(CompileTokenMetadata.prototype, "runtimeCacheKey", {
+	        get: function () {
+	            if (lang_1.isPresent(this.identifier)) {
+	                return this.identifier.runtime;
+	            }
+	            else {
+	                return this.value;
+	            }
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CompileTokenMetadata.prototype, "assetCacheKey", {
+	        get: function () {
+	            if (lang_1.isPresent(this.identifier)) {
+	                return lang_1.isPresent(this.identifier.moduleUrl) &&
+	                    lang_1.isPresent(url_resolver_1.getUrlScheme(this.identifier.moduleUrl)) ?
+	                    this.identifier.name + "|" + this.identifier.moduleUrl + "|" + this.identifierIsInstance :
+	                    null;
+	            }
+	            else {
+	                return this.value;
+	            }
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    CompileTokenMetadata.prototype.equalsTo = function (token2) {
+	        var rk = this.runtimeCacheKey;
+	        var ak = this.assetCacheKey;
+	        return (lang_1.isPresent(rk) && rk == token2.runtimeCacheKey) ||
+	            (lang_1.isPresent(ak) && ak == token2.assetCacheKey);
+	    };
+	    Object.defineProperty(CompileTokenMetadata.prototype, "name", {
+	        get: function () { return lang_1.isPresent(this.value) ? this.value : this.identifier.name; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return CompileTokenMetadata;
+	}());
+	exports.CompileTokenMetadata = CompileTokenMetadata;
+	var CompileTokenMap = (function () {
+	    function CompileTokenMap() {
+	        this._valueMap = new Map();
+	        this._values = [];
+	    }
+	    CompileTokenMap.prototype.add = function (token, value) {
+	        var existing = this.get(token);
+	        if (lang_1.isPresent(existing)) {
+	            throw new exceptions_1.BaseException("Can only add to a TokenMap! Token: " + token.name);
+	        }
+	        this._values.push(value);
+	        var rk = token.runtimeCacheKey;
+	        if (lang_1.isPresent(rk)) {
+	            this._valueMap.set(rk, value);
+	        }
+	        var ak = token.assetCacheKey;
+	        if (lang_1.isPresent(ak)) {
+	            this._valueMap.set(ak, value);
+	        }
+	    };
+	    CompileTokenMap.prototype.get = function (token) {
+	        var rk = token.runtimeCacheKey;
+	        var ak = token.assetCacheKey;
+	        var result;
+	        if (lang_1.isPresent(rk)) {
+	            result = this._valueMap.get(rk);
+	        }
+	        if (lang_1.isBlank(result) && lang_1.isPresent(ak)) {
+	            result = this._valueMap.get(ak);
+	        }
+	        return result;
+	    };
+	    CompileTokenMap.prototype.values = function () { return this._values; };
+	    Object.defineProperty(CompileTokenMap.prototype, "size", {
+	        get: function () { return this._values.length; },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return CompileTokenMap;
+	}());
+	exports.CompileTokenMap = CompileTokenMap;
 	/**
 	 * Metadata regarding compilation of a type.
 	 */
 	var CompileTypeMetadata = (function () {
 	    function CompileTypeMetadata(_a) {
-	        var _b = _a === void 0 ? {} : _a, runtime = _b.runtime, name = _b.name, moduleUrl = _b.moduleUrl, prefix = _b.prefix, isHost = _b.isHost, constConstructor = _b.constConstructor, value = _b.value, diDeps = _b.diDeps;
+	        var _b = _a === void 0 ? {} : _a, runtime = _b.runtime, name = _b.name, moduleUrl = _b.moduleUrl, prefix = _b.prefix, isHost = _b.isHost, value = _b.value, diDeps = _b.diDeps;
 	        this.runtime = runtime;
 	        this.name = name;
 	        this.moduleUrl = moduleUrl;
 	        this.prefix = prefix;
 	        this.isHost = lang_1.normalizeBool(isHost);
-	        this.constConstructor = constConstructor;
 	        this.value = value;
-	        this.diDeps = lang_1.normalizeBlank(diDeps);
+	        this.diDeps = _normalizeArray(diDeps);
 	    }
 	    CompileTypeMetadata.fromJson = function (data) {
 	        return new CompileTypeMetadata({
@@ -23910,9 +24011,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            moduleUrl: data['moduleUrl'],
 	            prefix: data['prefix'],
 	            isHost: data['isHost'],
-	            constConstructor: data['constConstructor'],
 	            value: data['value'],
-	            diDeps: arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
+	            diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson)
 	        });
 	    };
 	    Object.defineProperty(CompileTypeMetadata.prototype, "identifier", {
@@ -23933,9 +24033,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            'moduleUrl': this.moduleUrl,
 	            'prefix': this.prefix,
 	            'isHost': this.isHost,
-	            'constConstructor': this.constConstructor,
 	            'value': this.value,
-	            'diDeps': arrayToJson(this.diDeps)
+	            'diDeps': _arrayToJson(this.diDeps)
 	        };
 	    };
 	    return CompileTypeMetadata;
@@ -23945,13 +24044,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function CompileQueryMetadata(_a) {
 	        var _b = _a === void 0 ? {} : _a, selectors = _b.selectors, descendants = _b.descendants, first = _b.first, propertyName = _b.propertyName;
 	        this.selectors = selectors;
-	        this.descendants = descendants;
+	        this.descendants = lang_1.normalizeBool(descendants);
 	        this.first = lang_1.normalizeBool(first);
 	        this.propertyName = propertyName;
 	    }
 	    CompileQueryMetadata.fromJson = function (data) {
 	        return new CompileQueryMetadata({
-	            selectors: arrayFromJson(data['selectors'], CompileIdentifierMetadata.fromJson),
+	            selectors: _arrayFromJson(data['selectors'], CompileTokenMetadata.fromJson),
 	            descendants: data['descendants'],
 	            first: data['first'],
 	            propertyName: data['propertyName']
@@ -23959,8 +24058,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    CompileQueryMetadata.prototype.toJson = function () {
 	        return {
-	            // Note: Runtime type can't be serialized...
-	            'selectors': arrayToJson(this.selectors),
+	            'selectors': _arrayToJson(this.selectors),
 	            'descendants': this.descendants,
 	            'first': this.first,
 	            'propertyName': this.propertyName
@@ -24024,11 +24122,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.hostListeners = hostListeners;
 	        this.hostProperties = hostProperties;
 	        this.hostAttributes = hostAttributes;
-	        this.lifecycleHooks = lifecycleHooks;
-	        this.providers = lang_1.normalizeBlank(providers);
-	        this.viewProviders = lang_1.normalizeBlank(viewProviders);
-	        this.queries = lang_1.normalizeBlank(queries);
-	        this.viewQueries = lang_1.normalizeBlank(viewQueries);
+	        this.lifecycleHooks = _normalizeArray(lifecycleHooks);
+	        this.providers = _normalizeArray(providers);
+	        this.viewProviders = _normalizeArray(viewProviders);
+	        this.queries = _normalizeArray(queries);
+	        this.viewQueries = _normalizeArray(viewQueries);
 	        this.template = template;
 	    }
 	    CompileDirectiveMetadata.create = function (_a) {
@@ -24111,10 +24209,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            lifecycleHooks: data['lifecycleHooks'].map(function (hookValue) { return interfaces_1.LIFECYCLE_HOOKS_VALUES[hookValue]; }),
 	            template: lang_1.isPresent(data['template']) ? CompileTemplateMetadata.fromJson(data['template']) :
 	                data['template'],
-	            providers: arrayFromJson(data['providers'], metadataFromJson),
-	            viewProviders: arrayFromJson(data['viewProviders'], metadataFromJson),
-	            queries: arrayFromJson(data['queries'], CompileQueryMetadata.fromJson),
-	            viewQueries: arrayFromJson(data['viewQueries'], CompileQueryMetadata.fromJson)
+	            providers: _arrayFromJson(data['providers'], metadataFromJson),
+	            viewProviders: _arrayFromJson(data['viewProviders'], metadataFromJson),
+	            queries: _arrayFromJson(data['queries'], CompileQueryMetadata.fromJson),
+	            viewQueries: _arrayFromJson(data['viewQueries'], CompileQueryMetadata.fromJson)
 	        });
 	    };
 	    CompileDirectiveMetadata.prototype.toJson = function () {
@@ -24134,10 +24232,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            'hostAttributes': this.hostAttributes,
 	            'lifecycleHooks': this.lifecycleHooks.map(function (hook) { return lang_1.serializeEnum(hook); }),
 	            'template': lang_1.isPresent(this.template) ? this.template.toJson() : this.template,
-	            'providers': arrayToJson(this.providers),
-	            'viewProviders': arrayToJson(this.viewProviders),
-	            'queries': arrayToJson(this.queries),
-	            'viewQueries': arrayToJson(this.viewQueries)
+	            'providers': _arrayToJson(this.providers),
+	            'viewProviders': _arrayToJson(this.viewProviders),
+	            'queries': _arrayToJson(this.queries),
+	            'viewQueries': _arrayToJson(this.viewQueries)
 	        };
 	    };
 	    return CompileDirectiveMetadata;
@@ -24151,7 +24249,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return CompileDirectiveMetadata.create({
 	        type: new CompileTypeMetadata({
 	            runtime: Object,
-	            name: "Host" + componentType.name,
+	            name: componentType.name + "_Host",
 	            moduleUrl: componentType.moduleUrl,
 	            isHost: true
 	        }),
@@ -24173,10 +24271,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.createHostComponentMeta = createHostComponentMeta;
 	var CompilePipeMetadata = (function () {
 	    function CompilePipeMetadata(_a) {
-	        var _b = _a === void 0 ? {} : _a, type = _b.type, name = _b.name, pure = _b.pure;
+	        var _b = _a === void 0 ? {} : _a, type = _b.type, name = _b.name, pure = _b.pure, lifecycleHooks = _b.lifecycleHooks;
 	        this.type = type;
 	        this.name = name;
 	        this.pure = lang_1.normalizeBool(pure);
+	        this.lifecycleHooks = _normalizeArray(lifecycleHooks);
 	    }
 	    Object.defineProperty(CompilePipeMetadata.prototype, "identifier", {
 	        get: function () { return this.type; },
@@ -24209,25 +24308,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'Identifier': CompileIdentifierMetadata.fromJson,
 	    'Factory': CompileFactoryMetadata.fromJson
 	};
-	function arrayFromJson(obj, fn) {
-	    return lang_1.isBlank(obj) ? null : obj.map(function (o) { return objFromJson(o, fn); });
+	function _arrayFromJson(obj, fn) {
+	    return lang_1.isBlank(obj) ? null : obj.map(function (o) { return _objFromJson(o, fn); });
 	}
-	function arrayToJson(obj) {
-	    return lang_1.isBlank(obj) ? null : obj.map(objToJson);
+	function _arrayToJson(obj) {
+	    return lang_1.isBlank(obj) ? null : obj.map(_objToJson);
 	}
-	function objFromJson(obj, fn) {
+	function _objFromJson(obj, fn) {
 	    if (lang_1.isArray(obj))
-	        return arrayFromJson(obj, fn);
+	        return _arrayFromJson(obj, fn);
 	    if (lang_1.isString(obj) || lang_1.isBlank(obj) || lang_1.isBoolean(obj) || lang_1.isNumber(obj))
 	        return obj;
 	    return fn(obj);
 	}
-	function objToJson(obj) {
+	function _objToJson(obj) {
 	    if (lang_1.isArray(obj))
-	        return arrayToJson(obj);
+	        return _arrayToJson(obj);
 	    if (lang_1.isString(obj) || lang_1.isBlank(obj) || lang_1.isBoolean(obj) || lang_1.isNumber(obj))
 	        return obj;
 	    return obj.toJson();
+	}
+	function _normalizeArray(obj) {
+	    return lang_1.isPresent(obj) ? obj : [];
 	}
 
 
@@ -30042,12 +30144,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    core_1.PLATFORM_COMMON_PROVIDERS,
 	    new di_1.Provider(core_1.PLATFORM_INITIALIZER, { useValue: initDomAdapter, multi: true }),
 	]);
-	function _exceptionHandler() {
+	function exceptionHandler() {
 	    // !IS_DART is required because we must rethrow exceptions in JS,
 	    // but must not rethrow exceptions in Dart
 	    return new core_1.ExceptionHandler(dom_adapter_1.DOM, !lang_1.IS_DART);
 	}
-	function _document() {
+	function document() {
 	    return dom_adapter_1.DOM.defaultDoc();
 	}
 	/**
@@ -30060,8 +30162,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    common_1.FORM_PROVIDERS,
 	    new di_1.Provider(core_1.PLATFORM_PIPES, { useValue: common_1.COMMON_PIPES, multi: true }),
 	    new di_1.Provider(core_1.PLATFORM_DIRECTIVES, { useValue: common_1.COMMON_DIRECTIVES, multi: true }),
-	    new di_1.Provider(core_1.ExceptionHandler, { useFactory: _exceptionHandler, deps: [] }),
-	    new di_1.Provider(dom_tokens_1.DOCUMENT, { useFactory: _document, deps: [] }),
+	    new di_1.Provider(core_1.ExceptionHandler, { useFactory: exceptionHandler, deps: [] }),
+	    new di_1.Provider(dom_tokens_1.DOCUMENT, { useFactory: document, deps: [] }),
 	    new di_1.Provider(event_manager_1.EVENT_MANAGER_PLUGINS, { useClass: dom_events_1.DomEventsPlugin, multi: true }),
 	    new di_1.Provider(event_manager_1.EVENT_MANAGER_PLUGINS, { useClass: key_events_1.KeyEventsPlugin, multi: true }),
 	    new di_1.Provider(event_manager_1.EVENT_MANAGER_PLUGINS, { useClass: hammer_gestures_1.HammerGesturesPlugin, multi: true }),
@@ -32158,13 +32260,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return debug_node_1.getDebugNode(element);
 	}
 	exports.inspectNativeElement = inspectNativeElement;
-	function _createConditionalRootRenderer(rootRenderer) {
+	function createConditionalRootRenderer(rootRenderer) {
 	    if (lang_1.assertionsEnabled()) {
-	        return _createRootRenderer(rootRenderer);
+	        return createRootRenderer(rootRenderer);
 	    }
 	    return rootRenderer;
 	}
-	function _createRootRenderer(rootRenderer) {
+	function createRootRenderer(rootRenderer) {
 	    dom_adapter_1.DOM.setGlobalVar(INSPECT_GLOBAL_NAME, inspectNativeElement);
 	    dom_adapter_1.DOM.setGlobalVar(CORE_TOKENS_GLOBAL_NAME, CORE_TOKENS);
 	    return new debug_renderer_1.DebugDomRootRenderer(rootRenderer);
@@ -32173,9 +32275,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Providers which support debugging Angular applications (e.g. via `ng.probe`).
 	 */
 	exports.ELEMENT_PROBE_PROVIDERS = lang_1.CONST_EXPR([
-	    new di_1.Provider(core_1.RootRenderer, { useFactory: _createConditionalRootRenderer, deps: [dom_renderer_1.DomRootRenderer] })
+	    new di_1.Provider(core_1.RootRenderer, { useFactory: createConditionalRootRenderer, deps: [dom_renderer_1.DomRootRenderer] })
 	]);
-	exports.ELEMENT_PROBE_PROVIDERS_PROD_MODE = lang_1.CONST_EXPR([new di_1.Provider(core_1.RootRenderer, { useFactory: _createRootRenderer, deps: [dom_renderer_1.DomRootRenderer] })]);
+	exports.ELEMENT_PROBE_PROVIDERS_PROD_MODE = lang_1.CONST_EXPR([new di_1.Provider(core_1.RootRenderer, { useFactory: createRootRenderer, deps: [dom_renderer_1.DomRootRenderer] })]);
 
 
 /***/ },

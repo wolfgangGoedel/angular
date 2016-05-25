@@ -31,13 +31,13 @@ export const APP_COMPONENT = CONST_EXPR(new OpaqueToken('AppComponent'));
  * using this token.
  */
 export const APP_ID = CONST_EXPR(new OpaqueToken('AppId'));
-function _appIdRandomProviderFactory() {
+function appIdRandomProviderFactory() {
     return `${_randomChar()}${_randomChar()}${_randomChar()}`;
 }
 /**
  * Providers that will generate a random APP_ID_TOKEN.
  */
-export const APP_ID_RANDOM_PROVIDER = CONST_EXPR(new Provider(APP_ID, { useFactory: _appIdRandomProviderFactory, deps: [] }));
+export const APP_ID_RANDOM_PROVIDER = CONST_EXPR(new Provider(APP_ID, { useFactory: appIdRandomProviderFactory, deps: [] }));
 function _randomChar() {
     return StringWrapper.fromCharCode(97 + Math.floor(Math.random() * 25));
 }

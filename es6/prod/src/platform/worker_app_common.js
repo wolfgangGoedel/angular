@@ -32,10 +32,10 @@ export const WORKER_APP_APPLICATION_COMMON = CONST_EXPR([
     new Provider(RootRenderer, { useExisting: WebWorkerRootRenderer }),
     new Provider(ON_WEB_WORKER, { useValue: true }),
     RenderStore,
-    new Provider(ExceptionHandler, { useFactory: _exceptionHandler, deps: [] }),
+    new Provider(ExceptionHandler, { useFactory: exceptionHandler, deps: [] }),
     WebWorkerXHRImpl,
     new Provider(XHR, { useExisting: WebWorkerXHRImpl })
 ]);
-function _exceptionHandler() {
+function exceptionHandler() {
     return new ExceptionHandler(new PrintLogger());
 }
