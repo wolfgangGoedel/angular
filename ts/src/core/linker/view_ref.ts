@@ -1,13 +1,9 @@
 import {unimplemented} from 'angular2/src/facade/exceptions';
 import {ChangeDetectorRef} from '../change_detection/change_detector_ref';
 import {AppView, HostViewFactory} from './view';
+import {ChangeDetectionStrategy} from 'angular2/src/core/change_detection/constants';
 
 export abstract class ViewRef {
-  /**
-   * @internal
-   */
-  get changeDetectorRef(): ChangeDetectorRef { return <ChangeDetectorRef>unimplemented(); };
-
   get destroyed(): boolean { return <boolean>unimplemented(); }
 }
 
@@ -22,6 +18,7 @@ export abstract class ViewRef {
  */
 export abstract class HostViewRef extends ViewRef {
   get rootNodes(): any[] { return <any[]>unimplemented(); };
+  get changeDetectorRef(): ChangeDetectorRef { return <ChangeDetectorRef>unimplemented(); }
 }
 
 /**
@@ -91,23 +88,29 @@ export abstract class EmbeddedViewRef extends ViewRef {
   get rootNodes(): any[] { return <any[]>unimplemented(); };
 }
 
-export class ViewRef_ implements EmbeddedViewRef, HostViewRef {
-  constructor(private _view: AppView) { this._view = _view; }
+export class ViewRef_ implements EmbeddedViewRef, HostViewRef, ChangeDetectorRef {
+  constructor(private _view: AppView<any>) { this._view = _view; }
 
-  get internalView(): AppView { return this._view; }
-
-  /**
-   * Return `ChangeDetectorRef`
-   */
-  get changeDetectorRef(): ChangeDetectorRef { return this._view.changeDetector.ref; }
+  get internalView(): AppView<any> { return this._view; }
 
   get rootNodes(): any[] { return this._view.flatRootNodes; }
+
+  get changeDetectorRef(): ChangeDetectorRef { return this; }
 
   setLocal(variableName: string, value: any): void { this._view.setLocal(variableName, value); }
 
   hasLocal(variableName: string): boolean { return this._view.hasLocal(variableName); }
 
   get destroyed(): boolean { return this._view.destroyed; }
+
+  markForCheck(): void { this._view.markPathToRootAsCheckOnce(); }
+  detach(): void { this._view.cdMode = ChangeDetectionStrategy.Detached; }
+  detectChanges(): void { this._view.detectChanges(false); }
+  checkNoChanges(): void { this._view.detectChanges(true); }
+  reattach(): void {
+    this._view.cdMode = ChangeDetectionStrategy.CheckAlways;
+    this.markForCheck();
+  }
 }
 
 export abstract class HostViewFactoryRef {}

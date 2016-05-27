@@ -1,13 +1,13 @@
 "format register";
-System.register("angular2/src/upgrade/metadata", ["angular2/core"], true, function(require, exports, module) {
+System.register("angular2/src/upgrade/metadata", ["angular2/compiler"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var core_1 = require("angular2/core");
+  var compiler_1 = require("angular2/compiler");
   var COMPONENT_SELECTOR = /^[\w|-]*$/;
   var SKEWER_CASE = /-(\w)/g;
-  var directiveResolver = new core_1.DirectiveResolver();
+  var directiveResolver = new compiler_1.DirectiveResolver();
   function getComponentInfo(type) {
     var resolvedMetadata = directiveResolver.resolve(type);
     var selector = resolvedMetadata.selector;
@@ -462,6 +462,7 @@ System.register("angular2/src/upgrade/upgrade_ng1_adapter", ["angular2/core", "a
   exports.UpgradeNg1ComponentAdapterBuilder = UpgradeNg1ComponentAdapterBuilder;
   var UpgradeNg1ComponentAdapter = (function() {
     function UpgradeNg1ComponentAdapter(linkFn, scope, directive, elementRef, $controller, inputs, outputs, propOuts, checkProperties, propertyMap) {
+      this.linkFn = linkFn;
       this.directive = directive;
       this.inputs = inputs;
       this.outputs = outputs;
@@ -470,20 +471,14 @@ System.register("angular2/src/upgrade/upgrade_ng1_adapter", ["angular2/core", "a
       this.propertyMap = propertyMap;
       this.destinationObj = null;
       this.checkLastValues = [];
-      var element = elementRef.nativeElement;
-      var childNodes = [];
-      var childNode;
-      while (childNode = element.firstChild) {
-        element.removeChild(childNode);
-        childNodes.push(childNode);
-      }
-      var componentScope = scope.$new(!!directive.scope);
-      var $element = angular.element(element);
+      this.element = elementRef.nativeElement;
+      this.componentScope = scope.$new(!!directive.scope);
+      var $element = angular.element(this.element);
       var controllerType = directive.controller;
       var controller = null;
       if (controllerType) {
         var locals = {
-          $scope: componentScope,
+          $scope: this.componentScope,
           $element: $element
         };
         controller = $controller(controllerType, locals, null, directive.controllerAs);
@@ -496,17 +491,9 @@ System.register("angular2/src/upgrade/upgrade_ng1_adapter", ["angular2/core", "a
         var attrs = NOT_SUPPORTED;
         var transcludeFn = NOT_SUPPORTED;
         var linkController = this.resolveRequired($element, directive.require);
-        directive.link(componentScope, $element, attrs, linkController, transcludeFn);
+        directive.link(this.componentScope, $element, attrs, linkController, transcludeFn);
       }
-      this.destinationObj = directive.bindToController && controller ? controller : componentScope;
-      linkFn(componentScope, function(clonedElement, scope) {
-        for (var i = 0,
-            ii = clonedElement.length; i < ii; i++) {
-          element.appendChild(clonedElement[i]);
-        }
-      }, {parentBoundTranscludeFn: function(scope, cloneAttach) {
-          cloneAttach(childNodes);
-        }});
+      this.destinationObj = directive.bindToController && controller ? controller : this.componentScope;
       for (var i = 0; i < inputs.length; i++) {
         this[inputs[i]] = null;
       }
@@ -524,6 +511,21 @@ System.register("angular2/src/upgrade/upgrade_ng1_adapter", ["angular2/core", "a
       }
     }
     UpgradeNg1ComponentAdapter.prototype.ngOnInit = function() {
+      var _this = this;
+      var childNodes = [];
+      var childNode;
+      while (childNode = this.element.firstChild) {
+        this.element.removeChild(childNode);
+        childNodes.push(childNode);
+      }
+      this.linkFn(this.componentScope, function(clonedElement, scope) {
+        for (var i = 0,
+            ii = clonedElement.length; i < ii; i++) {
+          _this.element.appendChild(clonedElement[i]);
+        }
+      }, {parentBoundTranscludeFn: function(scope, cloneAttach) {
+          cloneAttach(childNodes);
+        }});
       if (this.destinationObj.$onInit) {
         this.destinationObj.$onInit();
       }

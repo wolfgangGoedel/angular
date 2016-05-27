@@ -1,10 +1,6 @@
 import { unimplemented } from 'angular2/src/facade/exceptions';
+import { ChangeDetectionStrategy } from 'angular2/src/core/change_detection/constants';
 export class ViewRef {
-    /**
-     * @internal
-     */
-    get changeDetectorRef() { return unimplemented(); }
-    ;
     get destroyed() { return unimplemented(); }
 }
 /**
@@ -19,6 +15,7 @@ export class ViewRef {
 export class HostViewRef extends ViewRef {
     get rootNodes() { return unimplemented(); }
     ;
+    get changeDetectorRef() { return unimplemented(); }
 }
 /**
  * Represents an Angular View.
@@ -83,14 +80,19 @@ export class ViewRef_ {
         this._view = _view;
     }
     get internalView() { return this._view; }
-    /**
-     * Return `ChangeDetectorRef`
-     */
-    get changeDetectorRef() { return this._view.changeDetector.ref; }
     get rootNodes() { return this._view.flatRootNodes; }
+    get changeDetectorRef() { return this; }
     setLocal(variableName, value) { this._view.setLocal(variableName, value); }
     hasLocal(variableName) { return this._view.hasLocal(variableName); }
     get destroyed() { return this._view.destroyed; }
+    markForCheck() { this._view.markPathToRootAsCheckOnce(); }
+    detach() { this._view.cdMode = ChangeDetectionStrategy.Detached; }
+    detectChanges() { this._view.detectChanges(false); }
+    checkNoChanges() { this._view.detectChanges(true); }
+    reattach() {
+        this._view.cdMode = ChangeDetectionStrategy.CheckAlways;
+        this.markForCheck();
+    }
 }
 export class HostViewFactoryRef {
 }

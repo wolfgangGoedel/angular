@@ -10,10 +10,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { PromiseWrapper } from 'angular2/src/facade/async';
+import { PromiseWrapper, EventEmitter } from 'angular2/src/facade/async';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { isBlank, isPresent } from 'angular2/src/facade/lang';
-import { Directive, Attribute, DynamicComponentLoader, ElementRef, Injector, provide } from 'angular2/core';
+import { Directive, Attribute, DynamicComponentLoader, ElementRef, Injector, provide, Output } from 'angular2/core';
 import * as routerMod from '../router';
 import { RouteParams, RouteData } from '../instruction';
 import * as hookMod from '../lifecycle/lifecycle_annotations';
@@ -36,6 +36,7 @@ export let RouterOutlet = class RouterOutlet {
         this.name = null;
         this._componentRef = null;
         this._currentInstruction = null;
+        this.activateEvents = new EventEmitter();
         if (isPresent(nameAttr)) {
             this.name = nameAttr;
             this._parentRouter.registerAuxOutlet(this);
@@ -61,6 +62,7 @@ export let RouterOutlet = class RouterOutlet {
         this._componentRef =
             this._loader.loadNextToLocation(componentType, this._elementRef, providers);
         return this._componentRef.then((componentRef) => {
+            this.activateEvents.emit(componentRef.instance);
             if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
                 return this._componentRef.then((ref) => ref.instance.routerOnActivate(nextInstruction, previousInstruction));
             }
@@ -156,6 +158,10 @@ export let RouterOutlet = class RouterOutlet {
     }
     ngOnDestroy() { this._parentRouter.unregisterPrimaryOutlet(this); }
 };
+__decorate([
+    Output('activate'), 
+    __metadata('design:type', Object)
+], RouterOutlet.prototype, "activateEvents", void 0);
 RouterOutlet = __decorate([
     Directive({ selector: 'router-outlet' }),
     __param(3, Attribute('name')), 

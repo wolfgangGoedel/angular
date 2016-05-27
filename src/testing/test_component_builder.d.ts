@@ -24,7 +24,8 @@ export declare abstract class ComponentFixture {
     /**
      * Trigger a change detection cycle for the component.
      */
-    abstract detectChanges(): void;
+    abstract detectChanges(checkNoChanges?: boolean): void;
+    abstract checkNoChanges(): void;
     /**
      * Trigger component destruction.
      */
@@ -32,7 +33,8 @@ export declare abstract class ComponentFixture {
 }
 export declare class ComponentFixture_ extends ComponentFixture {
     constructor(componentRef: ComponentRef);
-    detectChanges(): void;
+    detectChanges(checkNoChanges?: boolean): void;
+    checkNoChanges(): void;
     destroy(): void;
 }
 /**
@@ -116,4 +118,5 @@ export declare class TestComponentBuilder {
      * @return {Promise<ComponentFixture>}
      */
     createAsync(rootComponentType: Type): Promise<ComponentFixture>;
+    createFakeAsync(rootComponentType: Type): ComponentFixture;
 }

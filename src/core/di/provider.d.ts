@@ -434,3 +434,4 @@ export declare function resolveProviders(providers: Array<Type | Provider | any[
  * have been merged.
  */
 export declare function mergeResolvedProviders(providers: ResolvedProvider[], normalizedProvidersMap: Map<number, ResolvedProvider>): Map<number, ResolvedProvider>;
+export declare function constructDependencies(typeOrFunc: any, dependencies: any[]): Dependency[];

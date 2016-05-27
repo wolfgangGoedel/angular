@@ -1,5 +1,5 @@
 "format register";
-System.register("angular2/src/router/directives/router_link_transform", ["angular2/compiler", "angular2/src/core/change_detection/parser/ast", "angular2/src/facade/exceptions", "angular2/core", "angular2/src/core/change_detection/parser/parser"], true, function(require, exports, module) {
+System.register("angular2/src/router/directives/router_link_transform", ["angular2/compiler", "angular2/src/compiler/expression_parser/ast", "angular2/src/facade/exceptions", "angular2/core", "angular2/src/compiler/expression_parser/parser"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -30,10 +30,10 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       return Reflect.metadata(k, v);
   };
   var compiler_1 = require("angular2/compiler");
-  var ast_1 = require("angular2/src/core/change_detection/parser/ast");
+  var ast_1 = require("angular2/src/compiler/expression_parser/ast");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var core_1 = require("angular2/core");
-  var parser_1 = require("angular2/src/core/change_detection/parser/parser");
+  var parser_1 = require("angular2/src/compiler/expression_parser/parser");
   var FixedPart = (function() {
     function FixedPart(value) {
       this.value = value;
@@ -149,11 +149,11 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       _super.call(this);
       this.parser = parser;
     }
-    RouterLinkAstTransformer.prototype.visitQuote = function(ast) {
+    RouterLinkAstTransformer.prototype.visitQuote = function(ast, context) {
       if (ast.prefix == "route") {
         return parseRouterLinkExpression(this.parser, ast.uninterpretedExpression);
       } else {
-        return _super.prototype.visitQuote.call(this, ast);
+        return _super.prototype.visitQuote.call(this, ast, context);
       }
     };
     return RouterLinkAstTransformer;
@@ -184,7 +184,7 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       var updatedDirectives = ast.directives.map(function(c) {
         return c.visit(_this, context);
       });
-      return new compiler_1.ElementAst(ast.name, ast.attrs, updatedInputs, ast.outputs, ast.exportAsVars, updatedDirectives, updatedChildren, ast.ngContentIndex, ast.sourceSpan);
+      return new compiler_1.ElementAst(ast.name, ast.attrs, updatedInputs, ast.outputs, ast.exportAsVars, updatedDirectives, ast.providers, updatedChildren, ast.ngContentIndex, ast.sourceSpan);
     };
     RouterLinkTransform.prototype.visitVariable = function(ast, context) {
       return ast;
@@ -2172,6 +2172,7 @@ System.register("angular2/src/router/directives/router_outlet", ["angular2/src/f
       this.name = null;
       this._componentRef = null;
       this._currentInstruction = null;
+      this.activateEvents = new async_1.EventEmitter();
       if (lang_1.isPresent(nameAttr)) {
         this.name = nameAttr;
         this._parentRouter.registerAuxOutlet(this);
@@ -2188,6 +2189,7 @@ System.register("angular2/src/router/directives/router_outlet", ["angular2/src/f
       var providers = core_1.Injector.resolve([core_1.provide(instruction_1.RouteData, {useValue: nextInstruction.routeData}), core_1.provide(instruction_1.RouteParams, {useValue: new instruction_1.RouteParams(nextInstruction.params)}), core_1.provide(routerMod.Router, {useValue: childRouter})]);
       this._componentRef = this._loader.loadNextToLocation(componentType, this._elementRef, providers);
       return this._componentRef.then(function(componentRef) {
+        _this.activateEvents.emit(componentRef.instance);
         if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
           return _this._componentRef.then(function(ref) {
             return ref.instance.routerOnActivate(nextInstruction, previousInstruction);
@@ -2256,6 +2258,7 @@ System.register("angular2/src/router/directives/router_outlet", ["angular2/src/f
     RouterOutlet.prototype.ngOnDestroy = function() {
       this._parentRouter.unregisterPrimaryOutlet(this);
     };
+    __decorate([core_1.Output('activate'), __metadata('design:type', Object)], RouterOutlet.prototype, "activateEvents", void 0);
     RouterOutlet = __decorate([core_1.Directive({selector: 'router-outlet'}), __param(3, core_1.Attribute('name')), __metadata('design:paramtypes', [core_1.ElementRef, core_1.DynamicComponentLoader, routerMod.Router, String])], RouterOutlet);
     return RouterOutlet;
   }());

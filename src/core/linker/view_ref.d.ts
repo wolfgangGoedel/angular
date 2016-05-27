@@ -14,6 +14,7 @@ export declare abstract class ViewRef {
  */
 export declare abstract class HostViewRef extends ViewRef {
     rootNodes: any[];
+    changeDetectorRef: ChangeDetectorRef;
 }
 /**
  * Represents an Angular View.
@@ -79,18 +80,20 @@ export declare abstract class EmbeddedViewRef extends ViewRef {
     abstract hasLocal(variableName: string): boolean;
     rootNodes: any[];
 }
-export declare class ViewRef_ implements EmbeddedViewRef, HostViewRef {
+export declare class ViewRef_ implements EmbeddedViewRef, HostViewRef, ChangeDetectorRef {
     private _view;
-    constructor(_view: AppView);
-    internalView: AppView;
-    /**
-     * Return `ChangeDetectorRef`
-     */
-    changeDetectorRef: ChangeDetectorRef;
+    constructor(_view: AppView<any>);
+    internalView: AppView<any>;
     rootNodes: any[];
+    changeDetectorRef: ChangeDetectorRef;
     setLocal(variableName: string, value: any): void;
     hasLocal(variableName: string): boolean;
     destroyed: boolean;
+    markForCheck(): void;
+    detach(): void;
+    detectChanges(): void;
+    checkNoChanges(): void;
+    reattach(): void;
 }
 export declare abstract class HostViewFactoryRef {
 }

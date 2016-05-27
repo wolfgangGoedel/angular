@@ -1,9 +1,9 @@
-import { Injector, ResolvedProvider } from 'angular2/src/core/di';
+import { Injector } from 'angular2/src/core/di';
 import { ElementRef } from './element_ref';
-import { HostViewFactoryRef, EmbeddedViewRef, HostViewRef, ViewRef } from './view_ref';
+import { HostViewFactoryRef, HostViewRef, ViewRef } from './view_ref';
 import { ViewContainerRef } from './view_container_ref';
-import { TemplateRef } from './template_ref';
-import { RootRenderer } from 'angular2/src/core/render/api';
+import { RootRenderer, RenderComponentType } from 'angular2/src/core/render/api';
+import { ViewEncapsulation } from 'angular2/src/core/metadata/view';
 /**
  * Service exposing low level API for creating, moving and destroying Views.
  *
@@ -92,49 +92,6 @@ export declare abstract class AppViewManager {
      * destroyed as well.
      */
     abstract destroyRootHostView(hostViewRef: HostViewRef): any;
-    /**
-     * Instantiates an Embedded View based on the {@link TemplateRef `templateRef`} and inserts it
-     * into the View Container specified via `viewContainerLocation` at the specified `index`.
-     *
-     * Returns the {@link ViewRef} for the newly created View.
-     *
-     * This as a low-level way to create and attach an Embedded via to a View Container. Most
-     * applications should used {@link ViewContainerRef#createEmbeddedView} instead.
-     *
-     * Use {@link AppViewManager#destroyViewInContainer} to destroy the created Embedded View.
-     */
-    abstract createEmbeddedViewInContainer(viewContainerLocation: ElementRef, index: number, templateRef: TemplateRef): EmbeddedViewRef;
-    /**
-     * Instantiates a single {@link Component} and inserts its Host View into the View Container
-     * found at `viewContainerLocation`. Within the container, the view will be inserted at position
-     * specified via `index`.
-     *
-     * The component is instantiated using its {@link ProtoViewRef `protoViewRef`} which can be
-     * obtained via {@link Compiler#compileInHost}.
-     *
-     * You can optionally specify `dynamicallyCreatedProviders`, which configure the {@link Injector}
-     * that will be created for the Host View.
-     *
-     * Returns the {@link HostViewRef} of the Host View created for the newly instantiated Component.
-     *
-     * Use {@link AppViewManager#destroyViewInContainer} to destroy the created Host View.
-     */
-    abstract createHostViewInContainer(viewContainerLocation: ElementRef, index: number, hostViewFactoryRef: HostViewFactoryRef, dynamicallyCreatedProviders: ResolvedProvider[], projectableNodes: any[][]): HostViewRef;
-    /**
-     * Destroys an Embedded or Host View attached to a View Container at the specified `index`.
-     *
-     * The View Container is located via `viewContainerLocation`.
-     */
-    abstract destroyViewInContainer(viewContainerLocation: ElementRef, index: number): any;
-    /**
-     *
-     * See {@link AppViewManager#detachViewInContainer}.
-     */
-    abstract attachViewInContainer(viewContainerLocation: ElementRef, index: number, viewRef: EmbeddedViewRef): EmbeddedViewRef;
-    /**
-     * See {@link AppViewManager#attachViewInContainer}.
-     */
-    abstract detachViewInContainer(viewContainerLocation: ElementRef, index: number): EmbeddedViewRef;
 }
 export declare class AppViewManager_ extends AppViewManager {
     private _renderer;
@@ -147,11 +104,8 @@ export declare class AppViewManager_ extends AppViewManager {
     getComponent(hostLocation: ElementRef): any;
     createRootHostView(hostViewFactoryRef: HostViewFactoryRef, overrideSelector: string, injector: Injector, projectableNodes?: any[][]): HostViewRef;
     destroyRootHostView(hostViewRef: ViewRef): void;
-    createEmbeddedViewInContainer(viewContainerLocation: ElementRef, index: number, templateRef: TemplateRef): EmbeddedViewRef;
-    createHostViewInContainer(viewContainerLocation: ElementRef, index: number, hostViewFactoryRef: HostViewFactoryRef, dynamicallyCreatedProviders: ResolvedProvider[], projectableNodes: any[][]): HostViewRef;
-    destroyViewInContainer(viewContainerLocation: ElementRef, index: number): void;
-    attachViewInContainer(viewContainerLocation: ElementRef, index: number, viewRef: ViewRef): EmbeddedViewRef;
-    detachViewInContainer(viewContainerLocation: ElementRef, index: number): EmbeddedViewRef;
-    private _attachViewToContainer(view, vcAppElement, viewIndex);
-    private _detachViewInContainer(vcAppElement, viewIndex);
+    /**
+     * Used by the generated code
+     */
+    createRenderComponentType(templateUrl: string, slotCount: number, encapsulation: ViewEncapsulation, styles: Array<string | any[]>): RenderComponentType;
 }

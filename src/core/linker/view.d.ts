@@ -1,99 +1,119 @@
-import { ChangeDetector, ChangeDispatcher, DirectiveIndex, BindingTarget, Locals, ChangeDetectorRef } from 'angular2/src/core/change_detection/change_detection';
-import { ResolvedProvider, Injector } from 'angular2/src/core/di';
-import { DebugContext } from 'angular2/src/core/change_detection/interfaces';
+import { Injector } from 'angular2/src/core/di';
 import { AppElement } from './element';
-import { Type } from 'angular2/src/facade/lang';
-import { Renderer } from 'angular2/src/core/render/api';
+import { Renderer, RenderComponentType } from 'angular2/src/core/render/api';
 import { ViewRef_ } from './view_ref';
-import { ProtoPipes } from 'angular2/src/core/pipes/pipes';
-export { DebugContext } from 'angular2/src/core/change_detection/interfaces';
-import { Pipes } from 'angular2/src/core/pipes/pipes';
 import { AppViewManager_ } from './view_manager';
-import { ResolvedMetadataCache } from './resolved_metadata_cache';
 import { ViewType } from './view_type';
+import { ChangeDetectorRef, ChangeDetectionStrategy, ChangeDetectorState } from 'angular2/src/core/change_detection/change_detection';
+import { StaticNodeDebugInfo, DebugContext } from './debug_context';
+export declare const HOST_VIEW_ELEMENT_NAME: string;
 /**
  * Cost of making objects: http://jsperf.com/instantiate-size-of-object
  *
  */
-export declare class AppView implements ChangeDispatcher {
-    proto: AppProtoView;
-    renderer: Renderer;
+export declare abstract class AppView<T> {
+    clazz: any;
+    componentType: RenderComponentType;
+    type: ViewType;
+    locals: {
+        [key: string]: any;
+    };
     viewManager: AppViewManager_;
-    projectableNodes: Array<any | any[]>;
-    containerAppElement: AppElement;
-    changeDetector: ChangeDetector;
+    parentInjector: Injector;
+    declarationAppElement: AppElement;
+    cdMode: ChangeDetectionStrategy;
     ref: ViewRef_;
     rootNodesOrAppElements: any[];
     allNodes: any[];
     disposables: Function[];
-    appElements: AppElement[];
+    subscriptions: any[];
+    namedAppElements: {
+        [key: string]: AppElement;
+    };
+    contentChildren: AppView<any>[];
+    viewChildren: AppView<any>[];
+    private _literalArrayCache;
+    private _literalMapCache;
+    viewContainerElement: AppElement;
+    cdState: ChangeDetectorState;
     /**
      * The context against which data-binding expressions in this view are evaluated against.
      * This is always a component instance.
      */
-    context: any;
-    /**
-     * Variables, local to this view, that can be used in binding expressions (in addition to the
-     * context). This is used for thing like `<video #player>` or
-     * `<li template="for #item of items">`, where "player" and "item" are locals, respectively.
-     */
-    locals: Locals;
-    pipes: Pipes;
-    parentInjector: Injector;
-    /**
-     * Whether root injectors of this view
-     * have a hostBoundary.
-     */
-    hostInjectorBoundary: boolean;
+    context: T;
+    projectableNodes: Array<any | any[]>;
     destroyed: boolean;
-    constructor(proto: AppProtoView, renderer: Renderer, viewManager: AppViewManager_, projectableNodes: Array<any | any[]>, containerAppElement: AppElement, imperativelyCreatedProviders: ResolvedProvider[], rootInjector: Injector, changeDetector: ChangeDetector);
-    init(rootNodesOrAppElements: any[], allNodes: any[], disposables: Function[], appElements: AppElement[]): void;
+    renderer: Renderer;
+    constructor(clazz: any, componentType: RenderComponentType, type: ViewType, locals: {
+        [key: string]: any;
+    }, viewManager: AppViewManager_, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, literalArrayCacheSize: number, literalMapCacheSize: number);
+    create(givenProjectableNodes: Array<any | any[]>, rootSelector: string): void;
+    /**
+     * Overwritten by implementations
+     */
+    createInternal(rootSelector: string): void;
+    init(rootNodesOrAppElements: any[], allNodes: any[], appElements: {
+        [key: string]: AppElement;
+    }, disposables: Function[], subscriptions: any[]): void;
+    getHostViewElement(): AppElement;
+    injectorGet(token: any, nodeIndex: number, notFoundResult: any): any;
+    /**
+     * Overwritten by implementations
+     */
+    injectorGetInternal(token: any, nodeIndex: number, notFoundResult: any): any;
+    injector(nodeIndex: number): Injector;
     destroy(): void;
-    notifyOnDestroy(): void;
+    destroyLocal(): void;
+    /**
+     * Overwritten by implementations
+     */
+    destroyInternal(): void;
     changeDetectorRef: ChangeDetectorRef;
     flatRootNodes: any[];
+    lastRootNode: any;
     hasLocal(contextName: string): boolean;
     setLocal(contextName: string, value: any): void;
-    notifyOnBinding(b: BindingTarget, currentValue: any): void;
-    logBindingUpdate(b: BindingTarget, value: any): void;
-    notifyAfterContentChecked(): void;
-    notifyAfterViewChecked(): void;
-    getDebugContext(appElement: AppElement, elementIndex: number, directiveIndex: number): DebugContext;
-    getDirectiveFor(directive: DirectiveIndex): any;
-    getDetectorFor(directive: DirectiveIndex): ChangeDetector;
     /**
-     * Triggers the event handlers for the element and the directives.
-     *
-     * This method is intended to be called from directive EventEmitters.
-     *
-     * @param {string} eventName
-     * @param {*} eventObj
-     * @param {number} boundElementIndex
-     * @return false if preventDefault must be applied to the DOM event
+     * Overwritten by implementations
      */
-    triggerEventHandlers(eventName: string, eventObj: Event, boundElementIndex: number): boolean;
-}
-/**
- *
- */
-export declare class AppProtoView {
-    type: ViewType;
-    protoPipes: ProtoPipes;
-    templateVariableBindings: {
-        [key: string]: string;
+    dirtyParentQueriesInternal(): void;
+    detectChanges(throwOnChange: boolean): void;
+    /**
+     * Overwritten by implementations
+     */
+    detectChangesInternal(throwOnChange: boolean): void;
+    detectContentChildrenChanges(throwOnChange: boolean): void;
+    detectViewChildrenChanges(throwOnChange: boolean): void;
+    addToContentChildren(renderAppElement: AppElement): void;
+    removeFromContentChildren(renderAppElement: AppElement): void;
+    literalArray(id: number, value: any[]): any[];
+    literalMap(id: number, value: {
+        [key: string]: any;
+    }): {
+        [key: string]: any;
     };
-    static create(metadataCache: ResolvedMetadataCache, type: ViewType, pipes: Type[], templateVariableBindings: {
-        [key: string]: string;
-    }): AppProtoView;
-    constructor(type: ViewType, protoPipes: ProtoPipes, templateVariableBindings: {
-        [key: string]: string;
-    });
+    markAsCheckOnce(): void;
+    markPathToRootAsCheckOnce(): void;
+    eventHandler(cb: Function): Function;
+    throwDestroyedError(details: string): void;
+}
+export declare class DebugAppView<T> extends AppView<T> {
+    staticNodeDebugInfos: StaticNodeDebugInfo[];
+    private _currentDebugContext;
+    constructor(clazz: any, componentType: RenderComponentType, type: ViewType, locals: {
+        [key: string]: any;
+    }, viewManager: AppViewManager_, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, literalArrayCacheSize: number, literalMapCacheSize: number, staticNodeDebugInfos: StaticNodeDebugInfo[]);
+    create(givenProjectableNodes: Array<any | any[]>, rootSelector: string): void;
+    injectorGet(token: any, nodeIndex: number, notFoundResult: any): any;
+    destroyLocal(): void;
+    detectChanges(throwOnChange: boolean): void;
+    private _resetDebug();
+    debug(nodeIndex: number, rowNum: number, colNum: number): DebugContext;
+    private _rethrowWithContext(e, stack);
+    eventHandler(cb: Function): Function;
 }
 export declare class HostViewFactory {
     selector: string;
     viewFactory: Function;
     constructor(selector: string, viewFactory: Function);
 }
-export declare function flattenNestedViewRenderNodes(nodes: any[]): any[];
-export declare function findLastRenderNode(node: any): any;
-export declare function checkSlotCount(componentName: string, expectedSlotCount: number, projectableNodes: any[][]): void;

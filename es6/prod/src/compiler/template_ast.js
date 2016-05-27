@@ -88,13 +88,14 @@ export class VariableAst {
  * An element declaration in a template.
  */
 export class ElementAst {
-    constructor(name, attrs, inputs, outputs, exportAsVars, directives, children, ngContentIndex, sourceSpan) {
+    constructor(name, attrs, inputs, outputs, exportAsVars, directives, providers, children, ngContentIndex, sourceSpan) {
         this.name = name;
         this.attrs = attrs;
         this.inputs = inputs;
         this.outputs = outputs;
         this.exportAsVars = exportAsVars;
         this.directives = directives;
+        this.providers = providers;
         this.children = children;
         this.ngContentIndex = ngContentIndex;
         this.sourceSpan = sourceSpan;
@@ -102,31 +103,17 @@ export class ElementAst {
     visit(visitor, context) {
         return visitor.visitElement(this, context);
     }
-    /**
-     * Whether the element has any active bindings (inputs, outputs, vars, or directives).
-     */
-    isBound() {
-        return (this.inputs.length > 0 || this.outputs.length > 0 || this.exportAsVars.length > 0 ||
-            this.directives.length > 0);
-    }
-    /**
-     * Get the component associated with this element, if any.
-     */
-    getComponent() {
-        return this.directives.length > 0 && this.directives[0].directive.isComponent ?
-            this.directives[0].directive :
-            null;
-    }
 }
 /**
  * A `<template>` element included in an Angular template.
  */
 export class EmbeddedTemplateAst {
-    constructor(attrs, outputs, vars, directives, children, ngContentIndex, sourceSpan) {
+    constructor(attrs, outputs, vars, directives, providers, children, ngContentIndex, sourceSpan) {
         this.attrs = attrs;
         this.outputs = outputs;
         this.vars = vars;
         this.directives = directives;
+        this.providers = providers;
         this.children = children;
         this.ngContentIndex = ngContentIndex;
         this.sourceSpan = sourceSpan;
@@ -165,6 +152,31 @@ export class DirectiveAst {
         return visitor.visitDirective(this, context);
     }
 }
+/**
+ * A provider declared on an element
+ */
+export class ProviderAst {
+    constructor(token, multiProvider, eager, providers, providerType, sourceSpan) {
+        this.token = token;
+        this.multiProvider = multiProvider;
+        this.eager = eager;
+        this.providers = providers;
+        this.providerType = providerType;
+        this.sourceSpan = sourceSpan;
+    }
+    visit(visitor, context) {
+        // No visit method in the visitor for now...
+        return null;
+    }
+}
+export var ProviderAstType;
+(function (ProviderAstType) {
+    ProviderAstType[ProviderAstType["PublicService"] = 0] = "PublicService";
+    ProviderAstType[ProviderAstType["PrivateService"] = 1] = "PrivateService";
+    ProviderAstType[ProviderAstType["Component"] = 2] = "Component";
+    ProviderAstType[ProviderAstType["Directive"] = 3] = "Directive";
+    ProviderAstType[ProviderAstType["Builtin"] = 4] = "Builtin";
+})(ProviderAstType || (ProviderAstType = {}));
 /**
  * Position where content is to be projected (instance of `<ng-content>` in a template).
  */

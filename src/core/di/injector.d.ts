@@ -1,26 +1,9 @@
 import { ResolvedProvider, Provider, Dependency } from './provider';
 import { Type } from 'angular2/src/facade/lang';
 export declare const UNDEFINED: Object;
-/**
- * Visibility of a {@link Provider}.
- */
-export declare enum Visibility {
-    /**
-     * A `Public` {@link Provider} is only visible to regular (as opposed to host) child injectors.
-     */
-    Public = 0,
-    /**
-     * A `Private` {@link Provider} is only visible to host (as opposed to regular) child injectors.
-     */
-    Private = 1,
-    /**
-     * A `PublicAndPrivate` {@link Provider} is visible to both host and regular child injectors.
-     */
-    PublicAndPrivate = 2,
-}
 export interface ProtoInjectorStrategy {
     getProviderAtIndex(index: number): ResolvedProvider;
-    createInjectorStrategy(inj: Injector): InjectorStrategy;
+    createInjectorStrategy(inj: Injector_): InjectorStrategy;
 }
 export declare class ProtoInjectorInlineStrategy implements ProtoInjectorStrategy {
     provider0: ResolvedProvider;
@@ -43,43 +26,32 @@ export declare class ProtoInjectorInlineStrategy implements ProtoInjectorStrateg
     keyId7: number;
     keyId8: number;
     keyId9: number;
-    visibility0: Visibility;
-    visibility1: Visibility;
-    visibility2: Visibility;
-    visibility3: Visibility;
-    visibility4: Visibility;
-    visibility5: Visibility;
-    visibility6: Visibility;
-    visibility7: Visibility;
-    visibility8: Visibility;
-    visibility9: Visibility;
-    constructor(protoEI: ProtoInjector, bwv: ProviderWithVisibility[]);
+    constructor(protoEI: ProtoInjector, providers: ResolvedProvider[]);
     getProviderAtIndex(index: number): ResolvedProvider;
-    createInjectorStrategy(injector: Injector): InjectorStrategy;
+    createInjectorStrategy(injector: Injector_): InjectorStrategy;
 }
 export declare class ProtoInjectorDynamicStrategy implements ProtoInjectorStrategy {
     providers: ResolvedProvider[];
     keyIds: number[];
-    visibilities: Visibility[];
-    constructor(protoInj: ProtoInjector, bwv: ProviderWithVisibility[]);
+    constructor(protoInj: ProtoInjector, providers: ResolvedProvider[]);
     getProviderAtIndex(index: number): ResolvedProvider;
-    createInjectorStrategy(ei: Injector): InjectorStrategy;
+    createInjectorStrategy(ei: Injector_): InjectorStrategy;
 }
 export declare class ProtoInjector {
     static fromResolvedProviders(providers: ResolvedProvider[]): ProtoInjector;
     numberOfProviders: number;
-    constructor(bwv: ProviderWithVisibility[]);
+    constructor(providers: ResolvedProvider[]);
     getProviderAtIndex(index: number): ResolvedProvider;
 }
 export interface InjectorStrategy {
-    getObjByKeyId(keyId: number, visibility: Visibility): any;
+    getObjByKeyId(keyId: number): any;
     getObjAtIndex(index: number): any;
     getMaxNumberOfObjects(): number;
     resetConstructionCounter(): void;
-    instantiateProvider(provider: ResolvedProvider, visibility: Visibility): any;
+    instantiateProvider(provider: ResolvedProvider): any;
 }
 export declare class InjectorInlineStrategy implements InjectorStrategy {
-    injector: Injector;
+    injector: Injector_;
     protoStrategy: ProtoInjectorInlineStrategy;
     obj0: any;
     obj1: any;
@@ -91,29 +63,23 @@ export declare class InjectorInlineStrategy implements InjectorStrategy {
     obj7: any;
     obj8: any;
     obj9: any;
-    constructor(injector: Injector, protoStrategy: ProtoInjectorInlineStrategy);
+    constructor(injector: Injector_, protoStrategy: ProtoInjectorInlineStrategy);
     resetConstructionCounter(): void;
-    instantiateProvider(provider: ResolvedProvider, visibility: Visibility): any;
-    getObjByKeyId(keyId: number, visibility: Visibility): any;
+    instantiateProvider(provider: ResolvedProvider): any;
+    getObjByKeyId(keyId: number): any;
     getObjAtIndex(index: number): any;
     getMaxNumberOfObjects(): number;
 }
 export declare class InjectorDynamicStrategy implements InjectorStrategy {
     protoStrategy: ProtoInjectorDynamicStrategy;
-    injector: Injector;
+    injector: Injector_;
     objs: any[];
-    constructor(protoStrategy: ProtoInjectorDynamicStrategy, injector: Injector);
+    constructor(protoStrategy: ProtoInjectorDynamicStrategy, injector: Injector_);
     resetConstructionCounter(): void;
-    instantiateProvider(provider: ResolvedProvider, visibility: Visibility): any;
-    getObjByKeyId(keyId: number, visibility: Visibility): any;
+    instantiateProvider(provider: ResolvedProvider): any;
+    getObjByKeyId(keyId: number): any;
     getObjAtIndex(index: number): any;
     getMaxNumberOfObjects(): number;
-}
-export declare class ProviderWithVisibility {
-    provider: ResolvedProvider;
-    visibility: Visibility;
-    constructor(provider: ResolvedProvider, visibility: Visibility);
-    getKeyId(): number;
 }
 /**
  * Used to provide dependencies that cannot be easily expressed as providers.
@@ -121,42 +87,7 @@ export declare class ProviderWithVisibility {
 export interface DependencyProvider {
     getDependency(injector: Injector, provider: ResolvedProvider, dependency: Dependency): any;
 }
-/**
- * A dependency injection container used for instantiating objects and resolving dependencies.
- *
- * An `Injector` is a replacement for a `new` operator, which can automatically resolve the
- * constructor dependencies.
- *
- * In typical use, application code asks for the dependencies in the constructor and they are
- * resolved by the `Injector`.
- *
- * ### Example ([live demo](http://plnkr.co/edit/jzjec0?p=preview))
- *
- * The following example creates an `Injector` configured to create `Engine` and `Car`.
- *
- * ```typescript
- * @Injectable()
- * class Engine {
- * }
- *
- * @Injectable()
- * class Car {
- *   constructor(public engine:Engine) {}
- * }
- *
- * var injector = Injector.resolveAndCreate([Car, Engine]);
- * var car = injector.get(Car);
- * expect(car instanceof Car).toBe(true);
- * expect(car.engine instanceof Engine).toBe(true);
- * ```
- *
- * Notice, we don't use the `new` operator because we explicitly want to have the `Injector`
- * resolve all of the object's dependencies automatically.
- */
-export declare class Injector {
-    private _isHostBoundary;
-    private _depProvider;
-    private _debugContext;
+export declare abstract class Injector {
     /**
      * Turns an array of provider definitions into an array of resolved providers.
      *
@@ -245,10 +176,6 @@ export declare class Injector {
      * @deprecated
      */
     static fromResolvedBindings(providers: ResolvedProvider[]): Injector;
-    /**
-     * Private
-     */
-    constructor(_proto: any, _parent?: Injector, _isHostBoundary?: boolean, _depProvider?: any, _debugContext?: Function);
     /**
      * Retrieves an instance from the injector based on the provided token.
      * Throws {@link NoProviderError} if not found.
@@ -412,10 +339,57 @@ export declare class Injector {
      * ```
      */
     instantiateResolved(provider: ResolvedProvider): any;
-    private _instantiateProvider(provider, visibility);
-    private _instantiate(provider, resolvedFactory, visibility);
-    private _getByDependency(provider, dep, providerVisibility);
-    private _getByKey(key, lowerBoundVisibility, upperBoundVisibility, optional, providerVisibility);
+}
+/**
+ * A dependency injection container used for instantiating objects and resolving dependencies.
+ *
+ * An `Injector` is a replacement for a `new` operator, which can automatically resolve the
+ * constructor dependencies.
+ *
+ * In typical use, application code asks for the dependencies in the constructor and they are
+ * resolved by the `Injector`.
+ *
+ * ### Example ([live demo](http://plnkr.co/edit/jzjec0?p=preview))
+ *
+ * The following example creates an `Injector` configured to create `Engine` and `Car`.
+ *
+ * ```typescript
+ * @Injectable()
+ * class Engine {
+ * }
+ *
+ * @Injectable()
+ * class Car {
+ *   constructor(public engine:Engine) {}
+ * }
+ *
+ * var injector = Injector.resolveAndCreate([Car, Engine]);
+ * var car = injector.get(Car);
+ * expect(car instanceof Car).toBe(true);
+ * expect(car.engine instanceof Engine).toBe(true);
+ * ```
+ *
+ * Notice, we don't use the `new` operator because we explicitly want to have the `Injector`
+ * resolve all of the object's dependencies automatically.
+ */
+export declare class Injector_ implements Injector {
+    private _debugContext;
+    /**
+     * Private
+     */
+    constructor(_proto: any, _parent?: Injector, _debugContext?: Function);
+    get(token: any): any;
+    getOptional(token: any): any;
+    getAt(index: number): any;
+    parent: Injector;
+    resolveAndCreateChild(providers: Array<Type | Provider | any[]>): Injector;
+    createChildFromResolved(providers: ResolvedProvider[]): Injector;
+    resolveAndInstantiate(provider: Type | Provider): any;
+    instantiateResolved(provider: ResolvedProvider): any;
+    private _instantiateProvider(provider);
+    private _instantiate(provider, resolvedFactory);
+    private _getByDependency(provider, dep);
+    private _getByKey(key, lowerBoundVisibility, upperBoundVisibility, optional);
     displayName: string;
     toString(): string;
 }
