@@ -20,7 +20,7 @@ import "package:angular2/src/facade/collection.dart"
 import "package:angular2/src/facade/lang.dart"
     show RegExpWrapper, NumberWrapper, isPresent;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
-import "package:angular2/src/core/change_detection/parser/parser.dart"
+import "package:angular2/src/compiler/expression_parser/parser.dart"
     show Parser;
 import "message.dart" show Message, id;
 import "expander.dart" show expandNodes;

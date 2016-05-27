@@ -39,13 +39,13 @@ abstract class ElementRef {
 }
 
 class ElementRef_ implements ElementRef {
-  AppElement _appElement;
-  ElementRef_(this._appElement) {}
+  AppElement _element;
+  ElementRef_(this._element) {}
   AppElement get internalElement {
-    return this._appElement;
+    return this._element;
   }
 
   get nativeElement {
-    return this._appElement.nativeElement;
+    return this._element.nativeElement;
   }
 }

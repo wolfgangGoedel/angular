@@ -7,7 +7,7 @@ import "package:angular2/compiler.dart"
         BoundDirectivePropertyAst,
         DirectiveAst,
         BoundElementPropertyAst;
-import "package:angular2/src/core/change_detection/parser/ast.dart"
+import "package:angular2/src/compiler/expression_parser/ast.dart"
     show
         AstTransformer,
         Quote,
@@ -18,7 +18,7 @@ import "package:angular2/src/core/change_detection/parser/ast.dart"
         ASTWithSource;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "package:angular2/core.dart" show Injectable;
-import "package:angular2/src/core/change_detection/parser/parser.dart"
+import "package:angular2/src/compiler/expression_parser/parser.dart"
     show Parser;
 
 /**
@@ -151,12 +151,12 @@ class RouterLinkAstTransformer extends AstTransformer {
   RouterLinkAstTransformer(this.parser) : super() {
     /* super call moved to initializer */;
   }
-  AST visitQuote(Quote ast) {
+  AST visitQuote(Quote ast, dynamic context) {
     if (ast.prefix == "route") {
       return parseRouterLinkExpression(
           this.parser, ast.uninterpretedExpression);
     } else {
-      return super.visitQuote(ast);
+      return super.visitQuote(ast, context);
     }
   }
 }
@@ -196,6 +196,7 @@ class RouterLinkTransform implements TemplateAstVisitor {
         ast.outputs,
         ast.exportAsVars,
         updatedDirectives,
+        ast.providers,
         updatedChildren,
         ast.ngContentIndex,
         ast.sourceSpan);

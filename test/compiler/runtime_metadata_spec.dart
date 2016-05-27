@@ -17,7 +17,7 @@ import "package:angular2/testing_internal.dart"
 import "package:angular2/src/facade/lang.dart" show stringify;
 import "package:angular2/src/compiler/runtime_metadata.dart"
     show RuntimeMetadataResolver;
-import "package:angular2/src/core/linker/interfaces.dart"
+import "package:angular2/src/core/metadata/lifecycle_hooks.dart"
     show LifecycleHooks, LIFECYCLE_HOOKS_VALUES;
 import "package:angular2/core.dart"
     show
@@ -53,7 +53,6 @@ main() {
             expect(meta.selector).toEqual("someSelector");
             expect(meta.exportAs).toEqual("someExportAs");
             expect(meta.isComponent).toBe(true);
-            expect(meta.dynamicLoadable).toBe(true);
             expect(meta.type.runtime).toBe(ComponentWithEverything);
             expect(meta.type.name).toEqual(stringify(ComponentWithEverything));
             expect(meta.type.moduleUrl)
@@ -83,8 +82,9 @@ main() {
                 .getDirectiveMetadata(ComponentWithoutModuleId)
                 .type
                 .moduleUrl;
-            var expectedEndValue =
-                IS_DART ? "test/compiler/runtime_metadata_spec.dart" : "./";
+            var expectedEndValue = IS_DART
+                ? "test/compiler/runtime_metadata_spec.dart"
+                : "./ComponentWithoutModuleId";
             expect(value.endsWith(expectedEndValue)).toBe(true);
           }));
       it(

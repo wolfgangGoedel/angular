@@ -134,6 +134,8 @@ class Serializer {
   Object _serializeRenderComponentType(RenderComponentType obj) {
     return {
       "id": obj.id,
+      "templateUrl": obj.templateUrl,
+      "slotCount": obj.slotCount,
       "encapsulation": this.serialize(obj.encapsulation, ViewEncapsulation),
       "styles": this.serialize(obj.styles, PRIMITIVE)
     };
@@ -143,6 +145,8 @@ class Serializer {
       Map<String, dynamic> map) {
     return new RenderComponentType(
         map["id"],
+        map["templateUrl"],
+        map["slotCount"],
         this.deserialize(map["encapsulation"], ViewEncapsulation),
         this.deserialize(map["styles"], PRIMITIVE));
   }

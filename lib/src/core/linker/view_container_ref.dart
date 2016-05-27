@@ -2,8 +2,11 @@ library angular2.src.core.linker.view_container_ref;
 
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "package:angular2/src/facade/exceptions.dart" show unimplemented;
-import "package:angular2/src/core/di.dart" show ResolvedProvider, Injectable;
+import "package:angular2/src/core/di/injector.dart"
+    show Injector, Injector_, ProtoInjector;
+import "package:angular2/src/core/di/provider.dart" show ResolvedProvider;
 import "package:angular2/src/facade/lang.dart" show isPresent, isBlank;
+import "../profile/profile.dart" show wtfCreateScope, wtfLeave, WtfScopeFn;
 import "element.dart" show AppElement;
 import "element_ref.dart" show ElementRef, ElementRef_;
 import "template_ref.dart" show TemplateRef, TemplateRef_;
@@ -15,6 +18,7 @@ import "view_ref.dart"
         HostViewFactoryRef_,
         ViewRef,
         ViewRef_;
+import "view.dart" show AppView;
 
 /**
  * Represents a container where one or more Views can be attached.
@@ -48,12 +52,7 @@ abstract class ViewContainerRef {
   /**
    * Destroys all Views in this container.
    */
-  void clear() {
-    for (var i = this.length - 1; i >= 0; i--) {
-      this.remove(i);
-    }
-  }
-
+  void clear();
   /**
    * Returns the [ViewRef] for the View located in this container at the specified index.
    */
@@ -99,7 +98,7 @@ abstract class ViewContainerRef {
    *
    * Returns the inserted [ViewRef].
    */
-  EmbeddedViewRef insert(EmbeddedViewRef viewRef, [num index]);
+  ViewRef insert(ViewRef viewRef, [num index]);
   /**
    * Returns the index of the View, specified via [ViewRef], within the current container or
    * `-1` if this container doesn't contain the View.
@@ -116,14 +115,12 @@ abstract class ViewContainerRef {
    *
    * If the `index` param is omitted, the last [ViewRef] is detached.
    */
-  EmbeddedViewRef detach([num index]);
+  ViewRef detach([num index]);
 }
 
-class ViewContainerRef_ extends ViewContainerRef {
+class ViewContainerRef_ implements ViewContainerRef {
   AppElement _element;
-  ViewContainerRef_(this._element) : super() {
-    /* super call moved to initializer */;
-  }
+  ViewContainerRef_(this._element) {}
   EmbeddedViewRef get(num index) {
     return this._element.nestedViews[index].ref;
   }
@@ -133,35 +130,61 @@ class ViewContainerRef_ extends ViewContainerRef {
     return isPresent(views) ? views.length : 0;
   }
 
-  ElementRef_ get element {
+  ElementRef get element {
     return this._element.ref;
   }
+
+  /** @internal */
+  WtfScopeFn _createEmbeddedViewInContainerScope =
+      wtfCreateScope("ViewContainerRef#createEmbeddedView()");
   // TODO(rado): profile and decide whether bounds checks should be added
 
   // to the methods below.
   EmbeddedViewRef createEmbeddedView(TemplateRef templateRef,
       [num index = -1]) {
+    var s = this._createEmbeddedViewInContainerScope();
     if (index == -1) index = this.length;
-    var vm = this._element.parentView.viewManager;
-    return vm.createEmbeddedViewInContainer(
-        this._element.ref, index, templateRef);
+    var templateRef_ = ((templateRef as TemplateRef_));
+    AppView<dynamic> view = templateRef_.createEmbeddedView();
+    this._element.attachView(view, index);
+    return wtfLeave(s, view.ref);
   }
 
+  /** @internal */
+  WtfScopeFn _createHostViewInContainerScope =
+      wtfCreateScope("ViewContainerRef#createHostView()");
   HostViewRef createHostView(HostViewFactoryRef hostViewFactoryRef,
       [num index = -1,
       List<ResolvedProvider> dynamicallyCreatedProviders = null,
       List<List<dynamic>> projectableNodes = null]) {
+    var s = this._createHostViewInContainerScope();
     if (index == -1) index = this.length;
-    var vm = this._element.parentView.viewManager;
-    return vm.createHostViewInContainer(this._element.ref, index,
-        hostViewFactoryRef, dynamicallyCreatedProviders, projectableNodes);
+    var contextEl = this._element;
+    var contextInjector = this._element.parentInjector;
+    var hostViewFactory =
+        ((hostViewFactoryRef as HostViewFactoryRef_)).internalHostViewFactory;
+    var childInjector = isPresent(dynamicallyCreatedProviders) &&
+            dynamicallyCreatedProviders.length > 0
+        ? new Injector_(
+            ProtoInjector.fromResolvedProviders(dynamicallyCreatedProviders),
+            contextInjector)
+        : contextInjector;
+    var view = hostViewFactory.viewFactory(
+        contextEl.parentView.viewManager, childInjector, contextEl);
+    view.create(projectableNodes, null);
+    this._element.attachView(view, index);
+    return wtfLeave(s, view.ref);
   }
 
+  /** @internal */
+  var _insertScope = wtfCreateScope("ViewContainerRef#insert()");
   // TODO(i): refactor insert+remove into move
-  EmbeddedViewRef insert(ViewRef viewRef, [num index = -1]) {
+  ViewRef insert(ViewRef viewRef, [num index = -1]) {
+    var s = this._insertScope();
     if (index == -1) index = this.length;
-    var vm = this._element.parentView.viewManager;
-    return vm.attachViewInContainer(this._element.ref, index, viewRef);
+    var viewRef_ = (viewRef as ViewRef_);
+    this._element.attachView(viewRef_.internalView, index);
+    return wtfLeave(s, viewRef_);
   }
 
   num indexOf(ViewRef viewRef) {
@@ -169,17 +192,31 @@ class ViewContainerRef_ extends ViewContainerRef {
         this._element.nestedViews, ((viewRef as ViewRef_)).internalView);
   }
 
+  /** @internal */
+  var _removeScope = wtfCreateScope("ViewContainerRef#remove()");
   // TODO(i): rename to destroy
   void remove([num index = -1]) {
+    var s = this._removeScope();
     if (index == -1) index = this.length - 1;
-    var vm = this._element.parentView.viewManager;
-    return vm.destroyViewInContainer(this._element.ref, index);
+    var view = this._element.detachView(index);
+    view.destroy();
+    // view is intentionally not returned to the client.
+    wtfLeave(s);
   }
 
+  /** @internal */
+  var _detachScope = wtfCreateScope("ViewContainerRef#detach()");
   // TODO(i): refactor insert+remove into move
-  EmbeddedViewRef detach([num index = -1]) {
+  ViewRef detach([num index = -1]) {
+    var s = this._detachScope();
     if (index == -1) index = this.length - 1;
-    var vm = this._element.parentView.viewManager;
-    return vm.detachViewInContainer(this._element.ref, index);
+    var view = this._element.detachView(index);
+    return wtfLeave(s, view.ref);
+  }
+
+  clear() {
+    for (var i = this.length - 1; i >= 0; i--) {
+      this.remove(i);
+    }
   }
 }

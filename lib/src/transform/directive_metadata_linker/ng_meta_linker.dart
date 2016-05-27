@@ -3,7 +3,7 @@ library angular2.transform.directive_metadata_linker.linker;
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:angular2/src/compiler/directive_metadata.dart';
+import 'package:angular2/src/compiler/compile_metadata.dart';
 import 'package:angular2/src/transform/common/asset_reader.dart';
 import 'package:angular2/src/transform/common/logging.dart';
 import 'package:angular2/src/transform/common/names.dart';
@@ -42,7 +42,7 @@ Future<NgMeta> linkDirectiveMetadata(AssetReader reader, AssetId summaryAssetId,
   return ngMeta;
 }
 
-final _urlResolver = const TransformerUrlResolver();
+final _urlResolver = createOfflineCompileUrlResolver();
 
 Future<NgMeta> _readNgMeta(AssetReader reader, AssetId ngMetaAssetId,
     Map<AssetId, NgMeta> ngMetas) async {
@@ -189,6 +189,8 @@ class _NgMetaIdentifierResolver {
       if (meta is CompileDirectiveMetadata) {
         _resolveProviderMetadata(ngMetaMap, meta);
         _resolveQueryMetadata(ngMetaMap, meta);
+        _resolveDiDependencyMetadata(ngMetaMap, meta.type.name, meta.type.diDeps);
+      } else if (meta is CompilePipeMetadata) {
         _resolveDiDependencyMetadata(ngMetaMap, meta.type.name, meta.type.diDeps);
       } else if (meta is CompileTypeMetadata) {
         _resolveDiDependencyMetadata(ngMetaMap, meta.name, meta.diDeps);

@@ -1,337 +1,451 @@
 library angular2.src.core.linker.view;
 
 import "package:angular2/src/facade/collection.dart"
-    show ListWrapper, MapWrapper, Map, StringMapWrapper;
+    show
+        ListWrapper,
+        MapWrapper,
+        Map,
+        StringMapWrapper,
+        isListLikeIterable,
+        areIterablesEqual;
+import "package:angular2/src/core/di.dart" show Injector;
+import "element.dart" show AppElement;
+import "package:angular2/src/facade/lang.dart"
+    show
+        assertionsEnabled,
+        isPresent,
+        isBlank,
+        Type,
+        isArray,
+        isNumber,
+        stringify,
+        isPrimitive;
+import "package:angular2/src/facade/async.dart" show ObservableWrapper;
+import "package:angular2/src/core/render/api.dart"
+    show Renderer, RootRenderer, RenderComponentType;
+import "view_ref.dart" show ViewRef_, HostViewFactoryRef;
+import "view_manager.dart" show AppViewManager_, AppViewManager;
+import "view_type.dart" show ViewType;
+import "view_utils.dart"
+    show
+        flattenNestedViewRenderNodes,
+        ensureSlotCount,
+        arrayLooseIdentical,
+        mapLooseIdentical;
 import "package:angular2/src/core/change_detection/change_detection.dart"
     show
-        ChangeDetector,
-        ChangeDispatcher,
-        DirectiveIndex,
-        BindingTarget,
-        Locals,
-        ProtoChangeDetector,
-        ChangeDetectorRef;
-import "package:angular2/src/core/di.dart"
-    show ResolvedProvider, Injectable, Injector;
-import "package:angular2/src/core/change_detection/interfaces.dart"
-    show DebugContext;
-import "element.dart" show AppProtoElement, AppElement, DirectiveProvider;
-import "package:angular2/src/facade/lang.dart"
-    show isPresent, isBlank, Type, isArray, isNumber;
-import "package:angular2/src/facade/exceptions.dart"
-    show BaseException, WrappedException;
-import "package:angular2/src/core/render/api.dart"
-    show Renderer, RootRenderer, RenderDebugInfo;
-import "view_ref.dart" show ViewRef_, HostViewFactoryRef;
-import "package:angular2/src/core/pipes/pipes.dart" show ProtoPipes;
-import "package:angular2/src/core/render/util.dart" show camelCaseToDashCase;
-export "package:angular2/src/core/change_detection/interfaces.dart"
-    show DebugContext;
-import "package:angular2/src/core/pipes/pipes.dart" show Pipes;
-import "view_manager.dart" show AppViewManager_, AppViewManager;
-import "resolved_metadata_cache.dart" show ResolvedMetadataCache;
-import "view_type.dart" show ViewType;
+        ChangeDetectorRef,
+        ChangeDetectionStrategy,
+        ChangeDetectorState,
+        isDefaultChangeDetectionStrategy,
+        devModeEqual;
+import "../profile/profile.dart" show wtfCreateScope, wtfLeave, WtfScopeFn;
+import "exceptions.dart"
+    show
+        ExpressionChangedAfterItHasBeenCheckedException,
+        ViewDestroyedException,
+        ViewWrappedException;
+import "debug_context.dart" show StaticNodeDebugInfo, DebugContext;
+import "element_injector.dart" show ElementInjector;
 
-const String REFLECT_PREFIX = "ng-reflect-";
+const HOST_VIEW_ELEMENT_NAME = "\$hostViewEl";
 const EMPTY_CONTEXT = const Object();
+WtfScopeFn _scope_check = wtfCreateScope('''AppView#check(ascii id)''');
 
 /**
  * Cost of making objects: http://jsperf.com/instantiate-size-of-object
  *
  */
-class AppView implements ChangeDispatcher {
-  AppProtoView proto;
-  Renderer renderer;
+abstract class AppView<T> {
+  dynamic clazz;
+  RenderComponentType componentType;
+  ViewType type;
+  Map<String, dynamic> locals;
   AppViewManager_ viewManager;
-  List<dynamic /* dynamic | List < dynamic > */ > projectableNodes;
-  AppElement containerAppElement;
-  ChangeDetector changeDetector;
+  Injector parentInjector;
+  AppElement declarationAppElement;
+  ChangeDetectionStrategy cdMode;
   ViewRef_ ref;
   List<dynamic> rootNodesOrAppElements;
   List<dynamic> allNodes;
   List<Function> disposables;
-  List<AppElement> appElements;
+  List<dynamic> subscriptions;
+  Map<String, AppElement> namedAppElements;
+  List<AppView<dynamic>> contentChildren = [];
+  List<AppView<dynamic>> viewChildren = [];
+  List<List<dynamic>> _literalArrayCache;
+  List<Map<String, dynamic>> _literalMapCache;
+  AppElement viewContainerElement = null;
+  // The names of the below fields must be kept in sync with codegen_name_util.ts or
+
+  // change detection will fail.
+  ChangeDetectorState cdState = ChangeDetectorState.NeverChecked;
   /**
    * The context against which data-binding expressions in this view are evaluated against.
    * This is always a component instance.
    */
-  dynamic context = null;
-  /**
-   * Variables, local to this view, that can be used in binding expressions (in addition to the
-   * context). This is used for thing like `<video #player>` or
-   * `<li template="for #item of items">`, where "player" and "item" are locals, respectively.
-   */
-  Locals locals;
-  Pipes pipes;
-  Injector parentInjector;
-  /**
-   * Whether root injectors of this view
-   * have a hostBoundary.
-   */
-  bool hostInjectorBoundary;
+  T context = null;
+  List<dynamic /* dynamic | List < dynamic > */ > projectableNodes;
   bool destroyed = false;
+  Renderer renderer;
   AppView(
-      this.proto,
-      this.renderer,
+      this.clazz,
+      this.componentType,
+      this.type,
+      this.locals,
       this.viewManager,
-      this.projectableNodes,
-      this.containerAppElement,
-      List<ResolvedProvider> imperativelyCreatedProviders,
-      Injector rootInjector,
-      this.changeDetector) {
+      this.parentInjector,
+      this.declarationAppElement,
+      this.cdMode,
+      num literalArrayCacheSize,
+      num literalMapCacheSize) {
     this.ref = new ViewRef_(this);
-    var injectorWithHostBoundary = AppElement.getViewParentInjector(
-        this.proto.type,
-        containerAppElement,
-        imperativelyCreatedProviders,
-        rootInjector);
-    this.parentInjector = injectorWithHostBoundary.injector;
-    this.hostInjectorBoundary = injectorWithHostBoundary.hostInjectorBoundary;
-    var pipes;
+    if (identical(type, ViewType.COMPONENT) || identical(type, ViewType.HOST)) {
+      this.renderer = viewManager.renderComponent(componentType);
+    } else {
+      this.renderer = declarationAppElement.parentView.renderer;
+    }
+    this._literalArrayCache =
+        ListWrapper.createFixedSize(literalArrayCacheSize);
+    this._literalMapCache = ListWrapper.createFixedSize(literalMapCacheSize);
+  }
+  void create(
+      List<dynamic /* dynamic | List < dynamic > */ > givenProjectableNodes,
+      String rootSelector) {
     var context;
-    switch (proto.type) {
+    var projectableNodes;
+    switch (this.type) {
       case ViewType.COMPONENT:
-        pipes = new Pipes(proto.protoPipes, containerAppElement.getInjector());
-        context = containerAppElement.getComponent();
+        context = this.declarationAppElement.component;
+        projectableNodes = ensureSlotCount(
+            givenProjectableNodes, this.componentType.slotCount);
         break;
       case ViewType.EMBEDDED:
-        pipes = containerAppElement.parentView.pipes;
-        context = containerAppElement.parentView.context;
+        context = this.declarationAppElement.parentView.context;
+        projectableNodes =
+            this.declarationAppElement.parentView.projectableNodes;
         break;
       case ViewType.HOST:
-        pipes = null;
         context = EMPTY_CONTEXT;
+        // Note: Don't ensure the slot count for the projectableNodes as we store
+
+        // them only for the contained component view (which will later check the slot count...)
+        projectableNodes = givenProjectableNodes;
         break;
     }
-    this.pipes = pipes;
     this.context = context;
+    this.projectableNodes = projectableNodes;
+    this.createInternal(rootSelector);
   }
-  init(List<dynamic> rootNodesOrAppElements, List<dynamic> allNodes,
-      List<Function> disposables, List<AppElement> appElements) {
+
+  /**
+   * Overwritten by implementations
+   */
+  void createInternal(String rootSelector) {}
+  init(
+      List<dynamic> rootNodesOrAppElements,
+      List<dynamic> allNodes,
+      Map<String, AppElement> appElements,
+      List<Function> disposables,
+      List<dynamic> subscriptions) {
     this.rootNodesOrAppElements = rootNodesOrAppElements;
     this.allNodes = allNodes;
+    this.namedAppElements = appElements;
     this.disposables = disposables;
-    this.appElements = appElements;
-    var localsMap = new Map<String, dynamic>();
-    StringMapWrapper.forEach(this.proto.templateVariableBindings,
-        (String templateName, String _) {
-      localsMap[templateName] = null;
-    });
-    for (var i = 0; i < appElements.length; i++) {
-      var appEl = appElements[i];
-      var providerTokens = [];
-      if (isPresent(appEl.proto.protoInjector)) {
-        for (var j = 0; j < appEl.proto.protoInjector.numberOfProviders; j++) {
-          providerTokens
-              .add(appEl.proto.protoInjector.getProviderAtIndex(j).key.token);
-        }
-      }
-      StringMapWrapper.forEach(appEl.proto.directiveVariableBindings,
-          (num directiveIndex, String name) {
-        if (isBlank(directiveIndex)) {
-          localsMap[name] = appEl.nativeElement;
-        } else {
-          localsMap[name] = appEl.getDirectiveAtIndex(directiveIndex);
-        }
-      });
-      this.renderer.setElementDebugInfo(
-          appEl.nativeElement,
-          new RenderDebugInfo(appEl.getInjector(), appEl.getComponent(),
-              providerTokens, localsMap));
-    }
-    var parentLocals = null;
-    if (!identical(this.proto.type, ViewType.COMPONENT)) {
-      parentLocals = isPresent(this.containerAppElement)
-          ? this.containerAppElement.parentView.locals
-          : null;
-    }
-    if (identical(this.proto.type, ViewType.COMPONENT)) {
+    this.subscriptions = subscriptions;
+    if (identical(this.type, ViewType.COMPONENT)) {
       // Note: the render nodes have been attached to their host element
 
       // in the ViewFactory already.
-      this.containerAppElement.attachComponentView(this);
-      this
-          .containerAppElement
-          .parentView
-          .changeDetector
-          .addViewChild(this.changeDetector);
+      this.declarationAppElement.parentView.viewChildren.add(this);
+      this.dirtyParentQueriesInternal();
     }
-    this.locals = new Locals(parentLocals, localsMap);
-    this.changeDetector.hydrate(this.context, this.locals, this, this.pipes);
-    this.viewManager.onViewCreated(this);
+  }
+
+  AppElement getHostViewElement() {
+    return this.namedAppElements[HOST_VIEW_ELEMENT_NAME];
+  }
+
+  dynamic injectorGet(dynamic token, num nodeIndex, dynamic notFoundResult) {
+    return this.injectorGetInternal(token, nodeIndex, notFoundResult);
+  }
+
+  /**
+   * Overwritten by implementations
+   */
+  dynamic injectorGetInternal(
+      dynamic token, num nodeIndex, dynamic notFoundResult) {
+    return notFoundResult;
+  }
+
+  Injector injector(num nodeIndex) {
+    if (isPresent(nodeIndex)) {
+      return new ElementInjector(this, nodeIndex);
+    } else {
+      return this.parentInjector;
+    }
   }
 
   destroy() {
     if (this.destroyed) {
-      throw new BaseException("This view has already been destroyed!");
+      return;
     }
-    this.changeDetector.destroyRecursive();
+    var children = this.contentChildren;
+    for (var i = 0; i < children.length; i++) {
+      children[i].destroy();
+    }
+    children = this.viewChildren;
+    for (var i = 0; i < children.length; i++) {
+      children[i].destroy();
+    }
+    this.destroyLocal();
+    this.destroyed = true;
   }
 
-  notifyOnDestroy() {
-    this.destroyed = true;
-    var hostElement = identical(this.proto.type, ViewType.COMPONENT)
-        ? this.containerAppElement.nativeElement
+  destroyLocal() {
+    var hostElement = identical(this.type, ViewType.COMPONENT)
+        ? this.declarationAppElement.nativeElement
         : null;
     this.renderer.destroyView(hostElement, this.allNodes);
     for (var i = 0; i < this.disposables.length; i++) {
       this.disposables[i]();
     }
-    this.viewManager.onViewDestroyed(this);
+    for (var i = 0; i < this.subscriptions.length; i++) {
+      ObservableWrapper.dispose(this.subscriptions[i]);
+    }
+    this.destroyInternal();
+    this.dirtyParentQueriesInternal();
   }
 
+  /**
+   * Overwritten by implementations
+   */
+  void destroyInternal() {}
   ChangeDetectorRef get changeDetectorRef {
-    return this.changeDetector.ref;
+    return this.ref;
   }
 
   List<dynamic> get flatRootNodes {
     return flattenNestedViewRenderNodes(this.rootNodesOrAppElements);
   }
 
+  dynamic get lastRootNode {
+    var lastNode = this.rootNodesOrAppElements.length > 0
+        ? this.rootNodesOrAppElements[this.rootNodesOrAppElements.length - 1]
+        : null;
+    return _findLastRenderNode(lastNode);
+  }
+
   bool hasLocal(String contextName) {
-    return StringMapWrapper.contains(
-        this.proto.templateVariableBindings, contextName);
+    return StringMapWrapper.contains(this.locals, contextName);
   }
 
   void setLocal(String contextName, dynamic value) {
-    if (!this.hasLocal(contextName)) {
-      return;
-    }
-    var templateName = this.proto.templateVariableBindings[contextName];
-    this.locals.set(templateName, value);
-  }
-
-  // dispatch to element injector or text nodes based on context
-  void notifyOnBinding(BindingTarget b, dynamic currentValue) {
-    if (b.isTextNode()) {
-      this.renderer.setText(this.allNodes[b.elementIndex], currentValue);
-    } else {
-      var nativeElement = this.appElements[b.elementIndex].nativeElement;
-      if (b.isElementProperty()) {
-        this.renderer.setElementProperty(nativeElement, b.name, currentValue);
-      } else if (b.isElementAttribute()) {
-        this.renderer.setElementAttribute(nativeElement, b.name,
-            isPresent(currentValue) ? '''${ currentValue}''' : null);
-      } else if (b.isElementClass()) {
-        this.renderer.setElementClass(nativeElement, b.name, currentValue);
-      } else if (b.isElementStyle()) {
-        var unit = isPresent(b.unit) ? b.unit : "";
-        this.renderer.setElementStyle(nativeElement, b.name,
-            isPresent(currentValue) ? '''${ currentValue}${ unit}''' : null);
-      } else {
-        throw new BaseException("Unsupported directive record");
-      }
-    }
-  }
-
-  void logBindingUpdate(BindingTarget b, dynamic value) {
-    if (b.isDirective() || b.isElementProperty()) {
-      var nativeElement = this.appElements[b.elementIndex].nativeElement;
-      this.renderer.setBindingDebugInfo(
-          nativeElement,
-          '''${ REFLECT_PREFIX}${ camelCaseToDashCase ( b . name )}''',
-          '''${ value}''');
-    }
-  }
-
-  void notifyAfterContentChecked() {
-    var count = this.appElements.length;
-    for (var i = count - 1; i >= 0; i--) {
-      this.appElements[i].ngAfterContentChecked();
-    }
-  }
-
-  void notifyAfterViewChecked() {
-    var count = this.appElements.length;
-    for (var i = count - 1; i >= 0; i--) {
-      this.appElements[i].ngAfterViewChecked();
-    }
-  }
-
-  DebugContext getDebugContext(
-      AppElement appElement, num elementIndex, num directiveIndex) {
-    try {
-      if (isBlank(appElement) && elementIndex < this.appElements.length) {
-        appElement = this.appElements[elementIndex];
-      }
-      var container = this.containerAppElement;
-      var element = isPresent(appElement) ? appElement.nativeElement : null;
-      var componentElement =
-          isPresent(container) ? container.nativeElement : null;
-      var directive = isPresent(directiveIndex)
-          ? appElement.getDirectiveAtIndex(directiveIndex)
-          : null;
-      var injector = isPresent(appElement) ? appElement.getInjector() : null;
-      return new DebugContext(element, componentElement, directive,
-          this.context, _localsToStringMap(this.locals), injector);
-    } catch (e, e_stack) {
-      // TODO: vsavkin log the exception once we have a good way to log errors and warnings
-
-      // if an error happens during getting the debug context, we return null.
-      return null;
-    }
-  }
-
-  dynamic getDirectiveFor(DirectiveIndex directive) {
-    return this
-        .appElements[directive.elementIndex]
-        .getDirectiveAtIndex(directive.directiveIndex);
-  }
-
-  ChangeDetector getDetectorFor(DirectiveIndex directive) {
-    var componentView = this.appElements[directive.elementIndex].componentView;
-    return isPresent(componentView) ? componentView.changeDetector : null;
+    this.locals[contextName] = value;
   }
 
   /**
-   * Triggers the event handlers for the element and the directives.
-   *
-   * This method is intended to be called from directive EventEmitters.
-   *
-   * 
-   * 
-   * 
-   * 
+   * Overwritten by implementations
    */
-  bool triggerEventHandlers(
-      String eventName, dynamic eventObj, num boundElementIndex) {
-    return this
-        .changeDetector
-        .handleEvent(eventName, boundElementIndex, eventObj);
-  }
-}
-
-Map<String, dynamic> _localsToStringMap(Locals locals) {
-  var res = {};
-  var c = locals;
-  while (isPresent(c)) {
-    res = StringMapWrapper.merge(res, MapWrapper.toStringMap(c.current));
-    c = c.parent;
-  }
-  return res;
-}
-
-/**
- *
- */
-class AppProtoView {
-  ViewType type;
-  ProtoPipes protoPipes;
-  Map<String, String> templateVariableBindings;
-  static AppProtoView create(ResolvedMetadataCache metadataCache, ViewType type,
-      List<Type> pipes, Map<String, String> templateVariableBindings) {
-    var protoPipes = null;
-    if (isPresent(pipes) && pipes.length > 0) {
-      var boundPipes = ListWrapper.createFixedSize(pipes.length);
-      for (var i = 0; i < pipes.length; i++) {
-        boundPipes[i] = metadataCache.getResolvedPipeMetadata(pipes[i]);
-      }
-      protoPipes = ProtoPipes.fromProviders(boundPipes);
+  void dirtyParentQueriesInternal() {}
+  void detectChanges(bool throwOnChange) {
+    var s = _scope_check(this.clazz);
+    if (identical(this.cdMode, ChangeDetectionStrategy.Detached) ||
+        identical(this.cdMode, ChangeDetectionStrategy.Checked) ||
+        identical(this.cdState, ChangeDetectorState.Errored)) return;
+    if (this.destroyed) {
+      this.throwDestroyedError("detectChanges");
     }
-    return new AppProtoView(type, protoPipes, templateVariableBindings);
+    this.detectChangesInternal(throwOnChange);
+    if (identical(this.cdMode, ChangeDetectionStrategy.CheckOnce))
+      this.cdMode = ChangeDetectionStrategy.Checked;
+    this.cdState = ChangeDetectorState.CheckedBefore;
+    wtfLeave(s);
   }
 
-  AppProtoView(this.type, this.protoPipes, this.templateVariableBindings) {}
+  /**
+   * Overwritten by implementations
+   */
+  void detectChangesInternal(bool throwOnChange) {
+    this.detectContentChildrenChanges(throwOnChange);
+    this.detectViewChildrenChanges(throwOnChange);
+  }
+
+  detectContentChildrenChanges(bool throwOnChange) {
+    for (var i = 0; i < this.contentChildren.length; ++i) {
+      this.contentChildren[i].detectChanges(throwOnChange);
+    }
+  }
+
+  detectViewChildrenChanges(bool throwOnChange) {
+    for (var i = 0; i < this.viewChildren.length; ++i) {
+      this.viewChildren[i].detectChanges(throwOnChange);
+    }
+  }
+
+  void addToContentChildren(AppElement renderAppElement) {
+    renderAppElement.parentView.contentChildren.add(this);
+    this.viewContainerElement = renderAppElement;
+    this.dirtyParentQueriesInternal();
+  }
+
+  void removeFromContentChildren(AppElement renderAppElement) {
+    ListWrapper.remove(renderAppElement.parentView.contentChildren, this);
+    this.dirtyParentQueriesInternal();
+    this.viewContainerElement = null;
+  }
+
+  List<dynamic> literalArray(num id, List<dynamic> value) {
+    var prevValue = this._literalArrayCache[id];
+    if (isBlank(value)) {
+      return value;
+    }
+    if (isBlank(prevValue) || !arrayLooseIdentical(prevValue, value)) {
+      prevValue = this._literalArrayCache[id] = value;
+    }
+    return prevValue;
+  }
+
+  Map<String, dynamic> literalMap(num id, Map<String, dynamic> value) {
+    var prevValue = this._literalMapCache[id];
+    if (isBlank(value)) {
+      return value;
+    }
+    if (isBlank(prevValue) || !mapLooseIdentical(prevValue, value)) {
+      prevValue = this._literalMapCache[id] = value;
+    }
+    return prevValue;
+  }
+
+  void markAsCheckOnce() {
+    this.cdMode = ChangeDetectionStrategy.CheckOnce;
+  }
+
+  void markPathToRootAsCheckOnce() {
+    AppView<dynamic> c = this;
+    while (isPresent(c) &&
+        !identical(c.cdMode, ChangeDetectionStrategy.Detached)) {
+      if (identical(c.cdMode, ChangeDetectionStrategy.Checked)) {
+        c.cdMode = ChangeDetectionStrategy.CheckOnce;
+      }
+      var parentEl = identical(c.type, ViewType.COMPONENT)
+          ? c.declarationAppElement
+          : c.viewContainerElement;
+      c = isPresent(parentEl) ? parentEl.parentView : null;
+    }
+  }
+
+  Function eventHandler(Function cb) {
+    return cb;
+  }
+
+  void throwDestroyedError(String details) {
+    throw new ViewDestroyedException(details);
+  }
+}
+
+class DebugAppView<T> extends AppView<T> {
+  List<StaticNodeDebugInfo> staticNodeDebugInfos;
+  DebugContext _currentDebugContext = null;
+  DebugAppView(
+      dynamic clazz,
+      RenderComponentType componentType,
+      ViewType type,
+      Map<String, dynamic> locals,
+      AppViewManager_ viewManager,
+      Injector parentInjector,
+      AppElement declarationAppElement,
+      ChangeDetectionStrategy cdMode,
+      num literalArrayCacheSize,
+      num literalMapCacheSize,
+      this.staticNodeDebugInfos)
+      : super(
+            clazz,
+            componentType,
+            type,
+            locals,
+            viewManager,
+            parentInjector,
+            declarationAppElement,
+            cdMode,
+            literalArrayCacheSize,
+            literalMapCacheSize) {
+    /* super call moved to initializer */;
+  }
+  void create(
+      List<dynamic /* dynamic | List < dynamic > */ > givenProjectableNodes,
+      String rootSelector) {
+    this._resetDebug();
+    try {
+      super.create(givenProjectableNodes, rootSelector);
+    } catch (e, e_stack) {
+      this._rethrowWithContext(e, e_stack);
+      rethrow;
+    }
+  }
+
+  dynamic injectorGet(dynamic token, num nodeIndex, dynamic notFoundResult) {
+    this._resetDebug();
+    try {
+      return super.injectorGet(token, nodeIndex, notFoundResult);
+    } catch (e, e_stack) {
+      this._rethrowWithContext(e, e_stack);
+      rethrow;
+    }
+  }
+
+  destroyLocal() {
+    this._resetDebug();
+    try {
+      super.destroyLocal();
+    } catch (e, e_stack) {
+      this._rethrowWithContext(e, e_stack);
+      rethrow;
+    }
+  }
+
+  void detectChanges(bool throwOnChange) {
+    this._resetDebug();
+    try {
+      super.detectChanges(throwOnChange);
+    } catch (e, e_stack) {
+      this._rethrowWithContext(e, e_stack);
+      rethrow;
+    }
+  }
+
+  _resetDebug() {
+    this._currentDebugContext = null;
+  }
+
+  DebugContext debug(num nodeIndex, num rowNum, num colNum) {
+    return this._currentDebugContext =
+        new DebugContext(this, nodeIndex, rowNum, colNum);
+  }
+
+  _rethrowWithContext(dynamic e, dynamic stack) {
+    if (!(e is ViewWrappedException)) {
+      if (!(e is ExpressionChangedAfterItHasBeenCheckedException)) {
+        this.cdState = ChangeDetectorState.Errored;
+      }
+      if (isPresent(this._currentDebugContext)) {
+        throw new ViewWrappedException(e, stack, this._currentDebugContext);
+      }
+    }
+  }
+
+  Function eventHandler(Function cb) {
+    var superHandler = super.eventHandler(cb);
+    return (event) {
+      this._resetDebug();
+      try {
+        return superHandler(event);
+      } catch (e, e_stack) {
+        this._rethrowWithContext(e, e_stack);
+        rethrow;
+      }
+    };
+  }
 }
 
 class HostViewFactory {
@@ -340,31 +454,7 @@ class HostViewFactory {
   const HostViewFactory(this.selector, this.viewFactory);
 }
 
-List<dynamic> flattenNestedViewRenderNodes(List<dynamic> nodes) {
-  return _flattenNestedViewRenderNodes(nodes, []);
-}
-
-List<dynamic> _flattenNestedViewRenderNodes(
-    List<dynamic> nodes, List<dynamic> renderNodes) {
-  for (var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
-    if (node is AppElement) {
-      var appEl = (node as AppElement);
-      renderNodes.add(appEl.nativeElement);
-      if (isPresent(appEl.nestedViews)) {
-        for (var k = 0; k < appEl.nestedViews.length; k++) {
-          _flattenNestedViewRenderNodes(
-              appEl.nestedViews[k].rootNodesOrAppElements, renderNodes);
-        }
-      }
-    } else {
-      renderNodes.add(node);
-    }
-  }
-  return renderNodes;
-}
-
-dynamic findLastRenderNode(dynamic node) {
+dynamic _findLastRenderNode(dynamic node) {
   var lastNode;
   if (node is AppElement) {
     var appEl = (node as AppElement);
@@ -374,7 +464,7 @@ dynamic findLastRenderNode(dynamic node) {
       for (var i = appEl.nestedViews.length - 1; i >= 0; i--) {
         var nestedView = appEl.nestedViews[i];
         if (nestedView.rootNodesOrAppElements.length > 0) {
-          lastNode = findLastRenderNode(nestedView.rootNodesOrAppElements[
+          lastNode = _findLastRenderNode(nestedView.rootNodesOrAppElements[
               nestedView.rootNodesOrAppElements.length - 1]);
         }
       }
@@ -383,15 +473,4 @@ dynamic findLastRenderNode(dynamic node) {
     lastNode = node;
   }
   return lastNode;
-}
-
-void checkSlotCount(String componentName, num expectedSlotCount,
-    List<List<dynamic>> projectableNodes) {
-  var givenSlotCount =
-      isPresent(projectableNodes) ? projectableNodes.length : 0;
-  if (givenSlotCount < expectedSlotCount) {
-    throw new BaseException(
-        '''The component ${ componentName} has ${ expectedSlotCount} <ng-content> elements,''' +
-            ''' but only ${ givenSlotCount} slots were provided.''');
-  }
 }

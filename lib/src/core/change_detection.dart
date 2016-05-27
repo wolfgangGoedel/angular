@@ -8,8 +8,6 @@ library angular2.src.core.change_detection;
 export "change_detection/change_detection.dart"
     show
         ChangeDetectionStrategy,
-        ExpressionChangedAfterItHasBeenCheckedException,
-        ChangeDetectionError,
         ChangeDetectorRef,
         WrappedValue,
         SimpleChange,

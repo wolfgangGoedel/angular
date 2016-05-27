@@ -8,7 +8,7 @@ import "package:angular2/src/facade/lang.dart"
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException;
 import "../core/metadata.dart" show ViewMetadata;
-import "package:angular2/src/core/linker/view_resolver.dart" show ViewResolver;
+import "package:angular2/src/compiler/view_resolver.dart" show ViewResolver;
 
 @Injectable()
 class MockViewResolver extends ViewResolver {

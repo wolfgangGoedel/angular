@@ -11,44 +11,27 @@ export "differs/default_keyvalue_differ.dart"
     show DefaultKeyValueDifferFactory, KeyValueChangeRecord;
 export "differs/default_iterable_differ.dart"
     show DefaultIterableDifferFactory, CollectionChangeRecord;
-export "parser/ast.dart"
-    show
-        ASTWithSource,
-        AST,
-        AstTransformer,
-        PropertyRead,
-        LiteralArray,
-        ImplicitReceiver;
-export "parser/lexer.dart" show Lexer;
-export "parser/parser.dart" show Parser;
-export "parser/locals.dart" show Locals;
-export "exceptions.dart"
-    show
-        DehydratedException,
-        ExpressionChangedAfterItHasBeenCheckedException,
-        ChangeDetectionError;
-export "interfaces.dart"
-    show
-        ProtoChangeDetector,
-        ChangeDetector,
-        ChangeDispatcher,
-        ChangeDetectorDefinition,
-        DebugContext,
-        ChangeDetectorGenConfig;
 export "constants.dart"
-    show ChangeDetectionStrategy, CHANGE_DETECTION_STRATEGY_VALUES;
-export "proto_change_detector.dart" show DynamicProtoChangeDetector;
-export "jit_proto_change_detector.dart" show JitProtoChangeDetector;
-export "binding_record.dart" show BindingRecord, BindingTarget;
-export "directive_record.dart" show DirectiveIndex, DirectiveRecord;
-export "dynamic_change_detector.dart" show DynamicChangeDetector;
+    show
+        ChangeDetectionStrategy,
+        CHANGE_DETECTION_STRATEGY_VALUES,
+        ChangeDetectorState,
+        CHANGE_DETECTOR_STATE_VALUES,
+        isDefaultChangeDetectionStrategy;
 export "change_detector_ref.dart" show ChangeDetectorRef;
 export "differs/iterable_differs.dart"
     show IterableDiffers, IterableDiffer, IterableDifferFactory, TrackByFn;
 export "differs/keyvalue_differs.dart"
     show KeyValueDiffers, KeyValueDiffer, KeyValueDifferFactory;
 export "pipe_transform.dart" show PipeTransform;
-export "change_detection_util.dart" show WrappedValue, SimpleChange;
+export "change_detection_util.dart"
+    show
+        WrappedValue,
+        ValueUnwrapper,
+        SimpleChange,
+        devModeEqual,
+        looseIdentical,
+        uninitialized;
 
 /**
  * Structural diffing for `Object`s and `Map`s.

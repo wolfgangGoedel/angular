@@ -1,8 +1,5 @@
 library angular2.src.core.change_detection.change_detector_ref;
 
-import "interfaces.dart" show ChangeDetector;
-import "constants.dart" show ChangeDetectionStrategy;
-
 abstract class ChangeDetectorRef {
   /**
    * Marks all [ChangeDetectionStrategy#OnPush] ancestors as to be checked.
@@ -190,31 +187,4 @@ abstract class ChangeDetectorRef {
    * ```
    */
   void reattach();
-}
-
-class ChangeDetectorRef_ extends ChangeDetectorRef {
-  ChangeDetector _cd;
-  ChangeDetectorRef_(this._cd) : super() {
-    /* super call moved to initializer */;
-  }
-  void markForCheck() {
-    this._cd.markPathToRootAsCheckOnce();
-  }
-
-  void detach() {
-    this._cd.mode = ChangeDetectionStrategy.Detached;
-  }
-
-  void detectChanges() {
-    this._cd.detectChanges();
-  }
-
-  void checkNoChanges() {
-    this._cd.checkNoChanges();
-  }
-
-  void reattach() {
-    this._cd.mode = ChangeDetectionStrategy.CheckAlways;
-    this.markForCheck();
-  }
 }

@@ -15,8 +15,8 @@ import "package:angular2/testing_internal.dart"
 import "package:angular2/core.dart" show Injector, provide;
 import "package:angular2/src/router/directives/router_link_transform.dart"
     show parseRouterLinkExpression;
-import "../../core/change_detection/parser/unparser.dart" show Unparser;
-import "package:angular2/src/core/change_detection/parser/parser.dart"
+import "../../compiler/expression_parser/unparser.dart" show Unparser;
+import "package:angular2/src/compiler/expression_parser/parser.dart"
     show Parser;
 
 main() {

@@ -19,41 +19,20 @@ import "exceptions.dart"
         InstantiationError,
         InvalidProviderError,
         OutOfBoundsError;
-import "package:angular2/src/facade/lang.dart"
-    show FunctionWrapper, Type, isPresent, isBlank;
-import "package:angular2/src/facade/exceptions.dart" show BaseException;
+import "package:angular2/src/facade/lang.dart" show Type;
+import "package:angular2/src/facade/exceptions.dart"
+    show BaseException, unimplemented;
 import "key.dart" show Key;
 import "metadata.dart" show SelfMetadata, HostMetadata, SkipSelfMetadata;
 
+Type ___unused;
 // Threshold for the dynamic version
 const _MAX_CONSTRUCTION_COUNTER = 10;
 const Object UNDEFINED = const Object();
-/**
- * Visibility of a [Provider].
- */
-enum Visibility {
-  /**
-   * A `Public` [Provider] is only visible to regular (as opposed to host) child injectors.
-   */
-  Public,
-  /**
-   * A `Private` [Provider] is only visible to host (as opposed to regular) child injectors.
-   */
-  Private,
-  /**
-   * A `PublicAndPrivate` [Provider] is visible to both host and regular child injectors.
-   */
-  PublicAndPrivate
-}
-bool canSee(Visibility src, Visibility dst) {
-  return (identical(src, dst)) ||
-      (identical(dst, Visibility.PublicAndPrivate) ||
-          identical(src, Visibility.PublicAndPrivate));
-}
 
 abstract class ProtoInjectorStrategy {
   ResolvedProvider getProviderAtIndex(num index);
-  InjectorStrategy createInjectorStrategy(Injector inj);
+  InjectorStrategy createInjectorStrategy(Injector_ inj);
 }
 
 class ProtoInjectorInlineStrategy implements ProtoInjectorStrategy {
@@ -77,68 +56,48 @@ class ProtoInjectorInlineStrategy implements ProtoInjectorStrategy {
   num keyId7 = null;
   num keyId8 = null;
   num keyId9 = null;
-  Visibility visibility0 = null;
-  Visibility visibility1 = null;
-  Visibility visibility2 = null;
-  Visibility visibility3 = null;
-  Visibility visibility4 = null;
-  Visibility visibility5 = null;
-  Visibility visibility6 = null;
-  Visibility visibility7 = null;
-  Visibility visibility8 = null;
-  Visibility visibility9 = null;
   ProtoInjectorInlineStrategy(
-      ProtoInjector protoEI, List<ProviderWithVisibility> bwv) {
-    var length = bwv.length;
+      ProtoInjector protoEI, List<ResolvedProvider> providers) {
+    var length = providers.length;
     if (length > 0) {
-      this.provider0 = bwv[0].provider;
-      this.keyId0 = bwv[0].getKeyId();
-      this.visibility0 = bwv[0].visibility;
+      this.provider0 = providers[0];
+      this.keyId0 = providers[0].key.id;
     }
     if (length > 1) {
-      this.provider1 = bwv[1].provider;
-      this.keyId1 = bwv[1].getKeyId();
-      this.visibility1 = bwv[1].visibility;
+      this.provider1 = providers[1];
+      this.keyId1 = providers[1].key.id;
     }
     if (length > 2) {
-      this.provider2 = bwv[2].provider;
-      this.keyId2 = bwv[2].getKeyId();
-      this.visibility2 = bwv[2].visibility;
+      this.provider2 = providers[2];
+      this.keyId2 = providers[2].key.id;
     }
     if (length > 3) {
-      this.provider3 = bwv[3].provider;
-      this.keyId3 = bwv[3].getKeyId();
-      this.visibility3 = bwv[3].visibility;
+      this.provider3 = providers[3];
+      this.keyId3 = providers[3].key.id;
     }
     if (length > 4) {
-      this.provider4 = bwv[4].provider;
-      this.keyId4 = bwv[4].getKeyId();
-      this.visibility4 = bwv[4].visibility;
+      this.provider4 = providers[4];
+      this.keyId4 = providers[4].key.id;
     }
     if (length > 5) {
-      this.provider5 = bwv[5].provider;
-      this.keyId5 = bwv[5].getKeyId();
-      this.visibility5 = bwv[5].visibility;
+      this.provider5 = providers[5];
+      this.keyId5 = providers[5].key.id;
     }
     if (length > 6) {
-      this.provider6 = bwv[6].provider;
-      this.keyId6 = bwv[6].getKeyId();
-      this.visibility6 = bwv[6].visibility;
+      this.provider6 = providers[6];
+      this.keyId6 = providers[6].key.id;
     }
     if (length > 7) {
-      this.provider7 = bwv[7].provider;
-      this.keyId7 = bwv[7].getKeyId();
-      this.visibility7 = bwv[7].visibility;
+      this.provider7 = providers[7];
+      this.keyId7 = providers[7].key.id;
     }
     if (length > 8) {
-      this.provider8 = bwv[8].provider;
-      this.keyId8 = bwv[8].getKeyId();
-      this.visibility8 = bwv[8].visibility;
+      this.provider8 = providers[8];
+      this.keyId8 = providers[8].key.id;
     }
     if (length > 9) {
-      this.provider9 = bwv[9].provider;
-      this.keyId9 = bwv[9].getKeyId();
-      this.visibility9 = bwv[9].visibility;
+      this.provider9 = providers[9];
+      this.keyId9 = providers[9].key.id;
     }
   }
   ResolvedProvider getProviderAtIndex(num index) {
@@ -155,7 +114,7 @@ class ProtoInjectorInlineStrategy implements ProtoInjectorStrategy {
     throw new OutOfBoundsError(index);
   }
 
-  InjectorStrategy createInjectorStrategy(Injector injector) {
+  InjectorStrategy createInjectorStrategy(Injector_ injector) {
     return new InjectorInlineStrategy(injector, this);
   }
 }
@@ -163,17 +122,11 @@ class ProtoInjectorInlineStrategy implements ProtoInjectorStrategy {
 class ProtoInjectorDynamicStrategy implements ProtoInjectorStrategy {
   List<ResolvedProvider> providers;
   List<num> keyIds;
-  List<Visibility> visibilities;
-  ProtoInjectorDynamicStrategy(
-      ProtoInjector protoInj, List<ProviderWithVisibility> bwv) {
-    var len = bwv.length;
-    this.providers = ListWrapper.createFixedSize(len);
+  ProtoInjectorDynamicStrategy(ProtoInjector protoInj, this.providers) {
+    var len = providers.length;
     this.keyIds = ListWrapper.createFixedSize(len);
-    this.visibilities = ListWrapper.createFixedSize(len);
     for (var i = 0; i < len; i++) {
-      this.providers[i] = bwv[i].provider;
-      this.keyIds[i] = bwv[i].getKeyId();
-      this.visibilities[i] = bwv[i].visibility;
+      this.keyIds[i] = providers[i].key.id;
     }
   }
   ResolvedProvider getProviderAtIndex(num index) {
@@ -183,27 +136,24 @@ class ProtoInjectorDynamicStrategy implements ProtoInjectorStrategy {
     return this.providers[index];
   }
 
-  InjectorStrategy createInjectorStrategy(Injector ei) {
+  InjectorStrategy createInjectorStrategy(Injector_ ei) {
     return new InjectorDynamicStrategy(this, ei);
   }
 }
 
 class ProtoInjector {
   static ProtoInjector fromResolvedProviders(List<ResolvedProvider> providers) {
-    var bd = providers
-        .map((b) => new ProviderWithVisibility(b, Visibility.Public))
-        .toList();
-    return new ProtoInjector(bd);
+    return new ProtoInjector(providers);
   }
 
   /** @internal */
   ProtoInjectorStrategy _strategy;
   num numberOfProviders;
-  ProtoInjector(List<ProviderWithVisibility> bwv) {
-    this.numberOfProviders = bwv.length;
-    this._strategy = bwv.length > _MAX_CONSTRUCTION_COUNTER
-        ? new ProtoInjectorDynamicStrategy(this, bwv)
-        : new ProtoInjectorInlineStrategy(this, bwv);
+  ProtoInjector(List<ResolvedProvider> providers) {
+    this.numberOfProviders = providers.length;
+    this._strategy = providers.length > _MAX_CONSTRUCTION_COUNTER
+        ? new ProtoInjectorDynamicStrategy(this, providers)
+        : new ProtoInjectorInlineStrategy(this, providers);
   }
   ResolvedProvider getProviderAtIndex(num index) {
     return this._strategy.getProviderAtIndex(index);
@@ -211,15 +161,15 @@ class ProtoInjector {
 }
 
 abstract class InjectorStrategy {
-  dynamic getObjByKeyId(num keyId, Visibility visibility);
+  dynamic getObjByKeyId(num keyId);
   dynamic getObjAtIndex(num index);
   num getMaxNumberOfObjects();
   void resetConstructionCounter();
-  dynamic instantiateProvider(ResolvedProvider provider, Visibility visibility);
+  dynamic instantiateProvider(ResolvedProvider provider);
 }
 
 class InjectorInlineStrategy implements InjectorStrategy {
-  Injector injector;
+  Injector_ injector;
   ProtoInjectorInlineStrategy protoStrategy;
   dynamic obj0 = UNDEFINED;
   dynamic obj1 = UNDEFINED;
@@ -236,71 +186,70 @@ class InjectorInlineStrategy implements InjectorStrategy {
     this.injector._constructionCounter = 0;
   }
 
-  dynamic instantiateProvider(
-      ResolvedProvider provider, Visibility visibility) {
-    return this.injector._new(provider, visibility);
+  dynamic instantiateProvider(ResolvedProvider provider) {
+    return this.injector._new(provider);
   }
 
-  dynamic getObjByKeyId(num keyId, Visibility visibility) {
+  dynamic getObjByKeyId(num keyId) {
     var p = this.protoStrategy;
     var inj = this.injector;
-    if (identical(p.keyId0, keyId) && canSee(p.visibility0, visibility)) {
+    if (identical(p.keyId0, keyId)) {
       if (identical(this.obj0, UNDEFINED)) {
-        this.obj0 = inj._new(p.provider0, p.visibility0);
+        this.obj0 = inj._new(p.provider0);
       }
       return this.obj0;
     }
-    if (identical(p.keyId1, keyId) && canSee(p.visibility1, visibility)) {
+    if (identical(p.keyId1, keyId)) {
       if (identical(this.obj1, UNDEFINED)) {
-        this.obj1 = inj._new(p.provider1, p.visibility1);
+        this.obj1 = inj._new(p.provider1);
       }
       return this.obj1;
     }
-    if (identical(p.keyId2, keyId) && canSee(p.visibility2, visibility)) {
+    if (identical(p.keyId2, keyId)) {
       if (identical(this.obj2, UNDEFINED)) {
-        this.obj2 = inj._new(p.provider2, p.visibility2);
+        this.obj2 = inj._new(p.provider2);
       }
       return this.obj2;
     }
-    if (identical(p.keyId3, keyId) && canSee(p.visibility3, visibility)) {
+    if (identical(p.keyId3, keyId)) {
       if (identical(this.obj3, UNDEFINED)) {
-        this.obj3 = inj._new(p.provider3, p.visibility3);
+        this.obj3 = inj._new(p.provider3);
       }
       return this.obj3;
     }
-    if (identical(p.keyId4, keyId) && canSee(p.visibility4, visibility)) {
+    if (identical(p.keyId4, keyId)) {
       if (identical(this.obj4, UNDEFINED)) {
-        this.obj4 = inj._new(p.provider4, p.visibility4);
+        this.obj4 = inj._new(p.provider4);
       }
       return this.obj4;
     }
-    if (identical(p.keyId5, keyId) && canSee(p.visibility5, visibility)) {
+    if (identical(p.keyId5, keyId)) {
       if (identical(this.obj5, UNDEFINED)) {
-        this.obj5 = inj._new(p.provider5, p.visibility5);
+        this.obj5 = inj._new(p.provider5);
       }
       return this.obj5;
     }
-    if (identical(p.keyId6, keyId) && canSee(p.visibility6, visibility)) {
+    if (identical(p.keyId6, keyId)) {
       if (identical(this.obj6, UNDEFINED)) {
-        this.obj6 = inj._new(p.provider6, p.visibility6);
+        this.obj6 = inj._new(p.provider6);
       }
       return this.obj6;
     }
-    if (identical(p.keyId7, keyId) && canSee(p.visibility7, visibility)) {
+    if (identical(p.keyId7, keyId)) {
       if (identical(this.obj7, UNDEFINED)) {
-        this.obj7 = inj._new(p.provider7, p.visibility7);
+        this.obj7 = inj._new(p.provider7);
       }
       return this.obj7;
     }
-    if (identical(p.keyId8, keyId) && canSee(p.visibility8, visibility)) {
+    if (identical(p.keyId8, keyId)) {
       if (identical(this.obj8, UNDEFINED)) {
-        this.obj8 = inj._new(p.provider8, p.visibility8);
+        this.obj8 = inj._new(p.provider8);
       }
       return this.obj8;
     }
-    if (identical(p.keyId9, keyId) && canSee(p.visibility9, visibility)) {
+    if (identical(p.keyId9, keyId)) {
       if (identical(this.obj9, UNDEFINED)) {
-        this.obj9 = inj._new(p.provider9, p.visibility9);
+        this.obj9 = inj._new(p.provider9);
       }
       return this.obj9;
     }
@@ -328,7 +277,7 @@ class InjectorInlineStrategy implements InjectorStrategy {
 
 class InjectorDynamicStrategy implements InjectorStrategy {
   ProtoInjectorDynamicStrategy protoStrategy;
-  Injector injector;
+  Injector_ injector;
   List<dynamic> objs;
   InjectorDynamicStrategy(this.protoStrategy, this.injector) {
     this.objs = ListWrapper.createFixedSize(protoStrategy.providers.length);
@@ -338,18 +287,16 @@ class InjectorDynamicStrategy implements InjectorStrategy {
     this.injector._constructionCounter = 0;
   }
 
-  dynamic instantiateProvider(
-      ResolvedProvider provider, Visibility visibility) {
-    return this.injector._new(provider, visibility);
+  dynamic instantiateProvider(ResolvedProvider provider) {
+    return this.injector._new(provider);
   }
 
-  dynamic getObjByKeyId(num keyId, Visibility visibility) {
+  dynamic getObjByKeyId(num keyId) {
     var p = this.protoStrategy;
     for (var i = 0; i < p.keyIds.length; i++) {
-      if (identical(p.keyIds[i], keyId) &&
-          canSee(p.visibilities[i], visibility)) {
+      if (identical(p.keyIds[i], keyId)) {
         if (identical(this.objs[i], UNDEFINED)) {
-          this.objs[i] = this.injector._new(p.providers[i], p.visibilities[i]);
+          this.objs[i] = this.injector._new(p.providers[i]);
         }
         return this.objs[i];
       }
@@ -369,15 +316,6 @@ class InjectorDynamicStrategy implements InjectorStrategy {
   }
 }
 
-class ProviderWithVisibility {
-  ResolvedProvider provider;
-  Visibility visibility;
-  ProviderWithVisibility(this.provider, this.visibility) {}
-  num getKeyId() {
-    return this.provider.key.id;
-  }
-}
-
 /**
  * Used to provide dependencies that cannot be easily expressed as providers.
  */
@@ -386,42 +324,7 @@ abstract class DependencyProvider {
       Injector injector, ResolvedProvider provider, Dependency dependency);
 }
 
-/**
- * A dependency injection container used for instantiating objects and resolving dependencies.
- *
- * An `Injector` is a replacement for a `new` operator, which can automatically resolve the
- * constructor dependencies.
- *
- * In typical use, application code asks for the dependencies in the constructor and they are
- * resolved by the `Injector`.
- *
- * ### Example ([live demo](http://plnkr.co/edit/jzjec0?p=preview))
- *
- * The following example creates an `Injector` configured to create `Engine` and `Car`.
- *
- * ```typescript
- * @Injectable()
- * class Engine {
- * }
- *
- * @Injectable()
- * class Car {
- *   constructor(public engine:Engine) {}
- * }
- *
- * var injector = Injector.resolveAndCreate([Car, Engine]);
- * var car = injector.get(Car);
- * expect(car instanceof Car).toBe(true);
- * expect(car.engine instanceof Engine).toBe(true);
- * ```
- *
- * Notice, we don't use the `new` operator because we explicitly want to have the `Injector`
- * resolve all of the object's dependencies automatically.
- */
-class Injector {
-  bool _isHostBoundary;
-  dynamic _depProvider;
-  Function _debugContext;
+abstract class Injector {
   /**
    * Turns an array of provider definitions into an array of resolved providers.
    *
@@ -515,7 +418,7 @@ class Injector {
    * ```
    */
   static Injector fromResolvedProviders(List<ResolvedProvider> providers) {
-    return new Injector(ProtoInjector.fromResolvedProviders(providers));
+    return new Injector_(ProtoInjector.fromResolvedProviders(providers));
   }
 
   /**
@@ -523,41 +426,6 @@ class Injector {
    */
   static Injector fromResolvedBindings(List<ResolvedProvider> providers) {
     return Injector.fromResolvedProviders(providers);
-  }
-
-  /** @internal */
-  InjectorStrategy _strategy;
-  /** @internal */
-  num _constructionCounter = 0;
-  /** @internal */
-  dynamic _proto;
-  /** @internal */
-  Injector _parent;
-  /**
-   * Private
-   */
-  Injector(dynamic _proto,
-      [Injector _parent = null,
-      this._isHostBoundary = false,
-      this._depProvider = null,
-      this._debugContext = null]) {
-    this._proto = _proto;
-    this._parent = _parent;
-    this._strategy = _proto._strategy.createInjectorStrategy(this);
-  }
-  /**
-   * Whether this injector is a boundary to a host.
-   * @internal
-   */
-  get hostBoundary {
-    return this._isHostBoundary;
-  }
-
-  /**
-   * @internal
-   */
-  dynamic debugContext() {
-    return this._debugContext();
   }
 
   /**
@@ -582,8 +450,7 @@ class Injector {
    * ```
    */
   dynamic get(dynamic token) {
-    return this._getByKey(
-        Key.get(token), null, null, false, Visibility.PublicAndPrivate);
+    return unimplemented();
   }
 
   /**
@@ -608,15 +475,7 @@ class Injector {
    * ```
    */
   dynamic getOptional(dynamic token) {
-    return this._getByKey(
-        Key.get(token), null, null, true, Visibility.PublicAndPrivate);
-  }
-
-  /**
-   * @internal
-   */
-  dynamic getAt(num index) {
-    return this._strategy.getObjAtIndex(index);
+    return unimplemented();
   }
 
   /**
@@ -634,16 +493,14 @@ class Injector {
    * ```
    */
   Injector get parent {
-    return this._parent;
+    return unimplemented();
   }
 
   /**
    * @internal
-   * Internal. Do not use.
-   * We return `any` not to export the InjectorStrategy type.
    */
-  dynamic get internalStrategy {
-    return this._strategy;
+  dynamic debugContext() {
+    return null;
   }
 
   /**
@@ -675,8 +532,7 @@ class Injector {
    */
   Injector resolveAndCreateChild(
       List<dynamic /* Type | Provider | List < dynamic > */ > providers) {
-    var resolvedProviders = Injector.resolve(providers);
-    return this.createChildFromResolved(resolvedProviders);
+    return unimplemented();
   }
 
   /**
@@ -705,13 +561,7 @@ class Injector {
    * ```
    */
   Injector createChildFromResolved(List<ResolvedProvider> providers) {
-    var bd = providers
-        .map((b) => new ProviderWithVisibility(b, Visibility.Public))
-        .toList();
-    var proto = new ProtoInjector(bd);
-    var inj = new Injector(proto);
-    inj._parent = this;
-    return inj;
+    return unimplemented();
   }
 
   /**
@@ -739,7 +589,7 @@ class Injector {
    * ```
    */
   dynamic resolveAndInstantiate(dynamic /* Type | Provider */ provider) {
-    return this.instantiateResolved(Injector.resolve([provider])[0]);
+    return unimplemented();
   }
 
   /**
@@ -767,34 +617,136 @@ class Injector {
    * ```
    */
   dynamic instantiateResolved(ResolvedProvider provider) {
-    return this._instantiateProvider(provider, Visibility.PublicAndPrivate);
+    return unimplemented();
+  }
+}
+
+/**
+ * A dependency injection container used for instantiating objects and resolving dependencies.
+ *
+ * An `Injector` is a replacement for a `new` operator, which can automatically resolve the
+ * constructor dependencies.
+ *
+ * In typical use, application code asks for the dependencies in the constructor and they are
+ * resolved by the `Injector`.
+ *
+ * ### Example ([live demo](http://plnkr.co/edit/jzjec0?p=preview))
+ *
+ * The following example creates an `Injector` configured to create `Engine` and `Car`.
+ *
+ * ```typescript
+ * @Injectable()
+ * class Engine {
+ * }
+ *
+ * @Injectable()
+ * class Car {
+ *   constructor(public engine:Engine) {}
+ * }
+ *
+ * var injector = Injector.resolveAndCreate([Car, Engine]);
+ * var car = injector.get(Car);
+ * expect(car instanceof Car).toBe(true);
+ * expect(car.engine instanceof Engine).toBe(true);
+ * ```
+ *
+ * Notice, we don't use the `new` operator because we explicitly want to have the `Injector`
+ * resolve all of the object's dependencies automatically.
+ */
+class Injector_ implements Injector {
+  Function _debugContext;
+  /** @internal */
+  InjectorStrategy _strategy;
+  /** @internal */
+  num _constructionCounter = 0;
+  /** @internal */
+  dynamic _proto;
+  /** @internal */
+  Injector _parent;
+  /**
+   * Private
+   */
+  Injector_(dynamic _proto,
+      [Injector _parent = null, this._debugContext = null]) {
+    this._proto = _proto;
+    this._parent = _parent;
+    this._strategy = _proto._strategy.createInjectorStrategy(this);
+  }
+  /**
+   * @internal
+   */
+  dynamic debugContext() {
+    return this._debugContext();
+  }
+
+  dynamic get(dynamic token) {
+    return this._getByKey(Key.get(token), null, null, false);
+  }
+
+  dynamic getOptional(dynamic token) {
+    return this._getByKey(Key.get(token), null, null, true);
+  }
+
+  dynamic getAt(num index) {
+    return this._strategy.getObjAtIndex(index);
+  }
+
+  Injector get parent {
+    return this._parent;
+  }
+
+  /**
+   * @internal
+   * Internal. Do not use.
+   * We return `any` not to export the InjectorStrategy type.
+   */
+  dynamic get internalStrategy {
+    return this._strategy;
+  }
+
+  Injector resolveAndCreateChild(
+      List<dynamic /* Type | Provider | List < dynamic > */ > providers) {
+    var resolvedProviders = Injector.resolve(providers);
+    return this.createChildFromResolved(resolvedProviders);
+  }
+
+  Injector createChildFromResolved(List<ResolvedProvider> providers) {
+    var proto = new ProtoInjector(providers);
+    var inj = new Injector_(proto);
+    inj._parent = this;
+    return inj;
+  }
+
+  dynamic resolveAndInstantiate(dynamic /* Type | Provider */ provider) {
+    return this.instantiateResolved(Injector.resolve([provider])[0]);
+  }
+
+  dynamic instantiateResolved(ResolvedProvider provider) {
+    return this._instantiateProvider(provider);
   }
 
   /** @internal */
-  dynamic _new(ResolvedProvider provider, Visibility visibility) {
+  dynamic _new(ResolvedProvider provider) {
     if (this._constructionCounter++ > this._strategy.getMaxNumberOfObjects()) {
       throw new CyclicDependencyError(this, provider.key);
     }
-    return this._instantiateProvider(provider, visibility);
+    return this._instantiateProvider(provider);
   }
 
-  dynamic _instantiateProvider(
-      ResolvedProvider provider, Visibility visibility) {
+  dynamic _instantiateProvider(ResolvedProvider provider) {
     if (provider.multiProvider) {
       var res = ListWrapper.createFixedSize(provider.resolvedFactories.length);
       for (var i = 0; i < provider.resolvedFactories.length; ++i) {
-        res[i] = this
-            ._instantiate(provider, provider.resolvedFactories[i], visibility);
+        res[i] = this._instantiate(provider, provider.resolvedFactories[i]);
       }
       return res;
     } else {
-      return this
-          ._instantiate(provider, provider.resolvedFactories[0], visibility);
+      return this._instantiate(provider, provider.resolvedFactories[0]);
     }
   }
 
-  dynamic _instantiate(ResolvedProvider provider,
-      ResolvedFactory resolvedFactory, Visibility visibility) {
+  dynamic _instantiate(
+      ResolvedProvider provider, ResolvedFactory resolvedFactory) {
     var factory = resolvedFactory.factory;
     var deps = resolvedFactory.dependencies;
     var length = deps.length;
@@ -819,66 +771,26 @@ class Injector {
     dynamic d18;
     dynamic d19;
     try {
-      d0 = length > 0
-          ? this._getByDependency(provider, deps[0], visibility)
-          : null;
-      d1 = length > 1
-          ? this._getByDependency(provider, deps[1], visibility)
-          : null;
-      d2 = length > 2
-          ? this._getByDependency(provider, deps[2], visibility)
-          : null;
-      d3 = length > 3
-          ? this._getByDependency(provider, deps[3], visibility)
-          : null;
-      d4 = length > 4
-          ? this._getByDependency(provider, deps[4], visibility)
-          : null;
-      d5 = length > 5
-          ? this._getByDependency(provider, deps[5], visibility)
-          : null;
-      d6 = length > 6
-          ? this._getByDependency(provider, deps[6], visibility)
-          : null;
-      d7 = length > 7
-          ? this._getByDependency(provider, deps[7], visibility)
-          : null;
-      d8 = length > 8
-          ? this._getByDependency(provider, deps[8], visibility)
-          : null;
-      d9 = length > 9
-          ? this._getByDependency(provider, deps[9], visibility)
-          : null;
-      d10 = length > 10
-          ? this._getByDependency(provider, deps[10], visibility)
-          : null;
-      d11 = length > 11
-          ? this._getByDependency(provider, deps[11], visibility)
-          : null;
-      d12 = length > 12
-          ? this._getByDependency(provider, deps[12], visibility)
-          : null;
-      d13 = length > 13
-          ? this._getByDependency(provider, deps[13], visibility)
-          : null;
-      d14 = length > 14
-          ? this._getByDependency(provider, deps[14], visibility)
-          : null;
-      d15 = length > 15
-          ? this._getByDependency(provider, deps[15], visibility)
-          : null;
-      d16 = length > 16
-          ? this._getByDependency(provider, deps[16], visibility)
-          : null;
-      d17 = length > 17
-          ? this._getByDependency(provider, deps[17], visibility)
-          : null;
-      d18 = length > 18
-          ? this._getByDependency(provider, deps[18], visibility)
-          : null;
-      d19 = length > 19
-          ? this._getByDependency(provider, deps[19], visibility)
-          : null;
+      d0 = length > 0 ? this._getByDependency(provider, deps[0]) : null;
+      d1 = length > 1 ? this._getByDependency(provider, deps[1]) : null;
+      d2 = length > 2 ? this._getByDependency(provider, deps[2]) : null;
+      d3 = length > 3 ? this._getByDependency(provider, deps[3]) : null;
+      d4 = length > 4 ? this._getByDependency(provider, deps[4]) : null;
+      d5 = length > 5 ? this._getByDependency(provider, deps[5]) : null;
+      d6 = length > 6 ? this._getByDependency(provider, deps[6]) : null;
+      d7 = length > 7 ? this._getByDependency(provider, deps[7]) : null;
+      d8 = length > 8 ? this._getByDependency(provider, deps[8]) : null;
+      d9 = length > 9 ? this._getByDependency(provider, deps[9]) : null;
+      d10 = length > 10 ? this._getByDependency(provider, deps[10]) : null;
+      d11 = length > 11 ? this._getByDependency(provider, deps[11]) : null;
+      d12 = length > 12 ? this._getByDependency(provider, deps[12]) : null;
+      d13 = length > 13 ? this._getByDependency(provider, deps[13]) : null;
+      d14 = length > 14 ? this._getByDependency(provider, deps[14]) : null;
+      d15 = length > 15 ? this._getByDependency(provider, deps[15]) : null;
+      d16 = length > 16 ? this._getByDependency(provider, deps[16]) : null;
+      d17 = length > 17 ? this._getByDependency(provider, deps[17]) : null;
+      d18 = length > 18 ? this._getByDependency(provider, deps[18]) : null;
+      d19 = length > 19 ? this._getByDependency(provider, deps[19]) : null;
     } catch (e, e_stack) {
       if (e is AbstractProviderError || e is InstantiationError) {
         e.addKey(this, provider.key);
@@ -968,36 +880,20 @@ class Injector {
     return obj;
   }
 
-  dynamic _getByDependency(ResolvedProvider provider, Dependency dep,
-      Visibility providerVisibility) {
-    var special = isPresent(this._depProvider)
-        ? this._depProvider.getDependency(this, provider, dep)
-        : UNDEFINED;
-    if (!identical(special, UNDEFINED)) {
-      return special;
-    } else {
-      return this._getByKey(dep.key, dep.lowerBoundVisibility,
-          dep.upperBoundVisibility, dep.optional, providerVisibility);
-    }
+  dynamic _getByDependency(ResolvedProvider provider, Dependency dep) {
+    return this._getByKey(dep.key, dep.lowerBoundVisibility,
+        dep.upperBoundVisibility, dep.optional);
   }
 
-  dynamic _getByKey(
-      Key key,
-      Object lowerBoundVisibility,
-      Object upperBoundVisibility,
-      bool optional,
-      Visibility providerVisibility) {
+  dynamic _getByKey(Key key, Object lowerBoundVisibility,
+      Object upperBoundVisibility, bool optional) {
     if (identical(key, INJECTOR_KEY)) {
       return this;
     }
     if (upperBoundVisibility is SelfMetadata) {
-      return this._getByKeySelf(key, optional, providerVisibility);
-    } else if (upperBoundVisibility is HostMetadata) {
-      return this._getByKeyHost(
-          key, optional, providerVisibility, lowerBoundVisibility);
+      return this._getByKeySelf(key, optional);
     } else {
-      return this._getByKeyDefault(
-          key, optional, providerVisibility, lowerBoundVisibility);
+      return this._getByKeyDefault(key, optional, lowerBoundVisibility);
     }
   }
 
@@ -1011,61 +907,37 @@ class Injector {
   }
 
   /** @internal */
-  dynamic _getByKeySelf(Key key, bool optional, Visibility providerVisibility) {
-    var obj = this._strategy.getObjByKeyId(key.id, providerVisibility);
+  dynamic _getByKeySelf(Key key, bool optional) {
+    var obj = this._strategy.getObjByKeyId(key.id);
     return (!identical(obj, UNDEFINED))
         ? obj
         : this._throwOrNull(key, optional);
   }
 
   /** @internal */
-  dynamic _getByKeyHost(Key key, bool optional, Visibility providerVisibility,
-      Object lowerBoundVisibility) {
-    Injector inj = this;
+  dynamic _getByKeyDefault(
+      Key key, bool optional, Object lowerBoundVisibility) {
+    Injector inj;
     if (lowerBoundVisibility is SkipSelfMetadata) {
-      if (inj._isHostBoundary) {
-        return this._getPrivateDependency(key, optional, inj);
-      } else {
-        inj = inj._parent;
-      }
+      inj = this._parent;
+    } else {
+      inj = this;
     }
-    while (inj != null) {
-      var obj = inj._strategy.getObjByKeyId(key.id, providerVisibility);
+    while (inj is Injector_) {
+      var inj_ = (inj as Injector_);
+      var obj = inj_._strategy.getObjByKeyId(key.id);
       if (!identical(obj, UNDEFINED)) return obj;
-      if (isPresent(inj._parent) && inj._isHostBoundary) {
-        return this._getPrivateDependency(key, optional, inj);
+      inj = inj_._parent;
+    }
+    if (!identical(inj, null)) {
+      if (optional) {
+        return inj.getOptional(key.token);
       } else {
-        inj = inj._parent;
+        return inj.get(key.token);
       }
+    } else {
+      return this._throwOrNull(key, optional);
     }
-    return this._throwOrNull(key, optional);
-  }
-
-  /** @internal */
-  dynamic _getPrivateDependency(Key key, bool optional, Injector inj) {
-    var obj = inj._parent._strategy.getObjByKeyId(key.id, Visibility.Private);
-    return (!identical(obj, UNDEFINED))
-        ? obj
-        : this._throwOrNull(key, optional);
-  }
-
-  /** @internal */
-  dynamic _getByKeyDefault(Key key, bool optional,
-      Visibility providerVisibility, Object lowerBoundVisibility) {
-    Injector inj = this;
-    if (lowerBoundVisibility is SkipSelfMetadata) {
-      providerVisibility =
-          inj._isHostBoundary ? Visibility.PublicAndPrivate : Visibility.Public;
-      inj = inj._parent;
-    }
-    while (inj != null) {
-      var obj = inj._strategy.getObjByKeyId(key.id, providerVisibility);
-      if (!identical(obj, UNDEFINED)) return obj;
-      providerVisibility =
-          inj._isHostBoundary ? Visibility.PublicAndPrivate : Visibility.Public;
-      inj = inj._parent;
-    }
-    return this._throwOrNull(key, optional);
   }
 
   String get displayName {
@@ -1078,7 +950,7 @@ class Injector {
 }
 
 var INJECTOR_KEY = Key.get(Injector);
-List<dynamic> _mapProviders(Injector injector, Function fn) {
+List<dynamic> _mapProviders(Injector_ injector, Function fn) {
   var res = [];
   for (var i = 0; i < injector._proto.numberOfProviders; ++i) {
     res.add(fn(injector._proto.getProviderAtIndex(i)));

@@ -16,7 +16,7 @@ import "package:angular2/src/compiler/html_ast.dart"
 import "package:angular2/src/facade/lang.dart"
     show isPresent, isBlank, StringWrapper;
 import "message.dart" show Message;
-import "package:angular2/src/core/change_detection/parser/parser.dart"
+import "package:angular2/src/compiler/expression_parser/parser.dart"
     show Parser;
 
 const I18N_ATTR = "i18n";

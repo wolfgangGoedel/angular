@@ -17,12 +17,16 @@ import "test_bindings.dart" show TEST_PROVIDERS;
 import "package:angular2/src/facade/lang.dart" show isPresent;
 import "package:angular2/src/compiler/template_parser.dart"
     show TemplateParser, splitClasses, TEMPLATE_TRANSFORMS;
-import "package:angular2/src/compiler/directive_metadata.dart"
+import "package:angular2/src/compiler/compile_metadata.dart"
     show
         CompileDirectiveMetadata,
         CompilePipeMetadata,
         CompileTypeMetadata,
-        CompileTemplateMetadata;
+        CompileTemplateMetadata,
+        CompileProviderMetadata,
+        CompileTokenMetadata,
+        CompileDiDependencyMetadata,
+        CompileQueryMetadata;
 import "package:angular2/src/compiler/template_ast.dart"
     show
         templateVisitAll,
@@ -39,13 +43,15 @@ import "package:angular2/src/compiler/template_ast.dart"
         BoundTextAst,
         TextAst,
         PropertyBindingType,
-        DirectiveAst;
+        DirectiveAst,
+        ProviderAstType;
 import "package:angular2/src/compiler/schema/element_schema_registry.dart"
     show ElementSchemaRegistry;
 import "schema_registry_mock.dart" show MockSchemaRegistry;
-import "../core/change_detection/parser/unparser.dart" show Unparser;
+import "expression_parser/unparser.dart" show Unparser;
 
 var expressionUnparser = new Unparser();
+var someModuleUrl = "package:someModule";
 var MOCK_SCHEMA_REGISTRY = [
   provide(ElementSchemaRegistry,
       useValue: new MockSchemaRegistry(
@@ -56,9 +62,13 @@ main() {
   var parse;
   commonBeforeEach() {
     beforeEach(inject([TemplateParser], (parser) {
+      var component = CompileDirectiveMetadata.create(
+          selector: "root",
+          type: new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "Root"),
+          isComponent: true);
       ngIf = CompileDirectiveMetadata.create(
           selector: "[ngIf]",
-          type: new CompileTypeMetadata(name: "NgIf"),
+          type: new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "NgIf"),
           inputs: ["ngIf"]);
       parse = /* List < TemplateAst > */ (String template,
           List<CompileDirectiveMetadata> directives,
@@ -66,7 +76,7 @@ main() {
         if (identical(pipes, null)) {
           pipes = [];
         }
-        return parser.parse(template, directives, pipes, "TestComp");
+        return parser.parse(component, template, directives, pipes, "TestComp");
       };
     }));
   }
@@ -314,7 +324,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
           var dirA = CompileDirectiveMetadata.create(
               selector: "template",
               outputs: ["e"],
-              type: new CompileTypeMetadata(name: "DirA"));
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"));
           expect(humanizeTplAst(
               parse("<template (e)=\"f\"></template>", [dirA]))).toEqual([
             [EmbeddedTemplateAst],
@@ -357,15 +368,22 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should locate directives components first and ordered by the directives array in the View",
             () {
           var dirA = CompileDirectiveMetadata.create(
-              selector: "[a]", type: new CompileTypeMetadata(name: "DirA"));
+              selector: "[a]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"));
           var dirB = CompileDirectiveMetadata.create(
-              selector: "[b]", type: new CompileTypeMetadata(name: "DirB"));
+              selector: "[b]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirB"));
           var dirC = CompileDirectiveMetadata.create(
-              selector: "[c]", type: new CompileTypeMetadata(name: "DirC"));
+              selector: "[c]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirC"));
           var comp = CompileDirectiveMetadata.create(
               selector: "div",
               isComponent: true,
-              type: new CompileTypeMetadata(name: "ZComp"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "ZComp"),
               template: new CompileTemplateMetadata(ngContentSelectors: []));
           expect(humanizeTplAst(parse("<div a c b>", [dirA, dirB, dirC, comp])))
               .toEqual([
@@ -381,9 +399,13 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         });
         it("should locate directives in property bindings", () {
           var dirA = CompileDirectiveMetadata.create(
-              selector: "[a=b]", type: new CompileTypeMetadata(name: "DirA"));
+              selector: "[a=b]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"));
           var dirB = CompileDirectiveMetadata.create(
-              selector: "[b]", type: new CompileTypeMetadata(name: "DirB"));
+              selector: "[b]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirB"));
           expect(humanizeTplAst(parse("<div [a]=\"b\">", [dirA, dirB])))
               .toEqual([
             [ElementAst, "div"],
@@ -399,7 +421,9 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         });
         it("should locate directives in event bindings", () {
           var dirA = CompileDirectiveMetadata.create(
-              selector: "[a]", type: new CompileTypeMetadata(name: "DirB"));
+              selector: "[a]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirB"));
           expect(humanizeTplAst(parse("<div (a)=\"b\">", [dirA]))).toEqual([
             [ElementAst, "div"],
             [BoundEventAst, "a", null, "b"],
@@ -409,7 +433,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should parse directive host properties", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               host: {"[a]": "expr"});
           expect(humanizeTplAst(parse("<div></div>", [dirA]))).toEqual([
             [ElementAst, "div"],
@@ -426,7 +451,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should parse directive host listeners", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               host: {"(a)": "expr"});
           expect(humanizeTplAst(parse("<div></div>", [dirA]))).toEqual([
             [ElementAst, "div"],
@@ -437,7 +463,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should parse directive properties", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               inputs: ["aProp"]);
           expect(humanizeTplAst(parse("<div [aProp]=\"expr\"></div>", [dirA])))
               .toEqual([
@@ -449,7 +476,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should parse renamed directive properties", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               inputs: ["b:a"]);
           expect(humanizeTplAst(parse("<div [a]=\"expr\"></div>", [dirA])))
               .toEqual([
@@ -461,7 +489,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should parse literal directive properties", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               inputs: ["a"]);
           expect(humanizeTplAst(parse("<div a=\"literal\"></div>", [dirA])))
               .toEqual([
@@ -475,7 +504,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
             () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               inputs: ["a"]);
           expect(humanizeTplAst(parse(
                   "<div a=\"literal\" [a]=\"'literal2'\"></div>", [dirA])))
@@ -489,12 +519,288 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should support optional directive properties", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "div",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               inputs: ["a"]);
           expect(humanizeTplAst(parse("<div></div>", [dirA]))).toEqual([
             [ElementAst, "div"],
             [DirectiveAst, dirA]
           ]);
+        });
+      });
+      describe("providers", () {
+        var nextProviderId;
+        CompileTokenMetadata createToken(String value) {
+          var token;
+          if (value.startsWith("type:")) {
+            token = new CompileTokenMetadata(
+                identifier: new CompileTypeMetadata(
+                    moduleUrl: someModuleUrl, name: value.substring(5)));
+          } else {
+            token = new CompileTokenMetadata(value: value);
+          }
+          return token;
+        }
+        CompileDiDependencyMetadata createDep(String value) {
+          var isOptional = false;
+          if (value.startsWith("optional:")) {
+            isOptional = true;
+            value = value.substring(9);
+          }
+          var isSelf = false;
+          if (value.startsWith("self:")) {
+            isSelf = true;
+            value = value.substring(5);
+          }
+          var isHost = false;
+          if (value.startsWith("host:")) {
+            isHost = true;
+            value = value.substring(5);
+          }
+          return new CompileDiDependencyMetadata(
+              token: createToken(value),
+              isOptional: isOptional,
+              isSelf: isSelf,
+              isHost: isHost);
+        }
+        CompileProviderMetadata createProvider(String token,
+            {bool multi: false, List<String> deps: const []}) {
+          return new CompileProviderMetadata(
+              token: createToken(token),
+              multi: multi,
+              useClass: new CompileTypeMetadata(
+                  name: '''provider${ nextProviderId ++}'''),
+              deps: deps.map(createDep).toList());
+        }
+        CompileDirectiveMetadata createDir(String selector,
+            {List<CompileProviderMetadata> providers: null,
+            List<CompileProviderMetadata> viewProviders: null,
+            List<String> deps: const [],
+            List<String> queries: const []}) {
+          var isComponent = !selector.startsWith("[");
+          return CompileDirectiveMetadata.create(
+              selector: selector,
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl,
+                  name: selector,
+                  diDeps: deps.map(createDep).toList()),
+              isComponent: isComponent,
+              template: new CompileTemplateMetadata(ngContentSelectors: []),
+              providers: providers,
+              viewProviders: viewProviders,
+              queries: queries
+                  .map((value) =>
+                      new CompileQueryMetadata(selectors: [createToken(value)]))
+                  .toList());
+        }
+        beforeEach(() {
+          nextProviderId = 0;
+        });
+        it("should provide a component", () {
+          var comp = createDir("my-comp");
+          ElementAst elAst = (parse("<my-comp>", [comp])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(1);
+          expect(elAst.providers[0].providerType)
+              .toBe(ProviderAstType.Component);
+          expect(elAst.providers[0].providers[0].useClass).toBe(comp.type);
+        });
+        it("should provide a directive", () {
+          var dirA = createDir("[dirA]");
+          ElementAst elAst = (parse("<div dirA>", [dirA])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(1);
+          expect(elAst.providers[0].providerType)
+              .toBe(ProviderAstType.Directive);
+          expect(elAst.providers[0].providers[0].useClass).toBe(dirA.type);
+        });
+        it("should use the public providers of a directive", () {
+          var provider = createProvider("service");
+          var dirA = createDir("[dirA]", providers: [provider]);
+          ElementAst elAst = (parse("<div dirA>", [dirA])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(2);
+          expect(elAst.providers[1].providerType)
+              .toBe(ProviderAstType.PublicService);
+          expect(elAst.providers[1].providers).toEqual([provider]);
+        });
+        it("should use the private providers of a component", () {
+          var provider = createProvider("service");
+          var comp = createDir("my-comp", viewProviders: [provider]);
+          ElementAst elAst = (parse("<my-comp>", [comp])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(2);
+          expect(elAst.providers[1].providerType)
+              .toBe(ProviderAstType.PrivateService);
+          expect(elAst.providers[1].providers).toEqual([provider]);
+        });
+        it("should support multi providers", () {
+          var provider0 = createProvider("service0", multi: true);
+          var provider1 = createProvider("service1", multi: true);
+          var provider2 = createProvider("service0", multi: true);
+          var dirA = createDir("[dirA]", providers: [provider0, provider1]);
+          var dirB = createDir("[dirB]", providers: [provider2]);
+          ElementAst elAst =
+              (parse("<div dirA dirB>", [dirA, dirB])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(4);
+          expect(elAst.providers[2].providers).toEqual([provider0, provider2]);
+          expect(elAst.providers[3].providers).toEqual([provider1]);
+        });
+        it("should overwrite non multi providers", () {
+          var provider1 = createProvider("service0");
+          var provider2 = createProvider("service1");
+          var provider3 = createProvider("service0");
+          var dirA = createDir("[dirA]", providers: [provider1, provider2]);
+          var dirB = createDir("[dirB]", providers: [provider3]);
+          ElementAst elAst =
+              (parse("<div dirA dirB>", [dirA, dirB])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(4);
+          expect(elAst.providers[2].providers).toEqual([provider3]);
+          expect(elAst.providers[3].providers).toEqual([provider2]);
+        });
+        it("should overwrite component providers by directive providers", () {
+          var compProvider = createProvider("service0");
+          var dirProvider = createProvider("service0");
+          var comp = createDir("my-comp", providers: [compProvider]);
+          var dirA = createDir("[dirA]", providers: [dirProvider]);
+          ElementAst elAst =
+              (parse("<my-comp dirA>", [dirA, comp])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(3);
+          expect(elAst.providers[2].providers).toEqual([dirProvider]);
+        });
+        it("should overwrite view providers by directive providers", () {
+          var viewProvider = createProvider("service0");
+          var dirProvider = createProvider("service0");
+          var comp = createDir("my-comp", viewProviders: [viewProvider]);
+          var dirA = createDir("[dirA]", providers: [dirProvider]);
+          ElementAst elAst =
+              (parse("<my-comp dirA>", [dirA, comp])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(3);
+          expect(elAst.providers[2].providers).toEqual([dirProvider]);
+        });
+        it("should overwrite directives by providers", () {
+          var dirProvider = createProvider("type:my-comp");
+          var comp = createDir("my-comp", providers: [dirProvider]);
+          ElementAst elAst = (parse("<my-comp>", [comp])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(1);
+          expect(elAst.providers[0].providers).toEqual([dirProvider]);
+        });
+        it("should throw if mixing multi and non multi providers", () {
+          var provider0 = createProvider("service0");
+          var provider1 = createProvider("service0", multi: true);
+          var dirA = createDir("[dirA]", providers: [provider0]);
+          var dirB = createDir("[dirB]", providers: [provider1]);
+          expect(() =>
+              parse("<div dirA dirB>",
+                  [dirA, dirB])).toThrowError('''Template parse errors:
+''' +
+              '''Mixing multi and non multi provider is not possible for token service0 ("[ERROR ->]<div dirA dirB>"): TestComp@0:0''');
+        });
+        it("should sort providers by their DI order", () {
+          var provider0 = createProvider("service0", deps: ["type:[dir2]"]);
+          var provider1 = createProvider("service1");
+          var dir2 = createDir("[dir2]", deps: ["service1"]);
+          var comp = createDir("my-comp", providers: [provider0, provider1]);
+          ElementAst elAst =
+              (parse("<my-comp dir2>", [comp, dir2])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(4);
+          expect(elAst.providers[0].providers[0].useClass).toEqual(comp.type);
+          expect(elAst.providers[1].providers).toEqual([provider1]);
+          expect(elAst.providers[2].providers[0].useClass).toEqual(dir2.type);
+          expect(elAst.providers[3].providers).toEqual([provider0]);
+        });
+        it("should sort directives by their DI order", () {
+          var dir0 = createDir("[dir0]", deps: ["type:my-comp"]);
+          var dir1 = createDir("[dir1]", deps: ["type:[dir0]"]);
+          var dir2 = createDir("[dir2]", deps: ["type:[dir1]"]);
+          var comp = createDir("my-comp");
+          ElementAst elAst =
+              (parse("<my-comp dir2 dir0 dir1>", [comp, dir2, dir0, dir1])[0]
+                  as ElementAst);
+          expect(elAst.providers.length).toBe(4);
+          expect(elAst.directives[0].directive).toBe(comp);
+          expect(elAst.directives[1].directive).toBe(dir0);
+          expect(elAst.directives[2].directive).toBe(dir1);
+          expect(elAst.directives[3].directive).toBe(dir2);
+        });
+        it("should mark directives and dependencies of directives as eager",
+            () {
+          var provider0 = createProvider("service0");
+          var provider1 = createProvider("service1");
+          var dirA = createDir("[dirA]",
+              providers: [provider0, provider1], deps: ["service0"]);
+          ElementAst elAst = (parse("<div dirA>", [dirA])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(3);
+          expect(elAst.providers[0].providers).toEqual([provider0]);
+          expect(elAst.providers[0].eager).toBe(true);
+          expect(elAst.providers[1].providers[0].useClass).toEqual(dirA.type);
+          expect(elAst.providers[1].eager).toBe(true);
+          expect(elAst.providers[2].providers).toEqual([provider1]);
+          expect(elAst.providers[2].eager).toBe(false);
+        });
+        it("should mark dependencies on parent elements as eager", () {
+          var provider0 = createProvider("service0");
+          var provider1 = createProvider("service1");
+          var dirA = createDir("[dirA]", providers: [provider0, provider1]);
+          var dirB = createDir("[dirB]", deps: ["service0"]);
+          ElementAst elAst =
+              (parse("<div dirA><div dirB></div></div>", [dirA, dirB])[0]
+                  as ElementAst);
+          expect(elAst.providers.length).toBe(3);
+          expect(elAst.providers[0].providers[0].useClass).toEqual(dirA.type);
+          expect(elAst.providers[0].eager).toBe(true);
+          expect(elAst.providers[1].providers).toEqual([provider0]);
+          expect(elAst.providers[1].eager).toBe(true);
+          expect(elAst.providers[2].providers).toEqual([provider1]);
+          expect(elAst.providers[2].eager).toBe(false);
+        });
+        it("should mark queried providers as eager", () {
+          var provider0 = createProvider("service0");
+          var provider1 = createProvider("service1");
+          var dirA = createDir("[dirA]",
+              providers: [provider0, provider1], queries: ["service0"]);
+          ElementAst elAst =
+              (parse("<div dirA></div>", [dirA])[0] as ElementAst);
+          expect(elAst.providers.length).toBe(3);
+          expect(elAst.providers[0].providers[0].useClass).toEqual(dirA.type);
+          expect(elAst.providers[0].eager).toBe(true);
+          expect(elAst.providers[1].providers).toEqual([provider0]);
+          expect(elAst.providers[1].eager).toBe(true);
+          expect(elAst.providers[2].providers).toEqual([provider1]);
+          expect(elAst.providers[2].eager).toBe(false);
+        });
+        it("should not mark dependencies accross embedded views as eager", () {
+          var provider0 = createProvider("service0");
+          var dirA = createDir("[dirA]", providers: [provider0]);
+          var dirB = createDir("[dirB]", deps: ["service0"]);
+          ElementAst elAst =
+              (parse("<div dirA><div *ngIf dirB></div></div>", [dirA, dirB])[0]
+                  as ElementAst);
+          expect(elAst.providers.length).toBe(2);
+          expect(elAst.providers[0].providers[0].useClass).toEqual(dirA.type);
+          expect(elAst.providers[0].eager).toBe(true);
+          expect(elAst.providers[1].providers).toEqual([provider0]);
+          expect(elAst.providers[1].eager).toBe(false);
+        });
+        it("should report missing @Self() deps as errors", () {
+          var dirA = createDir("[dirA]", deps: ["self:provider0"]);
+          expect(() => parse("<div dirA></div>", [dirA])).toThrowErrorWith(
+              "No provider for provider0 (\"[ERROR ->]<div dirA></div>\"): TestComp@0:0");
+        });
+        it("should change missing @Self() that are optional to nulls", () {
+          var dirA = createDir("[dirA]", deps: ["optional:self:provider0"]);
+          ElementAst elAst =
+              (parse("<div dirA></div>", [dirA])[0] as ElementAst);
+          expect(elAst.providers[0].providers[0].deps[0].isValue).toBe(true);
+          expect(elAst.providers[0].providers[0].deps[0].value).toBe(null);
+        });
+        it("should report missing @Host() deps as errors", () {
+          var dirA = createDir("[dirA]", deps: ["host:provider0"]);
+          expect(() => parse("<div dirA></div>", [dirA])).toThrowErrorWith(
+              "No provider for provider0 (\"[ERROR ->]<div dirA></div>\"): TestComp@0:0");
+        });
+        it("should change missing @Host() that are optional to nulls", () {
+          var dirA = createDir("[dirA]", deps: ["optional:host:provider0"]);
+          ElementAst elAst =
+              (parse("<div dirA></div>", [dirA])[0] as ElementAst);
+          expect(elAst.providers[0].providers[0].deps[0].isValue).toBe(true);
+          expect(elAst.providers[0].providers[0].deps[0].value).toBe(null);
         });
       });
       describe("variables", () {
@@ -527,7 +833,8 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         it("should assign variables to directives via exportAs", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "[a]",
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               exportAs: "dirA");
           expect(humanizeTplAst(parse("<div a #a=\"dirA\"></div>", [dirA])))
               .toEqual([
@@ -560,7 +867,8 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
           var dirA = CompileDirectiveMetadata.create(
               selector: "[a]",
               isComponent: true,
-              type: new CompileTypeMetadata(name: "DirA"),
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"),
               exportAs: "dirA",
               template: new CompileTemplateMetadata(ngContentSelectors: []));
           expect(humanizeTplAst(parse("<div a #a></div>", [dirA]))).toEqual([
@@ -626,10 +934,13 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
           it("should locate directives in property bindings", () {
             var dirA = CompileDirectiveMetadata.create(
                 selector: "[a=b]",
-                type: new CompileTypeMetadata(name: "DirA"),
+                type: new CompileTypeMetadata(
+                    moduleUrl: someModuleUrl, name: "DirA"),
                 inputs: ["a"]);
             var dirB = CompileDirectiveMetadata.create(
-                selector: "[b]", type: new CompileTypeMetadata(name: "DirB"));
+                selector: "[b]",
+                type: new CompileTypeMetadata(
+                    moduleUrl: someModuleUrl, name: "DirB"));
             expect(humanizeTplAst(
                 parse("<div template=\"a b\" b>", [dirA, dirB]))).toEqual([
               [EmbeddedTemplateAst],
@@ -642,9 +953,13 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
           });
           it("should locate directives in variable bindings", () {
             var dirA = CompileDirectiveMetadata.create(
-                selector: "[a=b]", type: new CompileTypeMetadata(name: "DirA"));
+                selector: "[a=b]",
+                type: new CompileTypeMetadata(
+                    moduleUrl: someModuleUrl, name: "DirA"));
             var dirB = CompileDirectiveMetadata.create(
-                selector: "[b]", type: new CompileTypeMetadata(name: "DirB"));
+                selector: "[b]",
+                type: new CompileTypeMetadata(
+                    moduleUrl: someModuleUrl, name: "DirB"));
             expect(humanizeTplAst(
                 parse("<div template=\"#a=b\" b>", [dirA, dirB]))).toEqual([
               [EmbeddedTemplateAst],
@@ -677,14 +992,27 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
       });
     });
     describe("content projection", () {
+      var compCounter;
+      beforeEach(() {
+        compCounter = 0;
+      });
       CompileDirectiveMetadata createComp(
           String selector, List<String> ngContentSelectors) {
         return CompileDirectiveMetadata.create(
             selector: selector,
             isComponent: true,
-            type: new CompileTypeMetadata(name: "SomeComp"),
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl,
+                name: '''SomeComp${ compCounter ++}'''),
             template: new CompileTemplateMetadata(
                 ngContentSelectors: ngContentSelectors));
+      }
+      CompileDirectiveMetadata createDir(String selector) {
+        return CompileDirectiveMetadata.create(
+            selector: selector,
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl,
+                name: '''SomeDir${ compCounter ++}'''));
       }
       describe("project text nodes", () {
         it("should project text nodes with wildcard selector", () {
@@ -861,6 +1189,15 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
           ]);
         });
       });
+      it("should support other directives before the component", () {
+        expect(humanizeContentProjection(parse("<div>hello</div>", [
+          createDir("div"),
+          createComp("div", ["*"])
+        ]))).toEqual([
+          ["div", null],
+          ["#text(hello)", 0]
+        ]);
+      });
     });
     describe("splitClasses", () {
       it("should keep an empty class", () {
@@ -893,7 +1230,8 @@ Parser Error: Unexpected token \'b\' at column 3 in [a b] in TestComp@0:5 ("<div
           () {
         var dirA = CompileDirectiveMetadata.create(
             selector: "div",
-            type: new CompileTypeMetadata(name: "DirA"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
             inputs: ["invalidProp"]);
         expect(() => parse("<div [invalid-prop]></div>", [dirA])).not.toThrow();
       });
@@ -901,12 +1239,14 @@ Parser Error: Unexpected token \'b\' at column 3 in [a b] in TestComp@0:5 ("<div
         var dirA = CompileDirectiveMetadata.create(
             selector: "div",
             isComponent: true,
-            type: new CompileTypeMetadata(name: "DirA"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
             template: new CompileTemplateMetadata(ngContentSelectors: []));
         var dirB = CompileDirectiveMetadata.create(
             selector: "div",
             isComponent: true,
-            type: new CompileTypeMetadata(name: "DirB"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirB"),
             template: new CompileTemplateMetadata(ngContentSelectors: []));
         expect(() => parse("<div>", [dirB, dirA]))
             .toThrowError('''Template parse errors:
@@ -917,7 +1257,8 @@ More than one component: DirB,DirA ("[ERROR ->]<div>"): TestComp@0:0''');
         var dirA = CompileDirectiveMetadata.create(
             selector: "[a]",
             isComponent: true,
-            type: new CompileTypeMetadata(name: "DirA"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
             template: new CompileTemplateMetadata(ngContentSelectors: []));
         expect(() => parse("<template [a]=\"b\" (e)=\"f\"></template>", [dirA]))
             .toThrowError('''Template parse errors:
@@ -930,7 +1271,8 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
         var dirA = CompileDirectiveMetadata.create(
             selector: "[a]",
             isComponent: true,
-            type: new CompileTypeMetadata(name: "DirA"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
             template: new CompileTemplateMetadata(ngContentSelectors: []));
         expect(() => parse("<div *a=\"b\"></div>", [dirA]))
             .toThrowError('''Template parse errors:
@@ -1079,7 +1421,8 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
       it("should support variables", () {
         var dirA = CompileDirectiveMetadata.create(
             selector: "[a]",
-            type: new CompileTypeMetadata(name: "DirA"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
             exportAs: "dirA");
         expect(humanizeTplAstSourceSpans(
             parse("<div a #a=\"dirA\"></div>", [dirA]))).toEqual([
@@ -1122,11 +1465,14 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
       });
       it("should support directive", () {
         var dirA = CompileDirectiveMetadata.create(
-            selector: "[a]", type: new CompileTypeMetadata(name: "DirA"));
+            selector: "[a]",
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl, name: "DirA"));
         var comp = CompileDirectiveMetadata.create(
             selector: "div",
             isComponent: true,
-            type: new CompileTypeMetadata(name: "ZComp"),
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl, name: "ZComp"),
             template: new CompileTemplateMetadata(ngContentSelectors: []));
         expect(humanizeTplAstSourceSpans(parse("<div a>", [dirA, comp])))
             .toEqual([
@@ -1138,9 +1484,13 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
       });
       it("should support directive in namespace", () {
         var tagSel = CompileDirectiveMetadata.create(
-            selector: "circle", type: new CompileTypeMetadata(name: "elDir"));
+            selector: "circle",
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl, name: "elDir"));
         var attrSel = CompileDirectiveMetadata.create(
-            selector: "[href]", type: new CompileTypeMetadata(name: "attrDir"));
+            selector: "[href]",
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl, name: "attrDir"));
         expect(humanizeTplAstSourceSpans(parse(
             "<svg><circle /><use xlink:href=\"Port\" /></svg>",
             [tagSel, attrSel]))).toEqual([
@@ -1155,7 +1505,8 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
       it("should support directive property", () {
         var dirA = CompileDirectiveMetadata.create(
             selector: "div",
-            type: new CompileTypeMetadata(name: "DirA"),
+            type:
+                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
             inputs: ["aProp"]);
         expect(humanizeTplAstSourceSpans(
             parse("<div [aProp]=\"foo\"></div>", [dirA]))).toEqual([
@@ -1168,7 +1519,9 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
     describe("pipes", () {
       it("should allow pipes that have been defined as dependencies", () {
         var testPipe = new CompilePipeMetadata(
-            name: "test", type: new CompileTypeMetadata(name: "DirA"));
+            name: "test",
+            type: new CompileTypeMetadata(
+                moduleUrl: someModuleUrl, name: "DirA"));
         expect(() => parse("{{a | test}}", [], [testPipe])).not.toThrow();
       });
       it("should report pipes as error that have not been defined as dependencies",
@@ -1381,7 +1734,7 @@ class FooAstTransformer implements TemplateAstVisitor {
   dynamic visitElement(ElementAst ast, dynamic context) {
     if (ast.name != "div") return ast;
     return new ElementAst(
-        "foo", [], [], [], [], [], [], ast.ngContentIndex, ast.sourceSpan);
+        "foo", [], [], [], [], [], [], [], ast.ngContentIndex, ast.sourceSpan);
   }
 
   dynamic visitVariable(VariableAst ast, dynamic context) {
@@ -1422,6 +1775,6 @@ class BarAstTransformer extends FooAstTransformer {
   dynamic visitElement(ElementAst ast, dynamic context) {
     if (ast.name != "foo") return ast;
     return new ElementAst(
-        "bar", [], [], [], [], [], [], ast.ngContentIndex, ast.sourceSpan);
+        "bar", [], [], [], [], [], [], [], ast.ngContentIndex, ast.sourceSpan);
   }
 }

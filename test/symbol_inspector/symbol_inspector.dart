@@ -32,7 +32,7 @@ var libs = [
   simple_library.A,
   Component,
   Form,
-  TemplateCompiler,
+  COMPILER_PROVIDERS,
   NgIf,
   wtfCreateScope,
   Title

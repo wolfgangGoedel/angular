@@ -1,124 +1,79 @@
 library angular2.src.compiler.style_compiler;
 
-import "dart:async";
-import "directive_metadata.dart"
-    show CompileTypeMetadata, CompileTemplateMetadata;
-import "source_module.dart" show SourceModule, SourceExpression, moduleRef;
+import "compile_metadata.dart"
+    show
+        CompileTemplateMetadata,
+        CompileIdentifierMetadata,
+        CompileDirectiveMetadata;
+import "output/output_ast.dart" as o;
 import "package:angular2/src/core/metadata/view.dart" show ViewEncapsulation;
-import "package:angular2/src/compiler/xhr.dart" show XHR;
-import "package:angular2/src/facade/lang.dart"
-    show IS_DART, StringWrapper, isBlank;
-import "package:angular2/src/facade/async.dart" show PromiseWrapper;
 import "package:angular2/src/compiler/shadow_css.dart" show ShadowCss;
 import "package:angular2/src/compiler/url_resolver.dart" show UrlResolver;
 import "style_url_resolver.dart" show extractStyleUrls;
-import "util.dart"
-    show
-        escapeSingleQuoteString,
-        codeGenExportVariable,
-        codeGenToString,
-        MODULE_SUFFIX;
 import "package:angular2/src/core/di.dart" show Injectable;
+import "package:angular2/src/facade/lang.dart" show isPresent;
 
 const COMPONENT_VARIABLE = "%COMP%";
 final HOST_ATTR = '''_nghost-${ COMPONENT_VARIABLE}''';
 final CONTENT_ATTR = '''_ngcontent-${ COMPONENT_VARIABLE}''';
 
+class StylesCompileDependency {
+  String sourceUrl;
+  bool isShimmed;
+  CompileIdentifierMetadata valuePlaceholder;
+  StylesCompileDependency(
+      this.sourceUrl, this.isShimmed, this.valuePlaceholder) {}
+}
+
+class StylesCompileResult {
+  List<o.Statement> statements;
+  String stylesVar;
+  List<StylesCompileDependency> dependencies;
+  StylesCompileResult(this.statements, this.stylesVar, this.dependencies) {}
+}
+
 @Injectable()
 class StyleCompiler {
-  XHR _xhr;
   UrlResolver _urlResolver;
-  Map<String, Future<List<String>>> _styleCache =
-      new Map<String, Future<List<String>>>();
   ShadowCss _shadowCss = new ShadowCss();
-  StyleCompiler(this._xhr, this._urlResolver) {}
-  Future<List<dynamic /* String | List < dynamic > */ >>
-      compileComponentRuntime(CompileTemplateMetadata template) {
-    var styles = template.styles;
-    var styleAbsUrls = template.styleUrls;
-    return this._loadStyles(styles, styleAbsUrls,
-        identical(template.encapsulation, ViewEncapsulation.Emulated));
+  StyleCompiler(this._urlResolver) {}
+  StylesCompileResult compileComponent(CompileDirectiveMetadata comp) {
+    var shim =
+        identical(comp.template.encapsulation, ViewEncapsulation.Emulated);
+    return this._compileStyles(getStylesVarName(comp), comp.template.styles,
+        comp.template.styleUrls, shim);
   }
 
-  SourceExpression compileComponentCodeGen(CompileTemplateMetadata template) {
-    var shim = identical(template.encapsulation, ViewEncapsulation.Emulated);
-    return this._styleCodeGen(template.styles, template.styleUrls, shim);
-  }
-
-  List<SourceModule> compileStylesheetCodeGen(
-      String stylesheetUrl, String cssText) {
+  StylesCompileResult compileStylesheet(
+      String stylesheetUrl, String cssText, bool isShimmed) {
     var styleWithImports =
         extractStyleUrls(this._urlResolver, stylesheetUrl, cssText);
-    return [
-      this._styleModule(
-          stylesheetUrl,
-          false,
-          this._styleCodeGen(
-              [styleWithImports.style], styleWithImports.styleUrls, false)),
-      this._styleModule(
-          stylesheetUrl,
-          true,
-          this._styleCodeGen(
-              [styleWithImports.style], styleWithImports.styleUrls, true))
-    ];
+    return this._compileStyles(getStylesVarName(null), [styleWithImports.style],
+        styleWithImports.styleUrls, isShimmed);
   }
 
-  clearCache() {
-    this._styleCache.clear();
-  }
-
-  Future<List<dynamic /* String | List < dynamic > */ >> _loadStyles(
-      List<String> plainStyles, List<String> absUrls, bool encapsulate) {
-    List<Future<List<String>>> promises =
-        absUrls.map(/* Future< List < String > > */ (String absUrl) {
-      var cacheKey = '''${ absUrl}${ encapsulate ? ".shim" : ""}''';
-      Future<List<String>> result = this._styleCache[cacheKey];
-      if (isBlank(result)) {
-        result = this._xhr.get(absUrl).then((style) {
-          var styleWithImports =
-              extractStyleUrls(this._urlResolver, absUrl, style);
-          return this._loadStyles([styleWithImports.style],
-              styleWithImports.styleUrls, encapsulate);
-        });
-        this._styleCache[cacheKey] = result;
-      }
-      return result;
-    }).toList();
-    return PromiseWrapper
-        .all/*< List < String > >*/(promises)
-        .then((List<List<String>> nestedStyles) {
-      List<dynamic /* String | List < dynamic > */ > result = plainStyles
-          .map((plainStyle) => this._shimIfNeeded(plainStyle, encapsulate))
-          .toList();
-      nestedStyles.forEach((styles) => result.add(styles));
-      return result;
-    });
-  }
-
-  SourceExpression _styleCodeGen(
-      List<String> plainStyles, List<String> absUrls, bool shim) {
-    var arrayPrefix = IS_DART ? '''const''' : "";
+  StylesCompileResult _compileStyles(String stylesVar, List<String> plainStyles,
+      List<String> absUrls, bool shim) {
     var styleExpressions = plainStyles
-        .map((plainStyle) =>
-            escapeSingleQuoteString(this._shimIfNeeded(plainStyle, shim)))
+        .map((plainStyle) => o.literal(this._shimIfNeeded(plainStyle, shim)))
         .toList();
+    var dependencies = [];
     for (var i = 0; i < absUrls.length; i++) {
-      var moduleUrl = this._createModuleUrl(absUrls[i], shim);
-      styleExpressions.add('''${ moduleRef ( moduleUrl )}STYLES''');
+      var identifier =
+          new CompileIdentifierMetadata(name: getStylesVarName(null));
+      dependencies
+          .add(new StylesCompileDependency(absUrls[i], shim, identifier));
+      styleExpressions.add(new o.ExternalExpr(identifier));
     }
-    var expressionSource =
-        '''${ arrayPrefix} [${ styleExpressions . join ( "," )}]''';
-    return new SourceExpression([], expressionSource);
-  }
+    // styles variable contains plain strings and arrays of other styles arrays (recursive),
 
-  SourceModule _styleModule(
-      String stylesheetUrl, bool shim, SourceExpression expression) {
-    var moduleSource = '''
-      ${ expression . declarations . join ( "\n" )}
-      ${ codeGenExportVariable ( "STYLES" )}${ expression . expression};
-    ''';
-    return new SourceModule(
-        this._createModuleUrl(stylesheetUrl, shim), moduleSource);
+    // so we set its type to dynamic.
+    var stmt = o
+        .variable(stylesVar)
+        .set(o.literalArr(styleExpressions,
+            new o.ArrayType(o.DYNAMIC_TYPE, [o.TypeModifier.Const])))
+        .toDeclStmt(null, [o.StmtModifier.Final]);
+    return new StylesCompileResult([stmt], stylesVar, dependencies);
   }
 
   String _shimIfNeeded(String style, bool shim) {
@@ -126,10 +81,12 @@ class StyleCompiler {
         ? this._shadowCss.shimCssText(style, CONTENT_ATTR, HOST_ATTR)
         : style;
   }
+}
 
-  String _createModuleUrl(String stylesheetUrl, bool shim) {
-    return shim
-        ? '''${ stylesheetUrl}.shim${ MODULE_SUFFIX}'''
-        : '''${ stylesheetUrl}${ MODULE_SUFFIX}''';
+String getStylesVarName(CompileDirectiveMetadata component) {
+  var result = '''styles''';
+  if (isPresent(component)) {
+    result += '''_${ component . type . name}''';
   }
+  return result;
 }

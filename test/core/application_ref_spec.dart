@@ -16,12 +16,10 @@ import "package:angular2/testing_internal.dart"
         tick,
         inject,
         SpyObject;
-import "spies.dart" show SpyChangeDetector;
+import "spies.dart" show SpyChangeDetectorRef;
 import "package:angular2/src/core/application_ref.dart"
     show ApplicationRef_, ApplicationRef, PlatformRef_;
 import "package:angular2/core.dart" show Injector, Provider, APP_INITIALIZER;
-import "package:angular2/src/core/change_detection/change_detector_ref.dart"
-    show ChangeDetectorRef_;
 import "package:angular2/src/facade/async.dart"
     show PromiseWrapper, PromiseCompleter, TimerWrapper;
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
@@ -32,10 +30,10 @@ import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 main() {
   describe("ApplicationRef", () {
     it("should throw when reentering tick", () {
-      var cd = (new SpyChangeDetector() as dynamic);
+      var cdRef = (new SpyChangeDetectorRef() as dynamic);
       var ref = new ApplicationRef_(null, null, null);
-      ref.registerChangeDetector(new ChangeDetectorRef_(cd));
-      cd.spy("detectChanges").andCallFake(() => ref.tick());
+      ref.registerChangeDetector(cdRef);
+      cdRef.spy("detectChanges").andCallFake(() => ref.tick());
       expect(() => ref.tick())
           .toThrowError("ApplicationRef.tick is called recursively");
     });

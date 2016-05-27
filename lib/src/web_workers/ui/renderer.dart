@@ -115,12 +115,14 @@ class MessageBasedRenderer {
   }
 
   _selectRootElement(Renderer renderer, String selector, num elId) {
-    this._renderStore.store(renderer.selectRootElement(selector), elId);
+    this._renderStore.store(renderer.selectRootElement(selector, null), elId);
   }
 
   _createElement(
       Renderer renderer, dynamic parentElement, String name, num elId) {
-    this._renderStore.store(renderer.createElement(parentElement, name), elId);
+    this
+        ._renderStore
+        .store(renderer.createElement(parentElement, name, null), elId);
   }
 
   _createViewRoot(Renderer renderer, dynamic hostElement, num elId) {
@@ -131,12 +133,16 @@ class MessageBasedRenderer {
   }
 
   _createTemplateAnchor(Renderer renderer, dynamic parentElement, num elId) {
-    this._renderStore.store(renderer.createTemplateAnchor(parentElement), elId);
+    this
+        ._renderStore
+        .store(renderer.createTemplateAnchor(parentElement, null), elId);
   }
 
   _createText(
       Renderer renderer, dynamic parentElement, String value, num elId) {
-    this._renderStore.store(renderer.createText(parentElement, value), elId);
+    this
+        ._renderStore
+        .store(renderer.createText(parentElement, value, null), elId);
   }
 
   _projectNodes(Renderer renderer, dynamic parentElement, List<dynamic> nodes) {

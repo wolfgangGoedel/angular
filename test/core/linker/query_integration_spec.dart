@@ -96,9 +96,6 @@ main() {
               ]);
               view.debugElement.componentInstance.shouldShow = false;
               view.detectChanges();
-              // TODO: this fails right now!
-
-              // -> queries are not dirtied!
               expect(q.log).toEqual([
                 ["setter", "foo"],
                 ["init", "foo"],
@@ -145,7 +142,7 @@ main() {
             tcb
                 .overrideTemplate(MyComp, template)
                 .overrideTemplate(NeedsViewChild,
-                    "<div *ngIf=\"true\"><div *ngIf=\"shouldShow\" text=\"foo\"></div></div>")
+                    "<div *ngIf=\"true\"><div *ngIf=\"shouldShow\" text=\"foo\"></div></div><div *ngIf=\"shouldShow2\" text=\"bar\"></div>")
                 .createAsync(MyComp)
                 .then((view) {
               view.detectChanges();
@@ -156,11 +153,18 @@ main() {
                 ["check", "foo"]
               ]);
               q.shouldShow = false;
+              q.shouldShow2 = true;
+              q.log = [];
               view.detectChanges();
               expect(q.log).toEqual([
-                ["setter", "foo"],
-                ["init", "foo"],
-                ["check", "foo"],
+                ["setter", "bar"],
+                ["check", "bar"]
+              ]);
+              q.shouldShow = false;
+              q.shouldShow2 = false;
+              q.log = [];
+              view.detectChanges();
+              expect(q.log).toEqual([
                 ["setter", null],
                 ["check", null]
               ]);
@@ -403,7 +407,7 @@ main() {
             });
           }));
       it(
-          "should reflect dynamically inserted directives",
+          "should support dynamically inserted directives",
           inject([TestComponentBuilder, AsyncTestCompleter],
               (TestComponentBuilder tcb, async) {
             var template = "<needs-query-by-var-binding #q>" +
@@ -722,6 +726,7 @@ class NeedsContentChild implements AfterContentInit, AfterContentChecked {
     directives: const [NgIf, TextDirective])
 class NeedsViewChild implements AfterViewInit, AfterViewChecked {
   bool shouldShow = true;
+  bool shouldShow2 = false;
   TextDirective _child;
   @ViewChild(TextDirective)
   set child(value) {

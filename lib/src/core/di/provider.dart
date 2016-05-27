@@ -521,7 +521,7 @@ class ProviderBuilder {
  */
 ResolvedFactory resolveFactory(Provider provider) {
   Function factoryFn;
-  List<Dependency> resolvedDeps;
+  var resolvedDeps;
   if (isPresent(provider.useClass)) {
     var useClass = resolveForwardRef(provider.useClass);
     factoryFn = reflector.factory(useClass);
@@ -532,7 +532,7 @@ ResolvedFactory resolveFactory(Provider provider) {
   } else if (isPresent(provider.useFactory)) {
     factoryFn = provider.useFactory;
     resolvedDeps =
-        _constructDependencies(provider.useFactory, provider.dependencies);
+        constructDependencies(provider.useFactory, provider.dependencies);
   } else {
     factoryFn = () => provider.useValue;
     resolvedDeps = _EMPTY_LIST;
@@ -621,20 +621,20 @@ List<Provider> _normalizeProviders(
   return res;
 }
 
-List<Dependency> _constructDependencies(
-    Function factoryFunction, List<dynamic> dependencies) {
+List<Dependency> constructDependencies(
+    dynamic typeOrFunc, List<dynamic> dependencies) {
   if (isBlank(dependencies)) {
-    return _dependenciesFor(factoryFunction);
+    return _dependenciesFor(typeOrFunc);
   } else {
     List<List<dynamic>> params = dependencies.map((t) => [t]).toList();
     return dependencies
-        .map((t) => _extractToken(factoryFunction, t, params))
+        .map((t) => _extractToken(typeOrFunc, t, params))
         .toList();
   }
 }
 
-List<Dependency> _dependenciesFor(typeOrFunc) {
-  List<List<dynamic>> params = reflector.parameters(typeOrFunc);
+List<Dependency> _dependenciesFor(dynamic typeOrFunc) {
+  var params = reflector.parameters(typeOrFunc);
   if (isBlank(params)) return [];
   if (params.any(isBlank)) {
     throw new NoAnnotationError(typeOrFunc, params);

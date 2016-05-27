@@ -17,8 +17,9 @@ import "package:angular2/testing_internal.dart"
         xit,
         TestComponentBuilder,
         ComponentFixture;
-import "package:angular2/core.dart" show OnDestroy;
-import "package:angular2/core.dart" show Injector;
+import "package:angular2/src/facade/collection.dart" show Predicate;
+import "package:angular2/core.dart"
+    show Injector, OnDestroy, DebugElement, Type;
 import "package:angular2/common.dart" show NgIf;
 import "package:angular2/src/core/metadata.dart" show Component, ViewMetadata;
 import "package:angular2/src/core/linker/dynamic_component_loader.dart"
@@ -31,7 +32,6 @@ import "package:angular2/src/testing/test_component_builder.dart"
     show ComponentFixture_;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "package:angular2/src/facade/promise.dart" show PromiseWrapper;
-import "package:angular2/src/facade/lang.dart" show stringify;
 
 main() {
   describe("DynamicComponentLoader", () {
@@ -107,13 +107,10 @@ main() {
                 .then((tc) {
               tc.debugElement.componentInstance.ctxBoolProp = true;
               tc.detectChanges();
-              var childCompEl =
-                  ((tc.elementRef as ElementRef_)).internalElement;
-              // TODO(juliemr): This is hideous, see if there's a better way to handle
-
-              // child element refs now.
-              var childElementRef = childCompEl.componentView.appElements[0]
-                  .nestedViews[0].appElements[0].ref;
+              var childElementRef = tc.debugElement
+                  .query(filterByDirective(ChildComp))
+                  .inject(ChildComp)
+                  .elementRef;
               loader
                   .loadIntoLocation(DynamicallyLoaded, childElementRef, "loc")
                   .then((ref) {
@@ -172,7 +169,6 @@ main() {
                         directives: [Location]))
                 .createAsync(MyComp)
                 .then((ComponentFixture tc) {
-              tc.debugElement;
               PromiseWrapper.catchError(
                   loader.loadIntoLocation(
                       DynamicallyLoadedThrows, tc.elementRef, "loc"), (error) {
@@ -231,7 +227,7 @@ main() {
             });
           }));
       it(
-          "should throw if not enough projectable nodes are passed in",
+          "should not throw if not enough projectable nodes are passed in",
           inject([
             DynamicComponentLoader,
             TestComponentBuilder,
@@ -244,13 +240,9 @@ main() {
                         template: "<div #loc></div>", directives: []))
                 .createAsync(MyComp)
                 .then((tc) {
-              PromiseWrapper.catchError(
-                  loader.loadIntoLocation(DynamicallyLoadedWithNgContent,
-                      tc.elementRef, "loc", null, []), (e) {
-                expect(e.message).toContain(
-                    '''The component ${ stringify ( DynamicallyLoadedWithNgContent )} has 1 <ng-content> elements, but only 0 slots were provided''');
+              loader.loadIntoLocation(DynamicallyLoadedWithNgContent,
+                  tc.elementRef, "loc", null, []).then((_) {
                 async.done();
-                return null;
               });
             });
           }));
@@ -376,8 +368,7 @@ main() {
           "should allow to create, update and destroy components",
           inject(
               [AsyncTestCompleter, DynamicComponentLoader, DOCUMENT, Injector],
-              (AsyncTestCompleter async, DynamicComponentLoader loader, doc,
-                  Injector injector) {
+              (async, DynamicComponentLoader loader, doc, Injector injector) {
             var rootEl = createRootElement(doc, "child-cmp");
             DOM.appendChild(doc.body, rootEl);
             loader.loadAsRoot(ChildComp, null, injector).then((componentRef) {
@@ -397,8 +388,7 @@ main() {
           "should allow to pass projectable nodes",
           inject(
               [AsyncTestCompleter, DynamicComponentLoader, DOCUMENT, Injector],
-              (AsyncTestCompleter async, DynamicComponentLoader loader, doc,
-                  Injector injector) {
+              (async, DynamicComponentLoader loader, doc, Injector injector) {
             var rootEl = createRootElement(doc, "dummy");
             DOM.appendChild(doc.body, rootEl);
             loader.loadAsRoot(
@@ -423,10 +413,17 @@ dynamic createRootElement(dynamic doc, String name) {
   return rootEl;
 }
 
+Predicate<DebugElement> filterByDirective(Type type) {
+  return (debugElement) {
+    return !identical(debugElement.providerTokens.indexOf(type), -1);
+  };
+}
+
 @Component(selector: "child-cmp", template: "{{ctxProp}}")
 class ChildComp {
+  ElementRef elementRef;
   String ctxProp;
-  ChildComp() {
+  ChildComp(this.elementRef) {
     this.ctxProp = "hello";
   }
 }

@@ -3,7 +3,7 @@ library angular2.test.common.pipes.i18n_select_pipe_spec;
 import "package:angular2/testing_internal.dart"
     show ddescribe, describe, it, iit, xit, expect, beforeEach, afterEach;
 import "package:angular2/common.dart" show I18nSelectPipe;
-import "package:angular2/src/core/linker/pipe_resolver.dart" show PipeResolver;
+import "package:angular2/src/compiler/pipe_resolver.dart" show PipeResolver;
 
 main() {
   describe("I18nSelectPipe", () {

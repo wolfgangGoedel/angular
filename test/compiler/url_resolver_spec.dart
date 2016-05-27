@@ -3,7 +3,8 @@ library angular2.test.compiler.url_resolver_spec;
 import "package:angular2/testing_internal.dart"
     show describe, it, expect, beforeEach, ddescribe, iit, xit, el, inject;
 import "package:angular2/src/facade/lang.dart" show IS_DART;
-import "package:angular2/src/compiler/url_resolver.dart" show UrlResolver;
+import "package:angular2/src/compiler/url_resolver.dart"
+    show UrlResolver, createOfflineCompileUrlResolver;
 
 main() {
   describe("UrlResolver", () {
@@ -108,6 +109,16 @@ main() {
         resolver = new UrlResolver("/my_special_dir");
         expect(resolver.resolve("package:some_dir/", "matias.html"))
             .toEqual("/my_special_dir/some_dir/matias.html");
+      });
+    });
+    describe("asset urls", () {
+      UrlResolver resolver;
+      beforeEach(() {
+        resolver = createOfflineCompileUrlResolver();
+      });
+      it("should resolve package: urls into asset: urls", () {
+        expect(resolver.resolve(null, "package:somePkg/somePath"))
+            .toEqual("asset:somePkg/lib/somePath");
       });
     });
     describe("corner and error cases", () {

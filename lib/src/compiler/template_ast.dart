@@ -1,9 +1,14 @@
 library angular2.src.compiler.template_ast;
 
-import "package:angular2/src/core/change_detection/change_detection.dart"
-    show AST;
+import "expression_parser/ast.dart" show AST;
 import "package:angular2/src/facade/lang.dart" show isPresent;
-import "directive_metadata.dart" show CompileDirectiveMetadata;
+import "compile_metadata.dart"
+    show
+        CompileDirectiveMetadata,
+        CompileTokenMetadata,
+        CompileProviderMetadata,
+        CompileTokenMap,
+        CompileQueryMetadata;
 import "parse_util.dart" show ParseSourceSpan;
 
 /**
@@ -120,6 +125,7 @@ class ElementAst implements TemplateAst {
   List<BoundEventAst> outputs;
   List<VariableAst> exportAsVars;
   List<DirectiveAst> directives;
+  List<ProviderAst> providers;
   List<TemplateAst> children;
   num ngContentIndex;
   ParseSourceSpan sourceSpan;
@@ -130,31 +136,12 @@ class ElementAst implements TemplateAst {
       this.outputs,
       this.exportAsVars,
       this.directives,
+      this.providers,
       this.children,
       this.ngContentIndex,
       this.sourceSpan) {}
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitElement(this, context);
-  }
-
-  /**
-   * Whether the element has any active bindings (inputs, outputs, vars, or directives).
-   */
-  bool isBound() {
-    return (this.inputs.length > 0 ||
-        this.outputs.length > 0 ||
-        this.exportAsVars.length > 0 ||
-        this.directives.length > 0);
-  }
-
-  /**
-   * Get the component associated with this element, if any.
-   */
-  CompileDirectiveMetadata getComponent() {
-    return this.directives.length > 0 &&
-            this.directives[0].directive.isComponent
-        ? this.directives[0].directive
-        : null;
   }
 }
 
@@ -166,11 +153,12 @@ class EmbeddedTemplateAst implements TemplateAst {
   List<BoundEventAst> outputs;
   List<VariableAst> vars;
   List<DirectiveAst> directives;
+  List<ProviderAst> providers;
   List<TemplateAst> children;
   num ngContentIndex;
   ParseSourceSpan sourceSpan;
   EmbeddedTemplateAst(this.attrs, this.outputs, this.vars, this.directives,
-      this.children, this.ngContentIndex, this.sourceSpan) {}
+      this.providers, this.children, this.ngContentIndex, this.sourceSpan) {}
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitEmbeddedTemplate(this, context);
   }
@@ -206,6 +194,32 @@ class DirectiveAst implements TemplateAst {
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitDirective(this, context);
   }
+}
+
+/**
+ * A provider declared on an element
+ */
+class ProviderAst implements TemplateAst {
+  CompileTokenMetadata token;
+  bool multiProvider;
+  bool eager;
+  List<CompileProviderMetadata> providers;
+  ProviderAstType providerType;
+  ParseSourceSpan sourceSpan;
+  ProviderAst(this.token, this.multiProvider, this.eager, this.providers,
+      this.providerType, this.sourceSpan) {}
+  dynamic visit(TemplateAstVisitor visitor, dynamic context) {
+    // No visit method in the visitor for now...
+    return null;
+  }
+}
+
+enum ProviderAstType {
+  PublicService,
+  PrivateService,
+  Component,
+  Directive,
+  Builtin
 }
 
 /**

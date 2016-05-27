@@ -97,24 +97,21 @@ class WebWorkerRenderer implements Renderer, RenderStoreObject {
   WebWorkerRootRenderer _rootRenderer;
   RenderComponentType _componentType;
   WebWorkerRenderer(this._rootRenderer, this._componentType) {}
-  Renderer renderComponent(RenderComponentType componentType) {
-    return this._rootRenderer.renderComponent(componentType);
-  }
-
   _runOnService(String fnName, List<FnArg> fnArgs) {
     var fnArgsWithRenderer =
         (new List.from([new FnArg(this, RenderStoreObject)])..addAll(fnArgs));
     this._rootRenderer.runOnService(fnName, fnArgsWithRenderer);
   }
 
-  dynamic selectRootElement(String selector) {
+  dynamic selectRootElement(String selector, RenderDebugInfo debugInfo) {
     var node = this._rootRenderer.allocateNode();
     this._runOnService("selectRootElement",
         [new FnArg(selector, null), new FnArg(node, RenderStoreObject)]);
     return node;
   }
 
-  dynamic createElement(dynamic parentElement, String name) {
+  dynamic createElement(
+      dynamic parentElement, String name, RenderDebugInfo debugInfo) {
     var node = this._rootRenderer.allocateNode();
     this._runOnService("createElement", [
       new FnArg(parentElement, RenderStoreObject),
@@ -136,7 +133,8 @@ class WebWorkerRenderer implements Renderer, RenderStoreObject {
     return viewRoot;
   }
 
-  dynamic createTemplateAnchor(dynamic parentElement) {
+  dynamic createTemplateAnchor(
+      dynamic parentElement, RenderDebugInfo debugInfo) {
     var node = this._rootRenderer.allocateNode();
     this._runOnService("createTemplateAnchor", [
       new FnArg(parentElement, RenderStoreObject),
@@ -145,7 +143,8 @@ class WebWorkerRenderer implements Renderer, RenderStoreObject {
     return node;
   }
 
-  dynamic createText(dynamic parentElement, String value) {
+  dynamic createText(
+      dynamic parentElement, String value, RenderDebugInfo debugInfo) {
     var node = this._rootRenderer.allocateNode();
     this._runOnService("createText", [
       new FnArg(parentElement, RenderStoreObject),
@@ -209,7 +208,6 @@ class WebWorkerRenderer implements Renderer, RenderStoreObject {
     ]);
   }
 
-  setElementDebugInfo(dynamic renderElement, RenderDebugInfo info) {}
   setElementClass(dynamic renderElement, String className, bool isAdd) {
     this._runOnService("setElementClass", [
       new FnArg(renderElement, RenderStoreObject),

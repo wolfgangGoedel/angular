@@ -3,15 +3,10 @@ library angular2.src.core.linker.view_ref;
 import "package:angular2/src/facade/exceptions.dart" show unimplemented;
 import "../change_detection/change_detector_ref.dart" show ChangeDetectorRef;
 import "view.dart" show AppView, HostViewFactory;
+import "package:angular2/src/core/change_detection/constants.dart"
+    show ChangeDetectionStrategy;
 
 abstract class ViewRef {
-  /**
-   * @internal
-   */
-  ChangeDetectorRef get changeDetectorRef {
-    return (unimplemented() as ChangeDetectorRef);
-  }
-
   bool get destroyed {
     return (unimplemented() as bool);
   }
@@ -29,6 +24,10 @@ abstract class ViewRef {
 abstract class HostViewRef extends ViewRef {
   List<dynamic> get rootNodes {
     return (unimplemented() as List<dynamic>);
+  }
+
+  ChangeDetectorRef get changeDetectorRef {
+    return (unimplemented() as ChangeDetectorRef);
   }
 }
 
@@ -99,24 +98,21 @@ abstract class EmbeddedViewRef extends ViewRef {
   }
 }
 
-class ViewRef_ implements EmbeddedViewRef, HostViewRef {
-  AppView _view;
+class ViewRef_ implements EmbeddedViewRef, HostViewRef, ChangeDetectorRef {
+  AppView<dynamic> _view;
   ViewRef_(this._view) {
     this._view = _view;
   }
-  AppView get internalView {
+  AppView<dynamic> get internalView {
     return this._view;
-  }
-
-  /**
-   * Return `ChangeDetectorRef`
-   */
-  ChangeDetectorRef get changeDetectorRef {
-    return this._view.changeDetector.ref;
   }
 
   List<dynamic> get rootNodes {
     return this._view.flatRootNodes;
+  }
+
+  ChangeDetectorRef get changeDetectorRef {
+    return this;
   }
 
   void setLocal(String variableName, dynamic value) {
@@ -129,6 +125,27 @@ class ViewRef_ implements EmbeddedViewRef, HostViewRef {
 
   bool get destroyed {
     return this._view.destroyed;
+  }
+
+  void markForCheck() {
+    this._view.markPathToRootAsCheckOnce();
+  }
+
+  void detach() {
+    this._view.cdMode = ChangeDetectionStrategy.Detached;
+  }
+
+  void detectChanges() {
+    this._view.detectChanges(false);
+  }
+
+  void checkNoChanges() {
+    this._view.detectChanges(true);
+  }
+
+  void reattach() {
+    this._view.cdMode = ChangeDetectionStrategy.CheckAlways;
+    this.markForCheck();
   }
 }
 

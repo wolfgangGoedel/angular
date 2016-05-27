@@ -1,6 +1,8 @@
 library angular2.src.core.linker.template_ref;
 
 import "element_ref.dart" show ElementRef, ElementRef_;
+import "element.dart" show AppElement;
+import "view.dart" show AppView;
 
 /**
  * Represents an Embedded Template that can be used to instantiate Embedded Views.
@@ -34,11 +36,21 @@ abstract class TemplateRef {
 }
 
 class TemplateRef_ extends TemplateRef {
-  ElementRef_ _elementRef;
-  TemplateRef_(this._elementRef) : super() {
+  AppElement _appElement;
+  Function _viewFactory;
+  TemplateRef_(this._appElement, this._viewFactory) : super() {
     /* super call moved to initializer */;
   }
-  ElementRef_ get elementRef {
-    return this._elementRef;
+  AppView<dynamic> createEmbeddedView() {
+    AppView<dynamic> view = this._viewFactory(
+        this._appElement.parentView.viewManager,
+        this._appElement.parentInjector,
+        this._appElement);
+    view.create(null, null);
+    return view;
+  }
+
+  ElementRef get elementRef {
+    return this._appElement.ref;
   }
 }

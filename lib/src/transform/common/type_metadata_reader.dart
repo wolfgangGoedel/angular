@@ -4,11 +4,11 @@ import 'dart:async';
 
 import 'package:analyzer/analyzer.dart';
 
-import 'package:angular2/src/compiler/directive_metadata.dart';
-import 'package:angular2/src/compiler/template_compiler.dart';
+import 'package:angular2/src/compiler/compile_metadata.dart';
+import 'package:angular2/src/compiler/offline_compiler.dart';
 
 import 'package:angular2/src/core/change_detection/change_detection.dart';
-import 'package:angular2/src/core/linker/interfaces.dart' show LifecycleHooks;
+import 'package:angular2/src/core/metadata/lifecycle_hooks.dart' show LifecycleHooks;
 import 'package:angular2/src/core/metadata/view.dart' show ViewEncapsulation;
 import 'package:angular2/src/transform/common/annotation_matcher.dart';
 import 'package:angular2/src/transform/common/interface_matcher.dart';
@@ -23,7 +23,7 @@ class TypeMetadataReader {
   final _PipeMetadataVisitor _pipeVisitor;
   final _CompileTypeMetadataVisitor _typeVisitor;
   final _CompileFactoryMetadataVisitor _factoryVisitor;
-  final TemplateCompiler _templateCompiler;
+  final OfflineCompiler _templateCompiler;
 
   TypeMetadataReader._(this._directiveVisitor, this._pipeVisitor,
       this._templateCompiler, this._typeVisitor, this._factoryVisitor);
@@ -31,13 +31,14 @@ class TypeMetadataReader {
   /// Accepts an [AnnotationMatcher] which tests that an [Annotation]
   /// is a [Directive], [Component], or [View].
   factory TypeMetadataReader(AnnotationMatcher annotationMatcher,
-      InterfaceMatcher interfaceMatcher, TemplateCompiler templateCompiler) {
+      InterfaceMatcher interfaceMatcher, OfflineCompiler templateCompiler) {
     var lifecycleVisitor = new _LifecycleHookVisitor(interfaceMatcher);
     var typeVisitor = new _CompileTypeMetadataVisitor(annotationMatcher);
+    var factoryVisitor = new _CompileFactoryMetadataVisitor(annotationMatcher);
     var directiveVisitor = new _DirectiveMetadataVisitor(
         annotationMatcher, lifecycleVisitor, typeVisitor);
-    var pipeVisitor = new _PipeMetadataVisitor(annotationMatcher);
-    var factoryVisitor = new _CompileFactoryMetadataVisitor(annotationMatcher);
+    var pipeVisitor = new _PipeMetadataVisitor(
+        annotationMatcher, lifecycleVisitor, typeVisitor);
 
     return new TypeMetadataReader._(
         directiveVisitor, pipeVisitor, templateCompiler, typeVisitor, factoryVisitor);
@@ -194,9 +195,10 @@ class _CompileTypeMetadataVisitor extends Object
   Object visitAnnotation(Annotation node) {
     final isComponent = _annotationMatcher.isComponent(node, _assetId);
     final isDirective = _annotationMatcher.isDirective(node, _assetId);
+    final isPipe = _annotationMatcher.isPipe(node, _assetId);
     final isInjectable = _annotationMatcher.isInjectable(node, _assetId);
 
-    _isInjectable = _isInjectable || isComponent || isDirective || isInjectable;
+    _isInjectable = _isInjectable || isComponent || isDirective || isPipe || isInjectable;
 
     return null;
   }
@@ -349,7 +351,6 @@ class _DirectiveMetadataVisitor extends Object
     return CompileDirectiveMetadata.create(
         type: _type,
         isComponent: _isComponent,
-        dynamicLoadable: true,
         // NOTE(kegluneq): For future optimization.
         selector: _selector,
         exportAs: _exportAs,
@@ -806,10 +807,15 @@ class _PipeMetadataVisitor extends Object with RecursiveAstVisitor<Object> {
   /// [Component], [View], or none of these.
   final AnnotationMatcher _annotationMatcher;
 
+  final _LifecycleHookVisitor _lifecycleVisitor;
+
+  final _CompileTypeMetadataVisitor _typeVisitor;
+
   /// The [AssetId] we are currently processing.
   AssetId _assetId;
 
-  _PipeMetadataVisitor(this._annotationMatcher) {
+  _PipeMetadataVisitor(
+      this._annotationMatcher, this._lifecycleVisitor, this._typeVisitor) {
     reset(null);
   }
 
@@ -821,20 +827,26 @@ class _PipeMetadataVisitor extends Object with RecursiveAstVisitor<Object> {
   CompileTypeMetadata _type;
   String _name;
   bool _pure;
+  List<LifecycleHooks> _lifecycleHooks;
 
   void reset(AssetId assetId) {
+    _lifecycleVisitor.reset(assetId);
+    _typeVisitor.reset(assetId);
     _assetId = assetId;
 
     _hasMetadata = false;
     _type = null;
     _name = null;
     _pure = null;
+
+    _lifecycleHooks = null;
   }
 
   bool get hasMetadata => _hasMetadata;
 
   CompilePipeMetadata createMetadata() {
-    return new CompilePipeMetadata(type: _type, name: _name, pure: _pure);
+    return new CompilePipeMetadata(
+        type: _type, name: _name, pure: _pure, lifecycleHooks: _lifecycleHooks);
   }
 
   @override
@@ -858,12 +870,13 @@ class _PipeMetadataVisitor extends Object with RecursiveAstVisitor<Object> {
   @override
   Object visitClassDeclaration(ClassDeclaration node) {
     node.metadata.accept(this);
+    node.accept(_typeVisitor);
+    _type = _typeVisitor.type;
     if (this._hasMetadata) {
-      _type = new CompileTypeMetadata(
-          moduleUrl: toAssetUri(_assetId),
-          name: node.name.toString(),
-          runtime: null // Intentionally `null`, cannot be provided here.
-          );
+      _lifecycleHooks = node.implementsClause != null
+          ? node.implementsClause.accept(_lifecycleVisitor)
+          : const [];
+
       node.members.accept(this);
     }
     return null;
