@@ -74,9 +74,8 @@ class RouterOutlet implements OnDestroy {
     return this._componentRef.then((componentRef) {
       this.activateEvents.emit(componentRef.instance);
       if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
-        return this._componentRef.then((ComponentRef ref) =>
-            ((ref.instance as OnActivate))
-                .routerOnActivate(nextInstruction, previousInstruction));
+        return ((componentRef.instance as OnActivate))
+            .routerOnActivate(nextInstruction, previousInstruction);
       } else {
         return componentRef;
       }
