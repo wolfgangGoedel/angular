@@ -64,7 +64,8 @@ export let RouterOutlet = class RouterOutlet {
         return this._componentRef.then((componentRef) => {
             this.activateEvents.emit(componentRef.instance);
             if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
-                return this._componentRef.then((ref) => ref.instance.routerOnActivate(nextInstruction, previousInstruction));
+                return componentRef.instance
+                    .routerOnActivate(nextInstruction, previousInstruction);
             }
             else {
                 return componentRef;

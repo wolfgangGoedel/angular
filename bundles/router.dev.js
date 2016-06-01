@@ -2191,9 +2191,7 @@ System.register("angular2/src/router/directives/router_outlet", ["angular2/src/f
       return this._componentRef.then(function(componentRef) {
         _this.activateEvents.emit(componentRef.instance);
         if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
-          return _this._componentRef.then(function(ref) {
-            return ref.instance.routerOnActivate(nextInstruction, previousInstruction);
-          });
+          return componentRef.instance.routerOnActivate(nextInstruction, previousInstruction);
         } else {
           return componentRef;
         }
