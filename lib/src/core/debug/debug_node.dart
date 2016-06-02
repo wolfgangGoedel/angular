@@ -58,7 +58,7 @@ class DebugNode {
 
 class DebugElement extends DebugNode {
   String name;
-  Map<String, String> properties;
+  Map<String, dynamic> properties;
   Map<String, String> attributes;
   List<DebugNode> childNodes;
   dynamic nativeElement;
