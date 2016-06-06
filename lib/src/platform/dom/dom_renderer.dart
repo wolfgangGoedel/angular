@@ -11,7 +11,8 @@ import "package:angular2/src/facade/lang.dart"
         RegExpWrapper,
         stringify,
         StringWrapper,
-        isArray;
+        isArray,
+        isString;
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException;
 import "shared_styles_host.dart" show DomSharedStylesHost;
@@ -81,11 +82,17 @@ class DomRenderer implements Renderer {
       this._hostAttr = null;
     }
   }
-  dynamic selectRootElement(String selector, RenderDebugInfo debugInfo) {
-    var el = DOM.querySelector(this._rootRenderer.document, selector);
-    if (isBlank(el)) {
-      throw new BaseException(
-          '''The selector "${ selector}" did not match any elements''');
+  dynamic selectRootElement(dynamic /* String | dynamic */ selectorOrNode,
+      RenderDebugInfo debugInfo) {
+    var el;
+    if (isString(selectorOrNode)) {
+      el = DOM.querySelector(this._rootRenderer.document, selectorOrNode);
+      if (isBlank(el)) {
+        throw new BaseException(
+            '''The selector "${ selectorOrNode}" did not match any elements''');
+      }
+    } else {
+      el = selectorOrNode;
     }
     DOM.clearNodes(el);
     return el;

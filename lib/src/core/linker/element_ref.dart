@@ -1,19 +1,18 @@
-library angular2.src.core.linker.element_ref;
-
-import "package:angular2/src/facade/exceptions.dart" show unimplemented;
-import "element.dart" show AppElement;
-
 /**
- * Represents a location in a View that has an injection, change-detection and render context
- * associated with it.
- *
- * An `ElementRef` is created for each element in the Template that contains a Directive, Component
- * or data-binding.
+ * A wrapper around a native element inside of a View.
  *
  * An `ElementRef` is backed by a render-specific element. In the browser, this is usually a DOM
  * element.
  */
-abstract class ElementRef {
+
+// Note: We don't expose things like `Injector`, `ViewContainer`, ... here,
+
+// i.e. users have to ask for what they need. With that, we can build better analysis tools
+
+// and could do better codegen in the future.
+library angular2.src.core.linker.element_ref;
+
+class ElementRef {
   /**
    * The underlying native element or `null` if direct access to native elements is not supported
    * (e.g. when the application runs in a web worker).
@@ -33,19 +32,8 @@ abstract class ElementRef {
    *   </p>
    * </div>
    */
-  dynamic get nativeElement {
-    return unimplemented();
-  }
-}
-
-class ElementRef_ implements ElementRef {
-  AppElement _element;
-  ElementRef_(this._element) {}
-  AppElement get internalElement {
-    return this._element;
-  }
-
-  get nativeElement {
-    return this._element.nativeElement;
+  dynamic nativeElement;
+  ElementRef(dynamic nativeElement) {
+    this.nativeElement = nativeElement;
   }
 }

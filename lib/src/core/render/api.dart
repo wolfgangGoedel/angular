@@ -37,7 +37,8 @@ abstract class RenderDebugInfo {
 }
 
 abstract class Renderer {
-  dynamic selectRootElement(String selector, RenderDebugInfo debugInfo);
+  dynamic selectRootElement(
+      dynamic /* String | dynamic */ selectorOrNode, RenderDebugInfo debugInfo);
   dynamic createElement(
       dynamic parentElement, String name, RenderDebugInfo debugInfo);
   dynamic createViewRoot(dynamic hostElement);

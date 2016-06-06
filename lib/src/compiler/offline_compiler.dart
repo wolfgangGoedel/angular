@@ -17,13 +17,15 @@ import "template_parser.dart" show TemplateParser;
 import "directive_normalizer.dart" show DirectiveNormalizer;
 import "output/abstract_emitter.dart" show OutputEmitter;
 import "output/output_ast.dart" as o;
-import "package:angular2/src/core/linker/view.dart" show HostViewFactory;
+import "package:angular2/src/core/linker/component_factory.dart"
+    show ComponentFactory;
 import "util.dart" show MODULE_SUFFIX;
 
-var _HOST_VIEW_FACTORY_IDENTIFIER = new CompileIdentifierMetadata(
-    name: "HostViewFactory",
-    runtime: HostViewFactory,
-    moduleUrl: '''asset:angular2/lib/src/core/linker/view${ MODULE_SUFFIX}''');
+var _COMPONENT_FACTORY_IDENTIFIER = new CompileIdentifierMetadata(
+    name: "ComponentFactory",
+    runtime: ComponentFactory,
+    moduleUrl:
+        '''asset:angular2/lib/src/core/linker/component_factory${ MODULE_SUFFIX}''');
 
 class SourceModule {
   String moduleUrl;
@@ -67,20 +69,21 @@ class OfflineCompiler {
           componentWithDirs.directives, componentWithDirs.pipes, statements);
       exportedVars.add(compViewFactoryVar);
       var hostMeta = createHostComponentMeta(compMeta.type, compMeta.selector);
-      var compHostViewFactoryVar =
+      var hostViewFactoryVar =
           this._compileComponent(hostMeta, [compMeta], [], statements);
-      var hostViewFactoryVar = '''hostViewFactory_${ compMeta . type . name}''';
+      var compFactoryVar = '''${ compMeta . type . name}NgFactory''';
       statements.add(o
-          .variable(hostViewFactoryVar)
-          .set(o.importExpr(_HOST_VIEW_FACTORY_IDENTIFIER).instantiate(
+          .variable(compFactoryVar)
+          .set(o.importExpr(_COMPONENT_FACTORY_IDENTIFIER).instantiate(
               [
                 o.literal(compMeta.selector),
-                o.variable(compHostViewFactoryVar)
+                o.variable(hostViewFactoryVar),
+                o.importExpr(compMeta.type)
               ],
               o.importType(
-                  _HOST_VIEW_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const])))
+                  _COMPONENT_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const])))
           .toDeclStmt(null, [o.StmtModifier.Final]));
-      exportedVars.add(hostViewFactoryVar);
+      exportedVars.add(compFactoryVar);
     });
     return this._codegenSourceModule(moduleUrl, statements, exportedVars);
   }

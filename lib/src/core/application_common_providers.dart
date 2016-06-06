@@ -11,10 +11,9 @@ import "change_detection/change_detection.dart"
         defaultIterableDiffers,
         KeyValueDiffers,
         defaultKeyValueDiffers;
-import "linker/view_manager.dart" show AppViewManager;
-import "linker/view_manager.dart" show AppViewManager_;
-import "linker/compiler.dart" show Compiler;
-import "linker/compiler.dart" show Compiler_;
+import "linker/view_utils.dart" show ViewUtils;
+import "linker/component_resolver.dart" show ComponentResolver;
+import "linker/component_resolver.dart" show ReflectorComponentResolver;
 import "linker/dynamic_component_loader.dart" show DynamicComponentLoader;
 import "linker/dynamic_component_loader.dart" show DynamicComponentLoader_;
 
@@ -25,9 +24,9 @@ Type ___unused;
  */
 const List<dynamic /* Type | Provider | List < dynamic > */ >
     APPLICATION_COMMON_PROVIDERS = const [
-  const Provider(Compiler, useClass: Compiler_),
+  const Provider(ComponentResolver, useClass: ReflectorComponentResolver),
   APP_ID_RANDOM_PROVIDER,
-  const Provider(AppViewManager, useClass: AppViewManager_),
+  ViewUtils,
   const Provider(IterableDiffers, useValue: defaultIterableDiffers),
   const Provider(KeyValueDiffers, useValue: defaultKeyValueDiffers),
   const Provider(DynamicComponentLoader, useClass: DynamicComponentLoader_)

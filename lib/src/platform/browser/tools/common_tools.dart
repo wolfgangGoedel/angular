@@ -1,8 +1,8 @@
 library angular2.src.platform.browser.tools.common_tools;
 
 import "package:angular2/src/core/application_ref.dart" show ApplicationRef;
-import "package:angular2/src/core/linker/dynamic_component_loader.dart"
-    show ComponentRef, ComponentRef_;
+import "package:angular2/src/core/linker/component_factory.dart"
+    show ComponentRef;
 import "package:angular2/src/facade/lang.dart" show isPresent, NumberWrapper;
 import "package:angular2/src/facade/browser.dart" show window;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
@@ -31,7 +31,7 @@ class AngularTools {
 class AngularProfiler {
   ApplicationRef appRef;
   AngularProfiler(ComponentRef ref) {
-    this.appRef = ((ref as ComponentRef_)).injector.get(ApplicationRef);
+    this.appRef = ref.injector.get(ApplicationRef);
   }
   /**
    * Exercises change detection in a loop and then prints the average amount of

@@ -82,7 +82,7 @@ class CompileEventListener {
 
   finishMethod() {
     var markPathToRootStart = this._hasComponentHostListener
-        ? this.compileElement.getOrCreateAppElement().prop("componentView")
+        ? this.compileElement.appElement.prop("componentView")
         : o.THIS_EXPR;
     o.Expression resultExpr = o.literal(true);
     this._actionResultExprs.forEach((expr) {

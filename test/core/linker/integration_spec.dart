@@ -71,7 +71,8 @@ import "package:angular2/src/core/linker/query_list.dart" show QueryList;
 import "package:angular2/src/core/linker/view_container_ref.dart"
     show ViewContainerRef;
 import "package:angular2/src/core/linker/view_ref.dart" show EmbeddedViewRef;
-import "package:angular2/src/core/linker/compiler.dart" show Compiler;
+import "package:angular2/src/core/linker/component_resolver.dart"
+    show ComponentResolver;
 import "package:angular2/src/core/linker/element_ref.dart" show ElementRef;
 import "package:angular2/src/core/linker/template_ref.dart" show TemplateRef;
 import "package:angular2/src/core/render.dart" show Renderer;
@@ -523,6 +524,33 @@ declareTests(bool isJit) {
               expect(childNodesOfWrapper.length).toBe(3);
               expect(childNodesOfWrapper[1]).toHaveText("hello");
               expect(childNodesOfWrapper[2]).toHaveText("again");
+              async.done();
+            });
+          }));
+      it(
+          "should not detach views in ViewContainers when the parent view is destroyed.",
+          inject([TestComponentBuilder, AsyncTestCompleter],
+              (TestComponentBuilder tcb, async) {
+            tcb
+                .overrideView(
+                    MyComp,
+                    new ViewMetadata(
+                        template:
+                            "<div *ngIf=\"ctxBoolProp\"><template some-viewport var-greeting=\"someTmpl\"><span>{{greeting}}</span></template></div>",
+                        directives: [SomeViewport, NgIf]))
+                .createAsync(MyComp)
+                .then((fixture) {
+              fixture.debugElement.componentInstance.ctxBoolProp = true;
+              fixture.detectChanges();
+              var ngIfEl = fixture.debugElement.children[0];
+              SomeViewport someViewport =
+                  ngIfEl.childNodes[0].inject(SomeViewport);
+              expect(someViewport.container.length).toBe(2);
+              expect(ngIfEl.children.length).toBe(2);
+              fixture.debugElement.componentInstance.ctxBoolProp = false;
+              fixture.detectChanges();
+              expect(someViewport.container.length).toBe(2);
+              expect(fixture.debugElement.children.length).toBe(0);
               async.done();
             });
           }));
@@ -1245,7 +1273,8 @@ declareTests(bool isJit) {
       describe("dynamic ViewContainers", () {
         it(
             "should allow to create a ViewContainerRef at any bound location",
-            inject([TestComponentBuilder, AsyncTestCompleter, Compiler],
+            inject(
+                [TestComponentBuilder, AsyncTestCompleter, ComponentResolver],
                 (TestComponentBuilder tcb, async, compiler) {
               tcb
                   .overrideView(
@@ -2102,12 +2131,13 @@ class SimpleImperativeViewComponent {
 @Injectable()
 class DynamicViewport {
   Future<dynamic> done;
-  DynamicViewport(ViewContainerRef vc, Compiler compiler) {
+  DynamicViewport(ViewContainerRef vc, ComponentResolver compiler) {
     var myService = new MyService();
     myService.greeting = "dynamic greet";
     var bindings = Injector.resolve([provide(MyService, useValue: myService)]);
-    this.done = compiler.compileInHost(ChildCompUsingService).then((hostPv) {
-      vc.createHostView(hostPv, 0, bindings);
+    this.done =
+        compiler.resolveComponent(ChildCompUsingService).then((compFactory) {
+      vc.createComponent(compFactory, 0, bindings);
     });
   }
 }
@@ -2298,7 +2328,8 @@ class ChildComp2 {
 @Directive(selector: "[some-viewport]")
 @Injectable()
 class SomeViewport {
-  SomeViewport(ViewContainerRef container, TemplateRef templateRef) {
+  ViewContainerRef container;
+  SomeViewport(this.container, TemplateRef templateRef) {
     container.createEmbeddedView(templateRef).setLocal("some-tmpl", "hello");
     container.createEmbeddedView(templateRef).setLocal("some-tmpl", "again");
   }

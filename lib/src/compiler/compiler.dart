@@ -8,6 +8,7 @@ export "package:angular2/src/compiler/template_parser.dart"
 export "config.dart" show CompilerConfig, RenderTypes;
 export "compile_metadata.dart";
 export "offline_compiler.dart";
+export "runtime_compiler.dart" show RuntimeCompiler;
 export "package:angular2/src/compiler/url_resolver.dart";
 export "package:angular2/src/compiler/xhr.dart";
 export "view_resolver.dart" show ViewResolver;
@@ -25,7 +26,8 @@ import "package:angular2/src/compiler/style_compiler.dart" show StyleCompiler;
 import "package:angular2/src/compiler/view_compiler/view_compiler.dart"
     show ViewCompiler;
 import "config.dart" show CompilerConfig;
-import "package:angular2/src/core/linker/compiler.dart" show Compiler;
+import "package:angular2/src/core/linker/component_resolver.dart"
+    show ComponentResolver;
 import "package:angular2/src/compiler/runtime_compiler.dart"
     show RuntimeCompiler;
 import "package:angular2/src/compiler/schema/element_schema_registry.dart"
@@ -62,7 +64,7 @@ const List<dynamic /* Type | Provider | List < dynamic > */ >
   const Provider(CompilerConfig,
       useFactory: createCompilerConfig, deps: const []),
   RuntimeCompiler,
-  const Provider(Compiler, useExisting: RuntimeCompiler),
+  const Provider(ComponentResolver, useExisting: RuntimeCompiler),
   DomElementSchemaRegistry,
   const Provider(ElementSchemaRegistry, useExisting: DomElementSchemaRegistry),
   UrlResolver,

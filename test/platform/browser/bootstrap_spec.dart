@@ -34,8 +34,8 @@ import "package:angular2/src/facade/exceptions.dart"
     show ExceptionHandler, BaseException;
 import "package:angular2/src/core/testability/testability.dart"
     show Testability, TestabilityRegistry;
-import "package:angular2/src/core/linker/dynamic_component_loader.dart"
-    show ComponentRef_, ComponentRef;
+import "package:angular2/src/core/linker/component_factory.dart"
+    show ComponentRef;
 
 @Component(selector: "hello-app", template: "{{greeting}} world!")
 class HelloRootCmp {
@@ -220,7 +220,7 @@ main() {
         "should not crash if change detection is invoked when the root component is disposed",
         inject([AsyncTestCompleter], (async) {
           bootstrap(HelloOnDestroyTickCmp, testProviders).then((ref) {
-            expect(() => ref.dispose()).not.toThrow();
+            expect(() => ref.destroy()).not.toThrow();
             async.done();
           });
         }));
@@ -230,7 +230,7 @@ main() {
           var app = platform(BROWSER_PROVIDERS)
               .application([BROWSER_APP_PROVIDERS, testProviders]);
           app.bootstrap(HelloRootCmp).then((ref) {
-            ref.dispose();
+            ref.destroy();
             expect(() => app.tick()).not.toThrow();
             async.done();
           });
@@ -241,7 +241,7 @@ main() {
           var refPromise = bootstrap(HelloRootCmp3,
               [testProviders, provide("appBinding", useValue: "BoundValue")]);
           refPromise.then((ref) {
-            expect(ref.hostComponent.appBinding).toEqual("BoundValue");
+            expect(ref.instance.appBinding).toEqual("BoundValue");
             async.done();
           });
         }));
@@ -250,8 +250,7 @@ main() {
         inject([AsyncTestCompleter], (async) {
           var refPromise = bootstrap(HelloRootCmp4, testProviders);
           refPromise.then((ref) {
-            expect(ref.hostComponent.appRef)
-                .toBe(((ref as ComponentRef_)).injector.get(ApplicationRef));
+            expect(ref.instance.appRef).toBe(ref.injector.get(ApplicationRef));
             async.done();
           });
         }));

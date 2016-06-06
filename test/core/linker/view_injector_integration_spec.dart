@@ -659,7 +659,7 @@ No provider for SimpleDirective ("[ERROR ->]<div needsDirectiveFromHost></div>")
             "<template needsViewContainerRef needsTemplateRef></template>",
             tcb);
         expect(el.childNodes[0].inject(NeedsTemplateRef).templateRef.elementRef)
-            .toBe(el.childNodes[0]
+            .toEqual(el.childNodes[0]
                 .inject(NeedsViewContainerRef)
                 .viewContainer
                 .element);

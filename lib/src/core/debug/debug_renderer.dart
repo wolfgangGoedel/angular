@@ -23,8 +23,9 @@ class DebugDomRootRenderer implements RootRenderer {
 class DebugDomRenderer implements Renderer {
   Renderer _delegate;
   DebugDomRenderer(this._delegate) {}
-  dynamic selectRootElement(String selector, RenderDebugInfo debugInfo) {
-    var nativeEl = this._delegate.selectRootElement(selector, debugInfo);
+  dynamic selectRootElement(dynamic /* String | dynamic */ selectorOrNode,
+      RenderDebugInfo debugInfo) {
+    var nativeEl = this._delegate.selectRootElement(selectorOrNode, debugInfo);
     var debugEl = new DebugElement(nativeEl, null, debugInfo);
     indexDebugNode(debugEl);
     return nativeEl;

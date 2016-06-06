@@ -19,15 +19,16 @@ import "package:angular2/src/facade/lang.dart"
         isArray,
         isNumber,
         stringify,
-        isPrimitive;
+        isPrimitive,
+        isString;
 import "package:angular2/src/facade/async.dart" show ObservableWrapper;
 import "package:angular2/src/core/render/api.dart"
     show Renderer, RootRenderer, RenderComponentType;
-import "view_ref.dart" show ViewRef_, HostViewFactoryRef;
-import "view_manager.dart" show AppViewManager_, AppViewManager;
+import "view_ref.dart" show ViewRef_;
 import "view_type.dart" show ViewType;
 import "view_utils.dart"
     show
+        ViewUtils,
         flattenNestedViewRenderNodes,
         ensureSlotCount,
         arrayLooseIdentical,
@@ -48,7 +49,6 @@ import "exceptions.dart"
 import "debug_context.dart" show StaticNodeDebugInfo, DebugContext;
 import "element_injector.dart" show ElementInjector;
 
-const HOST_VIEW_ELEMENT_NAME = "\$hostViewEl";
 const EMPTY_CONTEXT = const Object();
 WtfScopeFn _scope_check = wtfCreateScope('''AppView#check(ascii id)''');
 
@@ -61,7 +61,7 @@ abstract class AppView<T> {
   RenderComponentType componentType;
   ViewType type;
   Map<String, dynamic> locals;
-  AppViewManager_ viewManager;
+  ViewUtils viewUtils;
   Injector parentInjector;
   AppElement declarationAppElement;
   ChangeDetectionStrategy cdMode;
@@ -70,12 +70,12 @@ abstract class AppView<T> {
   List<dynamic> allNodes;
   List<Function> disposables;
   List<dynamic> subscriptions;
-  Map<String, AppElement> namedAppElements;
   List<AppView<dynamic>> contentChildren = [];
   List<AppView<dynamic>> viewChildren = [];
+  AppView<dynamic> renderParent;
+  AppElement viewContainerElement = null;
   List<List<dynamic>> _literalArrayCache;
   List<Map<String, dynamic>> _literalMapCache;
-  AppElement viewContainerElement = null;
   // The names of the below fields must be kept in sync with codegen_name_util.ts or
 
   // change detection will fail.
@@ -88,12 +88,13 @@ abstract class AppView<T> {
   List<dynamic /* dynamic | List < dynamic > */ > projectableNodes;
   bool destroyed = false;
   Renderer renderer;
+  bool _hasExternalHostElement;
   AppView(
       this.clazz,
       this.componentType,
       this.type,
       this.locals,
-      this.viewManager,
+      this.viewUtils,
       this.parentInjector,
       this.declarationAppElement,
       this.cdMode,
@@ -101,7 +102,7 @@ abstract class AppView<T> {
       num literalMapCacheSize) {
     this.ref = new ViewRef_(this);
     if (identical(type, ViewType.COMPONENT) || identical(type, ViewType.HOST)) {
-      this.renderer = viewManager.renderComponent(componentType);
+      this.renderer = viewUtils.renderComponent(componentType);
     } else {
       this.renderer = declarationAppElement.parentView.renderer;
     }
@@ -109,9 +110,9 @@ abstract class AppView<T> {
         ListWrapper.createFixedSize(literalArrayCacheSize);
     this._literalMapCache = ListWrapper.createFixedSize(literalMapCacheSize);
   }
-  void create(
+  AppElement create(
       List<dynamic /* dynamic | List < dynamic > */ > givenProjectableNodes,
-      String rootSelector) {
+      dynamic /* String | dynamic */ rootSelectorOrNode) {
     var context;
     var projectableNodes;
     switch (this.type) {
@@ -133,24 +134,24 @@ abstract class AppView<T> {
         projectableNodes = givenProjectableNodes;
         break;
     }
+    this._hasExternalHostElement = isPresent(rootSelectorOrNode);
     this.context = context;
     this.projectableNodes = projectableNodes;
-    this.createInternal(rootSelector);
+    return this.createInternal(rootSelectorOrNode);
   }
 
   /**
-   * Overwritten by implementations
+   * Overwritten by implementations.
+   * Returns the AppElement for the host element for ViewType.HOST.
    */
-  void createInternal(String rootSelector) {}
-  init(
-      List<dynamic> rootNodesOrAppElements,
-      List<dynamic> allNodes,
-      Map<String, AppElement> appElements,
-      List<Function> disposables,
-      List<dynamic> subscriptions) {
+  AppElement createInternal(dynamic /* String | dynamic */ rootSelectorOrNode) {
+    return null;
+  }
+
+  init(List<dynamic> rootNodesOrAppElements, List<dynamic> allNodes,
+      List<Function> disposables, List<dynamic> subscriptions) {
     this.rootNodesOrAppElements = rootNodesOrAppElements;
     this.allNodes = allNodes;
-    this.namedAppElements = appElements;
     this.disposables = disposables;
     this.subscriptions = subscriptions;
     if (identical(this.type, ViewType.COMPONENT)) {
@@ -162,8 +163,18 @@ abstract class AppView<T> {
     }
   }
 
-  AppElement getHostViewElement() {
-    return this.namedAppElements[HOST_VIEW_ELEMENT_NAME];
+  dynamic selectOrCreateHostElement(
+      String elementName,
+      dynamic /* String | dynamic */ rootSelectorOrNode,
+      DebugContext debugCtx) {
+    var hostElement;
+    if (isPresent(rootSelectorOrNode)) {
+      hostElement =
+          this.renderer.selectRootElement(rootSelectorOrNode, debugCtx);
+    } else {
+      hostElement = this.renderer.createElement(null, elementName, debugCtx);
+    }
+    return hostElement;
   }
 
   dynamic injectorGet(dynamic token, num nodeIndex, dynamic notFoundResult) {
@@ -187,16 +198,27 @@ abstract class AppView<T> {
   }
 
   destroy() {
+    if (this._hasExternalHostElement) {
+      this.renderer.detachView(this.flatRootNodes);
+    } else if (isPresent(this.viewContainerElement)) {
+      this
+          .viewContainerElement
+          .detachView(this.viewContainerElement.nestedViews.indexOf(this));
+    }
+    this._destroyRecurse();
+  }
+
+  _destroyRecurse() {
     if (this.destroyed) {
       return;
     }
     var children = this.contentChildren;
     for (var i = 0; i < children.length; i++) {
-      children[i].destroy();
+      children[i]._destroyRecurse();
     }
     children = this.viewChildren;
     for (var i = 0; i < children.length; i++) {
-      children[i].destroy();
+      children[i]._destroyRecurse();
     }
     this.destroyLocal();
     this.destroyed = true;
@@ -206,7 +228,6 @@ abstract class AppView<T> {
     var hostElement = identical(this.type, ViewType.COMPONENT)
         ? this.declarationAppElement.nativeElement
         : null;
-    this.renderer.destroyView(hostElement, this.allNodes);
     for (var i = 0; i < this.disposables.length; i++) {
       this.disposables[i]();
     }
@@ -215,6 +236,7 @@ abstract class AppView<T> {
     }
     this.destroyInternal();
     this.dirtyParentQueriesInternal();
+    this.renderer.destroyView(hostElement, this.allNodes);
   }
 
   /**
@@ -352,7 +374,7 @@ class DebugAppView<T> extends AppView<T> {
       RenderComponentType componentType,
       ViewType type,
       Map<String, dynamic> locals,
-      AppViewManager_ viewManager,
+      ViewUtils viewUtils,
       Injector parentInjector,
       AppElement declarationAppElement,
       ChangeDetectionStrategy cdMode,
@@ -364,7 +386,7 @@ class DebugAppView<T> extends AppView<T> {
             componentType,
             type,
             locals,
-            viewManager,
+            viewUtils,
             parentInjector,
             declarationAppElement,
             cdMode,
@@ -372,12 +394,12 @@ class DebugAppView<T> extends AppView<T> {
             literalMapCacheSize) {
     /* super call moved to initializer */;
   }
-  void create(
+  AppElement create(
       List<dynamic /* dynamic | List < dynamic > */ > givenProjectableNodes,
       String rootSelector) {
     this._resetDebug();
     try {
-      super.create(givenProjectableNodes, rootSelector);
+      return super.create(givenProjectableNodes, rootSelector);
     } catch (e, e_stack) {
       this._rethrowWithContext(e, e_stack);
       rethrow;
@@ -446,12 +468,6 @@ class DebugAppView<T> extends AppView<T> {
       }
     };
   }
-}
-
-class HostViewFactory {
-  final String selector;
-  final Function viewFactory;
-  const HostViewFactory(this.selector, this.viewFactory);
 }
 
 dynamic _findLastRenderNode(dynamic node) {

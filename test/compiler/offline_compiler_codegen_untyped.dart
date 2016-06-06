@@ -5,9 +5,10 @@ import "package:angular2/src/facade/lang.dart" show print;
 import "package:angular2/src/compiler/output/js_emitter.dart"
     show JavaScriptEmitter;
 import "offline_compiler_util.dart" show compileComp, compAMetadata;
-import "package:angular2/src/core/linker/view.dart" show HostViewFactory;
+import "package:angular2/src/core/linker/component_factory.dart"
+    show ComponentFactory;
 
-final HostViewFactory hostViewFactory_CompA = null;
+final ComponentFactory CompANgFactory = null;
 // Generator
 main(List<String> args) {
   var emitter = new JavaScriptEmitter();

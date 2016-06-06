@@ -19,62 +19,49 @@ import "package:angular2/src/facade/lang.dart" show IS_DART;
 import "package:angular2/core.dart" show Injector;
 import "package:angular2/src/core/debug/debug_node.dart"
     show DebugNode, DebugElement, getDebugNode;
-import "package:angular2/src/core/linker/view_ref.dart"
-    show HostViewFactoryRef_;
-import "package:angular2/src/core/linker/view.dart" show HostViewFactory;
+import "package:angular2/src/core/linker/component_factory.dart"
+    show ComponentFactory;
 import "offline_compiler_codegen_typed.dart" as typed;
 import "offline_compiler_codegen_untyped.dart" as untyped;
-import "package:angular2/src/core/linker/view_manager.dart" show AppViewManager;
-import "package:angular2/src/platform/dom/dom_tokens.dart" show DOCUMENT;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 import "package:angular2/src/platform/dom/shared_styles_host.dart"
     show SharedStylesHost;
 import "offline_compiler_util.dart" show CompA;
 
-var _nextRootElementId = 0;
 main() {
   var outputDefs = [];
-  var typedHostViewFactory = typed.hostViewFactory_CompA;
-  var untypedHostViewFactory = untyped.hostViewFactory_CompA;
+  var typedComponentFactory = typed.CompANgFactory;
+  var untypedComponentFactory = untyped.CompANgFactory;
   if (IS_DART || !DOM.supportsDOMEvents()) {
     // Our generator only works on node.js and Dart...
-    outputDefs
-        .add({"compAHostViewFactory": typedHostViewFactory, "name": "typed"});
+    outputDefs.add(
+        {"compAHostComponentFactory": typedComponentFactory, "name": "typed"});
   }
   if (!IS_DART) {
     // Our generator only works on node.js and Dart...
     if (!DOM.supportsDOMEvents()) {
-      outputDefs.add(
-          {"compAHostViewFactory": untypedHostViewFactory, "name": "untyped"});
+      outputDefs.add({
+        "compAHostComponentFactory": untypedComponentFactory,
+        "name": "untyped"
+      });
     }
   }
   describe("OfflineCompiler", () {
-    AppViewManager viewManager;
     Injector injector;
     SharedStylesHost sharedStylesHost;
-    var rootEl;
-    beforeEach(inject([AppViewManager, Injector, SharedStylesHost],
-        (_viewManager, _injector, _sharedStylesHost) {
-      viewManager = _viewManager;
+    beforeEach(
+        inject([Injector, SharedStylesHost], (_injector, _sharedStylesHost) {
       injector = _injector;
       sharedStylesHost = _sharedStylesHost;
     }));
-    DebugElement createHostComp(HostViewFactory hvf) {
-      var doc = injector.get(DOCUMENT);
-      var oldRoots = DOM.querySelectorAll(doc, hvf.selector);
-      for (var i = 0; i < oldRoots.length; i++) {
-        DOM.remove(oldRoots[i]);
-      }
-      rootEl = el('''<${ hvf . selector}></${ hvf . selector}>''');
-      DOM.appendChild(doc.body, rootEl);
-      viewManager.createRootHostView(
-          new HostViewFactoryRef_(hvf), hvf.selector, injector, []);
-      return (getDebugNode(rootEl) as DebugElement);
+    DebugElement createHostComp(ComponentFactory cf) {
+      var compRef = cf.create(injector);
+      return (getDebugNode(compRef.location.nativeElement) as DebugElement);
     }
     outputDefs.forEach((outputDef) {
       describe('''${ outputDef [ "name" ]}''', () {
         it("should compile components", () {
-          var hostEl = createHostComp(outputDef["compAHostViewFactory"]);
+          var hostEl = createHostComp(outputDef["compAHostComponentFactory"]);
           expect(hostEl.componentInstance).toBeAnInstanceOf(CompA);
           var styles = sharedStylesHost.getAllStyles();
           expect(styles[0]).toContain(".redStyle[_ngcontent");

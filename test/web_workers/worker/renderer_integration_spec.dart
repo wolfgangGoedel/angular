@@ -24,7 +24,8 @@ import "package:angular2/core.dart"
         ViewMetadata,
         Component,
         Injectable,
-        ElementRef;
+        ElementRef,
+        ComponentRef;
 import "package:angular2/common.dart" show NgIf;
 import "package:angular2/src/web_workers/worker/renderer.dart"
     show WebWorkerRootRenderer;
@@ -120,8 +121,8 @@ main() {
       var id = workerRenderStore.serialize(workerEl);
       return uiRenderStore.deserialize(id);
     }
-    getRenderer(ElementRef elementRef) {
-      return ((elementRef as dynamic)).internalElement.parentView.renderer;
+    getRenderer(ComponentRef componentRef) {
+      return ((componentRef.hostView as dynamic)).internalView.renderer;
     }
     it(
         "should update text nodes",
@@ -152,8 +153,8 @@ main() {
                           "<input [title]=\"y\" style=\"position:absolute\">"))
               .createAsync(MyComp)
               .then((fixture) {
-            var checkSetters = (componentElRef, workerEl) {
-              var renderer = getRenderer(componentElRef);
+            var checkSetters = (componentRef, workerEl) {
+              var renderer = getRenderer(componentRef);
               var el = getRenderElement(workerEl);
               renderer.setElementProperty(workerEl, "tabIndex", 1);
               expect(((el as dynamic)).tabIndex).toEqual(1);
@@ -170,9 +171,9 @@ main() {
             };
             // root element
             checkSetters(
-                fixture.elementRef, fixture.debugElement.nativeElement);
+                fixture.componentRef, fixture.debugElement.nativeElement);
             // nested elements
-            checkSetters(fixture.elementRef,
+            checkSetters(fixture.componentRef,
                 fixture.debugElement.children[0].nativeElement);
             async.done();
           });
@@ -231,7 +232,7 @@ main() {
                 .createAsync(MyComp)
                 .then((fixture) {
               var el = fixture.debugElement.children[0];
-              getRenderer(fixture.elementRef).invokeElementMethod(
+              getRenderer(fixture.componentRef).invokeElementMethod(
                   el.nativeElement, "setAttribute", ["a", "b"]);
               expect(DOM.getAttribute(getRenderElement(el.nativeElement), "a"))
                   .toEqual("b");

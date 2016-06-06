@@ -75,7 +75,7 @@ class ChangeDetectionStrategyEnum {
 }
 
 class ViewConstructorVars {
-  static var viewManager = o.variable("viewManager");
+  static var viewUtils = o.variable("viewUtils");
   static var parentInjector = o.variable("parentInjector");
   static var declarationEl = o.variable("declarationEl");
 }
@@ -83,7 +83,7 @@ class ViewConstructorVars {
 class ViewProperties {
   static var renderer = o.THIS_EXPR.prop("renderer");
   static var projectableNodes = o.THIS_EXPR.prop("projectableNodes");
-  static var viewManager = o.THIS_EXPR.prop("viewManager");
+  static var viewUtils = o.THIS_EXPR.prop("viewUtils");
 }
 
 class EventHandlerVars {

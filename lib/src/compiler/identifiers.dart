@@ -6,7 +6,7 @@ import "package:angular2/src/core/linker/view.dart" show AppView, DebugAppView;
 import "package:angular2/src/core/linker/debug_context.dart"
     show StaticNodeDebugInfo, DebugContext;
 import "package:angular2/src/core/linker/view_utils.dart"
-    show flattenNestedViewRenderNodes, interpolate, checkBinding;
+    show ViewUtils, flattenNestedViewRenderNodes, interpolate, checkBinding;
 import "package:angular2/src/core/change_detection/change_detection.dart"
     show
         uninitialized,
@@ -16,8 +16,6 @@ import "package:angular2/src/core/change_detection/change_detection.dart"
         ChangeDetectorRef,
         ChangeDetectorState,
         ChangeDetectionStrategy;
-import "package:angular2/src/core/linker/view_manager.dart"
-    show AppViewManager_;
 import "package:angular2/src/core/linker/element.dart" show AppElement;
 import "package:angular2/src/core/linker/element_ref.dart" show ElementRef;
 import "package:angular2/src/core/linker/view_container_ref.dart"
@@ -44,7 +42,7 @@ var CD_MODULE_URL =
 // define static variables with the name of the import.
 
 // (only needed for Dart).
-var impAppViewManager_ = AppViewManager_;
+var impViewUtils = ViewUtils;
 var impAppView = AppView;
 var impDebugAppView = DebugAppView;
 var impDebugContext = DebugContext;
@@ -72,11 +70,11 @@ var impInterpolate = interpolate;
 var impCheckBinding = checkBinding;
 
 class Identifiers {
-  static var AppViewManager_ = new CompileIdentifierMetadata(
-      name: "AppViewManager_",
+  static var ViewUtils = new CompileIdentifierMetadata(
+      name: "ViewUtils",
       moduleUrl:
-          "asset:angular2/lib/src/core/linker/view_manager" + MODULE_SUFFIX,
-      runtime: impAppViewManager_);
+          "asset:angular2/lib/src/core/linker/view_utils" + MODULE_SUFFIX,
+      runtime: impViewUtils);
   static var AppView = new CompileIdentifierMetadata(
       name: "AppView", moduleUrl: APP_VIEW_MODULE_URL, runtime: impAppView);
   static var DebugAppView = new CompileIdentifierMetadata(

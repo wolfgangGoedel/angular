@@ -126,6 +126,7 @@ class ElementAst implements TemplateAst {
   List<VariableAst> exportAsVars;
   List<DirectiveAst> directives;
   List<ProviderAst> providers;
+  bool hasViewContainer;
   List<TemplateAst> children;
   num ngContentIndex;
   ParseSourceSpan sourceSpan;
@@ -137,6 +138,7 @@ class ElementAst implements TemplateAst {
       this.exportAsVars,
       this.directives,
       this.providers,
+      this.hasViewContainer,
       this.children,
       this.ngContentIndex,
       this.sourceSpan) {}
@@ -154,11 +156,20 @@ class EmbeddedTemplateAst implements TemplateAst {
   List<VariableAst> vars;
   List<DirectiveAst> directives;
   List<ProviderAst> providers;
+  bool hasViewContainer;
   List<TemplateAst> children;
   num ngContentIndex;
   ParseSourceSpan sourceSpan;
-  EmbeddedTemplateAst(this.attrs, this.outputs, this.vars, this.directives,
-      this.providers, this.children, this.ngContentIndex, this.sourceSpan) {}
+  EmbeddedTemplateAst(
+      this.attrs,
+      this.outputs,
+      this.vars,
+      this.directives,
+      this.providers,
+      this.hasViewContainer,
+      this.children,
+      this.ngContentIndex,
+      this.sourceSpan) {}
   dynamic visit(TemplateAstVisitor visitor, dynamic context) {
     return visitor.visitEmbeddedTemplate(this, context);
   }

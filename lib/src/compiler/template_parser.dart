@@ -371,6 +371,7 @@ class TemplateParseVisitor implements HtmlAstVisitor {
         isViewRoot,
         directiveAsts,
         attrs,
+        vars,
         element.sourceSpan);
     var children = htmlVisitAll(
         preparsedElement.nonBindable ? NON_BINDABLE_VISITOR : this,
@@ -402,6 +403,7 @@ class TemplateParseVisitor implements HtmlAstVisitor {
           vars,
           providerContext.transformedDirectiveAsts,
           providerContext.transformProviders,
+          providerContext.transformedHasViewContainer,
           children,
           hasInlineTemplates ? null : ngContentIndex,
           element.sourceSpan);
@@ -420,6 +422,7 @@ class TemplateParseVisitor implements HtmlAstVisitor {
           elementExportAsVars,
           providerContext.transformedDirectiveAsts,
           providerContext.transformProviders,
+          providerContext.transformedHasViewContainer,
           children,
           hasInlineTemplates ? null : ngContentIndex,
           element.sourceSpan);
@@ -446,6 +449,7 @@ class TemplateParseVisitor implements HtmlAstVisitor {
           parent.isTemplateElement,
           templateDirectiveAsts,
           [],
+          templateVars,
           element.sourceSpan);
       templateProviderContext.afterElement();
       parsedElement = new EmbeddedTemplateAst(
@@ -454,6 +458,7 @@ class TemplateParseVisitor implements HtmlAstVisitor {
           templateVars,
           templateProviderContext.transformedDirectiveAsts,
           templateProviderContext.transformProviders,
+          templateProviderContext.transformedHasViewContainer,
           [parsedElement],
           ngContentIndex,
           element.sourceSpan);
@@ -876,7 +881,7 @@ class NonBindableVisitor implements HtmlAstVisitor {
     var ngContentIndex = parent.findNgContentIndex(selector);
     var children = htmlVisitAll(this, ast.children, EMPTY_ELEMENT_CONTEXT);
     return new ElementAst(ast.name, htmlVisitAll(this, ast.attrs), [], [], [],
-        [], [], children, ngContentIndex, ast.sourceSpan);
+        [], [], false, children, ngContentIndex, ast.sourceSpan);
   }
 
   dynamic visitComment(HtmlCommentAst ast, dynamic context) {

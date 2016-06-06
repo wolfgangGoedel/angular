@@ -19,23 +19,19 @@ import "package:angular2/testing_internal.dart"
         ComponentFixture;
 import "package:angular2/src/facade/collection.dart" show Predicate;
 import "package:angular2/core.dart"
-    show Injector, OnDestroy, DebugElement, Type;
-import "package:angular2/common.dart" show NgIf;
+    show Injector, OnDestroy, DebugElement, Type, ViewContainerRef, ViewChild;
 import "package:angular2/src/core/metadata.dart" show Component, ViewMetadata;
 import "package:angular2/src/core/linker/dynamic_component_loader.dart"
     show DynamicComponentLoader;
-import "package:angular2/src/core/linker/element_ref.dart"
-    show ElementRef, ElementRef_;
+import "package:angular2/src/core/linker/element_ref.dart" show ElementRef;
 import "package:angular2/src/platform/dom/dom_tokens.dart" show DOCUMENT;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
-import "package:angular2/src/testing/test_component_builder.dart"
-    show ComponentFixture_;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "package:angular2/src/facade/promise.dart" show PromiseWrapper;
 
 main() {
   describe("DynamicComponentLoader", () {
-    describe("loading into a location", () {
+    describe("loading next to a location", () {
       it(
           "should work",
           inject([
@@ -43,19 +39,14 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<location #loc></location>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
+            tcb.createAsync(MyComp).then((tc) {
+              tc.detectChanges();
               loader
-                  .loadIntoLocation(DynamicallyLoaded, tc.elementRef, "loc")
+                  .loadNextToLocation(
+                      DynamicallyLoaded, tc.componentInstance.viewContainerRef)
                   .then((ref) {
                 expect(tc.debugElement.nativeElement)
-                    .toHaveText("Location;DynamicallyLoaded;");
+                    .toHaveText("DynamicallyLoaded;");
                 async.done();
               });
             });
@@ -67,61 +58,23 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<location #loc></location>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader
-                  .loadIntoLocation(DynamicallyLoaded, tc.elementRef, "loc")
-                  .then((ref) {
-                ref.dispose();
-                expect(tc.debugElement.nativeElement).toHaveText("Location;");
-                async.done();
-              });
-            });
-          }));
-      it(
-          "should allow to dispose even if the location has been removed",
-          inject([
-            DynamicComponentLoader,
-            TestComponentBuilder,
-            AsyncTestCompleter
-          ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template:
-                            "<child-cmp *ngIf=\"ctxBoolProp\"></child-cmp>",
-                        directives: [NgIf, ChildComp]))
-                .overrideView(
-                    ChildComp,
-                    new ViewMetadata(
-                        template: "<location #loc></location>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              tc.debugElement.componentInstance.ctxBoolProp = true;
+            tcb.createAsync(MyComp).then((tc) {
               tc.detectChanges();
-              var childElementRef = tc.debugElement
-                  .query(filterByDirective(ChildComp))
-                  .inject(ChildComp)
-                  .elementRef;
               loader
-                  .loadIntoLocation(DynamicallyLoaded, childElementRef, "loc")
+                  .loadNextToLocation(
+                      DynamicallyLoaded, tc.componentInstance.viewContainerRef)
                   .then((ref) {
-                expect(tc.debugElement.nativeElement)
-                    .toHaveText("Location;DynamicallyLoaded;");
-                tc.debugElement.componentInstance.ctxBoolProp = false;
-                tc.detectChanges();
-                expect(tc.debugElement.nativeElement).toHaveText("");
-                ref.dispose();
-                expect(tc.debugElement.nativeElement).toHaveText("");
-                async.done();
+                loader
+                    .loadNextToLocation(DynamicallyLoaded2,
+                        tc.componentInstance.viewContainerRef)
+                    .then((ref2) {
+                  expect(tc.debugElement.nativeElement)
+                      .toHaveText("DynamicallyLoaded;DynamicallyLoaded2;");
+                  ref2.destroy();
+                  expect(tc.debugElement.nativeElement)
+                      .toHaveText("DynamicallyLoaded;");
+                  async.done();
+                });
               });
             });
           }));
@@ -132,22 +85,16 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<location #loc></location>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
+            tcb.createAsync(MyComp).then((tc) {
+              tc.detectChanges();
               loader
-                  .loadIntoLocation(
-                      DynamicallyLoadedWithHostProps, tc.elementRef, "loc")
+                  .loadNextToLocation(DynamicallyLoadedWithHostProps,
+                      tc.componentInstance.viewContainerRef)
                   .then((ref) {
                 ref.instance.id = "new value";
                 tc.detectChanges();
                 var newlyInsertedElement =
-                    DOM.childNodes(tc.debugElement.nativeElement)[1];
+                    tc.debugElement.childNodes[1].nativeNode;
                 expect(((newlyInsertedElement as dynamic)).id)
                     .toEqual("new value");
                 async.done();
@@ -161,45 +108,16 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<div><location #loc></location></div>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((ComponentFixture tc) {
+            tcb.createAsync(MyComp).then((ComponentFixture tc) {
+              tc.detectChanges();
               PromiseWrapper.catchError(
-                  loader.loadIntoLocation(
-                      DynamicallyLoadedThrows, tc.elementRef, "loc"), (error) {
+                  loader.loadNextToLocation(DynamicallyLoadedThrows,
+                      tc.componentInstance.viewContainerRef), (error) {
                 expect(error.message).toContain("ThrownInConstructor");
                 expect(() => tc.detectChanges()).not.toThrow();
                 async.done();
                 return null;
               });
-            });
-          }));
-      it(
-          "should throw if the variable does not exist",
-          inject([
-            DynamicComponentLoader,
-            TestComponentBuilder,
-            AsyncTestCompleter
-          ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<location #loc></location>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              expect(() => loader.loadIntoLocation(
-                      DynamicallyLoadedWithHostProps,
-                      tc.elementRef,
-                      "someUnknownVariable"))
-                  .toThrowError("Could not find variable someUnknownVariable");
-              async.done();
             });
           }));
       it(
@@ -209,19 +127,16 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<div #loc></div>", directives: []))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader.loadIntoLocation(
-                  DynamicallyLoadedWithNgContent, tc.elementRef, "loc", null, [
+            tcb.createAsync(MyComp).then((tc) {
+              tc.detectChanges();
+              loader.loadNextToLocation(DynamicallyLoadedWithNgContent,
+                  tc.componentInstance.viewContainerRef, null, [
                 [DOM.createTextNode("hello")]
               ]).then((ref) {
                 tc.detectChanges();
-                expect(tc.nativeElement).toHaveText("dynamic(hello)");
+                var newlyInsertedElement =
+                    tc.debugElement.childNodes[1].nativeNode;
+                expect(newlyInsertedElement).toHaveText("dynamic(hello)");
                 async.done();
               });
             });
@@ -233,131 +148,10 @@ main() {
             TestComponentBuilder,
             AsyncTestCompleter
           ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<div #loc></div>", directives: []))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader.loadIntoLocation(DynamicallyLoadedWithNgContent,
-                  tc.elementRef, "loc", null, []).then((_) {
-                async.done();
-              });
-            });
-          }));
-    });
-    describe("loading next to a location", () {
-      it(
-          "should work",
-          inject([
-            DynamicComponentLoader,
-            TestComponentBuilder,
-            AsyncTestCompleter
-          ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<div><location #loc></location></div>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader
-                  .loadNextToLocation(DynamicallyLoaded, tc.elementRef)
-                  .then((ref) {
-                expect(tc.debugElement.nativeElement).toHaveText("Location;");
-                expect(DOM.nextSibling(tc.debugElement.nativeElement))
-                    .toHaveText("DynamicallyLoaded;");
-                async.done();
-              });
-            });
-          }));
-      it(
-          "should return a disposable component ref",
-          inject([
-            DynamicComponentLoader,
-            TestComponentBuilder,
-            AsyncTestCompleter
-          ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<div><location #loc></location></div>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader
-                  .loadNextToLocation(DynamicallyLoaded, tc.elementRef)
-                  .then((ref) {
-                loader
-                    .loadNextToLocation(DynamicallyLoaded2, tc.elementRef)
-                    .then((ref2) {
-                  var firstSibling =
-                      DOM.nextSibling(tc.debugElement.nativeElement);
-                  var secondSibling = DOM.nextSibling(firstSibling);
-                  expect(tc.debugElement.nativeElement).toHaveText("Location;");
-                  expect(firstSibling).toHaveText("DynamicallyLoaded;");
-                  expect(secondSibling).toHaveText("DynamicallyLoaded2;");
-                  ref2.dispose();
-                  firstSibling = DOM.nextSibling(tc.debugElement.nativeElement);
-                  secondSibling = DOM.nextSibling(firstSibling);
-                  expect(secondSibling).toBeNull();
-                  async.done();
-                });
-              });
-            });
-          }));
-      it(
-          "should update host properties",
-          inject([
-            DynamicComponentLoader,
-            TestComponentBuilder,
-            AsyncTestCompleter
-          ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(
-                    MyComp,
-                    new ViewMetadata(
-                        template: "<div><location #loc></location></div>",
-                        directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader
-                  .loadNextToLocation(
-                      DynamicallyLoadedWithHostProps, tc.elementRef)
-                  .then((ref) {
-                ref.instance.id = "new value";
-                tc.detectChanges();
-                var newlyInsertedElement =
-                    DOM.nextSibling(tc.debugElement.nativeElement);
-                expect(((newlyInsertedElement as dynamic)).id)
-                    .toEqual("new value");
-                async.done();
-              });
-            });
-          }));
-      it(
-          "should allow to pass projectable nodes",
-          inject([
-            DynamicComponentLoader,
-            TestComponentBuilder,
-            AsyncTestCompleter
-          ], (DynamicComponentLoader loader, TestComponentBuilder tcb, async) {
-            tcb
-                .overrideView(MyComp,
-                    new ViewMetadata(template: "", directives: [Location]))
-                .createAsync(MyComp)
-                .then((tc) {
-              loader.loadNextToLocation(
-                  DynamicallyLoadedWithNgContent, tc.elementRef, null, [
-                [DOM.createTextNode("hello")]
-              ]).then((ref) {
-                tc.detectChanges();
-                var newlyInsertedElement =
-                    DOM.nextSibling(tc.debugElement.nativeElement);
-                expect(newlyInsertedElement).toHaveText("dynamic(hello)");
+            tcb.createAsync(MyComp).then((tc) {
+              tc.detectChanges();
+              loader.loadNextToLocation(DynamicallyLoadedWithNgContent,
+                  tc.componentInstance.viewContainerRef, null, []).then((_) {
                 async.done();
               });
             });
@@ -372,14 +166,14 @@ main() {
             var rootEl = createRootElement(doc, "child-cmp");
             DOM.appendChild(doc.body, rootEl);
             loader.loadAsRoot(ChildComp, null, injector).then((componentRef) {
-              var el = new ComponentFixture_(componentRef);
+              var el = new ComponentFixture(componentRef);
               expect(rootEl.parentNode).toBe(doc.body);
               el.detectChanges();
               expect(rootEl).toHaveText("hello");
               componentRef.instance.ctxProp = "new";
               el.detectChanges();
               expect(rootEl).toHaveText("new");
-              componentRef.dispose();
+              componentRef.destroy();
               expect(rootEl.parentNode).toBeFalsy();
               async.done();
             });
@@ -428,25 +222,6 @@ class ChildComp {
   }
 }
 
-class DynamicallyCreatedComponentService {}
-
-@Component(
-    selector: "hello-cmp",
-    viewProviders: const [DynamicallyCreatedComponentService],
-    template: "{{greeting}}")
-class DynamicallyCreatedCmp implements OnDestroy {
-  String greeting;
-  DynamicallyCreatedComponentService dynamicallyCreatedComponentService;
-  bool destroyed = false;
-  DynamicallyCreatedCmp(DynamicallyCreatedComponentService a) {
-    this.greeting = "hello";
-    this.dynamicallyCreatedComponentService = a;
-  }
-  ngOnDestroy() {
-    this.destroyed = true;
-  }
-}
-
 @Component(selector: "dummy", template: "DynamicallyLoaded;")
 class DynamicallyLoaded {}
 
@@ -479,17 +254,12 @@ class DynamicallyLoadedWithNgContent {
   }
 }
 
-@Component(selector: "location", template: "Location;")
-class Location {
-  ElementRef elementRef;
-  Location(ElementRef elementRef) {
-    this.elementRef = elementRef;
-  }
-}
-
-@Component(selector: "my-comp", directives: const [])
+@Component(
+    selector: "my-comp", directives: const [], template: "<div #loc></div>")
 class MyComp {
   bool ctxBoolProp;
+  @ViewChild("loc", read: ViewContainerRef)
+  ViewContainerRef viewContainerRef;
   MyComp() {
     this.ctxBoolProp = false;
   }

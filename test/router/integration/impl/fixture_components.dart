@@ -1,7 +1,8 @@
 library angular2.test.router.integration.impl.fixture_components;
 
 import "dart:async";
-import "package:angular2/core.dart" show Component;
+import "package:angular2/core.dart"
+    show Component, ComponentRef, ViewContainerRef, ViewChild;
 import "package:angular2/router.dart"
     show
         AsyncRoute,
@@ -14,8 +15,7 @@ import "package:angular2/router.dart"
 import "package:angular2/src/facade/async.dart" show PromiseWrapper;
 import "package:angular2/src/facade/lang.dart" show isPresent;
 import "package:angular2/src/core/linker/dynamic_component_loader.dart"
-    show DynamicComponentLoader, ComponentRef;
-import "package:angular2/src/core/linker/element_ref.dart" show ElementRef;
+    show DynamicComponentLoader;
 
 @Component(selector: "goodbye-cmp", template: '''{{farewell}}''')
 class GoodbyeCmp {
@@ -155,18 +155,18 @@ class RedirectToParentCmp {}
 @RouteConfig(const [const Route(path: "/", component: HelloCmp)])
 class DynamicLoaderCmp {
   DynamicComponentLoader _dynamicComponentLoader;
-  ElementRef _elementRef;
   ComponentRef _componentRef = null;
-  DynamicLoaderCmp(this._dynamicComponentLoader, this._elementRef) {}
+  @ViewChild("viewport", read: ViewContainerRef)
+  ViewContainerRef viewport;
+  DynamicLoaderCmp(this._dynamicComponentLoader) {}
   Future<dynamic> onSomeAction() {
     if (isPresent(this._componentRef)) {
-      this._componentRef.dispose();
+      this._componentRef.destroy();
       this._componentRef = null;
     }
     return this
         ._dynamicComponentLoader
-        .loadIntoLocation(
-            DynamicallyLoadedComponent, this._elementRef, "viewport")
+        .loadNextToLocation(DynamicallyLoadedComponent, this.viewport)
         .then((cmp) {
       this._componentRef = cmp;
     });

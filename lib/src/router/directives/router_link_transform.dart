@@ -197,6 +197,7 @@ class RouterLinkTransform implements TemplateAstVisitor {
         ast.exportAsVars,
         updatedDirectives,
         ast.providers,
+        ast.hasViewContainer,
         updatedChildren,
         ast.ngContentIndex,
         ast.sourceSpan);

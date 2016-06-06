@@ -74,8 +74,15 @@ class ProviderElementContext {
   var _seenProviders = new CompileTokenMap<bool>();
   CompileTokenMap<ProviderAst> _allProviders;
   Map<String, String> _attrs;
-  ProviderElementContext(this._viewContext, this._parent, this._isViewRoot,
-      this._directiveAsts, List<AttrAst> attrs, this._sourceSpan) {
+  bool _hasViewContainer = false;
+  ProviderElementContext(
+      this._viewContext,
+      this._parent,
+      this._isViewRoot,
+      this._directiveAsts,
+      List<AttrAst> attrs,
+      List<VariableAst> vars,
+      this._sourceSpan) {
     this._attrs = {};
     attrs.forEach((attrAst) => this._attrs[attrAst.name] = attrAst.value);
     var directivesMeta =
@@ -83,17 +90,33 @@ class ProviderElementContext {
     this._allProviders = _resolveProvidersFromDirectives(
         directivesMeta, _sourceSpan, _viewContext.errors);
     this._contentQueries = _getContentQueries(directivesMeta);
+    var queriedTokens = new CompileTokenMap<bool>();
+    this._allProviders.values().forEach((provider) {
+      this._addQueryReadsTo(provider.token, queriedTokens);
+    });
+    vars.forEach((varAst) {
+      var varToken = new CompileTokenMetadata(value: varAst.name);
+      this._addQueryReadsTo(varToken, queriedTokens);
+    });
+    if (isPresent(
+        queriedTokens.get(identifierToken(Identifiers.ViewContainerRef)))) {
+      this._hasViewContainer = true;
+    }
     // create the providers that we know are eager first
     this._allProviders.values().forEach((provider) {
-      if (provider.eager || this.isQueried(provider.token)) {
-        this._getLocalProvider(provider.providerType, provider.token, true);
+      var eager =
+          provider.eager || isPresent(queriedTokens.get(provider.token));
+      if (eager) {
+        this._getOrCreateLocalProvider(
+            provider.providerType, provider.token, true);
       }
     });
   }
   afterElement() {
     // collect lazy providers
     this._allProviders.values().forEach((provider) {
-      this._getLocalProvider(provider.providerType, provider.token, false);
+      this._getOrCreateLocalProvider(
+          provider.providerType, provider.token, false);
     });
   }
 
@@ -116,28 +139,47 @@ class ProviderElementContext {
     return sortedDirectives;
   }
 
-  bool isQueried(CompileTokenMetadata token) {
+  bool get transformedHasViewContainer {
+    return this._hasViewContainer;
+  }
+
+  _addQueryReadsTo(
+      CompileTokenMetadata token, CompileTokenMap<bool> queryReadTokens) {
+    this._getQueriesFor(token).forEach((query) {
+      var queryReadToken = isPresent(query.read) ? query.read : token;
+      if (isBlank(queryReadTokens.get(queryReadToken))) {
+        queryReadTokens.add(queryReadToken, true);
+      }
+    });
+  }
+
+  List<CompileQueryMetadata> _getQueriesFor(CompileTokenMetadata token) {
+    List<CompileQueryMetadata> result = [];
     ProviderElementContext currentEl = this;
     var distance = 0;
+    List<CompileQueryMetadata> queries;
     while (!identical(currentEl, null)) {
-      var localQueries = currentEl._contentQueries.get(token);
-      if (isPresent(localQueries)) {
-        if (localQueries.any((query) => query.descendants || distance <= 1)) {
-          return true;
-        }
+      queries = currentEl._contentQueries.get(token);
+      if (isPresent(queries)) {
+        ListWrapper.addAll(
+            result,
+            queries
+                .where((query) => query.descendants || distance <= 1)
+                .toList());
       }
       if (currentEl._directiveAsts.length > 0) {
         distance++;
       }
       currentEl = currentEl._parent;
     }
-    if (isPresent(this._viewContext.viewQueries.get(token))) {
-      return true;
+    queries = this._viewContext.viewQueries.get(token);
+    if (isPresent(queries)) {
+      ListWrapper.addAll(result, queries);
     }
-    return false;
+    return result;
   }
 
-  ProviderAst _getLocalProvider(ProviderAstType requestingProviderType,
+  ProviderAst _getOrCreateLocalProvider(ProviderAstType requestingProviderType,
       CompileTokenMetadata token, bool eager) {
     var resolvedProvider = this._allProviders.get(token);
     if (isBlank(resolvedProvider) ||
@@ -224,9 +266,11 @@ class ProviderElementContext {
             dep.token.equalsTo(identifierToken(Identifiers.ElementRef)) ||
             dep.token
                 .equalsTo(identifierToken(Identifiers.ChangeDetectorRef)) ||
-            dep.token.equalsTo(identifierToken(Identifiers.ViewContainerRef)) ||
             dep.token.equalsTo(identifierToken(Identifiers.TemplateRef))) {
           return dep;
+        }
+        if (dep.token.equalsTo(identifierToken(Identifiers.ViewContainerRef))) {
+          this._hasViewContainer = true;
         }
       }
       // access the injector
@@ -234,8 +278,8 @@ class ProviderElementContext {
         return dep;
       }
       // access providers
-      if (isPresent(
-          this._getLocalProvider(requestingProviderType, dep.token, eager))) {
+      if (isPresent(this._getOrCreateLocalProvider(
+          requestingProviderType, dep.token, eager))) {
         return dep;
       }
     }
@@ -454,11 +498,11 @@ CompileTokenMap<List<CompileQueryMetadata>> _getContentQueries(
 
 _addQueryToTokenMap(CompileTokenMap<List<CompileQueryMetadata>> map,
     CompileQueryMetadata query) {
-  query.selectors.forEach((selector) {
-    var entry = map.get(selector);
+  query.selectors.forEach((CompileTokenMetadata token) {
+    var entry = map.get(token);
     if (isBlank(entry)) {
       entry = [];
-      map.add(selector, entry);
+      map.add(token, entry);
     }
     entry.add(query);
   });

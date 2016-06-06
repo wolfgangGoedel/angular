@@ -4,7 +4,7 @@ import "dart:async";
 import "package:angular2/src/core/application_ref.dart" show ApplicationRef;
 import "package:angular2/src/core/di.dart" show Injectable;
 import "package:angular2/src/facade/lang.dart" show Type;
-import "package:angular2/src/core/linker/dynamic_component_loader.dart"
+import "package:angular2/src/core/linker/component_factory.dart"
     show ComponentRef;
 import "package:angular2/src/core/di.dart" show Provider, Injector;
 import "package:angular2/src/core/zone/ng_zone.dart" show NgZone;

@@ -103,10 +103,10 @@ class WebWorkerRenderer implements Renderer, RenderStoreObject {
     this._rootRenderer.runOnService(fnName, fnArgsWithRenderer);
   }
 
-  dynamic selectRootElement(String selector, RenderDebugInfo debugInfo) {
+  dynamic selectRootElement(String selectorOrNode, RenderDebugInfo debugInfo) {
     var node = this._rootRenderer.allocateNode();
     this._runOnService("selectRootElement",
-        [new FnArg(selector, null), new FnArg(node, RenderStoreObject)]);
+        [new FnArg(selectorOrNode, null), new FnArg(node, RenderStoreObject)]);
     return node;
   }
 

@@ -6,10 +6,15 @@ import "package:angular2/src/facade/exceptions.dart" show BaseException;
 import "package:angular2/src/core/di.dart" show Injector;
 import "view.dart" show AppView;
 import "view_type.dart" show ViewType;
-import "element_ref.dart" show ElementRef_;
+import "element_ref.dart" show ElementRef;
 import "view_container_ref.dart" show ViewContainerRef, ViewContainerRef_;
 import "query_list.dart" show QueryList;
 
+/**
+ * An AppElement is created for elements that have a ViewContainerRef,
+ * a nested component or a <template> element to keep data around
+ * that is needed for later instantiations.
+ */
 class AppElement {
   num index;
   num parentIndex;
@@ -17,24 +22,16 @@ class AppElement {
   dynamic nativeElement;
   List<AppView<dynamic>> nestedViews = null;
   AppView<dynamic> componentView = null;
-  ElementRef_ _ref;
-  ViewContainerRef_ _vcRef;
   dynamic component;
   List<QueryList<dynamic>> componentConstructorViewQueries;
   AppElement(
       this.index, this.parentIndex, this.parentView, this.nativeElement) {}
-  ElementRef_ get ref {
-    if (isBlank(this._ref)) {
-      this._ref = new ElementRef_(this);
-    }
-    return this._ref;
+  ElementRef get elementRef {
+    return new ElementRef(this.nativeElement);
   }
 
   ViewContainerRef_ get vcRef {
-    if (isBlank(this._vcRef)) {
-      this._vcRef = new ViewContainerRef_(this);
-    }
-    return this._vcRef;
+    return new ViewContainerRef_(this);
   }
 
   initComponent(

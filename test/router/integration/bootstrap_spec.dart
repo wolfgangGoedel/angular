@@ -68,10 +68,10 @@ main() {
             provide(DOCUMENT, useValue: fakeDoc),
             provide(Console, useClass: DummyConsole)
           ]).then((applicationRef) {
-            var router = applicationRef.hostComponent.router;
+            var router = applicationRef.instance.router;
             router.subscribe((_) {
               expect(el).toHaveText("outer { hello }");
-              expect(applicationRef.hostComponent.location.path()).toEqual("");
+              expect(applicationRef.instance.location.path()).toEqual("");
               async.done();
             });
           });

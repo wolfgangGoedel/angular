@@ -10,14 +10,13 @@ import "package:angular2/core.dart"
         ViewMetadata,
         ElementRef,
         EmbeddedViewRef,
+        ChangeDetectorRef,
         provide;
 import "package:angular2/compiler.dart" show DirectiveResolver, ViewResolver;
 import "package:angular2/src/facade/lang.dart" show Type, isPresent, isBlank;
 import "package:angular2/src/facade/async.dart" show PromiseWrapper;
 import "package:angular2/src/facade/collection.dart"
     show ListWrapper, MapWrapper;
-import "package:angular2/src/core/linker/view_ref.dart" show ViewRef_;
-import "package:angular2/src/core/linker/view.dart" show AppView;
 import "utils.dart" show el;
 import "package:angular2/src/platform/dom/dom_tokens.dart" show DOCUMENT;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
@@ -28,7 +27,7 @@ import "fake_async.dart" show tick;
 /**
  * Fixture for debugging and testing a component.
  */
-abstract class ComponentFixture {
+class ComponentFixture {
   /**
    * The DebugElement associated with the root element of this component.
    */
@@ -46,46 +45,41 @@ abstract class ComponentFixture {
    */
   ElementRef elementRef;
   /**
+   * The ComponentRef for the component
+   */
+  ComponentRef componentRef;
+  /**
+   * The ChangeDetectorRef for the component
+   */
+  ChangeDetectorRef changeDetectorRef;
+  ComponentFixture(ComponentRef componentRef) {
+    this.changeDetectorRef = componentRef.changeDetectorRef;
+    this.elementRef = componentRef.location;
+    this.debugElement =
+        (getDebugNode(this.elementRef.nativeElement) as DebugElement);
+    this.componentInstance = componentRef.instance;
+    this.nativeElement = this.elementRef.nativeElement;
+    this.componentRef = componentRef;
+  }
+  /**
    * Trigger a change detection cycle for the component.
    */
-  void detectChanges([bool checkNoChanges]);
-  void checkNoChanges();
-  /**
-   * Trigger component destruction.
-   */
-  void destroy();
-}
-
-class ComponentFixture_ extends ComponentFixture {
-  /** @internal */
-  ComponentRef _componentRef;
-  /** @internal */
-  AppView<dynamic> _componentParentView;
-  ComponentFixture_(ComponentRef componentRef) : super() {
-    /* super call moved to initializer */;
-    this._componentParentView =
-        ((componentRef.hostView as ViewRef_)).internalView;
-    var hostAppElement = this._componentParentView.getHostViewElement();
-    this.elementRef = hostAppElement.ref;
-    this.debugElement =
-        (getDebugNode(hostAppElement.nativeElement) as DebugElement);
-    this.componentInstance = hostAppElement.component;
-    this.nativeElement = hostAppElement.nativeElement;
-    this._componentRef = componentRef;
-  }
   void detectChanges([bool checkNoChanges = true]) {
-    this._componentParentView.detectChanges(false);
+    this.changeDetectorRef.detectChanges();
     if (checkNoChanges) {
       this.checkNoChanges();
     }
   }
 
   void checkNoChanges() {
-    this._componentParentView.detectChanges(true);
+    this.changeDetectorRef.checkNoChanges();
   }
 
+  /**
+   * Trigger component destruction.
+   */
   void destroy() {
-    this._componentRef.dispose();
+    this.componentRef.destroy();
   }
 }
 
@@ -264,7 +258,7 @@ class TestComponentBuilder {
         .get(DynamicComponentLoader)
         .loadAsRoot(rootComponentType, '''#${ rootElId}''', this._injector);
     return promise.then((componentRef) {
-      return new ComponentFixture_(componentRef);
+      return new ComponentFixture(componentRef);
     });
   }
 

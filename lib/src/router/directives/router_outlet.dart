@@ -11,7 +11,7 @@ import "package:angular2/core.dart"
         Attribute,
         DynamicComponentLoader,
         ComponentRef,
-        ElementRef,
+        ViewContainerRef,
         Injector,
         provide,
         Dependency,
@@ -37,7 +37,7 @@ var _resolveToTrue = PromiseWrapper.resolve(true);
  */
 @Directive(selector: "router-outlet")
 class RouterOutlet implements OnDestroy {
-  ElementRef _elementRef;
+  ViewContainerRef _viewContainerRef;
   DynamicComponentLoader _loader;
   routerMod.Router _parentRouter;
   String name = null;
@@ -45,7 +45,7 @@ class RouterOutlet implements OnDestroy {
   ComponentInstruction _currentInstruction = null;
   @Output("activate")
   var activateEvents = new EventEmitter<dynamic>();
-  RouterOutlet(this._elementRef, this._loader, this._parentRouter,
+  RouterOutlet(this._viewContainerRef, this._loader, this._parentRouter,
       @Attribute("name") String nameAttr) {
     if (isPresent(nameAttr)) {
       this.name = nameAttr;
@@ -70,7 +70,7 @@ class RouterOutlet implements OnDestroy {
     ]);
     this._componentRef = this
         ._loader
-        .loadNextToLocation(componentType, this._elementRef, providers);
+        .loadNextToLocation(componentType, this._viewContainerRef, providers);
     return this._componentRef.then((componentRef) {
       this.activateEvents.emit(componentRef.instance);
       if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
@@ -124,7 +124,7 @@ class RouterOutlet implements OnDestroy {
     return next.then((_) {
       if (isPresent(this._componentRef)) {
         var onDispose =
-            this._componentRef.then((ComponentRef ref) => ref.dispose());
+            this._componentRef.then((ComponentRef ref) => ref.destroy());
         this._componentRef = null;
         return onDispose;
       }

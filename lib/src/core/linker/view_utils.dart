@@ -9,6 +9,39 @@ import "element.dart" show AppElement;
 import "exceptions.dart" show ExpressionChangedAfterItHasBeenCheckedException;
 import "package:angular2/src/core/change_detection/change_detection.dart"
     show devModeEqual;
+import "package:angular2/src/core/di.dart" show Inject, Injectable;
+import "package:angular2/src/core/render/api.dart"
+    show RootRenderer, RenderComponentType, Renderer;
+import "package:angular2/src/core/application_tokens.dart" show APP_ID;
+import "package:angular2/src/core/metadata/view.dart" show ViewEncapsulation;
+
+@Injectable()
+class ViewUtils {
+  RootRenderer _renderer;
+  String _appId;
+  num _nextCompTypeId = 0;
+  ViewUtils(this._renderer, @Inject(APP_ID) this._appId) {}
+  /**
+   * Used by the generated code
+   */
+  RenderComponentType createRenderComponentType(
+      String templateUrl,
+      num slotCount,
+      ViewEncapsulation encapsulation,
+      List<dynamic /* String | List < dynamic > */ > styles) {
+    return new RenderComponentType(
+        '''${ this . _appId}-${ this . _nextCompTypeId ++}''',
+        templateUrl,
+        slotCount,
+        encapsulation,
+        styles);
+  }
+
+  /** @internal */
+  Renderer renderComponent(RenderComponentType renderComponentType) {
+    return this._renderer.renderComponent(renderComponentType);
+  }
+}
 
 List<dynamic> flattenNestedViewRenderNodes(List<dynamic> nodes) {
   return _flattenNestedViewRenderNodes(nodes, []);
