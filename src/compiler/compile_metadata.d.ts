@@ -178,11 +178,13 @@ export declare class CompileQueryMetadata {
     descendants: boolean;
     first: boolean;
     propertyName: string;
-    constructor({selectors, descendants, first, propertyName}?: {
+    read: CompileTokenMetadata;
+    constructor({selectors, descendants, first, propertyName, read}?: {
         selectors?: Array<CompileTokenMetadata>;
         descendants?: boolean;
         first?: boolean;
         propertyName?: string;
+        read?: CompileTokenMetadata;
     });
     static fromJson(data: {
         [key: string]: any;

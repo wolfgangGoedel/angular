@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 import { Inject, Injectable } from 'angular2/src/core/di';
 import { AnimationBuilder } from 'angular2/src/animate/animation_builder';
-import { isPresent, isBlank, Json, RegExpWrapper, CONST_EXPR, stringify, StringWrapper, isArray } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, Json, RegExpWrapper, CONST_EXPR, stringify, StringWrapper, isArray, isString } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { DomSharedStylesHost } from './shared_styles_host';
 import { EventManager } from './events/event_manager';
@@ -67,10 +67,16 @@ export class DomRenderer {
             this._hostAttr = null;
         }
     }
-    selectRootElement(selector, debugInfo) {
-        var el = DOM.querySelector(this._rootRenderer.document, selector);
-        if (isBlank(el)) {
-            throw new BaseException(`The selector "${selector}" did not match any elements`);
+    selectRootElement(selectorOrNode, debugInfo) {
+        var el;
+        if (isString(selectorOrNode)) {
+            el = DOM.querySelector(this._rootRenderer.document, selectorOrNode);
+            if (isBlank(el)) {
+                throw new BaseException(`The selector "${selectorOrNode}" did not match any elements`);
+            }
+        }
+        else {
+            el = selectorOrNode;
         }
         DOM.clearNodes(el);
         return el;

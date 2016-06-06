@@ -4,7 +4,7 @@ const INITIAL_VALUE = {
     __UNINITIALIZED__: true
 };
 export class DowngradeNg2ComponentAdapter {
-    constructor(id, info, element, attrs, scope, parentInjector, parse, viewManager, hostViewFactory) {
+    constructor(id, info, element, attrs, scope, parentInjector, parse, componentFactory) {
         this.id = id;
         this.info = info;
         this.element = element;
@@ -12,12 +12,11 @@ export class DowngradeNg2ComponentAdapter {
         this.scope = scope;
         this.parentInjector = parentInjector;
         this.parse = parse;
-        this.viewManager = viewManager;
-        this.hostViewFactory = hostViewFactory;
+        this.componentFactory = componentFactory;
         this.component = null;
         this.inputChangeCount = 0;
         this.inputChanges = null;
-        this.hostViewRef = null;
+        this.componentRef = null;
         this.changeDetector = null;
         this.contentInsertionPoint = null;
         this.element[0].id = id;
@@ -27,10 +26,10 @@ export class DowngradeNg2ComponentAdapter {
     bootstrapNg2() {
         var childInjector = this.parentInjector.resolveAndCreateChild([provide(NG1_SCOPE, { useValue: this.componentScope })]);
         this.contentInsertionPoint = document.createComment('ng1 insertion point');
-        this.hostViewRef = this.viewManager.createRootHostView(this.hostViewFactory, '#' + this.id, childInjector, [[this.contentInsertionPoint]]);
-        var hostElement = this.viewManager.getHostElement(this.hostViewRef);
-        this.changeDetector = this.hostViewRef.changeDetectorRef;
-        this.component = this.viewManager.getComponent(hostElement);
+        this.componentRef =
+            this.componentFactory.create(childInjector, [[this.contentInsertionPoint]], '#' + this.id);
+        this.changeDetector = this.componentRef.changeDetectorRef;
+        this.component = this.componentRef.instance;
     }
     setupInputs() {
         var attrs = this.attrs;
@@ -144,7 +143,7 @@ export class DowngradeNg2ComponentAdapter {
     registerCleanup() {
         this.element.bind('$destroy', () => {
             this.componentScope.$destroy();
-            this.viewManager.destroyRootHostView(this.hostViewRef);
+            this.componentRef.destroy();
         });
     }
 }

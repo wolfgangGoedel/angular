@@ -276,7 +276,8 @@ export let RuntimeMetadataResolver = class RuntimeMetadataResolver {
             selectors: selectors,
             first: q.first,
             descendants: q.descendants,
-            propertyName: propertyName
+            propertyName: propertyName,
+            read: isPresent(q.read) ? this.getTokenMetadata(q.read) : null
         });
     }
 };

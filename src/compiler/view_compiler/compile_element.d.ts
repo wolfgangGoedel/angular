@@ -13,16 +13,19 @@ export declare class CompileNode {
     isRootElement(): boolean;
 }
 export declare class CompileElement extends CompileNode {
+    component: CompileDirectiveMetadata;
     private _directives;
     private _resolvedProvidersArray;
+    hasViewContainer: boolean;
+    hasEmbeddedView: boolean;
     variableTokens: {
         [key: string]: CompileTokenMetadata;
     };
     static createNull(): CompileElement;
     private _compViewExpr;
-    component: CompileDirectiveMetadata;
-    private _appElement;
-    private _defaultInjector;
+    appElement: o.ReadPropExpr;
+    elementRef: o.Expression;
+    injector: o.Expression;
     private _instances;
     private _resolvedProviders;
     private _queryCount;
@@ -31,10 +34,11 @@ export declare class CompileElement extends CompileNode {
     contentNodesByNgContentIndex: Array<o.Expression>[];
     embeddedView: CompileView;
     directiveInstances: o.Expression[];
-    constructor(parent: CompileElement, view: CompileView, nodeIndex: number, renderNode: o.Expression, sourceAst: TemplateAst, _directives: CompileDirectiveMetadata[], _resolvedProvidersArray: ProviderAst[], variableTokens: {
+    constructor(parent: CompileElement, view: CompileView, nodeIndex: number, renderNode: o.Expression, sourceAst: TemplateAst, component: CompileDirectiveMetadata, _directives: CompileDirectiveMetadata[], _resolvedProvidersArray: ProviderAst[], hasViewContainer: boolean, hasEmbeddedView: boolean, variableTokens: {
         [key: string]: CompileTokenMetadata;
     });
-    setComponent(component: CompileDirectiveMetadata, compViewExpr: o.Expression): void;
+    private _createAppElement();
+    setComponentView(compViewExpr: o.Expression): void;
     setEmbeddedView(embeddedView: CompileView): void;
     beforeChildren(): void;
     afterChildren(childNodeCount: number): void;
@@ -42,9 +46,6 @@ export declare class CompileElement extends CompileNode {
     getComponent(): o.Expression;
     getProviderTokens(): o.Expression[];
     getDeclaredVariablesNames(): string[];
-    getOptionalAppElement(): o.Expression;
-    getOrCreateAppElement(): o.Expression;
-    getOrCreateInjector(): o.Expression;
     private _getQueriesFor(token);
     private _addQuery(queryMeta, directiveInstance);
     private _getLocalDependency(requestingProviderType, dep);

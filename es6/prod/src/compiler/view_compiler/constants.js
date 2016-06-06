@@ -52,14 +52,14 @@ ChangeDetectionStrategyEnum.OnPush = ChangeDetectionStrategyEnum.fromValue(Chang
 ChangeDetectionStrategyEnum.Default = ChangeDetectionStrategyEnum.fromValue(ChangeDetectionStrategy.Default);
 export class ViewConstructorVars {
 }
-ViewConstructorVars.viewManager = o.variable('viewManager');
+ViewConstructorVars.viewUtils = o.variable('viewUtils');
 ViewConstructorVars.parentInjector = o.variable('parentInjector');
 ViewConstructorVars.declarationEl = o.variable('declarationEl');
 export class ViewProperties {
 }
 ViewProperties.renderer = o.THIS_EXPR.prop('renderer');
 ViewProperties.projectableNodes = o.THIS_EXPR.prop('projectableNodes');
-ViewProperties.viewManager = o.THIS_EXPR.prop('viewManager');
+ViewProperties.viewUtils = o.THIS_EXPR.prop('viewUtils');
 export class EventHandlerVars {
 }
 EventHandlerVars.event = o.variable('$event');

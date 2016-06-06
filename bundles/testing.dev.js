@@ -1167,15 +1167,6 @@ System.register("angular2/src/testing/test_component_builder", ["angular2/core",
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
     var c = arguments.length,
         r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
@@ -1203,40 +1194,32 @@ System.register("angular2/src/testing/test_component_builder", ["angular2/core",
   var debug_node_1 = require("angular2/src/core/debug/debug_node");
   var fake_async_1 = require("angular2/src/testing/fake_async");
   var ComponentFixture = (function() {
-    function ComponentFixture() {}
-    return ComponentFixture;
-  }());
-  exports.ComponentFixture = ComponentFixture;
-  var ComponentFixture_ = (function(_super) {
-    __extends(ComponentFixture_, _super);
-    function ComponentFixture_(componentRef) {
-      _super.call(this);
-      this._componentParentView = componentRef.hostView.internalView;
-      var hostAppElement = this._componentParentView.getHostViewElement();
-      this.elementRef = hostAppElement.ref;
-      this.debugElement = debug_node_1.getDebugNode(hostAppElement.nativeElement);
-      this.componentInstance = hostAppElement.component;
-      this.nativeElement = hostAppElement.nativeElement;
-      this._componentRef = componentRef;
+    function ComponentFixture(componentRef) {
+      this.changeDetectorRef = componentRef.changeDetectorRef;
+      this.elementRef = componentRef.location;
+      this.debugElement = debug_node_1.getDebugNode(this.elementRef.nativeElement);
+      this.componentInstance = componentRef.instance;
+      this.nativeElement = this.elementRef.nativeElement;
+      this.componentRef = componentRef;
     }
-    ComponentFixture_.prototype.detectChanges = function(checkNoChanges) {
+    ComponentFixture.prototype.detectChanges = function(checkNoChanges) {
       if (checkNoChanges === void 0) {
         checkNoChanges = true;
       }
-      this._componentParentView.detectChanges(false);
+      this.changeDetectorRef.detectChanges();
       if (checkNoChanges) {
         this.checkNoChanges();
       }
     };
-    ComponentFixture_.prototype.checkNoChanges = function() {
-      this._componentParentView.detectChanges(true);
+    ComponentFixture.prototype.checkNoChanges = function() {
+      this.changeDetectorRef.checkNoChanges();
     };
-    ComponentFixture_.prototype.destroy = function() {
-      this._componentRef.dispose();
+    ComponentFixture.prototype.destroy = function() {
+      this.componentRef.destroy();
     };
-    return ComponentFixture_;
-  }(ComponentFixture));
-  exports.ComponentFixture_ = ComponentFixture_;
+    return ComponentFixture;
+  }());
+  exports.ComponentFixture = ComponentFixture;
   var _nextRootElementId = 0;
   var TestComponentBuilder = (function() {
     function TestComponentBuilder(_injector) {
@@ -1322,7 +1305,7 @@ System.register("angular2/src/testing/test_component_builder", ["angular2/core",
       dom_adapter_1.DOM.appendChild(doc.body, rootEl);
       var promise = this._injector.get(core_1.DynamicComponentLoader).loadAsRoot(rootComponentType, "#" + rootElId, this._injector);
       return promise.then(function(componentRef) {
-        return new ComponentFixture_(componentRef);
+        return new ComponentFixture(componentRef);
       });
     };
     TestComponentBuilder.prototype.createFakeAsync = function(rootComponentType) {

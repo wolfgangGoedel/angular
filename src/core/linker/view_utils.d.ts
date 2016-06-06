@@ -1,3 +1,15 @@
+import { RootRenderer, RenderComponentType } from 'angular2/src/core/render/api';
+import { ViewEncapsulation } from 'angular2/src/core/metadata/view';
+export declare class ViewUtils {
+    private _renderer;
+    private _appId;
+    private _nextCompTypeId;
+    constructor(_renderer: RootRenderer, _appId: string);
+    /**
+     * Used by the generated code
+     */
+    createRenderComponentType(templateUrl: string, slotCount: number, encapsulation: ViewEncapsulation, styles: Array<string | any[]>): RenderComponentType;
+}
 export declare function flattenNestedViewRenderNodes(nodes: any[]): any[];
 export declare function ensureSlotCount(projectableNodes: any[][], expectedSlotCount: number): any[][];
 export declare const MAX_INTERPOLATION_VALUES: number;

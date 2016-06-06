@@ -1,15 +1,6 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 import { ListWrapper, StringMapWrapper } from 'angular2/src/facade/collection';
 import { AppElement } from './element';
-import { isPresent, isBlank, CONST, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, CONST_EXPR } from 'angular2/src/facade/lang';
 import { ObservableWrapper } from 'angular2/src/facade/async';
 import { ViewRef_ } from './view_ref';
 import { ViewType } from './view_type';
@@ -19,7 +10,6 @@ import { wtfCreateScope, wtfLeave } from '../profile/profile';
 import { ExpressionChangedAfterItHasBeenCheckedException, ViewDestroyedException, ViewWrappedException } from './exceptions';
 import { DebugContext } from './debug_context';
 import { ElementInjector } from './element_injector';
-export const HOST_VIEW_ELEMENT_NAME = '$hostViewEl';
 const EMPTY_CONTEXT = CONST_EXPR(new Object());
 var _scope_check = wtfCreateScope(`AppView#check(ascii id)`);
 /**
@@ -27,12 +17,12 @@ var _scope_check = wtfCreateScope(`AppView#check(ascii id)`);
  *
  */
 export class AppView {
-    constructor(clazz, componentType, type, locals, viewManager, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize) {
+    constructor(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize) {
         this.clazz = clazz;
         this.componentType = componentType;
         this.type = type;
         this.locals = locals;
-        this.viewManager = viewManager;
+        this.viewUtils = viewUtils;
         this.parentInjector = parentInjector;
         this.declarationAppElement = declarationAppElement;
         this.cdMode = cdMode;
@@ -50,7 +40,7 @@ export class AppView {
         this.destroyed = false;
         this.ref = new ViewRef_(this);
         if (type === ViewType.COMPONENT || type === ViewType.HOST) {
-            this.renderer = viewManager.renderComponent(componentType);
+            this.renderer = viewUtils.renderComponent(componentType);
         }
         else {
             this.renderer = declarationAppElement.parentView.renderer;
@@ -58,7 +48,7 @@ export class AppView {
         this._literalArrayCache = ListWrapper.createFixedSize(literalArrayCacheSize);
         this._literalMapCache = ListWrapper.createFixedSize(literalMapCacheSize);
     }
-    create(givenProjectableNodes, rootSelector) {
+    create(givenProjectableNodes, rootSelectorOrNode) {
         var context;
         var projectableNodes;
         switch (this.type) {
@@ -77,18 +67,19 @@ export class AppView {
                 projectableNodes = givenProjectableNodes;
                 break;
         }
+        this._hasExternalHostElement = isPresent(rootSelectorOrNode);
         this.context = context;
         this.projectableNodes = projectableNodes;
-        this.createInternal(rootSelector);
+        return this.createInternal(rootSelectorOrNode);
     }
     /**
-     * Overwritten by implementations
+     * Overwritten by implementations.
+     * Returns the AppElement for the host element for ViewType.HOST.
      */
-    createInternal(rootSelector) { }
-    init(rootNodesOrAppElements, allNodes, appElements, disposables, subscriptions) {
+    createInternal(rootSelectorOrNode) { return null; }
+    init(rootNodesOrAppElements, allNodes, disposables, subscriptions) {
         this.rootNodesOrAppElements = rootNodesOrAppElements;
         this.allNodes = allNodes;
-        this.namedAppElements = appElements;
         this.disposables = disposables;
         this.subscriptions = subscriptions;
         if (this.type === ViewType.COMPONENT) {
@@ -98,7 +89,16 @@ export class AppView {
             this.dirtyParentQueriesInternal();
         }
     }
-    getHostViewElement() { return this.namedAppElements[HOST_VIEW_ELEMENT_NAME]; }
+    selectOrCreateHostElement(elementName, rootSelectorOrNode, debugCtx) {
+        var hostElement;
+        if (isPresent(rootSelectorOrNode)) {
+            hostElement = this.renderer.selectRootElement(rootSelectorOrNode, debugCtx);
+        }
+        else {
+            hostElement = this.renderer.createElement(null, elementName, debugCtx);
+        }
+        return hostElement;
+    }
     injectorGet(token, nodeIndex, notFoundResult) {
         return this.injectorGetInternal(token, nodeIndex, notFoundResult);
     }
@@ -117,23 +117,31 @@ export class AppView {
         }
     }
     destroy() {
+        if (this._hasExternalHostElement) {
+            this.renderer.detachView(this.flatRootNodes);
+        }
+        else if (isPresent(this.viewContainerElement)) {
+            this.viewContainerElement.detachView(this.viewContainerElement.nestedViews.indexOf(this));
+        }
+        this._destroyRecurse();
+    }
+    _destroyRecurse() {
         if (this.destroyed) {
             return;
         }
         var children = this.contentChildren;
         for (var i = 0; i < children.length; i++) {
-            children[i].destroy();
+            children[i]._destroyRecurse();
         }
         children = this.viewChildren;
         for (var i = 0; i < children.length; i++) {
-            children[i].destroy();
+            children[i]._destroyRecurse();
         }
         this.destroyLocal();
         this.destroyed = true;
     }
     destroyLocal() {
         var hostElement = this.type === ViewType.COMPONENT ? this.declarationAppElement.nativeElement : null;
-        this.renderer.destroyView(hostElement, this.allNodes);
         for (var i = 0; i < this.disposables.length; i++) {
             this.disposables[i]();
         }
@@ -142,6 +150,7 @@ export class AppView {
         }
         this.destroyInternal();
         this.dirtyParentQueriesInternal();
+        this.renderer.destroyView(hostElement, this.allNodes);
     }
     /**
      * Overwritten by implementations
@@ -240,15 +249,15 @@ export class AppView {
     throwDestroyedError(details) { throw new ViewDestroyedException(details); }
 }
 export class DebugAppView extends AppView {
-    constructor(clazz, componentType, type, locals, viewManager, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize, staticNodeDebugInfos) {
-        super(clazz, componentType, type, locals, viewManager, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize);
+    constructor(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize, staticNodeDebugInfos) {
+        super(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize);
         this.staticNodeDebugInfos = staticNodeDebugInfos;
         this._currentDebugContext = null;
     }
     create(givenProjectableNodes, rootSelector) {
         this._resetDebug();
         try {
-            super.create(givenProjectableNodes, rootSelector);
+            return super.create(givenProjectableNodes, rootSelector);
         }
         catch (e) {
             this._rethrowWithContext(e, e.stack);
@@ -313,16 +322,6 @@ export class DebugAppView extends AppView {
         };
     }
 }
-export let HostViewFactory = class HostViewFactory {
-    constructor(selector, viewFactory) {
-        this.selector = selector;
-        this.viewFactory = viewFactory;
-    }
-};
-HostViewFactory = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [String, Function])
-], HostViewFactory);
 function _findLastRenderNode(node) {
     var lastNode;
     if (node instanceof AppElement) {

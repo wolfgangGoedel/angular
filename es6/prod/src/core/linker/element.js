@@ -1,9 +1,14 @@
-import { isPresent, isBlank } from 'angular2/src/facade/lang';
+import { isPresent } from 'angular2/src/facade/lang';
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { ViewType } from './view_type';
-import { ElementRef_ } from './element_ref';
+import { ElementRef } from './element_ref';
 import { ViewContainerRef_ } from './view_container_ref';
+/**
+ * An AppElement is created for elements that have a ViewContainerRef,
+ * a nested component or a <template> element to keep data around
+ * that is needed for later instantiations.
+ */
 export class AppElement {
     constructor(index, parentIndex, parentView, nativeElement) {
         this.index = index;
@@ -13,18 +18,8 @@ export class AppElement {
         this.nestedViews = null;
         this.componentView = null;
     }
-    get ref() {
-        if (isBlank(this._ref)) {
-            this._ref = new ElementRef_(this);
-        }
-        return this._ref;
-    }
-    get vcRef() {
-        if (isBlank(this._vcRef)) {
-            this._vcRef = new ViewContainerRef_(this);
-        }
-        return this._vcRef;
-    }
+    get elementRef() { return new ElementRef(this.nativeElement); }
+    get vcRef() { return new ViewContainerRef_(this); }
     initComponent(component, componentConstructorViewQueries, view) {
         this.component = component;
         this.componentConstructorViewQueries = componentConstructorViewQueries;

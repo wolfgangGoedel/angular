@@ -32,9 +32,9 @@ export class TemplateRef_ extends TemplateRef {
         this._viewFactory = _viewFactory;
     }
     createEmbeddedView() {
-        var view = this._viewFactory(this._appElement.parentView.viewManager, this._appElement.parentInjector, this._appElement);
+        var view = this._viewFactory(this._appElement.parentView.viewUtils, this._appElement.parentInjector, this._appElement);
         view.create(null, null);
-        return view;
+        return view.ref;
     }
-    get elementRef() { return this._appElement.ref; }
+    get elementRef() { return this._appElement.elementRef; }
 }

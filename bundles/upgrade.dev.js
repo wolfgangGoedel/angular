@@ -81,10 +81,9 @@ System.register("angular2/src/upgrade/constants", [], true, function(require, ex
       __define = global.define;
   global.define = undefined;
   "use strict";
-  exports.NG2_APP_VIEW_MANAGER = 'ng2.AppViewManager';
   exports.NG2_COMPILER = 'ng2.Compiler';
   exports.NG2_INJECTOR = 'ng2.Injector';
-  exports.NG2_HOST_VIEW_FACTORY_REF_MAP = 'ng2.HostViewFactoryRefMap';
+  exports.NG2_COMPONENT_FACTORY_REF_MAP = 'ng2.ComponentFactoryRefMap';
   exports.NG2_ZONE = 'ng2.NgZone';
   exports.NG1_CONTROLLER = '$controller';
   exports.NG1_SCOPE = '$scope';
@@ -109,7 +108,7 @@ System.register("angular2/src/upgrade/downgrade_ng2_adapter", ["angular2/core", 
   var constants_1 = require("angular2/src/upgrade/constants");
   var INITIAL_VALUE = {__UNINITIALIZED__: true};
   var DowngradeNg2ComponentAdapter = (function() {
-    function DowngradeNg2ComponentAdapter(id, info, element, attrs, scope, parentInjector, parse, viewManager, hostViewFactory) {
+    function DowngradeNg2ComponentAdapter(id, info, element, attrs, scope, parentInjector, parse, componentFactory) {
       this.id = id;
       this.info = info;
       this.element = element;
@@ -117,12 +116,11 @@ System.register("angular2/src/upgrade/downgrade_ng2_adapter", ["angular2/core", 
       this.scope = scope;
       this.parentInjector = parentInjector;
       this.parse = parse;
-      this.viewManager = viewManager;
-      this.hostViewFactory = hostViewFactory;
+      this.componentFactory = componentFactory;
       this.component = null;
       this.inputChangeCount = 0;
       this.inputChanges = null;
-      this.hostViewRef = null;
+      this.componentRef = null;
       this.changeDetector = null;
       this.contentInsertionPoint = null;
       this.element[0].id = id;
@@ -132,10 +130,9 @@ System.register("angular2/src/upgrade/downgrade_ng2_adapter", ["angular2/core", 
     DowngradeNg2ComponentAdapter.prototype.bootstrapNg2 = function() {
       var childInjector = this.parentInjector.resolveAndCreateChild([core_1.provide(constants_1.NG1_SCOPE, {useValue: this.componentScope})]);
       this.contentInsertionPoint = document.createComment('ng1 insertion point');
-      this.hostViewRef = this.viewManager.createRootHostView(this.hostViewFactory, '#' + this.id, childInjector, [[this.contentInsertionPoint]]);
-      var hostElement = this.viewManager.getHostElement(this.hostViewRef);
-      this.changeDetector = this.hostViewRef.changeDetectorRef;
-      this.component = this.viewManager.getComponent(hostElement);
+      this.componentRef = this.componentFactory.create(childInjector, [[this.contentInsertionPoint]], '#' + this.id);
+      this.changeDetector = this.componentRef.changeDetectorRef;
+      this.component = this.componentRef.instance;
     };
     DowngradeNg2ComponentAdapter.prototype.setupInputs = function() {
       var _this = this;
@@ -252,7 +249,7 @@ System.register("angular2/src/upgrade/downgrade_ng2_adapter", ["angular2/core", 
       var _this = this;
       this.element.bind('$destroy', function() {
         _this.componentScope.$destroy();
-        _this.viewManager.destroyRootHostView(_this.hostViewRef);
+        _this.componentRef.destroy();
       });
     };
     return DowngradeNg2ComponentAdapter;
@@ -649,16 +646,16 @@ System.register("angular2/src/upgrade/upgrade_adapter", ["angular2/core", "angul
         }}), this.providers]);
       var injector = applicationRef.injector;
       var ngZone = injector.get(core_1.NgZone);
-      var compiler = injector.get(core_1.Compiler);
+      var compiler = injector.get(core_1.ComponentResolver);
       var delayApplyExps = [];
       var original$applyFn;
       var rootScopePrototype;
       var rootScope;
-      var hostViewFactoryRefMap = {};
+      var componentFactoryRefMap = {};
       var ng1Module = angular.module(this.idPrefix, modules);
       var ng1BootstrapPromise = null;
       var ng1compilePromise = null;
-      ng1Module.value(constants_1.NG2_INJECTOR, injector).value(constants_1.NG2_ZONE, ngZone).value(constants_1.NG2_COMPILER, compiler).value(constants_1.NG2_HOST_VIEW_FACTORY_REF_MAP, hostViewFactoryRefMap).value(constants_1.NG2_APP_VIEW_MANAGER, injector.get(core_1.AppViewManager)).config(['$provide', function(provide) {
+      ng1Module.value(constants_1.NG2_INJECTOR, injector).value(constants_1.NG2_ZONE, ngZone).value(constants_1.NG2_COMPILER, compiler).value(constants_1.NG2_COMPONENT_FACTORY_REF_MAP, componentFactoryRefMap).config(['$provide', function(provide) {
         provide.decorator(constants_1.NG1_ROOT_SCOPE, ['$delegate', function(rootScopeDelegate) {
           rootScopePrototype = rootScopeDelegate.constructor.prototype;
           if (rootScopePrototype.hasOwnProperty('$apply')) {
@@ -718,7 +715,7 @@ System.register("angular2/src/upgrade/upgrade_adapter", ["angular2/core", "angul
           resolve();
         }
       });
-      Promise.all([this.compileNg2Components(compiler, hostViewFactoryRefMap), ng1BootstrapPromise, ng1compilePromise]).then(function() {
+      Promise.all([this.compileNg2Components(compiler, componentFactoryRefMap), ng1BootstrapPromise, ng1compilePromise]).then(function() {
         ngZone.run(function() {
           if (rootScopePrototype) {
             rootScopePrototype.$apply = original$applyFn;
@@ -751,37 +748,37 @@ System.register("angular2/src/upgrade/upgrade_adapter", ["angular2/core", "angul
       factory.$inject = [constants_1.NG2_INJECTOR];
       return factory;
     };
-    UpgradeAdapter.prototype.compileNg2Components = function(compiler, hostViewFactoryRefMap) {
+    UpgradeAdapter.prototype.compileNg2Components = function(compiler, componentFactoryRefMap) {
       var _this = this;
       var promises = [];
       var types = this.upgradedComponents;
       for (var i = 0; i < types.length; i++) {
-        promises.push(compiler.compileInHost(types[i]));
+        promises.push(compiler.resolveComponent(types[i]));
       }
-      return Promise.all(promises).then(function(hostViewFactories) {
+      return Promise.all(promises).then(function(componentFactories) {
         var types = _this.upgradedComponents;
-        for (var i = 0; i < hostViewFactories.length; i++) {
-          hostViewFactoryRefMap[metadata_1.getComponentInfo(types[i]).selector] = hostViewFactories[i];
+        for (var i = 0; i < componentFactories.length; i++) {
+          componentFactoryRefMap[metadata_1.getComponentInfo(types[i]).selector] = componentFactories[i];
         }
-        return hostViewFactoryRefMap;
+        return componentFactoryRefMap;
       }, util_1.onError);
     };
     return UpgradeAdapter;
   }());
   exports.UpgradeAdapter = UpgradeAdapter;
   function ng1ComponentDirective(info, idPrefix) {
-    directiveFactory.$inject = [constants_1.NG2_HOST_VIEW_FACTORY_REF_MAP, constants_1.NG2_APP_VIEW_MANAGER, constants_1.NG1_PARSE];
-    function directiveFactory(hostViewFactoryRefMap, viewManager, parse) {
-      var hostViewFactory = hostViewFactoryRefMap[info.selector];
-      if (!hostViewFactory)
-        throw new Error('Expecting HostViewFactoryRef for: ' + info.selector);
+    directiveFactory.$inject = [constants_1.NG2_COMPONENT_FACTORY_REF_MAP, constants_1.NG1_PARSE];
+    function directiveFactory(componentFactoryRefMap, parse) {
+      var componentFactory = componentFactoryRefMap[info.selector];
+      if (!componentFactory)
+        throw new Error('Expecting ComponentFactory for: ' + info.selector);
       var idCount = 0;
       return {
         restrict: 'E',
         require: constants_1.REQUIRE_INJECTOR,
         link: {post: function(scope, element, attrs, parentInjector, transclude) {
             var domElement = element[0];
-            var facade = new downgrade_ng2_adapter_1.DowngradeNg2ComponentAdapter(idPrefix + (idCount++), info, element, attrs, scope, parentInjector, parse, viewManager, hostViewFactory);
+            var facade = new downgrade_ng2_adapter_1.DowngradeNg2ComponentAdapter(idPrefix + (idCount++), info, element, attrs, scope, parentInjector, parse, componentFactory);
             facade.setupInputs();
             facade.bootstrapNg2();
             facade.projectContent();

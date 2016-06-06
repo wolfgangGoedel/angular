@@ -88,7 +88,7 @@ export interface ViewDecorator extends TypeDecorator {
  * ]
  * ```
  */
-export interface DirectiveFactory {
+export interface DirectiveMetadataFactory {
     (obj: {
         selector?: string;
         inputs?: string[];
@@ -153,7 +153,7 @@ export interface DirectiveFactory {
  * ]
  * ```
  */
-export interface ComponentFactory {
+export interface ComponentMetadataFactory {
     (obj: {
         selector?: string;
         inputs?: string[];
@@ -251,7 +251,7 @@ export interface ComponentFactory {
  * ]
  * ```
  */
-export interface ViewFactory {
+export interface ViewMetadataFactory {
     (obj: {
         templateUrl?: string;
         template?: string;
@@ -305,7 +305,7 @@ export interface ViewFactory {
  * ]
  * ```
  */
-export interface AttributeFactory {
+export interface AttributeMetadataFactory {
     (name: string): TypeDecorator;
     new (name: string): AttributeMetadata;
 }
@@ -352,45 +352,61 @@ export interface AttributeFactory {
  * ]
  * ```
  */
-export interface QueryFactory {
-    (selector: Type | string, {descendants}?: {
+export interface QueryMetadataFactory {
+    (selector: Type | string, {descendants, read}?: {
         descendants?: boolean;
+        read?: any;
     }): ParameterDecorator;
-    new (selector: Type | string, {descendants}?: {
+    new (selector: Type | string, {descendants, read}?: {
         descendants?: boolean;
+        read?: any;
     }): QueryMetadata;
 }
 /**
  * Factory for {@link ContentChildren}.
  */
-export interface ContentChildrenFactory {
-    (selector: Type | string, {descendants}?: {
+export interface ContentChildrenMetadataFactory {
+    (selector: Type | string, {descendants, read}?: {
         descendants?: boolean;
+        read?: any;
     }): any;
-    new (selector: Type | string, {descendants}?: {
+    new (selector: Type | string, {descendants, read}?: {
         descendants?: boolean;
+        read?: any;
     }): ContentChildrenMetadata;
 }
 /**
  * Factory for {@link ContentChild}.
  */
-export interface ContentChildFactory {
-    (selector: Type | string): any;
-    new (selector: Type | string): ContentChildFactory;
+export interface ContentChildMetadataFactory {
+    (selector: Type | string, {read}?: {
+        read?: any;
+    }): any;
+    new (selector: Type | string, {read}?: {
+        read?: any;
+    }): ContentChildMetadataFactory;
 }
 /**
  * Factory for {@link ViewChildren}.
  */
-export interface ViewChildrenFactory {
-    (selector: Type | string): any;
-    new (selector: Type | string): ViewChildrenMetadata;
+export interface ViewChildrenMetadataFactory {
+    (selector: Type | string, {read}?: {
+        read?: any;
+    }): any;
+    new (selector: Type | string, {read}?: {
+        read?: any;
+    }): ViewChildrenMetadata;
 }
 /**
  * Factory for {@link ViewChild}.
  */
-export interface ViewChildFactory {
-    (selector: Type | string): any;
-    new (selector: Type | string): ViewChildFactory;
+export interface ViewChildMetadataFactory {
+    (selector: Type | string, {read}?: {
+        read?: any;
+    }): any;
+    new (selector: Type | string, {read}?: {
+        read?: any;
+    }): ViewChildMetadataFactory;
 }
 /**
  * {@link PipeMetadata} factory for creating decorators.
@@ -399,7 +415,7 @@ export interface ViewChildFactory {
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
  */
-export interface PipeFactory {
+export interface PipeMetadataFactory {
     (obj: {
         name: string;
         pure?: boolean;
@@ -414,7 +430,7 @@ export interface PipeFactory {
  *
  * See {@link InputMetadata}.
  */
-export interface InputFactory {
+export interface InputMetadataFactory {
     (bindingPropertyName?: string): any;
     new (bindingPropertyName?: string): any;
 }
@@ -423,21 +439,21 @@ export interface InputFactory {
  *
  * See {@link OutputMetadata}.
  */
-export interface OutputFactory {
+export interface OutputMetadataFactory {
     (bindingPropertyName?: string): any;
     new (bindingPropertyName?: string): any;
 }
 /**
  * {@link HostBindingMetadata} factory function.
  */
-export interface HostBindingFactory {
+export interface HostBindingMetadataFactory {
     (hostPropertyName?: string): any;
     new (hostPropertyName?: string): any;
 }
 /**
  * {@link HostListenerMetadata} factory function.
  */
-export interface HostListenerFactory {
+export interface HostListenerMetadataFactory {
     (eventName: string, args?: string[]): any;
     new (eventName: string, args?: string[]): any;
 }
@@ -464,7 +480,7 @@ export interface HostListenerFactory {
  *
  * {@example core/ts/metadata/metadata.ts region='component'}
  */
-export declare var Component: ComponentFactory;
+export declare var Component: ComponentMetadataFactory;
 /**
  * Directives allow you to attach behavior to elements in the DOM.
  *
@@ -843,7 +859,7 @@ export declare var Component: ComponentFactory;
  * the instantiated
  * view occurs on the second `<li></li>` which is a sibling to the `<template>` element.
  */
-export declare var Directive: DirectiveFactory;
+export declare var Directive: DirectiveMetadataFactory;
 /**
  * Specifies that a constant attribute value should be injected.
  *
@@ -861,7 +877,7 @@ export declare var Directive: DirectiveFactory;
  *
  * {@example core/ts/metadata/metadata.ts region='attributeMetadata'}
  */
-export declare var Attribute: AttributeFactory;
+export declare var Attribute: AttributeMetadataFactory;
 /**
  * Declares an injectable parameter to be a live list of directives or variable
  * bindings from the content children of a directive.
@@ -969,7 +985,7 @@ export declare var Attribute: AttributeFactory;
  * The injected object is an unmodifiable live list.
  * See {@link QueryList} for more details.
  */
-export declare var Query: QueryFactory;
+export declare var Query: QueryMetadataFactory;
 /**
  * Configures a content query.
  *
@@ -990,7 +1006,7 @@ export declare var Query: QueryFactory;
  * }
  * ```
  */
-export declare var ContentChildren: ContentChildrenFactory;
+export declare var ContentChildren: ContentChildrenMetadataFactory;
 /**
  * Configures a content query.
  *
@@ -1011,7 +1027,7 @@ export declare var ContentChildren: ContentChildrenFactory;
  * }
  * ```
  */
-export declare var ContentChild: ContentChildFactory;
+export declare var ContentChild: ContentChildMetadataFactory;
 /**
  * Declares a list of child element references.
  *
@@ -1091,7 +1107,7 @@ export declare var ContentChild: ContentChildFactory;
  *
  * See also: [ViewChildrenMetadata]
  */
-export declare var ViewChildren: ViewChildrenFactory;
+export declare var ViewChildren: ViewChildrenMetadataFactory;
 /**
  * Declares a reference to a child element.
  *
@@ -1162,7 +1178,7 @@ export declare var ViewChildren: ViewChildrenFactory;
  * ```
  * See also: [ViewChildMetadata]
  */
-export declare var ViewChild: ViewChildFactory;
+export declare var ViewChild: ViewChildMetadataFactory;
 /**
  * Similar to {@link QueryMetadata}, but querying the component view, instead of
  * the content children.
@@ -1198,7 +1214,7 @@ export declare var ViewChild: ViewChildFactory;
  * The injected object is an iterable and observable live list.
  * See {@link QueryList} for more details.
  */
-export declare var ViewQuery: QueryFactory;
+export declare var ViewQuery: QueryMetadataFactory;
 /**
  * Declare reusable pipe function.
  *
@@ -1206,7 +1222,7 @@ export declare var ViewQuery: QueryFactory;
  *
  * {@example core/ts/metadata/metadata.ts region='pipe'}
  */
-export declare var Pipe: PipeFactory;
+export declare var Pipe: PipeMetadataFactory;
 /**
  * Declares a data-bound input property.
  *
@@ -1248,7 +1264,7 @@ export declare var Pipe: PipeFactory;
  * bootstrap(App);
  * ```
  */
-export declare var Input: InputFactory;
+export declare var Input: InputMetadataFactory;
 /**
  * Declares an event-bound output property.
  *
@@ -1290,7 +1306,7 @@ export declare var Input: InputFactory;
  * bootstrap(App);
  * ```
  */
-export declare var Output: OutputFactory;
+export declare var Output: OutputMetadataFactory;
 /**
  * Declares a host property binding.
  *
@@ -1326,7 +1342,7 @@ export declare var Output: OutputFactory;
  * bootstrap(App);
  * ```
  */
-export declare var HostBinding: HostBindingFactory;
+export declare var HostBinding: HostBindingMetadataFactory;
 /**
  * Declares a host listener.
  *
@@ -1361,4 +1377,4 @@ export declare var HostBinding: HostBindingFactory;
  * bootstrap(App);
  * ```
  */
-export declare var HostListener: HostListenerFactory;
+export declare var HostListener: HostListenerMetadataFactory;

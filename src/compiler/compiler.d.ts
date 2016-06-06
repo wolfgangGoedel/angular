@@ -4,6 +4,7 @@ export { TEMPLATE_TRANSFORMS } from 'angular2/src/compiler/template_parser';
 export { CompilerConfig, RenderTypes } from './config';
 export * from './compile_metadata';
 export * from './offline_compiler';
+export { RuntimeCompiler } from './runtime_compiler';
 export * from 'angular2/src/compiler/url_resolver';
 export * from 'angular2/src/compiler/xhr';
 export { ViewResolver } from './view_resolver';

@@ -12,32 +12,28 @@ import { isBlank, stringify } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { PromiseWrapper } from 'angular2/src/facade/async';
 import { reflector } from 'angular2/src/core/reflection/reflection';
-import { HostViewFactory } from 'angular2/src/core/linker/view';
-import { HostViewFactoryRef_ } from 'angular2/src/core/linker/view_ref';
+import { ComponentFactory } from './component_factory';
 /**
- * Low-level service for compiling {@link Component}s into {@link ProtoViewRef ProtoViews}s, which
+ * Low-level service for loading {@link ComponentFactory}s, which
  * can later be used to create and render a Component instance.
- *
- * Most applications should instead use higher-level {@link DynamicComponentLoader} service, which
- * both compiles and instantiates a Component.
  */
-export class Compiler {
+export class ComponentResolver {
 }
-function isHostViewFactory(type) {
-    return type instanceof HostViewFactory;
+function _isComponentFactory(type) {
+    return type instanceof ComponentFactory;
 }
-export let Compiler_ = class Compiler_ extends Compiler {
-    compileInHost(componentType) {
+export let ReflectorComponentResolver = class ReflectorComponentResolver extends ComponentResolver {
+    resolveComponent(componentType) {
         var metadatas = reflector.annotations(componentType);
-        var hostViewFactory = metadatas.find(isHostViewFactory);
-        if (isBlank(hostViewFactory)) {
+        var componentFactory = metadatas.find(_isComponentFactory);
+        if (isBlank(componentFactory)) {
             throw new BaseException(`No precompiled component ${stringify(componentType)} found`);
         }
-        return PromiseWrapper.resolve(new HostViewFactoryRef_(hostViewFactory));
+        return PromiseWrapper.resolve(componentFactory);
     }
     clearCache() { }
 };
-Compiler_ = __decorate([
+ReflectorComponentResolver = __decorate([
     Injectable(), 
     __metadata('design:paramtypes', [])
-], Compiler_);
+], ReflectorComponentResolver);

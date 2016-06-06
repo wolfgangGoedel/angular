@@ -21,26 +21,28 @@ import { tick } from './fake_async';
  * Fixture for debugging and testing a component.
  */
 export class ComponentFixture {
-}
-export class ComponentFixture_ extends ComponentFixture {
     constructor(componentRef) {
-        super();
-        this._componentParentView = componentRef.hostView.internalView;
-        var hostAppElement = this._componentParentView.getHostViewElement();
-        this.elementRef = hostAppElement.ref;
-        this.debugElement = getDebugNode(hostAppElement.nativeElement);
-        this.componentInstance = hostAppElement.component;
-        this.nativeElement = hostAppElement.nativeElement;
-        this._componentRef = componentRef;
+        this.changeDetectorRef = componentRef.changeDetectorRef;
+        this.elementRef = componentRef.location;
+        this.debugElement = getDebugNode(this.elementRef.nativeElement);
+        this.componentInstance = componentRef.instance;
+        this.nativeElement = this.elementRef.nativeElement;
+        this.componentRef = componentRef;
     }
+    /**
+     * Trigger a change detection cycle for the component.
+     */
     detectChanges(checkNoChanges = true) {
-        this._componentParentView.detectChanges(false);
+        this.changeDetectorRef.detectChanges();
         if (checkNoChanges) {
             this.checkNoChanges();
         }
     }
-    checkNoChanges() { this._componentParentView.detectChanges(true); }
-    destroy() { this._componentRef.dispose(); }
+    checkNoChanges() { this.changeDetectorRef.checkNoChanges(); }
+    /**
+     * Trigger component destruction.
+     */
+    destroy() { this.componentRef.destroy(); }
 }
 var _nextRootElementId = 0;
 /**
@@ -195,7 +197,7 @@ export let TestComponentBuilder = TestComponentBuilder_1 = class TestComponentBu
         DOM.appendChild(doc.body, rootEl);
         var promise = this._injector.get(DynamicComponentLoader)
             .loadAsRoot(rootComponentType, `#${rootElId}`, this._injector);
-        return promise.then((componentRef) => { return new ComponentFixture_(componentRef); });
+        return promise.then((componentRef) => { return new ComponentFixture(componentRef); });
     }
     createFakeAsync(rootComponentType) {
         var result;

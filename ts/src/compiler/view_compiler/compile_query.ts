@@ -59,7 +59,18 @@ export class CompileQuery {
     }
   }
 
-  afterChildren(targetMethod: CompileMethod) {
+  private _isStatic(): boolean {
+    var isStatic = true;
+    this._values.values.forEach((value) => {
+      if (value instanceof ViewQueryValues) {
+        // querying a nested view makes the query content dynamic
+        isStatic = false;
+      }
+    });
+    return isStatic;
+  }
+
+  afterChildren(targetStaticMethod, targetDynamicMethod: CompileMethod) {
     var values = createQueryValues(this._values);
     var updateStmts = [this.queryList.callMethod('reset', [o.literalArr(values)]).toStmt()];
     if (isPresent(this.ownerDirectiveExpression)) {
@@ -70,14 +81,22 @@ export class CompileQuery {
     if (!this.meta.first) {
       updateStmts.push(this.queryList.callMethod('notifyOnChanges', []).toStmt());
     }
-    targetMethod.addStmt(new o.IfStmt(this.queryList.prop('dirty'), updateStmts));
+    if (this.meta.first && this._isStatic()) {
+      // for queries that don't change and the user asked for a single element,
+      // set it immediately. That is e.g. needed for querying for ViewContainerRefs, ...
+      // we don't do this for QueryLists for now as this would break the timing when
+      // we call QueryList listeners...
+      targetStaticMethod.addStmts(updateStmts);
+    } else {
+      targetDynamicMethod.addStmt(new o.IfStmt(this.queryList.prop('dirty'), updateStmts));
+    }
   }
 }
 
 function createQueryValues(viewValues: ViewQueryValues): o.Expression[] {
   return ListWrapper.flatten(viewValues.values.map((entry) => {
     if (entry instanceof ViewQueryValues) {
-      return mapNestedViews(entry.view.declarationElement.getOrCreateAppElement(), entry.view,
+      return mapNestedViews(entry.view.declarationElement.appElement, entry.view,
                             createQueryValues(entry));
     } else {
       return <o.Expression>entry;

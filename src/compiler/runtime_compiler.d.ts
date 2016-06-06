@@ -4,8 +4,8 @@ import { ViewCompiler } from './view_compiler/view_compiler';
 import { TemplateParser } from './template_parser';
 import { DirectiveNormalizer } from './directive_normalizer';
 import { RuntimeMetadataResolver } from './runtime_metadata';
-import { HostViewFactoryRef_ } from 'angular2/src/core/linker/view_ref';
-import { Compiler_ } from 'angular2/src/core/linker/compiler';
+import { ComponentFactory } from 'angular2/src/core/linker/component_factory';
+import { ComponentResolver } from 'angular2/src/core/linker/component_resolver';
 import { CompilerConfig } from './config';
 import { XHR } from 'angular2/src/compiler/xhr';
 /**
@@ -13,7 +13,7 @@ import { XHR } from 'angular2/src/compiler/xhr';
  * extracts templates, and eventually produces a compiled version of the component
  * ready for linking into an application.
  */
-export declare class RuntimeCompiler extends Compiler_ {
+export declare class RuntimeCompiler implements ComponentResolver {
     private _runtimeMetadataResolver;
     private _templateNormalizer;
     private _templateParser;
@@ -26,7 +26,7 @@ export declare class RuntimeCompiler extends Compiler_ {
     private _compiledTemplateCache;
     private _compiledTemplateDone;
     constructor(_runtimeMetadataResolver: RuntimeMetadataResolver, _templateNormalizer: DirectiveNormalizer, _templateParser: TemplateParser, _styleCompiler: StyleCompiler, _viewCompiler: ViewCompiler, _xhr: XHR, _genConfig: CompilerConfig);
-    compileInHost(componentType: Type): Promise<HostViewFactoryRef_>;
+    resolveComponent(componentType: Type): Promise<ComponentFactory>;
     clearCache(): void;
     private _loadAndCompileComponent(cacheKey, compMeta, viewDirectives, pipes, compilingComponentsPath);
     private _compileComponent(compMeta, parsedTemplate, styles, pipes, compilingComponentsPath, childPromises);

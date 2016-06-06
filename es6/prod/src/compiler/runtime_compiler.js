@@ -18,9 +18,7 @@ import { ViewCompiler } from './view_compiler/view_compiler';
 import { TemplateParser } from './template_parser';
 import { DirectiveNormalizer } from './directive_normalizer';
 import { RuntimeMetadataResolver } from './runtime_metadata';
-import { HostViewFactory } from 'angular2/src/core/linker/view';
-import { HostViewFactoryRef_ } from 'angular2/src/core/linker/view_ref';
-import { Compiler_ } from 'angular2/src/core/linker/compiler';
+import { ComponentFactory } from 'angular2/src/core/linker/component_factory';
 import { CompilerConfig } from './config';
 import * as ir from './output/output_ast';
 import { jitStatements } from './output/output_jit';
@@ -32,9 +30,8 @@ import { XHR } from 'angular2/src/compiler/xhr';
  * extracts templates, and eventually produces a compiled version of the component
  * ready for linking into an application.
  */
-export let RuntimeCompiler = class RuntimeCompiler extends Compiler_ {
+export let RuntimeCompiler = class RuntimeCompiler {
     constructor(_runtimeMetadataResolver, _templateNormalizer, _templateParser, _styleCompiler, _viewCompiler, _xhr, _genConfig) {
-        super();
         this._runtimeMetadataResolver = _runtimeMetadataResolver;
         this._templateNormalizer = _templateNormalizer;
         this._templateParser = _templateParser;
@@ -47,7 +44,7 @@ export let RuntimeCompiler = class RuntimeCompiler extends Compiler_ {
         this._compiledTemplateCache = new Map();
         this._compiledTemplateDone = new Map();
     }
-    compileInHost(componentType) {
+    resolveComponent(componentType) {
         var compMeta = this._runtimeMetadataResolver.getDirectiveMetadata(componentType);
         var hostCacheKey = this._hostCacheKeys.get(componentType);
         if (isBlank(hostCacheKey)) {
@@ -58,7 +55,7 @@ export let RuntimeCompiler = class RuntimeCompiler extends Compiler_ {
             this._loadAndCompileComponent(hostCacheKey, hostMeta, [compMeta], [], []);
         }
         return this._compiledTemplateDone.get(hostCacheKey)
-            .then((compiledTemplate) => new HostViewFactoryRef_(new HostViewFactory(compMeta.selector, compiledTemplate.viewFactory)));
+            .then((compiledTemplate) => new ComponentFactory(compMeta.selector, compiledTemplate.viewFactory, componentType));
     }
     clearCache() {
         this._styleCache.clear();
@@ -160,7 +157,7 @@ RuntimeCompiler = __decorate([
 class CompiledTemplate {
     constructor() {
         this.viewFactory = null;
-        this.proxyViewFactory = (viewManager, childInjector, contextEl) => this.viewFactory(viewManager, childInjector, contextEl);
+        this.proxyViewFactory = (viewUtils, childInjector, contextEl) => this.viewFactory(viewUtils, childInjector, contextEl);
     }
     init(viewFactory) { this.viewFactory = viewFactory; }
 }

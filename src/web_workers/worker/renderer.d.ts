@@ -22,7 +22,7 @@ export declare class WebWorkerRenderer implements Renderer, RenderStoreObject {
     private _componentType;
     constructor(_rootRenderer: WebWorkerRootRenderer, _componentType: RenderComponentType);
     private _runOnService(fnName, fnArgs);
-    selectRootElement(selector: string, debugInfo: RenderDebugInfo): any;
+    selectRootElement(selectorOrNode: string, debugInfo: RenderDebugInfo): any;
     createElement(parentElement: any, name: string, debugInfo: RenderDebugInfo): any;
     createViewRoot(hostElement: any): any;
     createTemplateAnchor(parentElement: any, debugInfo: RenderDebugInfo): any;

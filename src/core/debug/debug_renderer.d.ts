@@ -7,7 +7,7 @@ export declare class DebugDomRootRenderer implements RootRenderer {
 export declare class DebugDomRenderer implements Renderer {
     private _delegate;
     constructor(_delegate: Renderer);
-    selectRootElement(selector: string, debugInfo: RenderDebugInfo): any;
+    selectRootElement(selectorOrNode: string | any, debugInfo: RenderDebugInfo): any;
     createElement(parentElement: any, name: string, debugInfo: RenderDebugInfo): any;
     createViewRoot(hostElement: any): any;
     createTemplateAnchor(parentElement: any, debugInfo: RenderDebugInfo): any;

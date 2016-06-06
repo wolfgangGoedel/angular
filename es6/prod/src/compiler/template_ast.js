@@ -88,7 +88,7 @@ export class VariableAst {
  * An element declaration in a template.
  */
 export class ElementAst {
-    constructor(name, attrs, inputs, outputs, exportAsVars, directives, providers, children, ngContentIndex, sourceSpan) {
+    constructor(name, attrs, inputs, outputs, exportAsVars, directives, providers, hasViewContainer, children, ngContentIndex, sourceSpan) {
         this.name = name;
         this.attrs = attrs;
         this.inputs = inputs;
@@ -96,6 +96,7 @@ export class ElementAst {
         this.exportAsVars = exportAsVars;
         this.directives = directives;
         this.providers = providers;
+        this.hasViewContainer = hasViewContainer;
         this.children = children;
         this.ngContentIndex = ngContentIndex;
         this.sourceSpan = sourceSpan;
@@ -108,12 +109,13 @@ export class ElementAst {
  * A `<template>` element included in an Angular template.
  */
 export class EmbeddedTemplateAst {
-    constructor(attrs, outputs, vars, directives, providers, children, ngContentIndex, sourceSpan) {
+    constructor(attrs, outputs, vars, directives, providers, hasViewContainer, children, ngContentIndex, sourceSpan) {
         this.attrs = attrs;
         this.outputs = outputs;
         this.vars = vars;
         this.directives = directives;
         this.providers = providers;
+        this.hasViewContainer = hasViewContainer;
         this.children = children;
         this.ngContentIndex = ngContentIndex;
         this.sourceSpan = sourceSpan;

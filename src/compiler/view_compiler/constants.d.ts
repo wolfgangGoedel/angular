@@ -30,14 +30,14 @@ export declare class ChangeDetectionStrategyEnum {
     static Default: o.Expression;
 }
 export declare class ViewConstructorVars {
-    static viewManager: o.ReadVarExpr;
+    static viewUtils: o.ReadVarExpr;
     static parentInjector: o.ReadVarExpr;
     static declarationEl: o.ReadVarExpr;
 }
 export declare class ViewProperties {
     static renderer: o.ReadPropExpr;
     static projectableNodes: o.ReadPropExpr;
-    static viewManager: o.ReadPropExpr;
+    static viewUtils: o.ReadPropExpr;
 }
 export declare class EventHandlerVars {
     static event: o.ReadVarExpr;

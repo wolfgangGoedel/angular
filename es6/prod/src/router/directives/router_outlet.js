@@ -13,7 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 import { PromiseWrapper, EventEmitter } from 'angular2/src/facade/async';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { isBlank, isPresent } from 'angular2/src/facade/lang';
-import { Directive, Attribute, DynamicComponentLoader, ElementRef, Injector, provide, Output } from 'angular2/core';
+import { Directive, Attribute, DynamicComponentLoader, ViewContainerRef, Injector, provide, Output } from 'angular2/core';
 import * as routerMod from '../router';
 import { RouteParams, RouteData } from '../instruction';
 import * as hookMod from '../lifecycle/lifecycle_annotations';
@@ -29,8 +29,8 @@ let _resolveToTrue = PromiseWrapper.resolve(true);
  * ```
  */
 export let RouterOutlet = class RouterOutlet {
-    constructor(_elementRef, _loader, _parentRouter, nameAttr) {
-        this._elementRef = _elementRef;
+    constructor(_viewContainerRef, _loader, _parentRouter, nameAttr) {
+        this._viewContainerRef = _viewContainerRef;
         this._loader = _loader;
         this._parentRouter = _parentRouter;
         this.name = null;
@@ -60,7 +60,7 @@ export let RouterOutlet = class RouterOutlet {
             provide(routerMod.Router, { useValue: childRouter })
         ]);
         this._componentRef =
-            this._loader.loadNextToLocation(componentType, this._elementRef, providers);
+            this._loader.loadNextToLocation(componentType, this._viewContainerRef, providers);
         return this._componentRef.then((componentRef) => {
             this.activateEvents.emit(componentRef.instance);
             if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
@@ -105,7 +105,7 @@ export let RouterOutlet = class RouterOutlet {
         }
         return next.then((_) => {
             if (isPresent(this._componentRef)) {
-                var onDispose = this._componentRef.then((ref) => ref.dispose());
+                var onDispose = this._componentRef.then((ref) => ref.destroy());
                 this._componentRef = null;
                 return onDispose;
             }
@@ -166,5 +166,5 @@ __decorate([
 RouterOutlet = __decorate([
     Directive({ selector: 'router-outlet' }),
     __param(3, Attribute('name')), 
-    __metadata('design:paramtypes', [ElementRef, DynamicComponentLoader, routerMod.Router, String])
+    __metadata('design:paramtypes', [ViewContainerRef, DynamicComponentLoader, routerMod.Router, String])
 ], RouterOutlet);

@@ -276,18 +276,20 @@ export class CompileTypeMetadata {
     }
 }
 export class CompileQueryMetadata {
-    constructor({ selectors, descendants, first, propertyName } = {}) {
+    constructor({ selectors, descendants, first, propertyName, read } = {}) {
         this.selectors = selectors;
         this.descendants = normalizeBool(descendants);
         this.first = normalizeBool(first);
         this.propertyName = propertyName;
+        this.read = read;
     }
     static fromJson(data) {
         return new CompileQueryMetadata({
             selectors: _arrayFromJson(data['selectors'], CompileTokenMetadata.fromJson),
             descendants: data['descendants'],
             first: data['first'],
-            propertyName: data['propertyName']
+            propertyName: data['propertyName'],
+            read: _objFromJson(data['read'], CompileTokenMetadata.fromJson)
         });
     }
     toJson() {
@@ -295,7 +297,8 @@ export class CompileQueryMetadata {
             'selectors': _arrayToJson(this.selectors),
             'descendants': this.descendants,
             'first': this.first,
-            'propertyName': this.propertyName
+            'propertyName': this.propertyName,
+            'read': _objToJson(this.read)
         };
     }
 }

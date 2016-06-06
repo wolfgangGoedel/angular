@@ -1,4 +1,4 @@
-import { AttrAst, DirectiveAst, ProviderAst } from './template_ast';
+import { VariableAst, AttrAst, DirectiveAst, ProviderAst } from './template_ast';
 import { CompileDirectiveMetadata } from './compile_metadata';
 import { ParseSourceSpan, ParseError } from './parse_util';
 export declare class ProviderError extends ParseError {
@@ -21,12 +21,15 @@ export declare class ProviderElementContext {
     private _seenProviders;
     private _allProviders;
     private _attrs;
-    constructor(_viewContext: ProviderViewContext, _parent: ProviderElementContext, _isViewRoot: boolean, _directiveAsts: DirectiveAst[], attrs: AttrAst[], _sourceSpan: ParseSourceSpan);
+    private _hasViewContainer;
+    constructor(_viewContext: ProviderViewContext, _parent: ProviderElementContext, _isViewRoot: boolean, _directiveAsts: DirectiveAst[], attrs: AttrAst[], vars: VariableAst[], _sourceSpan: ParseSourceSpan);
     afterElement(): void;
     transformProviders: ProviderAst[];
     transformedDirectiveAsts: DirectiveAst[];
-    private isQueried(token);
-    private _getLocalProvider(requestingProviderType, token, eager);
+    transformedHasViewContainer: boolean;
+    private _addQueryReadsTo(token, queryReadTokens);
+    private _getQueriesFor(token);
+    private _getOrCreateLocalProvider(requestingProviderType, token, eager);
     private _getLocalDependency(requestingProviderType, dep, eager?);
     private _getDependency(requestingProviderType, dep, eager?);
 }

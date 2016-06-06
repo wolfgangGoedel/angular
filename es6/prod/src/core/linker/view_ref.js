@@ -4,20 +4,6 @@ export class ViewRef {
     get destroyed() { return unimplemented(); }
 }
 /**
- * Represents a View containing a single Element that is the Host Element of a {@link Component}
- * instance.
- *
- * A Host View is created for every dynamically created Component that was compiled on its own (as
- * opposed to as a part of another Component's Template) via {@link Compiler#compileInHost} or one
- * of the higher-level APIs: {@link AppViewManager#createRootHostView},
- * {@link AppViewManager#createHostViewInContainer}, {@link ViewContainerRef#createHostView}.
- */
-export class HostViewRef extends ViewRef {
-    get rootNodes() { return unimplemented(); }
-    ;
-    get changeDetectorRef() { return unimplemented(); }
-}
-/**
  * Represents an Angular View.
  *
  * <!-- TODO: move the next two paragraphs to the dev guide -->
@@ -93,12 +79,6 @@ export class ViewRef_ {
         this._view.cdMode = ChangeDetectionStrategy.CheckAlways;
         this.markForCheck();
     }
-}
-export class HostViewFactoryRef {
-}
-export class HostViewFactoryRef_ {
-    constructor(_hostViewFactory) {
-        this._hostViewFactory = _hostViewFactory;
-    }
-    get internalHostViewFactory() { return this._hostViewFactory; }
+    onDestroy(callback) { this._view.disposables.push(callback); }
+    destroy() { this._view.destroy(); }
 }

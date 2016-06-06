@@ -87,9 +87,9 @@ export class WebWorkerRenderer {
         var fnArgsWithRenderer = [new FnArg(this, RenderStoreObject)].concat(fnArgs);
         this._rootRenderer.runOnService(fnName, fnArgsWithRenderer);
     }
-    selectRootElement(selector, debugInfo) {
+    selectRootElement(selectorOrNode, debugInfo) {
         var node = this._rootRenderer.allocateNode();
-        this._runOnService('selectRootElement', [new FnArg(selector, null), new FnArg(node, RenderStoreObject)]);
+        this._runOnService('selectRootElement', [new FnArg(selectorOrNode, null), new FnArg(node, RenderStoreObject)]);
         return node;
     }
     createElement(parentElement, name, debugInfo) {

@@ -21,7 +21,7 @@ export declare class DomRenderer implements Renderer {
     private _hostAttr;
     private _styles;
     constructor(_rootRenderer: DomRootRenderer, componentProto: RenderComponentType);
-    selectRootElement(selector: string, debugInfo: RenderDebugInfo): Element;
+    selectRootElement(selectorOrNode: string | any, debugInfo: RenderDebugInfo): Element;
     createElement(parent: Element, name: string, debugInfo: RenderDebugInfo): Node;
     createViewRoot(hostElement: any): any;
     createTemplateAnchor(parentElement: any, debugInfo: RenderDebugInfo): any;

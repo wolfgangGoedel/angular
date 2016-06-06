@@ -25,7 +25,7 @@ export class ProviderViewContext {
     }
 }
 export class ProviderElementContext {
-    constructor(_viewContext, _parent, _isViewRoot, _directiveAsts, attrs, _sourceSpan) {
+    constructor(_viewContext, _parent, _isViewRoot, _directiveAsts, attrs, vars, _sourceSpan) {
         this._viewContext = _viewContext;
         this._parent = _parent;
         this._isViewRoot = _isViewRoot;
@@ -33,22 +33,35 @@ export class ProviderElementContext {
         this._sourceSpan = _sourceSpan;
         this._transformedProviders = new CompileTokenMap();
         this._seenProviders = new CompileTokenMap();
+        this._hasViewContainer = false;
         this._attrs = {};
         attrs.forEach((attrAst) => this._attrs[attrAst.name] = attrAst.value);
         var directivesMeta = _directiveAsts.map(directiveAst => directiveAst.directive);
         this._allProviders =
             _resolveProvidersFromDirectives(directivesMeta, _sourceSpan, _viewContext.errors);
         this._contentQueries = _getContentQueries(directivesMeta);
+        var queriedTokens = new CompileTokenMap();
+        this._allProviders.values().forEach((provider) => { this._addQueryReadsTo(provider.token, queriedTokens); });
+        vars.forEach((varAst) => {
+            var varToken = new CompileTokenMetadata({ value: varAst.name });
+            this._addQueryReadsTo(varToken, queriedTokens);
+        });
+        if (isPresent(queriedTokens.get(identifierToken(Identifiers.ViewContainerRef)))) {
+            this._hasViewContainer = true;
+        }
         // create the providers that we know are eager first
         this._allProviders.values().forEach((provider) => {
-            if (provider.eager || this.isQueried(provider.token)) {
-                this._getLocalProvider(provider.providerType, provider.token, true);
+            var eager = provider.eager || isPresent(queriedTokens.get(provider.token));
+            if (eager) {
+                this._getOrCreateLocalProvider(provider.providerType, provider.token, true);
             }
         });
     }
     afterElement() {
         // collect lazy providers
-        this._allProviders.values().forEach((provider) => { this._getLocalProvider(provider.providerType, provider.token, false); });
+        this._allProviders.values().forEach((provider) => {
+            this._getOrCreateLocalProvider(provider.providerType, provider.token, false);
+        });
     }
     get transformProviders() { return this._transformedProviders.values(); }
     get transformedDirectiveAsts() {
@@ -58,27 +71,37 @@ export class ProviderElementContext {
             sortedProviderTypes.indexOf(dir2.directive.type));
         return sortedDirectives;
     }
-    isQueried(token) {
+    get transformedHasViewContainer() { return this._hasViewContainer; }
+    _addQueryReadsTo(token, queryReadTokens) {
+        this._getQueriesFor(token).forEach((query) => {
+            var queryReadToken = isPresent(query.read) ? query.read : token;
+            if (isBlank(queryReadTokens.get(queryReadToken))) {
+                queryReadTokens.add(queryReadToken, true);
+            }
+        });
+    }
+    _getQueriesFor(token) {
+        var result = [];
         var currentEl = this;
         var distance = 0;
+        var queries;
         while (currentEl !== null) {
-            var localQueries = currentEl._contentQueries.get(token);
-            if (isPresent(localQueries)) {
-                if (localQueries.some((query) => query.descendants || distance <= 1)) {
-                    return true;
-                }
+            queries = currentEl._contentQueries.get(token);
+            if (isPresent(queries)) {
+                ListWrapper.addAll(result, queries.filter((query) => query.descendants || distance <= 1));
             }
             if (currentEl._directiveAsts.length > 0) {
                 distance++;
             }
             currentEl = currentEl._parent;
         }
-        if (isPresent(this._viewContext.viewQueries.get(token))) {
-            return true;
+        queries = this._viewContext.viewQueries.get(token);
+        if (isPresent(queries)) {
+            ListWrapper.addAll(result, queries);
         }
-        return false;
+        return result;
     }
-    _getLocalProvider(requestingProviderType, token, eager) {
+    _getOrCreateLocalProvider(requestingProviderType, token, eager) {
         var resolvedProvider = this._allProviders.get(token);
         if (isBlank(resolvedProvider) ||
             ((requestingProviderType === ProviderAstType.Directive ||
@@ -148,9 +171,11 @@ export class ProviderElementContext {
                 if (dep.token.equalsTo(identifierToken(Identifiers.Renderer)) ||
                     dep.token.equalsTo(identifierToken(Identifiers.ElementRef)) ||
                     dep.token.equalsTo(identifierToken(Identifiers.ChangeDetectorRef)) ||
-                    dep.token.equalsTo(identifierToken(Identifiers.ViewContainerRef)) ||
                     dep.token.equalsTo(identifierToken(Identifiers.TemplateRef))) {
                     return dep;
+                }
+                if (dep.token.equalsTo(identifierToken(Identifiers.ViewContainerRef))) {
+                    this._hasViewContainer = true;
                 }
             }
             // access the injector
@@ -158,7 +183,7 @@ export class ProviderElementContext {
                 return dep;
             }
             // access providers
-            if (isPresent(this._getLocalProvider(requestingProviderType, dep.token, eager))) {
+            if (isPresent(this._getOrCreateLocalProvider(requestingProviderType, dep.token, eager))) {
                 return dep;
             }
         }
@@ -307,11 +332,11 @@ function _getContentQueries(directives) {
     return contentQueries;
 }
 function _addQueryToTokenMap(map, query) {
-    query.selectors.forEach((selector) => {
-        var entry = map.get(selector);
+    query.selectors.forEach((token) => {
+        var entry = map.get(token);
         if (isBlank(entry)) {
             entry = [];
-            map.add(selector, entry);
+            map.add(token, entry);
         }
         entry.push(query);
     });

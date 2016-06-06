@@ -311,8 +311,7 @@ export class ApplicationRef_ extends ApplicationRef {
     }
     /** @internal */
     _loadComponent(componentRef) {
-        var appChangeDetector = componentRef.location.internalElement.parentView;
-        this._changeDetectorRefs.push(appChangeDetector.ref);
+        this._changeDetectorRefs.push(componentRef.changeDetectorRef);
         this.tick();
         this._rootComponents.push(componentRef);
         this._bootstrapListeners.forEach((listener) => listener(componentRef));
@@ -322,7 +321,7 @@ export class ApplicationRef_ extends ApplicationRef {
         if (!ListWrapper.contains(this._rootComponents, componentRef)) {
             return;
         }
-        this.unregisterChangeDetector(componentRef.location.internalElement.parentView.ref);
+        this.unregisterChangeDetector(componentRef.changeDetectorRef);
         ListWrapper.remove(this._rootComponents, componentRef);
     }
     get injector() { return this._injector; }
@@ -346,7 +345,7 @@ export class ApplicationRef_ extends ApplicationRef {
     }
     dispose() {
         // TODO(alxhub): Dispose of the NgZone.
-        ListWrapper.clone(this._rootComponents).forEach((ref) => ref.dispose());
+        ListWrapper.clone(this._rootComponents).forEach((ref) => ref.destroy());
         this._disposeListeners.forEach((dispose) => dispose());
         this._platform._applicationDisposed(this);
     }

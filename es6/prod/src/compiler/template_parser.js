@@ -258,7 +258,7 @@ class TemplateParseVisitor {
         var directiveAsts = this._createDirectiveAsts(element.name, directiveMetas, elementOrDirectiveProps, isTemplateElement ? [] : vars, element.sourceSpan);
         var elementProps = this._createElementPropertyAsts(element.name, elementOrDirectiveProps, directiveAsts);
         var isViewRoot = parent.isTemplateElement || hasInlineTemplates;
-        var providerContext = new ProviderElementContext(this.providerViewContext, parent.providerContext, isViewRoot, directiveAsts, attrs, element.sourceSpan);
+        var providerContext = new ProviderElementContext(this.providerViewContext, parent.providerContext, isViewRoot, directiveAsts, attrs, vars, element.sourceSpan);
         var children = htmlVisitAll(preparsedElement.nonBindable ? NON_BINDABLE_VISITOR : this, element.children, ElementContext.create(isTemplateElement, directiveAsts, isTemplateElement ? parent.providerContext : providerContext));
         providerContext.afterElement();
         // Override the actual selector when the `ngProjectAs` attribute is provided
@@ -276,14 +276,13 @@ class TemplateParseVisitor {
         else if (isTemplateElement) {
             this._assertAllEventsPublishedByDirectives(directiveAsts, events);
             this._assertNoComponentsNorElementBindingsOnTemplate(directiveAsts, elementProps, element.sourceSpan);
-            parsedElement =
-                new EmbeddedTemplateAst(attrs, events, vars, providerContext.transformedDirectiveAsts, providerContext.transformProviders, children, hasInlineTemplates ? null : ngContentIndex, element.sourceSpan);
+            parsedElement = new EmbeddedTemplateAst(attrs, events, vars, providerContext.transformedDirectiveAsts, providerContext.transformProviders, providerContext.transformedHasViewContainer, children, hasInlineTemplates ? null : ngContentIndex, element.sourceSpan);
         }
         else {
             this._assertOnlyOneComponent(directiveAsts, element.sourceSpan);
             var elementExportAsVars = vars.filter(varAst => varAst.value.length === 0);
             let ngContentIndex = hasInlineTemplates ? null : parent.findNgContentIndex(projectionSelector);
-            parsedElement = new ElementAst(nodeName, attrs, elementProps, events, elementExportAsVars, providerContext.transformedDirectiveAsts, providerContext.transformProviders, children, hasInlineTemplates ? null : ngContentIndex, element.sourceSpan);
+            parsedElement = new ElementAst(nodeName, attrs, elementProps, events, elementExportAsVars, providerContext.transformedDirectiveAsts, providerContext.transformProviders, providerContext.transformedHasViewContainer, children, hasInlineTemplates ? null : ngContentIndex, element.sourceSpan);
         }
         if (hasInlineTemplates) {
             var templateCssSelector = createElementCssSelector(TEMPLATE_ELEMENT, templateMatchableAttrs);
@@ -291,9 +290,9 @@ class TemplateParseVisitor {
             var templateDirectiveAsts = this._createDirectiveAsts(element.name, templateDirectiveMetas, templateElementOrDirectiveProps, [], element.sourceSpan);
             var templateElementProps = this._createElementPropertyAsts(element.name, templateElementOrDirectiveProps, templateDirectiveAsts);
             this._assertNoComponentsNorElementBindingsOnTemplate(templateDirectiveAsts, templateElementProps, element.sourceSpan);
-            var templateProviderContext = new ProviderElementContext(this.providerViewContext, parent.providerContext, parent.isTemplateElement, templateDirectiveAsts, [], element.sourceSpan);
+            var templateProviderContext = new ProviderElementContext(this.providerViewContext, parent.providerContext, parent.isTemplateElement, templateDirectiveAsts, [], templateVars, element.sourceSpan);
             templateProviderContext.afterElement();
-            parsedElement = new EmbeddedTemplateAst([], [], templateVars, templateProviderContext.transformedDirectiveAsts, templateProviderContext.transformProviders, [parsedElement], ngContentIndex, element.sourceSpan);
+            parsedElement = new EmbeddedTemplateAst([], [], templateVars, templateProviderContext.transformedDirectiveAsts, templateProviderContext.transformProviders, templateProviderContext.transformedHasViewContainer, [parsedElement], ngContentIndex, element.sourceSpan);
         }
         return parsedElement;
     }
@@ -594,7 +593,7 @@ class NonBindableVisitor {
         var selector = createElementCssSelector(ast.name, attrNameAndValues);
         var ngContentIndex = parent.findNgContentIndex(selector);
         var children = htmlVisitAll(this, ast.children, EMPTY_ELEMENT_CONTEXT);
-        return new ElementAst(ast.name, htmlVisitAll(this, ast.attrs), [], [], [], [], [], children, ngContentIndex, ast.sourceSpan);
+        return new ElementAst(ast.name, htmlVisitAll(this, ast.attrs), [], [], [], [], [], false, children, ngContentIndex, ast.sourceSpan);
     }
     visitComment(ast, context) { return null; }
     visitAttr(ast, context) {

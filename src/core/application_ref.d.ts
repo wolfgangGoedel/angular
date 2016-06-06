@@ -1,7 +1,7 @@
 import { NgZone } from 'angular2/src/core/zone/ng_zone';
 import { Type } from 'angular2/src/facade/lang';
 import { Provider, Injector } from 'angular2/src/core/di';
-import { ComponentRef } from 'angular2/src/core/linker/dynamic_component_loader';
+import { ComponentRef } from 'angular2/src/core/linker/component_factory';
 import { ChangeDetectorRef } from 'angular2/src/core/change_detection/change_detector_ref';
 /**
  * Create an Angular zone.

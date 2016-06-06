@@ -1,6 +1,6 @@
 import { CompileIdentifierMetadata, CompileTokenMetadata } from './compile_metadata';
 export declare class Identifiers {
-    static AppViewManager_: CompileIdentifierMetadata;
+    static ViewUtils: CompileIdentifierMetadata;
     static AppView: CompileIdentifierMetadata;
     static DebugAppView: CompileIdentifierMetadata;
     static AppElement: CompileIdentifierMetadata;

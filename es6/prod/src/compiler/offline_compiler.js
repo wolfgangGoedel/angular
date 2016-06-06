@@ -2,12 +2,12 @@ import { CompileIdentifierMetadata, createHostComponentMeta } from './compile_me
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { ListWrapper } from 'angular2/src/facade/collection';
 import * as o from './output/output_ast';
-import { HostViewFactory } from 'angular2/src/core/linker/view';
+import { ComponentFactory } from 'angular2/src/core/linker/component_factory';
 import { MODULE_SUFFIX } from './util';
-var _HOST_VIEW_FACTORY_IDENTIFIER = new CompileIdentifierMetadata({
-    name: 'HostViewFactory',
-    runtime: HostViewFactory,
-    moduleUrl: `asset:angular2/lib/src/core/linker/view${MODULE_SUFFIX}`
+var _COMPONENT_FACTORY_IDENTIFIER = new CompileIdentifierMetadata({
+    name: 'ComponentFactory',
+    runtime: ComponentFactory,
+    moduleUrl: `asset:angular2/lib/src/core/linker/component_factory${MODULE_SUFFIX}`
 });
 export class SourceModule {
     constructor(moduleUrl, source) {
@@ -46,13 +46,17 @@ export class OfflineCompiler {
             var compViewFactoryVar = this._compileComponent(compMeta, componentWithDirs.directives, componentWithDirs.pipes, statements);
             exportedVars.push(compViewFactoryVar);
             var hostMeta = createHostComponentMeta(compMeta.type, compMeta.selector);
-            var compHostViewFactoryVar = this._compileComponent(hostMeta, [compMeta], [], statements);
-            var hostViewFactoryVar = `hostViewFactory_${compMeta.type.name}`;
-            statements.push(o.variable(hostViewFactoryVar)
-                .set(o.importExpr(_HOST_VIEW_FACTORY_IDENTIFIER)
-                .instantiate([o.literal(compMeta.selector), o.variable(compHostViewFactoryVar)], o.importType(_HOST_VIEW_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const])))
+            var hostViewFactoryVar = this._compileComponent(hostMeta, [compMeta], [], statements);
+            var compFactoryVar = `${compMeta.type.name}NgFactory`;
+            statements.push(o.variable(compFactoryVar)
+                .set(o.importExpr(_COMPONENT_FACTORY_IDENTIFIER)
+                .instantiate([
+                o.literal(compMeta.selector),
+                o.variable(hostViewFactoryVar),
+                o.importExpr(compMeta.type)
+            ], o.importType(_COMPONENT_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const])))
                 .toDeclStmt(null, [o.StmtModifier.Final]));
-            exportedVars.push(hostViewFactoryVar);
+            exportedVars.push(compFactoryVar);
         });
         return this._codegenSourceModule(moduleUrl, statements, exportedVars);
     }

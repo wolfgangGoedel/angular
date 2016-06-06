@@ -20,7 +20,6 @@ export declare class CompileView implements NameResolver {
     templateVariableBindings: string[][];
     viewType: ViewType;
     viewQueries: CompileTokenMap<CompileQuery[]>;
-    namedAppElements: Array<Array<string | o.Expression>>;
     nodes: CompileNode[];
     rootNodesOrAppElements: o.Expression[];
     bindings: CompileBinding[];

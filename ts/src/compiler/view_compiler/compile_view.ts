@@ -34,9 +34,9 @@ export class CompilePipe {
 export class CompileView implements NameResolver {
   public viewType: ViewType;
   public viewQueries: CompileTokenMap<CompileQuery[]>;
-  public namedAppElements: Array<Array<string | o.Expression>> = [];
 
   public nodes: CompileNode[] = [];
+  // root nodes or AppElements for ViewContainers
   public rootNodesOrAppElements: o.Expression[] = [];
 
   public bindings: CompileBinding[] = [];
@@ -189,7 +189,8 @@ export class CompileView implements NameResolver {
 
   afterNodes() {
     this.viewQueries.values().forEach(
-        (queries) => queries.forEach((query) => query.afterChildren(this.updateViewQueriesMethod)));
+        (queries) => queries.forEach(
+            (query) => query.afterChildren(this.createMethod, this.updateViewQueriesMethod)));
   }
 }
 

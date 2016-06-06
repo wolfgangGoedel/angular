@@ -18,7 +18,7 @@ export declare abstract class RenderDebugInfo {
     source: string;
 }
 export declare abstract class Renderer {
-    abstract selectRootElement(selector: string, debugInfo: RenderDebugInfo): any;
+    abstract selectRootElement(selectorOrNode: string | any, debugInfo: RenderDebugInfo): any;
     abstract createElement(parentElement: any, name: string, debugInfo: RenderDebugInfo): any;
     abstract createViewRoot(hostElement: any): any;
     abstract createTemplateAnchor(parentElement: any, debugInfo: RenderDebugInfo): any;

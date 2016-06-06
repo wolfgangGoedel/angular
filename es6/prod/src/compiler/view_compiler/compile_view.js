@@ -23,8 +23,8 @@ export class CompileView {
         this.viewIndex = viewIndex;
         this.declarationElement = declarationElement;
         this.templateVariableBindings = templateVariableBindings;
-        this.namedAppElements = [];
         this.nodes = [];
+        // root nodes or AppElements for ViewContainers
         this.rootNodesOrAppElements = [];
         this.bindings = [];
         this.classStatements = [];
@@ -143,7 +143,7 @@ export class CompileView {
         return o.THIS_EXPR.callMethod('literalMap', [o.literal(this.literalMapCount++), o.literalMap(values)]);
     }
     afterNodes() {
-        this.viewQueries.values().forEach((queries) => queries.forEach((query) => query.afterChildren(this.updateViewQueriesMethod)));
+        this.viewQueries.values().forEach((queries) => queries.forEach((query) => query.afterChildren(this.createMethod, this.updateViewQueriesMethod)));
     }
 }
 function getViewType(component, embeddedTemplateIndex) {

@@ -12,8 +12,8 @@ export class DebugDomRenderer {
     constructor(_delegate) {
         this._delegate = _delegate;
     }
-    selectRootElement(selector, debugInfo) {
-        var nativeEl = this._delegate.selectRootElement(selector, debugInfo);
+    selectRootElement(selectorOrNode, debugInfo) {
+        var nativeEl = this._delegate.selectRootElement(selectorOrNode, debugInfo);
         var debugEl = new DebugElement(nativeEl, null, debugInfo);
         indexDebugNode(debugEl);
         return nativeEl;
