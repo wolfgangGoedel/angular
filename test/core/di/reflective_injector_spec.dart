@@ -1,4 +1,4 @@
-library angular2.test.core.di.injector_spec;
+library angular2.test.core.di.reflective_injector_spec;
 
 import "package:angular2/src/facade/lang.dart"
     show isBlank, stringify, isPresent;
@@ -8,10 +8,10 @@ import "package:angular2/testing_internal.dart"
     show describe, ddescribe, it, iit, expect, beforeEach;
 import "package:angular2/core.dart"
     show
-        Injector,
         provide,
-        ResolvedProvider,
-        Key,
+        ReflectiveKey,
+        ReflectiveInjector,
+        Injector,
         Injectable,
         InjectMetadata,
         SelfMetadata,
@@ -19,11 +19,15 @@ import "package:angular2/core.dart"
         Optional,
         Inject,
         Provider;
-import "package:angular2/src/core/di/injector.dart" show Injector_;
+import "package:angular2/src/core/di/reflective_injector.dart"
+    show
+        ReflectiveInjector_,
+        ReflectiveInjectorInlineStrategy,
+        ReflectiveInjectorDynamicStrategy,
+        ReflectiveProtoInjector;
 import "package:angular2/src/core/di/metadata.dart" show DependencyMetadata;
-import "package:angular2/src/core/di/provider.dart" show ResolvedProvider_;
-import "package:angular2/src/core/di/injector.dart"
-    show InjectorInlineStrategy, InjectorDynamicStrategy, ProtoInjector;
+import "package:angular2/src/core/di/reflective_provider.dart"
+    show ResolvedReflectiveProvider_;
 
 class CustomDependencyMetadata extends DependencyMetadata {}
 
@@ -114,22 +118,24 @@ main() {
     {
       "strategy": "inline",
       "providers": [],
-      "strategyClass": InjectorInlineStrategy
+      "strategyClass": ReflectiveInjectorInlineStrategy
     },
     {
       "strategy": "dynamic",
       "providers": dynamicProviders,
-      "strategyClass": InjectorDynamicStrategy
+      "strategyClass": ReflectiveInjectorDynamicStrategy
     }
   ].forEach((context) {
-    Injector_ createInjector(List<dynamic> providers,
-        [Injector parent = null]) {
-      var resolvedProviders = Injector
+    ReflectiveInjector_ createInjector(List<dynamic> providers,
+        [ReflectiveInjector parent = null]) {
+      var resolvedProviders = ReflectiveInjector
           .resolve((new List.from(providers)..addAll(context["providers"])));
       if (isPresent(parent)) {
-        return (parent.createChildFromResolved(resolvedProviders) as Injector_);
+        return (parent.createChildFromResolved(resolvedProviders)
+            as ReflectiveInjector_);
       } else {
-        return (Injector.fromResolvedProviders(resolvedProviders) as Injector_);
+        return (ReflectiveInjector.fromResolvedProviders(resolvedProviders)
+            as ReflectiveInjector_);
       }
     }
     describe('''injector ${ context [ "strategy" ]}''', () {
@@ -343,10 +349,10 @@ main() {
             '''Cannot instantiate cyclic dependency! (${ stringify ( Car )} -> ${ stringify ( Engine )} -> ${ stringify ( Car )})''');
       });
       it("should show the full path when error happens in a constructor", () {
-        var providers =
-            Injector.resolve([Car, provide(Engine, useClass: BrokenEngine)]);
-        var proto = new ProtoInjector([providers[0], providers[1]]);
-        var injector = new Injector_(proto);
+        var providers = ReflectiveInjector
+            .resolve([Car, provide(Engine, useClass: BrokenEngine)]);
+        var proto = new ReflectiveProtoInjector([providers[0], providers[1]]);
+        var injector = new ReflectiveInjector_(proto);
         try {
           injector.get(Car);
           throw "Must throw";
@@ -358,13 +364,15 @@ main() {
         }
       });
       it("should provide context when throwing an exception ", () {
-        var engineProvider =
-            Injector.resolve([provide(Engine, useClass: BrokenEngine)])[0];
-        var protoParent = new ProtoInjector([engineProvider]);
-        var carProvider = Injector.resolve([Car])[0];
-        var protoChild = new ProtoInjector([carProvider]);
-        var parent = new Injector_(protoParent, null, () => "parentContext");
-        var child = new Injector_(protoChild, parent, () => "childContext");
+        var engineProvider = ReflectiveInjector
+            .resolve([provide(Engine, useClass: BrokenEngine)])[0];
+        var protoParent = new ReflectiveProtoInjector([engineProvider]);
+        var carProvider = ReflectiveInjector.resolve([Car])[0];
+        var protoChild = new ReflectiveProtoInjector([carProvider]);
+        var parent =
+            new ReflectiveInjector_(protoParent, null, () => "parentContext");
+        var child =
+            new ReflectiveInjector_(protoChild, parent, () => "childContext");
         try {
           child.get(Car);
           throw "Must throw";
@@ -390,7 +398,7 @@ main() {
     });
     describe("child", () {
       it("should load instances from parent injector", () {
-        var parent = Injector.resolveAndCreate([Engine]);
+        var parent = ReflectiveInjector.resolveAndCreate([Engine]);
         var child = parent.resolveAndCreateChild([]);
         var engineFromParent = parent.get(Engine);
         var engineFromChild = child.get(Engine);
@@ -398,14 +406,14 @@ main() {
       });
       it("should not use the child providers when resolving the dependencies of a parent provider",
           () {
-        var parent = Injector.resolveAndCreate([Car, Engine]);
+        var parent = ReflectiveInjector.resolveAndCreate([Car, Engine]);
         var child = parent
             .resolveAndCreateChild([provide(Engine, useClass: TurboEngine)]);
         var carFromChild = child.get(Car);
         expect(carFromChild.engine).toBeAnInstanceOf(Engine);
       });
       it("should create new instance in a child injector", () {
-        var parent = Injector.resolveAndCreate([Engine]);
+        var parent = ReflectiveInjector.resolveAndCreate([Engine]);
         var child = parent
             .resolveAndCreateChild([provide(Engine, useClass: TurboEngine)]);
         var engineFromParent = parent.get(Engine);
@@ -414,28 +422,28 @@ main() {
         expect(engineFromChild).toBeAnInstanceOf(TurboEngine);
       });
       it("should give access to parent", () {
-        var parent = Injector.resolveAndCreate([]);
+        var parent = ReflectiveInjector.resolveAndCreate([]);
         var child = parent.resolveAndCreateChild([]);
         expect(child.parent).toBe(parent);
       });
     });
     describe("resolveAndInstantiate", () {
       it("should instantiate an object in the context of the injector", () {
-        var inj = Injector.resolveAndCreate([Engine]);
+        var inj = ReflectiveInjector.resolveAndCreate([Engine]);
         var car = inj.resolveAndInstantiate(Car);
         expect(car).toBeAnInstanceOf(Car);
         expect(car.engine).toBe(inj.get(Engine));
       });
       it("should not store the instantiated object in the injector", () {
-        var inj = Injector.resolveAndCreate([Engine]);
+        var inj = ReflectiveInjector.resolveAndCreate([Engine]);
         inj.resolveAndInstantiate(Car);
         expect(() => inj.get(Car)).toThrowError();
       });
     });
     describe("instantiate", () {
       it("should instantiate an object in the context of the injector", () {
-        var inj = Injector.resolveAndCreate([Engine]);
-        var car = inj.instantiateResolved(Injector.resolve([Car])[0]);
+        var inj = ReflectiveInjector.resolveAndCreate([Engine]);
+        var car = inj.instantiateResolved(ReflectiveInjector.resolve([Car])[0]);
         expect(car).toBeAnInstanceOf(Car);
         expect(car.engine).toBe(inj.get(Engine));
       });
@@ -443,7 +451,7 @@ main() {
     describe("depedency resolution", () {
       describe("@Self()", () {
         it("should return a dependency from self", () {
-          var inj = Injector.resolveAndCreate([
+          var inj = ReflectiveInjector.resolveAndCreate([
             Engine,
             provide(Car, useFactory: (e) => new Car(e), deps: [
               [Engine, new SelfMetadata()]
@@ -452,7 +460,7 @@ main() {
           expect(inj.get(Car)).toBeAnInstanceOf(Car);
         });
         it("should throw when not requested provider on self", () {
-          var parent = Injector.resolveAndCreate([Engine]);
+          var parent = ReflectiveInjector.resolveAndCreate([Engine]);
           var child = parent.resolveAndCreateChild([
             provide(Car, useFactory: (e) => new Car(e), deps: [
               [Engine, new SelfMetadata()]
@@ -464,7 +472,7 @@ main() {
       });
       describe("default", () {
         it("should not skip self", () {
-          var parent = Injector.resolveAndCreate([Engine]);
+          var parent = ReflectiveInjector.resolveAndCreate([Engine]);
           var child = parent.resolveAndCreateChild([
             provide(Engine, useClass: TurboEngine),
             provide(Car, useFactory: (e) => new Car(e), deps: [Engine])
@@ -475,17 +483,17 @@ main() {
     });
     describe("resolve", () {
       it("should resolve and flatten", () {
-        var providers = Injector.resolve([
+        var providers = ReflectiveInjector.resolve([
           Engine,
           [BrokenEngine]
         ]);
         providers.forEach((b) {
           if (isBlank(b)) return;
-          expect(b is ResolvedProvider_).toBe(true);
+          expect(b is ResolvedReflectiveProvider_).toBe(true);
         });
       });
       it("should support multi providers", () {
-        var provider = Injector.resolve([
+        var provider = ReflectiveInjector.resolve([
           new Provider(Engine, useClass: BrokenEngine, multi: true),
           new Provider(Engine, useClass: TurboEngine, multi: true)
         ])[0];
@@ -494,7 +502,7 @@ main() {
         expect(provider.resolvedFactories.length).toEqual(2);
       });
       it("should support multi providers with only one provider", () {
-        var provider = Injector.resolve(
+        var provider = ReflectiveInjector.resolve(
             [new Provider(Engine, useClass: BrokenEngine, multi: true)])[0];
         expect(provider.key.token).toBe(Engine);
         expect(provider.multiProvider).toEqual(true);
@@ -502,20 +510,20 @@ main() {
       });
       it("should throw when mixing multi providers with regular providers", () {
         expect(() {
-          Injector.resolve([
+          ReflectiveInjector.resolve([
             new Provider(Engine, useClass: BrokenEngine, multi: true),
             Engine
           ]);
         }).toThrowErrorWith("Cannot mix multi providers and regular providers");
         expect(() {
-          Injector.resolve([
+          ReflectiveInjector.resolve([
             Engine,
             new Provider(Engine, useClass: BrokenEngine, multi: true)
           ]);
         }).toThrowErrorWith("Cannot mix multi providers and regular providers");
       });
       it("should resolve forward references", () {
-        var providers = Injector.resolve([
+        var providers = ReflectiveInjector.resolve([
           Engine,
           [provide(BrokenEngine, useClass: Engine)],
           provide(String, useFactory: () => "OK", deps: [Engine])
@@ -528,11 +536,11 @@ main() {
         expect(brokenEngineProvider.resolvedFactories[0].factory() is Engine)
             .toBe(true);
         expect(stringProvider.resolvedFactories[0].dependencies[0].key)
-            .toEqual(Key.get(Engine));
+            .toEqual(ReflectiveKey.get(Engine));
       });
       it("should support overriding factory dependencies with dependency annotations",
           () {
-        var providers = Injector.resolve([
+        var providers = ReflectiveInjector.resolve([
           provide("token", useFactory: (e) => "result", deps: [
             [new InjectMetadata("dep"), new CustomDependencyMetadata()]
           ])
@@ -544,11 +552,11 @@ main() {
             .toEqual([new CustomDependencyMetadata()]);
       });
       it("should allow declaring dependencies with flat arrays", () {
-        var resolved = Injector.resolve([
+        var resolved = ReflectiveInjector.resolve([
           provide("token",
               useFactory: (e) => e, deps: [new InjectMetadata("dep")])
         ]);
-        var nestedResolved = Injector.resolve([
+        var nestedResolved = ReflectiveInjector.resolve([
           provide("token", useFactory: (e) => e, deps: [
             [new InjectMetadata("dep")]
           ])
@@ -563,10 +571,11 @@ main() {
     });
     describe("displayName", () {
       it("should work", () {
-        expect(((Injector.resolveAndCreate([Engine, BrokenEngine])
-                    as Injector_))
+        expect(((ReflectiveInjector.resolveAndCreate([Engine, BrokenEngine])
+                    as ReflectiveInjector_))
                 .displayName)
-            .toEqual("Injector(providers: [ \"Engine\" ,  \"BrokenEngine\" ])");
+            .toEqual(
+                "ReflectiveInjector(providers: [ \"Engine\" ,  \"BrokenEngine\" ])");
       });
     });
   });

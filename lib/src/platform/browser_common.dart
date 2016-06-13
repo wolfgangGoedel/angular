@@ -10,7 +10,6 @@ import "package:angular2/core.dart"
         PLATFORM_DIRECTIVES,
         PLATFORM_PIPES,
         ComponentRef,
-        platform,
         ExceptionHandler,
         Reflector,
         RootRenderer,
@@ -62,12 +61,14 @@ export "package:angular2/src/platform/browser/tools/tools.dart"
 export "dom/events/hammer_gestures.dart"
     show HAMMER_GESTURE_CONFIG, HammerGestureConfig;
 
+const BROWSER_PLATFORM_MARKER = const OpaqueToken("BrowserPlatformMarker");
 /**
  * A set of providers to initialize the Angular platform in a web browser.
  *
  * Used automatically by `bootstrap`, or can be passed to [platform].
  */
 const List<dynamic> BROWSER_PROVIDERS = const [
+  const Provider(BROWSER_PLATFORM_MARKER, useValue: true),
   PLATFORM_COMMON_PROVIDERS,
   const Provider(PLATFORM_INITIALIZER, useValue: initDomAdapter, multi: true)
 ];

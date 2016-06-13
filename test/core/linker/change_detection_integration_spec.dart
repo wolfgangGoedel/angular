@@ -61,7 +61,7 @@ import "package:angular2/core.dart"
         AfterViewInit,
         AfterViewChecked;
 import "package:angular2/platform/common_dom.dart" show By;
-import "package:angular2/common.dart" show AsyncPipe;
+import "package:angular2/common.dart" show AsyncPipe, NgFor;
 import "package:angular2/src/compiler/schema/element_schema_registry.dart"
     show ElementSchemaRegistry;
 import "../../compiler/schema_registry_mock.dart" show MockSchemaRegistry;
@@ -334,6 +334,11 @@ main() {
           [1, 2]
         ]);
       }));
+      it("should support empty literal array", fakeAsync(() {
+        var ctx = _bindSimpleValue("[]");
+        ctx.detectChanges(false);
+        expect(renderLog.loggedValues).toEqual([[]]);
+      }));
       it("should support literal array made of expressions", fakeAsync(() {
         var ctx = _bindSimpleValue("[1, a]", TestData);
         ctx.componentInstance.a = 2;
@@ -360,6 +365,11 @@ main() {
         var ctx = _bindSimpleValue("{z: 1}");
         ctx.detectChanges(false);
         expect(renderLog.loggedValues[0]["z"]).toEqual(1);
+      }));
+      it("should support empty literal map", fakeAsync(() {
+        var ctx = _bindSimpleValue("{}");
+        ctx.detectChanges(false);
+        expect(renderLog.loggedValues).toEqual([{}]);
       }));
       it("should support literal maps made of expressions", fakeAsync(() {
         var ctx = _bindSimpleValue("{z: a}");
@@ -399,7 +409,7 @@ main() {
       }));
       it("should read locals", fakeAsync(() {
         var ctx = createCompFixture(
-            "<template testLocals var-local=\"someLocal\">{{local}}</template>");
+            "<template testLocals let-local=\"someLocal\">{{local}}</template>");
         ctx.detectChanges(false);
         expect(renderLog.log).toEqual(["{{someLocalValue}}"]);
       }));
@@ -419,6 +429,15 @@ main() {
           expect(renderLog.loggedValues).toEqual(["value one two default"]);
         }));
         it("should associate pipes right-to-left", fakeAsync(() {
+          var ctx = _bindSimpleValue(
+              "name | multiArgPipe:\"a\":\"b\" | multiArgPipe:0:1", Person);
+          ctx.componentInstance.name = "value";
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues)
+              .toEqual(["value a b default 0 1 default"]);
+        }));
+        it("should support calling pure pipes with different number of arguments",
+            fakeAsync(() {
           var ctx = _bindSimpleValue(
               "name | multiArgPipe:\"a\":\"b\" | multiArgPipe:0:1:2", Person);
           ctx.componentInstance.name = "value";
@@ -440,6 +459,66 @@ main() {
           renderLog.clear();
           ctx.detectChanges(false);
           expect(renderLog.log).toEqual(["someProp=Megatron"]);
+        }));
+        it("should call pure pipes only if the arguments change", fakeAsync(() {
+          var ctx = _bindSimpleValue("name | countingPipe", Person);
+          // change from undefined -> null
+          ctx.componentInstance.name = null;
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues).toEqual(["null state:0"]);
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues).toEqual(["null state:0"]);
+          // change from null -> some value
+          ctx.componentInstance.name = "bob";
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues)
+              .toEqual(["null state:0", "bob state:1"]);
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues)
+              .toEqual(["null state:0", "bob state:1"]);
+          // change from some value -> some other value
+          ctx.componentInstance.name = "bart";
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues)
+              .toEqual(["null state:0", "bob state:1", "bart state:2"]);
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues)
+              .toEqual(["null state:0", "bob state:1", "bart state:2"]);
+        }));
+        it("should call pure pipes that are used multiple times only when the arguments change",
+            fakeAsync(() {
+          var ctx = createCompFixture(
+              '''<div [someProp]="name | countingPipe"></div><div [someProp]="age | countingPipe"></div>''' +
+                  "<div *ngFor=\"let x of [1,2]\" [someProp]=\"address.city | countingPipe\"></div>",
+              Person);
+          ctx.componentInstance.name = "a";
+          ctx.componentInstance.age = 10;
+          ctx.componentInstance.address = new Address("mtv");
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues).toEqual(
+              ["mtv state:0", "mtv state:1", "a state:2", "10 state:3"]);
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues).toEqual(
+              ["mtv state:0", "mtv state:1", "a state:2", "10 state:3"]);
+          ctx.componentInstance.age = 11;
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues).toEqual([
+            "mtv state:0",
+            "mtv state:1",
+            "a state:2",
+            "10 state:3",
+            "11 state:4"
+          ]);
+        }));
+        it("should call impure pipes on each change detection run",
+            fakeAsync(() {
+          var ctx = _bindSimpleValue("name | countingImpurePipe", Person);
+          ctx.componentInstance.name = "bob";
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues).toEqual(["bob state:0"]);
+          ctx.detectChanges(false);
+          expect(renderLog.loggedValues)
+              .toEqual(["bob state:0", "bob state:1"]);
         }));
       });
       describe("event expressions", () {
@@ -469,7 +548,8 @@ main() {
         it("should throw when trying to assign to a local", fakeAsync(() {
           expect(() {
             _bindSimpleProp("(event)=\"\$event=1\"");
-          }).toThrowError(new RegExp("Cannot reassign a variable binding"));
+          }).toThrowError(
+              new RegExp("Cannot assign to a reference or variable!"));
         }));
         it("should support short-circuiting", fakeAsync(() {
           var ctx = _bindSimpleProp("(event)=\"true ? a = a + 1 : a = a + 1\"");
@@ -492,7 +572,7 @@ main() {
       describe("reading directives", () {
         it("should read directive properties", fakeAsync(() {
           var ctx = createCompFixture(
-              "<div testDirective [a]=\"42\" var-dir=\"testDirective\" [someProp]=\"dir.a\"></div>");
+              "<div testDirective [a]=\"42\" ref-dir=\"testDirective\" [someProp]=\"dir.a\"></div>");
           ctx.detectChanges(false);
           expect(renderLog.loggedValues).toEqual([42]);
         }));
@@ -786,7 +866,7 @@ main() {
         it("should be called after processing the content and view children",
             fakeAsync(() {
           var ctx = createCompFixture(
-              "<div testDirective=\"parent\"><div *ngFor=\"var x of [0,1]\" testDirective=\"contentChild{{x}}\"></div>" +
+              "<div testDirective=\"parent\"><div *ngFor=\"let x of [0,1]\" testDirective=\"contentChild{{x}}\"></div>" +
                   "<other-cmp></other-cmp></div>",
               TestComponent,
               tcb.overrideTemplate(
@@ -875,10 +955,12 @@ const ALL_DIRECTIVES = const [
   PushComp,
   OrderCheckDirective2,
   OrderCheckDirective0,
-  OrderCheckDirective1
+  OrderCheckDirective1,
+  NgFor
 ];
 const ALL_PIPES = const [
   CountingPipe,
+  CountingImpurePipe,
   MultiArgPipe,
   PipeWithOnDestroy,
   IdentityPipe,
@@ -963,7 +1045,15 @@ class DirectiveLog {
 @Pipe(name: "countingPipe")
 class CountingPipe implements PipeTransform {
   num state = 0;
-  transform(value, [args = null]) {
+  transform(value) {
+    return '''${ value} state:${ this . state ++}''';
+  }
+}
+
+@Pipe(name: "countingImpurePipe", pure: false)
+class CountingImpurePipe implements PipeTransform {
+  num state = 0;
+  transform(value) {
     return '''${ value} state:${ this . state ++}''';
   }
 }
@@ -976,31 +1066,28 @@ class PipeWithOnDestroy implements PipeTransform, OnDestroy {
     this.directiveLog.add("pipeWithOnDestroy", "ngOnDestroy");
   }
 
-  transform(value, [args = null]) {
+  transform(value) {
     return null;
   }
 }
 
 @Pipe(name: "identityPipe")
 class IdentityPipe implements PipeTransform {
-  transform(value, [args = null]) {
+  transform(value) {
     return value;
   }
 }
 
 @Pipe(name: "wrappedPipe")
 class WrappedPipe implements PipeTransform {
-  transform(value, [args = null]) {
+  transform(value) {
     return WrappedValue.wrap(value);
   }
 }
 
 @Pipe(name: "multiArgPipe")
 class MultiArgPipe implements PipeTransform {
-  transform(value, [args = null]) {
-    var arg1 = args[0];
-    var arg2 = args[1];
-    var arg3 = args.length > 2 ? args[2] : "default";
+  transform(value, arg1, arg2, [arg3 = "default"]) {
     return '''${ value} ${ arg1} ${ arg2} ${ arg3}''';
   }
 }

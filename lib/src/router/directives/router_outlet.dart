@@ -12,9 +12,8 @@ import "package:angular2/core.dart"
         DynamicComponentLoader,
         ComponentRef,
         ViewContainerRef,
-        Injector,
         provide,
-        Dependency,
+        ReflectiveInjector,
         OnDestroy,
         Output;
 import "../router.dart" as routerMod;
@@ -63,7 +62,7 @@ class RouterOutlet implements OnDestroy {
     this._currentInstruction = nextInstruction;
     var componentType = nextInstruction.componentType;
     var childRouter = this._parentRouter.childRouter(componentType);
-    var providers = Injector.resolve([
+    var providers = ReflectiveInjector.resolve([
       provide(RouteData, useValue: nextInstruction.routeData),
       provide(RouteParams, useValue: new RouteParams(nextInstruction.params)),
       provide(routerMod.Router, useValue: childRouter)

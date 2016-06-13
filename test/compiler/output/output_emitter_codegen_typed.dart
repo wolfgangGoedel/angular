@@ -67,7 +67,11 @@ dynamic getExpressions() {
     'changedPropExternalInstance': externalInstance.changeable,
     'changedPropDynamicInstance': dynamicInstance.dynamicChangeable,
     'invokeMethodExternalInstance': externalInstance.someMethod('someParam'),
+    'invokeMethodExternalInstanceViaBind':
+        externalInstance.someMethod('someParam'),
     'invokeMethodDynamicInstance': dynamicInstance.dynamicMethod('someParam'),
+    'invokeMethodDynamicInstanceViaBind':
+        dynamicInstance.dynamicMethod('someParam'),
     'concatedArray': [0]..addAll([1]),
     'fn': fn,
     'closureInDynamicInstance': dynamicInstance.closure,

@@ -35,8 +35,6 @@ class _View_CompA0 extends import3.DebugAppView<import4.CompA> {
             parentInjector,
             declarationEl,
             import9.ChangeDetectionStrategy.CheckAlways,
-            0,
-            0,
             nodeDebugInfos_CompA0) {}
   import7.AppElement createInternal(String rootSelector) {
     final parentRenderNode =
@@ -95,8 +93,6 @@ class _View_CompA_Host0 extends import3.DebugAppView<dynamic> {
             parentInjector,
             declarationEl,
             import9.ChangeDetectionStrategy.CheckAlways,
-            0,
-            0,
             nodeDebugInfos_CompA_Host0) {}
   import7.AppElement createInternal(String rootSelector) {
     this._el_0 = this

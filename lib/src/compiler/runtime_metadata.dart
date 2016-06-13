@@ -13,7 +13,8 @@ import "package:angular2/src/facade/lang.dart"
         StringWrapper;
 import "package:angular2/src/facade/collection.dart" show StringMapWrapper;
 import "package:angular2/src/facade/exceptions.dart" show BaseException;
-import "package:angular2/src/core/di/exceptions.dart" show NoAnnotationError;
+import "package:angular2/src/core/di/reflective_exceptions.dart"
+    show NoAnnotationError;
 import "compile_metadata.dart" as cpl;
 import "package:angular2/src/core/metadata/directives.dart" as md;
 import "package:angular2/src/core/metadata/di.dart" as dimd;
@@ -31,8 +32,9 @@ import "package:angular2/src/core/platform_directives_and_pipes.dart"
 import "util.dart" show MODULE_SUFFIX, sanitizeIdentifier;
 import "assertions.dart" show assertArrayOfStrings;
 import "package:angular2/src/compiler/url_resolver.dart" show getUrlScheme;
-import "package:angular2/src/core/di/provider.dart"
-    show Provider, constructDependencies, Dependency;
+import "package:angular2/src/core/di/provider.dart" show Provider;
+import "package:angular2/src/core/di/reflective_provider.dart"
+    show constructDependencies, ReflectiveDependency;
 import "package:angular2/src/core/di/metadata.dart"
     show OptionalMetadata, SelfMetadata, HostMetadata, SkipSelfMetadata;
 import "package:angular2/src/core/metadata/di.dart" show AttributeMetadata;
@@ -185,7 +187,7 @@ class RuntimeMetadataResolver {
 
   List<cpl.CompileDiDependencyMetadata> getDependenciesMetadata(
       dynamic /* Type | Function */ typeOrFunc, List<dynamic> dependencies) {
-    List<Dependency> deps;
+    List<ReflectiveDependency> deps;
     try {
       deps = constructDependencies(typeOrFunc, dependencies);
     } catch (e, e_stack) {
