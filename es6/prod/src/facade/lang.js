@@ -303,6 +303,9 @@ export function isJsObject(o) {
 export function print(obj) {
     console.log(obj);
 }
+export function warn(obj) {
+    console.warn(obj);
+}
 // Can't be all uppercase as our transpiler would think it is a special directive...
 export class Json {
     static parse(s) { return _global.JSON.parse(s); }

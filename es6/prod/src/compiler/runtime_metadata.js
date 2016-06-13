@@ -14,7 +14,7 @@ import { resolveForwardRef } from 'angular2/src/core/di';
 import { Type, isBlank, isPresent, isArray, stringify, isString } from 'angular2/src/facade/lang';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { BaseException } from 'angular2/src/facade/exceptions';
-import { NoAnnotationError } from 'angular2/src/core/di/exceptions';
+import { NoAnnotationError } from 'angular2/src/core/di/reflective_exceptions';
 import * as cpl from './compile_metadata';
 import * as md from 'angular2/src/core/metadata/directives';
 import * as dimd from 'angular2/src/core/metadata/di';
@@ -29,7 +29,8 @@ import { PLATFORM_DIRECTIVES, PLATFORM_PIPES } from 'angular2/src/core/platform_
 import { MODULE_SUFFIX, sanitizeIdentifier } from './util';
 import { assertArrayOfStrings } from './assertions';
 import { getUrlScheme } from 'angular2/src/compiler/url_resolver';
-import { Provider, constructDependencies } from 'angular2/src/core/di/provider';
+import { Provider } from 'angular2/src/core/di/provider';
+import { constructDependencies } from 'angular2/src/core/di/reflective_provider';
 import { SelfMetadata, HostMetadata, SkipSelfMetadata } from 'angular2/src/core/di/metadata';
 import { AttributeMetadata } from 'angular2/src/core/metadata/di';
 export let RuntimeMetadataResolver = class RuntimeMetadataResolver {

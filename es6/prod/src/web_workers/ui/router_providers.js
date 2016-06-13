@@ -10,6 +10,6 @@ export const WORKER_RENDER_ROUTER = CONST_EXPR([
 function initRouterListeners(injector) {
     return () => {
         let zone = injector.get(NgZone);
-        zone.run(() => injector.get(MessageBasedPlatformLocation).start());
+        zone.runGuarded(() => injector.get(MessageBasedPlatformLocation).start());
     };
 }

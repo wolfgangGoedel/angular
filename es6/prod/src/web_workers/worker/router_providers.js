@@ -12,5 +12,5 @@ export var WORKER_APP_ROUTER = [
     })
 ];
 function initRouter(platformLocation, zone) {
-    return zone.run(() => { return platformLocation.init(); });
+    return zone.runGuarded(() => { return platformLocation.init(); });
 }

@@ -20,14 +20,12 @@ export class CompileQuery {
     addValue(value, view) {
         var currentView = view;
         var elPath = [];
-        var viewPath = [];
         while (isPresent(currentView) && currentView !== this.view) {
             var parentEl = currentView.declarationElement;
             elPath.unshift(parentEl);
             currentView = parentEl.view;
-            viewPath.push(currentView);
         }
-        var queryListForDirtyExpr = getPropertyInView(this.queryList, viewPath);
+        var queryListForDirtyExpr = getPropertyInView(this.queryList, view, this.view);
         var viewValues = this._values;
         elPath.forEach((el) => {
             var last = viewValues.values.length > 0 ? viewValues.values[viewValues.values.length - 1] : null;

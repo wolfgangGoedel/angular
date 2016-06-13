@@ -1,4 +1,4 @@
-import { Injector, ResolvedProvider } from 'angular2/src/core/di';
+import { Injector, ResolvedReflectiveProvider } from 'angular2/src/core/di';
 import { ComponentResolver } from './component_resolver';
 import { Type } from 'angular2/src/facade/lang';
 import { ComponentRef } from './component_factory';
@@ -97,11 +97,11 @@ export declare abstract class DynamicComponentLoader {
      * <child-component>Child</child-component>
      * ```
      */
-    abstract loadNextToLocation(type: Type, location: ViewContainerRef, providers?: ResolvedProvider[], projectableNodes?: any[][]): Promise<ComponentRef>;
+    abstract loadNextToLocation(type: Type, location: ViewContainerRef, providers?: ResolvedReflectiveProvider[], projectableNodes?: any[][]): Promise<ComponentRef>;
 }
 export declare class DynamicComponentLoader_ extends DynamicComponentLoader {
     private _compiler;
     constructor(_compiler: ComponentResolver);
     loadAsRoot(type: Type, overrideSelectorOrNode: string | any, injector: Injector, onDispose?: () => void, projectableNodes?: any[][]): Promise<ComponentRef>;
-    loadNextToLocation(type: Type, location: ViewContainerRef, providers?: ResolvedProvider[], projectableNodes?: any[][]): Promise<ComponentRef>;
+    loadNextToLocation(type: Type, location: ViewContainerRef, providers?: ResolvedReflectiveProvider[], projectableNodes?: any[][]): Promise<ComponentRef>;
 }

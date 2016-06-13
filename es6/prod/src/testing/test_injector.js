@@ -1,4 +1,4 @@
-import { Injector, PLATFORM_INITIALIZER } from 'angular2/core';
+import { ReflectiveInjector, PLATFORM_INITIALIZER } from 'angular2/core';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { FunctionWrapper, isPresent } from 'angular2/src/facade/lang';
@@ -22,7 +22,7 @@ export class TestInjector {
         this._providers = ListWrapper.concat(this._providers, providers);
     }
     createInjector() {
-        var rootInjector = Injector.resolveAndCreate(this.platformProviders);
+        var rootInjector = ReflectiveInjector.resolveAndCreate(this.platformProviders);
         this._injector = rootInjector.resolveAndCreateChild(ListWrapper.concat(this.applicationProviders, this._providers));
         this._instantiated = true;
         return this._injector;
@@ -64,7 +64,7 @@ export function setBaseTestProviders(platformProviders, applicationProviders) {
     testInjector.platformProviders = platformProviders;
     testInjector.applicationProviders = applicationProviders;
     var injector = testInjector.createInjector();
-    let inits = injector.getOptional(PLATFORM_INITIALIZER);
+    let inits = injector.get(PLATFORM_INITIALIZER, null);
     if (isPresent(inits)) {
         inits.forEach(init => init());
     }

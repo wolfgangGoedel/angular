@@ -165,6 +165,14 @@ class StatementInterpreter {
                 case o.BuiltinMethod.SubscribeObservable:
                     result = ObservableWrapper.subscribe(receiver, args[0]);
                     break;
+                case o.BuiltinMethod.bind:
+                    if (IS_DART) {
+                        result = receiver;
+                    }
+                    else {
+                        result = receiver.bind(args[0]);
+                    }
+                    break;
                 default:
                     throw new BaseException(`Unknown builtin method ${expr.builtin}`);
             }
@@ -316,6 +324,9 @@ class StatementInterpreter {
             }
             else if (di.getters.has(ast.name)) {
                 result = di.getters.get(ast.name)();
+            }
+            else if (di.methods.has(ast.name)) {
+                result = di.methods.get(ast.name);
             }
             else {
                 result = reflector.getter(ast.name)(receiver);

@@ -32,8 +32,10 @@ import { HAMMER_GESTURE_CONFIG, HammerGestureConfig } from './dom/events/hammer_
 export const WORKER_SCRIPT = CONST_EXPR(new OpaqueToken("WebWorkerScript"));
 // Message based Worker classes that listen on the MessageBus
 export const WORKER_RENDER_MESSAGING_PROVIDERS = CONST_EXPR([MessageBasedRenderer, MessageBasedXHRImpl]);
+export const WORKER_RENDER_PLATFORM_MARKER = CONST_EXPR(new OpaqueToken('WorkerRenderPlatformMarker'));
 export const WORKER_RENDER_PLATFORM = CONST_EXPR([
     PLATFORM_COMMON_PROVIDERS,
+    CONST_EXPR(new Provider(WORKER_RENDER_PLATFORM_MARKER, { useValue: true })),
     new Provider(PLATFORM_INITIALIZER, { useValue: initWebWorkerRenderPlatform, multi: true })
 ]);
 /**
@@ -72,7 +74,7 @@ export function initializeGenericWorkerRenderer(injector) {
     var bus = injector.get(MessageBus);
     let zone = injector.get(NgZone);
     bus.attachToZone(zone);
-    zone.run(() => {
+    zone.runGuarded(() => {
         WORKER_RENDER_MESSAGING_PROVIDERS.forEach((token) => { injector.get(token).start(); });
     });
 }

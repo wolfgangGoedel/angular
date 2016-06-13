@@ -18,7 +18,7 @@ export class InterpretiveAppViewInstanceFactory {
 }
 class _InterpretiveAppView extends DebugAppView {
     constructor(args, props, getters, methods) {
-        super(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]);
+        super(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
         this.props = props;
         this.getters = getters;
         this.methods = methods;

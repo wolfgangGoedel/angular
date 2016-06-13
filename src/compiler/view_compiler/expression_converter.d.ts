@@ -1,8 +1,8 @@
 import * as cdAst from '../expression_parser/ast';
 import * as o from '../output/output_ast';
 export interface NameResolver {
-    createPipe(name: string): o.Expression;
-    getVariable(name: string): o.Expression;
+    callPipe(name: string, input: o.Expression, args: o.Expression[]): o.Expression;
+    getLocal(name: string): o.Expression;
     createLiteralArray(values: o.Expression[]): o.Expression;
     createLiteralMap(values: Array<Array<string | o.Expression>>): o.Expression;
 }

@@ -112,11 +112,11 @@ class _AstToIrVisitor {
         return convertToStatementIfNeeded(mode, value.conditional(ast.trueExp.visit(this, _Mode.Expression), ast.falseExp.visit(this, _Mode.Expression)));
     }
     visitPipe(ast, mode) {
-        var pipeInstance = this._nameResolver.createPipe(ast.name);
         var input = ast.exp.visit(this, _Mode.Expression);
         var args = this.visitAll(ast.args, _Mode.Expression);
+        var value = this._nameResolver.callPipe(ast.name, input, args);
         this.needsValueUnwrapper = true;
-        return convertToStatementIfNeeded(mode, this._valueUnwrapper.callMethod('unwrap', [pipeInstance.callMethod('transform', [input, o.literalArr(args)])]));
+        return convertToStatementIfNeeded(mode, this._valueUnwrapper.callMethod('unwrap', [value]));
     }
     visitFunctionCall(ast, mode) {
         return convertToStatementIfNeeded(mode, ast.target.visit(this, _Mode.Expression)
@@ -163,7 +163,7 @@ class _AstToIrVisitor {
         var result = null;
         var receiver = ast.receiver.visit(this, _Mode.Expression);
         if (receiver === IMPLICIT_RECEIVER) {
-            var varExpr = this._nameResolver.getVariable(ast.name);
+            var varExpr = this._nameResolver.getLocal(ast.name);
             if (isPresent(varExpr)) {
                 result = varExpr.callFn(args);
             }
@@ -183,7 +183,7 @@ class _AstToIrVisitor {
         var result = null;
         var receiver = ast.receiver.visit(this, _Mode.Expression);
         if (receiver === IMPLICIT_RECEIVER) {
-            result = this._nameResolver.getVariable(ast.name);
+            result = this._nameResolver.getLocal(ast.name);
             if (isBlank(result)) {
                 receiver = this._implicitReceiver;
             }
@@ -196,9 +196,9 @@ class _AstToIrVisitor {
     visitPropertyWrite(ast, mode) {
         var receiver = ast.receiver.visit(this, _Mode.Expression);
         if (receiver === IMPLICIT_RECEIVER) {
-            var varExpr = this._nameResolver.getVariable(ast.name);
+            var varExpr = this._nameResolver.getLocal(ast.name);
             if (isPresent(varExpr)) {
-                throw new BaseException('Cannot reassign a variable binding');
+                throw new BaseException('Cannot assign to a reference or variable!');
             }
             receiver = this._implicitReceiver;
         }

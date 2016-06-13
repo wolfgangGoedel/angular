@@ -1,6 +1,5 @@
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { unimplemented } from 'angular2/src/facade/exceptions';
-import { Injector_, ProtoInjector } from 'angular2/src/core/di/injector';
 import { isPresent } from 'angular2/src/facade/lang';
 import { wtfCreateScope, wtfLeave } from '../profile/profile';
 /**
@@ -26,6 +25,8 @@ export class ViewContainerRef {
      * <!-- TODO: rename to anchorElement -->
      */
     get element() { return unimplemented(); }
+    get injector() { return unimplemented(); }
+    get parentInjector() { return unimplemented(); }
     /**
      * Returns the number of Views currently attached to this container.
      */
@@ -50,6 +51,8 @@ export class ViewContainerRef_ {
         return isPresent(views) ? views.length : 0;
     }
     get element() { return this._element.elementRef; }
+    get injector() { return this._element.injector; }
+    get parentInjector() { return this._element.parentInjector; }
     // TODO(rado): profile and decide whether bounds checks should be added
     // to the methods below.
     createEmbeddedView(templateRef, index = -1) {
@@ -57,13 +60,10 @@ export class ViewContainerRef_ {
         this.insert(viewRef, index);
         return viewRef;
     }
-    createComponent(componentFactory, index = -1, dynamicallyCreatedProviders = null, projectableNodes = null) {
+    createComponent(componentFactory, index = -1, injector = null, projectableNodes = null) {
         var s = this._createComponentInContainerScope();
-        var contextInjector = this._element.parentInjector;
-        var childInjector = isPresent(dynamicallyCreatedProviders) && dynamicallyCreatedProviders.length > 0 ?
-            new Injector_(ProtoInjector.fromResolvedProviders(dynamicallyCreatedProviders), contextInjector) :
-            contextInjector;
-        var componentRef = componentFactory.create(childInjector, projectableNodes);
+        var contextInjector = isPresent(injector) ? injector : this._element.parentInjector;
+        var componentRef = componentFactory.create(contextInjector, projectableNodes);
         this.insert(componentRef.hostView, index);
         return wtfLeave(s, componentRef);
     }

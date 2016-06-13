@@ -13,7 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 import { PromiseWrapper, EventEmitter } from 'angular2/src/facade/async';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { isBlank, isPresent } from 'angular2/src/facade/lang';
-import { Directive, Attribute, DynamicComponentLoader, ViewContainerRef, Injector, provide, Output } from 'angular2/core';
+import { Directive, Attribute, DynamicComponentLoader, ViewContainerRef, provide, ReflectiveInjector, Output } from 'angular2/core';
 import * as routerMod from '../router';
 import { RouteParams, RouteData } from '../instruction';
 import * as hookMod from '../lifecycle/lifecycle_annotations';
@@ -54,7 +54,7 @@ export let RouterOutlet = class RouterOutlet {
         this._currentInstruction = nextInstruction;
         var componentType = nextInstruction.componentType;
         var childRouter = this._parentRouter.childRouter(componentType);
-        var providers = Injector.resolve([
+        var providers = ReflectiveInjector.resolve([
             provide(RouteData, { useValue: nextInstruction.routeData }),
             provide(RouteParams, { useValue: new RouteParams(nextInstruction.params) }),
             provide(routerMod.Router, { useValue: childRouter })

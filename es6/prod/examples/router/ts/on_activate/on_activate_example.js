@@ -33,7 +33,7 @@ let ParentCmp = class ParentCmp {
 ParentCmp = __decorate([
     Component({
         template: `
-    <h2>Parent</h2> (<router-outlet></router-outlet>) 
+    <h2>Parent</h2> (<router-outlet></router-outlet>)
     <p>{{log}}</p>`,
         directives: [ROUTER_DIRECTIVES]
     }),
@@ -48,7 +48,7 @@ AppCmp = __decorate([
         selector: 'example-app',
         template: `
     <h1>My app</h1>
-    
+
     <nav>
       <a [routerLink]="['Parent', 'Child']">Child</a>
     </nav>

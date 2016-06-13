@@ -1,12 +1,12 @@
 import { BaseException, WrappedException } from 'angular2/src/facade/exceptions';
-import { Key } from './key';
-import { Injector } from './injector';
+import { ReflectiveKey } from './reflective_key';
+import { ReflectiveInjector } from './reflective_injector';
 /**
  * Base class for all errors arising from misconfigured providers.
  */
 export declare class AbstractProviderError extends BaseException {
-    constructor(injector: Injector, key: Key, constructResolvingMessage: Function);
-    addKey(injector: Injector, key: Key): void;
+    constructor(injector: ReflectiveInjector, key: ReflectiveKey, constructResolvingMessage: Function);
+    addKey(injector: ReflectiveInjector, key: ReflectiveKey): void;
     context: any;
 }
 /**
@@ -24,7 +24,7 @@ export declare class AbstractProviderError extends BaseException {
  * ```
  */
 export declare class NoProviderError extends AbstractProviderError {
-    constructor(injector: Injector, key: Key);
+    constructor(injector: ReflectiveInjector, key: ReflectiveKey);
 }
 /**
  * Thrown when dependencies form a cycle.
@@ -43,7 +43,7 @@ export declare class NoProviderError extends AbstractProviderError {
  * Retrieving `A` or `B` throws a `CyclicDependencyError` as the graph above cannot be constructed.
  */
 export declare class CyclicDependencyError extends AbstractProviderError {
-    constructor(injector: Injector, key: Key);
+    constructor(injector: ReflectiveInjector, key: ReflectiveKey);
 }
 /**
  * Thrown when a constructing type returns with an Error.
@@ -72,10 +72,10 @@ export declare class CyclicDependencyError extends AbstractProviderError {
  * ```
  */
 export declare class InstantiationError extends WrappedException {
-    constructor(injector: Injector, originalException: any, originalStack: any, key: Key);
-    addKey(injector: Injector, key: Key): void;
+    constructor(injector: ReflectiveInjector, originalException: any, originalStack: any, key: ReflectiveKey);
+    addKey(injector: ReflectiveInjector, key: ReflectiveKey): void;
     wrapperMessage: string;
-    causeKey: Key;
+    causeKey: ReflectiveKey;
     context: any;
 }
 /**
