@@ -1,9 +1,4 @@
-import {
-  Injector,
-  ResolvedReflectiveProvider,
-  Injectable,
-  ReflectiveInjector
-} from 'angular2/src/core/di';
+import {Key, Injector, ResolvedProvider, Provider, provide, Injectable} from 'angular2/src/core/di';
 import {ComponentResolver} from './component_resolver';
 import {isType, Type, stringify, isPresent} from 'angular2/src/facade/lang';
 import {ComponentRef} from './component_factory';
@@ -65,7 +60,6 @@ export abstract class DynamicComponentLoader {
   abstract loadAsRoot(type: Type, overrideSelectorOrNode: string | any, injector: Injector,
                       onDispose?: () => void, projectableNodes?: any[][]): Promise<ComponentRef>;
 
-
   /**
    * Creates an instance of a Component and attaches it to the View Container found at the
    * `location` specified as {@link ViewContainerRef}.
@@ -107,7 +101,7 @@ export abstract class DynamicComponentLoader {
    * ```
    */
   abstract loadNextToLocation(type: Type, location: ViewContainerRef,
-                              providers?: ResolvedReflectiveProvider[],
+                              providers?: ResolvedProvider[],
                               projectableNodes?: any[][]): Promise<ComponentRef>;
 }
 
@@ -128,15 +122,10 @@ export class DynamicComponentLoader_ extends DynamicComponentLoader {
     });
   }
 
-  loadNextToLocation(type: Type, location: ViewContainerRef,
-                     providers: ResolvedReflectiveProvider[] = null,
+  loadNextToLocation(type: Type, location: ViewContainerRef, providers: ResolvedProvider[] = null,
                      projectableNodes: any[][] = null): Promise<ComponentRef> {
     return this._compiler.resolveComponent(type).then(componentFactory => {
-      var contextInjector = location.parentInjector;
-      var childInjector = isPresent(providers) && providers.length > 0 ?
-                              ReflectiveInjector.fromResolvedProviders(providers, contextInjector) :
-                              contextInjector;
-      return location.createComponent(componentFactory, location.length, childInjector,
+      return location.createComponent(componentFactory, location.length, providers,
                                       projectableNodes);
     });
   }

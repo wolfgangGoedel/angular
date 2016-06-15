@@ -1,7 +1,6 @@
-import { CompileDirectiveMetadata, CompilePipeMetadata, CompileInjectorModuleMetadata } from './compile_metadata';
+import { CompileDirectiveMetadata, CompilePipeMetadata } from './compile_metadata';
 import { StyleCompiler } from './style_compiler';
 import { ViewCompiler } from './view_compiler/view_compiler';
-import { InjectorCompiler } from './view_compiler/injector_compiler';
 import { TemplateParser } from './template_parser';
 import { DirectiveNormalizer } from './directive_normalizer';
 import { OutputEmitter } from './output/abstract_emitter';
@@ -21,11 +20,10 @@ export declare class OfflineCompiler {
     private _templateParser;
     private _styleCompiler;
     private _viewCompiler;
-    private _injectorCompiler;
     private _outputEmitter;
-    constructor(_directiveNormalizer: DirectiveNormalizer, _templateParser: TemplateParser, _styleCompiler: StyleCompiler, _viewCompiler: ViewCompiler, _injectorCompiler: InjectorCompiler, _outputEmitter: OutputEmitter);
+    constructor(_directiveNormalizer: DirectiveNormalizer, _templateParser: TemplateParser, _styleCompiler: StyleCompiler, _viewCompiler: ViewCompiler, _outputEmitter: OutputEmitter);
     normalizeDirectiveMetadata(directive: CompileDirectiveMetadata): Promise<CompileDirectiveMetadata>;
-    compile(components: NormalizedComponentWithViewDirectives[], injectorModules: CompileInjectorModuleMetadata[]): SourceModule;
+    compileTemplates(components: NormalizedComponentWithViewDirectives[]): SourceModule;
     compileStylesheet(stylesheetUrl: string, cssText: string): SourceModule[];
     private _compileComponent(compMeta, directives, pipes, targetStatements);
     private _codegenSourceModule(moduleUrl, statements, exportedVars);

@@ -1,8 +1,8 @@
 import {ListWrapper} from 'angular2/src/facade/collection';
 import {stringify, isBlank} from 'angular2/src/facade/lang';
 import {BaseException, WrappedException, unimplemented} from 'angular2/src/facade/exceptions';
-import {ReflectiveKey} from './reflective_key';
-import {ReflectiveInjector} from './reflective_injector';
+import {Key} from './key';
+import {Injector} from './injector';
 
 function findFirstClosedCycle(keys: any[]): any[] {
   var res = [];
@@ -36,16 +36,15 @@ export class AbstractProviderError extends BaseException {
   message: string;
 
   /** @internal */
-  keys: ReflectiveKey[];
+  keys: Key[];
 
   /** @internal */
-  injectors: ReflectiveInjector[];
+  injectors: Injector[];
 
   /** @internal */
   constructResolvingMessage: Function;
 
-  constructor(injector: ReflectiveInjector, key: ReflectiveKey,
-              constructResolvingMessage: Function) {
+  constructor(injector: Injector, key: Key, constructResolvingMessage: Function) {
     super("DI Exception");
     this.keys = [key];
     this.injectors = [injector];
@@ -53,7 +52,7 @@ export class AbstractProviderError extends BaseException {
     this.message = this.constructResolvingMessage(this.keys);
   }
 
-  addKey(injector: ReflectiveInjector, key: ReflectiveKey): void {
+  addKey(injector: Injector, key: Key): void {
     this.injectors.push(injector);
     this.keys.push(key);
     this.message = this.constructResolvingMessage(this.keys);
@@ -77,7 +76,7 @@ export class AbstractProviderError extends BaseException {
  * ```
  */
 export class NoProviderError extends AbstractProviderError {
-  constructor(injector: ReflectiveInjector, key: ReflectiveKey) {
+  constructor(injector: Injector, key: Key) {
     super(injector, key, function(keys: any[]) {
       var first = stringify(ListWrapper.first(keys).token);
       return `No provider for ${first}!${constructResolvingPath(keys)}`;
@@ -102,7 +101,7 @@ export class NoProviderError extends AbstractProviderError {
  * Retrieving `A` or `B` throws a `CyclicDependencyError` as the graph above cannot be constructed.
  */
 export class CyclicDependencyError extends AbstractProviderError {
-  constructor(injector: ReflectiveInjector, key: ReflectiveKey) {
+  constructor(injector: Injector, key: Key) {
     super(injector, key, function(keys: any[]) {
       return `Cannot instantiate cyclic dependency!${constructResolvingPath(keys)}`;
     });
@@ -137,18 +136,18 @@ export class CyclicDependencyError extends AbstractProviderError {
  */
 export class InstantiationError extends WrappedException {
   /** @internal */
-  keys: ReflectiveKey[];
+  keys: Key[];
 
   /** @internal */
-  injectors: ReflectiveInjector[];
+  injectors: Injector[];
 
-  constructor(injector: ReflectiveInjector, originalException, originalStack, key: ReflectiveKey) {
+  constructor(injector: Injector, originalException, originalStack, key: Key) {
     super("DI Exception", originalException, originalStack, null);
     this.keys = [key];
     this.injectors = [injector];
   }
 
-  addKey(injector: ReflectiveInjector, key: ReflectiveKey): void {
+  addKey(injector: Injector, key: Key): void {
     this.injectors.push(injector);
     this.keys.push(key);
   }
@@ -158,7 +157,7 @@ export class InstantiationError extends WrappedException {
     return `Error during instantiation of ${first}!${constructResolvingPath(this.keys)}.`;
   }
 
-  get causeKey(): ReflectiveKey { return this.keys[0]; }
+  get causeKey(): Key { return this.keys[0]; }
 
   get context() { return this.injectors[this.injectors.length - 1].debugContext(); }
 }

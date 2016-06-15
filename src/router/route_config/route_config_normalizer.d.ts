@@ -1,7 +1,6 @@
 import { RouteDefinition } from './route_config_decorator';
 import { Type } from 'angular2/src/facade/lang';
 import { RouteRegistry } from '../route_registry';
-import { ComponentFactory } from 'angular2/core';
 /**
  * Given a JS Object that represents a route config, returns a corresponding Route, AsyncRoute,
  * AuxRoute or Redirect object.
@@ -10,4 +9,4 @@ import { ComponentFactory } from 'angular2/core';
  * `RouteRegistry`.
  */
 export declare function normalizeRouteConfig(config: RouteDefinition, registry: RouteRegistry): RouteDefinition;
-export declare function assertComponentExists(component: Type | ComponentFactory, path: string): void;
+export declare function assertComponentExists(component: Type, path: string): void;

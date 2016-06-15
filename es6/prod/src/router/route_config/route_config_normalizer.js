@@ -1,7 +1,6 @@
 import { AsyncRoute, AuxRoute, Route, Redirect } from './route_config_decorator';
 import { isType } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
-import { ComponentFactory } from 'angular2/core';
 /**
  * Given a JS Object that represents a route config, returns a corresponding Route, AsyncRoute,
  * AuxRoute or Redirect object.
@@ -86,7 +85,7 @@ function wrapLoaderToReconfigureRegistry(loader, registry) {
     };
 }
 export function assertComponentExists(component, path) {
-    if (!isType(component) && !(component instanceof ComponentFactory)) {
+    if (!isType(component)) {
         throw new BaseException(`Component for route "${path}" is not defined, or is not a class.`);
     }
 }

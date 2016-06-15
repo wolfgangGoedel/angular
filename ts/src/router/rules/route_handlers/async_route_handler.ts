@@ -1,20 +1,20 @@
-import {isPresent} from 'angular2/src/facade/lang';
+import {isPresent, Type} from 'angular2/src/facade/lang';
 
 import {RouteHandler} from './route_handler';
 import {RouteData, BLANK_ROUTE_DATA} from '../../instruction';
 
+
 export class AsyncRouteHandler implements RouteHandler {
   /** @internal */
-  _resolvedComponent: Promise<any /*Type | ComponentFactory*/> = null;
-  componentType: any /*Type | ComponentFactory*/;
+  _resolvedComponent: Promise<Type> = null;
+  componentType: Type;
   public data: RouteData;
 
-  constructor(private _loader: () => Promise<any /*Type | ComponentFactory*/>,
-              data: {[key: string]: any} = null) {
+  constructor(private _loader: () => Promise<Type>, data: {[key: string]: any} = null) {
     this.data = isPresent(data) ? new RouteData(data) : BLANK_ROUTE_DATA;
   }
 
-  resolveComponentType(): Promise<any /*Type | ComponentFactory*/> {
+  resolveComponentType(): Promise<Type> {
     if (isPresent(this._resolvedComponent)) {
       return this._resolvedComponent;
     }

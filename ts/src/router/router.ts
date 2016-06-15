@@ -11,7 +11,7 @@ import {
   Instruction,
 } from './instruction';
 import {RouterOutlet} from './directives/router_outlet';
-import {getCanActivateHook} from './utils';
+import {getCanActivateHook} from './lifecycle/route_lifecycle_reflector';
 import {RouteDefinition} from './route_config/route_config_impl';
 
 let _resolveToTrue = PromiseWrapper.resolve(true);
@@ -469,8 +469,7 @@ export class RootRouter extends Router {
   _locationSub: Object;
 
   constructor(registry: RouteRegistry, location: Location,
-              @Inject(ROUTER_PRIMARY_COMPONENT)
-              primaryComponent: any /* Type | ComponentFactory*/) {
+              @Inject(ROUTER_PRIMARY_COMPONENT) primaryComponent: Type) {
     super(registry, null, primaryComponent);
     this.root = this;
     this._location = location;

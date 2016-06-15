@@ -5,15 +5,14 @@ import {isBlank, isPresent} from 'angular2/src/facade/lang';
 import {
   Directive,
   Attribute,
-  ComponentResolver,
-  ComponentFactory,
+  DynamicComponentLoader,
   ComponentRef,
   ViewContainerRef,
+  Injector,
   provide,
-  ReflectiveInjector,
+  Dependency,
   OnDestroy,
-  Output,
-  MapInjector
+  Output
 } from 'angular2/core';
 
 import * as routerMod from '../router';
@@ -41,7 +40,7 @@ export class RouterOutlet implements OnDestroy {
 
   @Output('activate') public activateEvents = new EventEmitter<any>();
 
-  constructor(private _viewContainerRef: ViewContainerRef, private _loader: ComponentResolver,
+  constructor(private _viewContainerRef: ViewContainerRef, private _loader: DynamicComponentLoader,
               private _parentRouter: routerMod.Router, @Attribute('name') nameAttr: string) {
     if (isPresent(nameAttr)) {
       this.name = nameAttr;
@@ -61,23 +60,16 @@ export class RouterOutlet implements OnDestroy {
     var componentType = nextInstruction.componentType;
     var childRouter = this._parentRouter.childRouter(componentType);
 
-    var providers = new Map<any, any>();
-    providers.set(RouteData, nextInstruction.routeData);
-    providers.set(RouteParams, new RouteParams(nextInstruction.params));
-    providers.set(routerMod.Router, childRouter);
-    var injector = new MapInjector(this._viewContainerRef.parentInjector, providers);
-    var componentFactoryPromise: Promise<ComponentFactory>;
-    if (componentType instanceof ComponentFactory) {
-      componentFactoryPromise = PromiseWrapper.resolve(componentType);
-    } else {
-      componentFactoryPromise = this._loader.resolveComponent(componentType);
-    }
+    var providers = Injector.resolve([
+      provide(RouteData, {useValue: nextInstruction.routeData}),
+      provide(RouteParams, {useValue: new RouteParams(nextInstruction.params)}),
+      provide(routerMod.Router, {useValue: childRouter})
+    ]);
     this._componentRef =
-        componentFactoryPromise.then((componentFactory) => this._viewContainerRef.createComponent(
-                                         componentFactory, 0, injector));
+        this._loader.loadNextToLocation(componentType, this._viewContainerRef, providers);
     return this._componentRef.then((componentRef) => {
       this.activateEvents.emit(componentRef.instance);
-      if (hasLifecycleHook(hookMod.routerOnActivate, componentRef.instance)) {
+      if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
         return (<OnActivate>componentRef.instance)
             .routerOnActivate(nextInstruction, previousInstruction);
       } else {
@@ -101,11 +93,12 @@ export class RouterOutlet implements OnDestroy {
     if (isBlank(this._componentRef)) {
       return this.activate(nextInstruction);
     } else {
-      return this._componentRef.then(
-          (ref: ComponentRef) =>
-              hasLifecycleHook(hookMod.routerOnReuse, ref.instance) ?
-                  (<OnReuse>ref.instance).routerOnReuse(nextInstruction, previousInstruction) :
-                  true);
+      return PromiseWrapper.resolve(
+          hasLifecycleHook(hookMod.routerOnReuse, this._currentInstruction.componentType) ?
+              this._componentRef.then(
+                  (ref: ComponentRef) =>
+                      (<OnReuse>ref.instance).routerOnReuse(nextInstruction, previousInstruction)) :
+              true);
     }
   }
 
@@ -115,13 +108,12 @@ export class RouterOutlet implements OnDestroy {
    */
   deactivate(nextInstruction: ComponentInstruction): Promise<any> {
     var next = _resolveToTrue;
-    if (isPresent(this._componentRef)) {
+    if (isPresent(this._componentRef) && isPresent(this._currentInstruction) &&
+        hasLifecycleHook(hookMod.routerOnDeactivate, this._currentInstruction.componentType)) {
       next = this._componentRef.then(
           (ref: ComponentRef) =>
-              hasLifecycleHook(hookMod.routerOnDeactivate, ref.instance) ?
-                  (<OnDeactivate>ref.instance)
-                      .routerOnDeactivate(nextInstruction, this._currentInstruction) :
-                  true);
+              (<OnDeactivate>ref.instance)
+                  .routerOnDeactivate(nextInstruction, this._currentInstruction));
     }
     return next.then((_) => {
       if (isPresent(this._componentRef)) {
@@ -144,12 +136,14 @@ export class RouterOutlet implements OnDestroy {
     if (isBlank(this._currentInstruction)) {
       return _resolveToTrue;
     }
-    return this._componentRef.then(
-        (ref: ComponentRef) =>
-            hasLifecycleHook(hookMod.routerCanDeactivate, ref.instance) ?
-                (<CanDeactivate>ref.instance)
-                    .routerCanDeactivate(nextInstruction, this._currentInstruction) :
-                true);
+    if (hasLifecycleHook(hookMod.routerCanDeactivate, this._currentInstruction.componentType)) {
+      return this._componentRef.then(
+          (ref: ComponentRef) =>
+              (<CanDeactivate>ref.instance)
+                  .routerCanDeactivate(nextInstruction, this._currentInstruction));
+    } else {
+      return _resolveToTrue;
+    }
   }
 
   /**
@@ -164,21 +158,20 @@ export class RouterOutlet implements OnDestroy {
    */
   routerCanReuse(nextInstruction: ComponentInstruction): Promise<boolean> {
     var result;
+
     if (isBlank(this._currentInstruction) ||
         this._currentInstruction.componentType != nextInstruction.componentType) {
-      result = PromiseWrapper.resolve(false);
+      result = false;
+    } else if (hasLifecycleHook(hookMod.routerCanReuse, this._currentInstruction.componentType)) {
+      result = this._componentRef.then(
+          (ref: ComponentRef) =>
+              (<CanReuse>ref.instance).routerCanReuse(nextInstruction, this._currentInstruction));
     } else {
-      result = this._componentRef.then((ref: ComponentRef) => {
-        if (hasLifecycleHook(hookMod.routerCanReuse, ref.instance)) {
-          return (<CanReuse>ref.instance).routerCanReuse(nextInstruction, this._currentInstruction);
-        } else {
-          return nextInstruction == this._currentInstruction ||
-                 (isPresent(nextInstruction.params) && isPresent(this._currentInstruction.params) &&
-                  StringMapWrapper.equals(nextInstruction.params, this._currentInstruction.params));
-        }
-      });
+      result = nextInstruction == this._currentInstruction ||
+               (isPresent(nextInstruction.params) && isPresent(this._currentInstruction.params) &&
+                StringMapWrapper.equals(nextInstruction.params, this._currentInstruction.params));
     }
-    return result;
+    return <Promise<boolean>>PromiseWrapper.resolve(result);
   }
 
   ngOnDestroy(): void { this._parentRouter.unregisterPrimaryOutlet(this); }

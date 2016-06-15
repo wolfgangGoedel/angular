@@ -4,12 +4,10 @@ import {
   Json,
   isBlank,
   isPresent,
-  isString,
   stringify,
-  evalExpression,
-  CONST_EXPR
+  evalExpression
 } from 'angular2/src/facade/lang';
-import {BaseException, unimplemented} from 'angular2/src/facade/exceptions';
+import {BaseException} from 'angular2/src/facade/exceptions';
 import {
   ListWrapper,
   SetWrapper,
@@ -45,12 +43,10 @@ import {
 import {Injectable} from 'angular2/src/core/di';
 import {StyleCompiler, StylesCompileDependency, StylesCompileResult} from './style_compiler';
 import {ViewCompiler} from './view_compiler/view_compiler';
-import {InjectorCompiler} from './view_compiler/injector_compiler';
 import {TemplateParser} from './template_parser';
 import {DirectiveNormalizer} from './directive_normalizer';
 import {RuntimeMetadataResolver} from './runtime_metadata';
 import {ComponentFactory} from 'angular2/src/core/linker/component_factory';
-import {InjectorFactory} from 'angular2/src/core/linker/injector_factory';
 import {
   ComponentResolver,
   ReflectorComponentResolver
@@ -61,8 +57,8 @@ import * as ir from './output/output_ast';
 import {jitStatements} from './output/output_jit';
 import {interpretStatements} from './output/output_interpreter';
 import {InterpretiveAppViewInstanceFactory} from './output/interpretive_view';
-import {InterpretiveInjectorInstanceFactory} from './output/interpretive_injector';
-import {XHR} from './xhr';
+
+import {XHR} from 'angular2/src/compiler/xhr';
 
 /**
  * An internal module of the Angular compiler that begins with component types,
@@ -80,23 +76,7 @@ export class RuntimeCompiler implements ComponentResolver {
               private _templateNormalizer: DirectiveNormalizer,
               private _templateParser: TemplateParser, private _styleCompiler: StyleCompiler,
               private _viewCompiler: ViewCompiler, private _xhr: XHR,
-              private _injectorCompiler: InjectorCompiler, private _genConfig: CompilerConfig) {}
-
-  createInjectorFactory(moduleClass: Type,
-                        extraProviders: any[] = CONST_EXPR([])): InjectorFactory<any> {
-    var injectorModuleMeta =
-        this._runtimeMetadataResolver.getInjectorModuleMetadata(moduleClass, extraProviders);
-    var compileResult = this._injectorCompiler.compileInjector(injectorModuleMeta);
-    var factory: any;
-    if (IS_DART || !this._genConfig.useJit) {
-      factory = interpretStatements(compileResult.statements, compileResult.injectorFactoryVar,
-                                    new InterpretiveInjectorInstanceFactory());
-    } else {
-      factory = jitStatements(`${injectorModuleMeta.type.name}.ngfactory.js`,
-                              compileResult.statements, compileResult.injectorFactoryVar);
-    }
-    return factory;
-  }
+              private _genConfig: CompilerConfig) {}
 
   resolveComponent(componentType: Type): Promise<ComponentFactory> {
     var compMeta: CompileDirectiveMetadata =

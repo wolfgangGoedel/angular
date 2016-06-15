@@ -17,6 +17,6 @@ function initRouterListeners(injector: Injector): () => void {
   return () => {
     let zone = injector.get(NgZone);
 
-    zone.runGuarded(() => injector.get(MessageBasedPlatformLocation).start());
+    zone.run(() => injector.get(MessageBasedPlatformLocation).start());
   };
 }

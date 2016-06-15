@@ -1,6 +1,5 @@
 import { Type } from 'angular2/src/facade/lang';
 import { RegexSerializer } from './rules/route_paths/regex_route_path';
-import { ComponentFactory } from 'angular2/core';
 /**
  * `RouteDefinition` defines a route within a {@link RouteConfig} decorator.
  *
@@ -17,7 +16,7 @@ export interface RouteDefinition {
     aux?: string;
     regex?: string;
     serializer?: RegexSerializer;
-    component?: Type | ComponentFactory | ComponentDefinition;
+    component?: Type | ComponentDefinition;
     loader?: () => Promise<Type>;
     redirectTo?: any[];
     as?: string;
@@ -34,5 +33,5 @@ export interface RouteDefinition {
 export interface ComponentDefinition {
     type: string;
     loader?: () => Promise<Type>;
-    component?: Type | ComponentFactory;
+    component?: Type;
 }

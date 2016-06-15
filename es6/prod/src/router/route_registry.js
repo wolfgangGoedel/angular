@@ -12,16 +12,16 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 import { ListWrapper, Map, StringMapWrapper } from 'angular2/src/facade/collection';
 import { PromiseWrapper } from 'angular2/src/facade/async';
-import { isPresent, isArray, isBlank, isType, isString, isStringMap, StringWrapper, Math, getTypeNameForDebugging, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent, isArray, isBlank, isType, isString, isStringMap, Type, StringWrapper, Math, getTypeNameForDebugging, CONST_EXPR } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
-import { Injectable, Inject, OpaqueToken, ComponentFactory } from 'angular2/core';
+import { reflector } from 'angular2/src/core/reflection/reflection';
+import { Injectable, Inject, OpaqueToken } from 'angular2/core';
 import { RouteConfig, Route, AuxRoute } from './route_config/route_config_impl';
 import { PathMatch, RedirectMatch } from './rules/rules';
 import { RuleSet } from './rules/rule_set';
 import { ResolvedInstruction, RedirectInstruction, UnresolvedInstruction, DefaultInstruction } from './instruction';
 import { normalizeRouteConfig, assertComponentExists } from './route_config/route_config_normalizer';
 import { parser, convertUrlParamsToArray } from './url_parser';
-import { getComponentAnnotations, getComponentType } from './utils';
 var _resolveToNull = PromiseWrapper.resolve(null);
 // A LinkItemArray is an array, which describes a set of routes
 // The items in the array are found in groups:
@@ -99,7 +99,7 @@ export let RouteRegistry = class RouteRegistry {
      * Reads the annotations of a component and configures the registry based on them
      */
     configFromComponent(component) {
-        if (!isType(component) && !(component instanceof ComponentFactory)) {
+        if (!isType(component)) {
             return;
         }
         // Don't read the annotations from a type more than once –
@@ -107,7 +107,7 @@ export let RouteRegistry = class RouteRegistry {
         if (this._rules.has(component)) {
             return;
         }
-        var annotations = getComponentAnnotations(component);
+        var annotations = reflector.annotations(component);
         if (isPresent(annotations)) {
             for (var i = 0; i < annotations.length; i++) {
                 var annotation = annotations[i];
@@ -288,7 +288,7 @@ export let RouteRegistry = class RouteRegistry {
         }
         var rules = this._rules.get(parentComponentType);
         if (isBlank(rules)) {
-            throw new BaseException(`Component "${getTypeNameForDebugging(getComponentType(parentComponentType))}" has no route config.`);
+            throw new BaseException(`Component "${getTypeNameForDebugging(parentComponentType)}" has no route config.`);
         }
         let linkParamIndex = 0;
         let routeParams = {};
@@ -308,7 +308,7 @@ export let RouteRegistry = class RouteRegistry {
             }
             var routeRecognizer = (_aux ? rules.auxRulesByName : rules.rulesByName).get(routeName);
             if (isBlank(routeRecognizer)) {
-                throw new BaseException(`Component "${getTypeNameForDebugging(getComponentType(parentComponentType))}" has no route named "${routeName}".`);
+                throw new BaseException(`Component "${getTypeNameForDebugging(parentComponentType)}" has no route named "${routeName}".`);
             }
             // Create an "unresolved instruction" for async routes
             // we'll figure out the rest of the route when we resolve the instruction and
@@ -382,7 +382,7 @@ export let RouteRegistry = class RouteRegistry {
 RouteRegistry = __decorate([
     Injectable(),
     __param(0, Inject(ROUTER_PRIMARY_COMPONENT)), 
-    __metadata('design:paramtypes', [Object])
+    __metadata('design:paramtypes', [Type])
 ], RouteRegistry);
 /*
  * Given: ['/a/b', {c: 2}]
@@ -439,10 +439,10 @@ function compareSpecificityStrings(a, b) {
     return a.length - b.length;
 }
 function assertTerminalComponent(component, path) {
-    if (!isType(component) && !(component instanceof ComponentFactory)) {
+    if (!isType(component)) {
         return;
     }
-    var annotations = getComponentAnnotations(component);
+    var annotations = reflector.annotations(component);
     if (isPresent(annotations)) {
         for (var i = 0; i < annotations.length; i++) {
             var annotation = annotations[i];

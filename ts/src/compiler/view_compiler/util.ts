@@ -31,11 +31,8 @@ export function getPropertyInView(property: o.Expression, viewPath: CompileView[
 
 export function injectFromViewParentInjector(token: CompileTokenMetadata,
                                              optional: boolean): o.Expression {
-  var args = [createDiTokenExpression(token)];
-  if (optional) {
-    args.push(o.NULL_EXPR);
-  }
-  return o.THIS_EXPR.prop('parentInjector').callMethod('get', args);
+  var method = optional ? 'getOptional' : 'get';
+  return o.THIS_EXPR.prop('parentInjector').callMethod(method, [createDiTokenExpression(token)]);
 }
 
 export function getViewFactoryName(component: CompileDirectiveMetadata,
@@ -76,14 +73,4 @@ export function createFlatArray(expressions: o.Expression[]): o.Expression {
         result.callMethod(o.BuiltinMethod.ConcatArray, [o.literalArr(lastNonArrayExpressions)]);
   }
   return result;
-}
-
-export function convertValueToOutputAst(value: any): o.Expression {
-  if (value instanceof CompileIdentifierMetadata) {
-    return o.importExpr(value);
-  } else if (value instanceof o.Expression) {
-    return value;
-  } else {
-    return o.literal(value);
-  }
 }

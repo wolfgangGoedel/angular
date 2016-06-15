@@ -14,7 +14,8 @@ import {
   CONST_EXPR
 } from 'angular2/src/facade/lang';
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
-import {Injectable, Inject, OpaqueToken, ComponentFactory} from 'angular2/core';
+import {reflector} from 'angular2/src/core/reflection/reflection';
+import {Injectable, Inject, OpaqueToken} from 'angular2/core';
 
 import {
   RouteConfig,
@@ -37,7 +38,6 @@ import {
 import {normalizeRouteConfig, assertComponentExists} from './route_config/route_config_normalizer';
 import {parser, Url, convertUrlParamsToArray, pathSegmentsToUrl} from './url_parser';
 import {GeneratedUrl} from './rules/route_paths/route_path';
-import {getComponentAnnotations, getComponentType} from './utils';
 
 var _resolveToNull = PromiseWrapper.resolve<Instruction>(null);
 
@@ -89,7 +89,7 @@ export const ROUTER_PRIMARY_COMPONENT: OpaqueToken =
 export class RouteRegistry {
   private _rules = new Map<any, RuleSet>();
 
-  constructor(@Inject(ROUTER_PRIMARY_COMPONENT) private _rootComponent: Type | ComponentFactory) {}
+  constructor(@Inject(ROUTER_PRIMARY_COMPONENT) private _rootComponent: Type) {}
 
   /**
    * Given a component and a configuration object, add the route to this registry
@@ -126,7 +126,7 @@ export class RouteRegistry {
    * Reads the annotations of a component and configures the registry based on them
    */
   configFromComponent(component: any): void {
-    if (!isType(component) && !(component instanceof ComponentFactory)) {
+    if (!isType(component)) {
       return;
     }
 
@@ -135,7 +135,7 @@ export class RouteRegistry {
     if (this._rules.has(component)) {
       return;
     }
-    var annotations = getComponentAnnotations(component);
+    var annotations = reflector.annotations(component);
     if (isPresent(annotations)) {
       for (var i = 0; i < annotations.length; i++) {
         var annotation = annotations[i];
@@ -370,7 +370,7 @@ export class RouteRegistry {
     var rules = this._rules.get(parentComponentType);
     if (isBlank(rules)) {
       throw new BaseException(
-          `Component "${getTypeNameForDebugging(getComponentType(parentComponentType))}" has no route config.`);
+          `Component "${getTypeNameForDebugging(parentComponentType)}" has no route config.`);
     }
 
     let linkParamIndex = 0;
@@ -394,7 +394,7 @@ export class RouteRegistry {
 
       if (isBlank(routeRecognizer)) {
         throw new BaseException(
-            `Component "${getTypeNameForDebugging(getComponentType(parentComponentType))}" has no route named "${routeName}".`);
+            `Component "${getTypeNameForDebugging(parentComponentType)}" has no route named "${routeName}".`);
       }
 
       // Create an "unresolved instruction" for async routes
@@ -456,7 +456,7 @@ export class RouteRegistry {
     return rules.hasRoute(name);
   }
 
-  public generateDefault(componentCursor: Type | ComponentFactory): Instruction {
+  public generateDefault(componentCursor: Type): Instruction {
     if (isBlank(componentCursor)) {
       return null;
     }
@@ -540,11 +540,11 @@ function compareSpecificityStrings(a: string, b: string): number {
 }
 
 function assertTerminalComponent(component, path) {
-  if (!isType(component) && !(component instanceof ComponentFactory)) {
+  if (!isType(component)) {
     return;
   }
 
-  var annotations = getComponentAnnotations(component);
+  var annotations = reflector.annotations(component);
   if (isPresent(annotations)) {
     for (var i = 0; i < annotations.length; i++) {
       var annotation = annotations[i];

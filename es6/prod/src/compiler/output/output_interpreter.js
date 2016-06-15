@@ -116,8 +116,6 @@ class StatementInterpreter {
                 case o.BuiltinVar.CatchStack:
                     varName = CATCH_STACK_VAR;
                     break;
-                case o.BuiltinVar.MetadataMap:
-                    return null;
                 default:
                     throw new BaseException(`Unknown builtin variable ${ast.builtin}`);
             }

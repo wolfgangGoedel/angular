@@ -5,6 +5,7 @@ import {
   PLATFORM_DIRECTIVES,
   PLATFORM_PIPES,
   ComponentRef,
+  platform,
   ExceptionHandler,
   Reflector,
   reflector,
@@ -12,8 +13,7 @@ import {
   PLATFORM_COMMON_PROVIDERS,
   RootRenderer,
   PLATFORM_INITIALIZER,
-  APP_INITIALIZER,
-  TestabilityRegistry
+  APP_INITIALIZER
 } from 'angular2/core';
 import {EVENT_MANAGER_PLUGINS, EventManager} from 'angular2/platform/common_dom';
 import {provide, Provider, Injector, OpaqueToken} from 'angular2/src/core/di';
@@ -58,15 +58,9 @@ export const WORKER_SCRIPT: OpaqueToken = CONST_EXPR(new OpaqueToken("WebWorkerS
 export const WORKER_RENDER_MESSAGING_PROVIDERS: Array<any /*Type | Provider | any[]*/> =
     CONST_EXPR([MessageBasedRenderer, MessageBasedXHRImpl]);
 
-export const WORKER_RENDER_PLATFORM_MARKER =
-    CONST_EXPR(new OpaqueToken('WorkerRenderPlatformMarker'));
-
 export const WORKER_RENDER_PLATFORM: Array<any /*Type | Provider | any[]*/> = CONST_EXPR([
   PLATFORM_COMMON_PROVIDERS,
-  CONST_EXPR(new Provider(WORKER_RENDER_PLATFORM_MARKER, {useValue: true})),
-  new Provider(
-      PLATFORM_INITIALIZER,
-      {useFactory: initWebWorkerRenderPlatform, multi: true, deps: [TestabilityRegistry]})
+  new Provider(PLATFORM_INITIALIZER, {useValue: initWebWorkerRenderPlatform, multi: true})
 ]);
 
 /**
@@ -109,17 +103,15 @@ export function initializeGenericWorkerRenderer(injector: Injector) {
   let zone = injector.get(NgZone);
   bus.attachToZone(zone);
 
-  zone.runGuarded(() => {
+  zone.run(() => {
     WORKER_RENDER_MESSAGING_PROVIDERS.forEach((token) => { injector.get(token).start(); });
   });
 }
 
-export function initWebWorkerRenderPlatform(registry: TestabilityRegistry): Function {
-  return () => {
-    BrowserDomAdapter.makeCurrent();
-    wtfInit();
-    registry.setTestabilityGetter(new BrowserGetTestability());
-  };
+export function initWebWorkerRenderPlatform(): void {
+  BrowserDomAdapter.makeCurrent();
+  wtfInit();
+  BrowserGetTestability.init();
 }
 
 function exceptionHandler(): ExceptionHandler {

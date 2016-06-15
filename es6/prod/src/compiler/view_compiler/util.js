@@ -1,6 +1,5 @@
 import { isPresent } from 'angular2/src/facade/lang';
 import * as o from '../output/output_ast';
-import { CompileIdentifierMetadata } from '../compile_metadata';
 export function getPropertyInView(property, viewPath) {
     if (viewPath.length === 0) {
         return property;
@@ -23,11 +22,8 @@ export function getPropertyInView(property, viewPath) {
     }
 }
 export function injectFromViewParentInjector(token, optional) {
-    var args = [createDiTokenExpression(token)];
-    if (optional) {
-        args.push(o.NULL_EXPR);
-    }
-    return o.THIS_EXPR.prop('parentInjector').callMethod('get', args);
+    var method = optional ? 'getOptional' : 'get';
+    return o.THIS_EXPR.prop('parentInjector').callMethod(method, [createDiTokenExpression(token)]);
 }
 export function getViewFactoryName(component, embeddedTemplateIndex) {
     return `viewFactory_${component.type.name}${embeddedTemplateIndex}`;
@@ -66,15 +62,4 @@ export function createFlatArray(expressions) {
             result.callMethod(o.BuiltinMethod.ConcatArray, [o.literalArr(lastNonArrayExpressions)]);
     }
     return result;
-}
-export function convertValueToOutputAst(value) {
-    if (value instanceof CompileIdentifierMetadata) {
-        return o.importExpr(value);
-    }
-    else if (value instanceof o.Expression) {
-        return value;
-    }
-    else {
-        return o.literal(value);
-    }
 }

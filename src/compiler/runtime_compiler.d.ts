@@ -1,15 +1,13 @@
 import { Type } from 'angular2/src/facade/lang';
 import { StyleCompiler } from './style_compiler';
 import { ViewCompiler } from './view_compiler/view_compiler';
-import { InjectorCompiler } from './view_compiler/injector_compiler';
 import { TemplateParser } from './template_parser';
 import { DirectiveNormalizer } from './directive_normalizer';
 import { RuntimeMetadataResolver } from './runtime_metadata';
 import { ComponentFactory } from 'angular2/src/core/linker/component_factory';
-import { InjectorFactory } from 'angular2/src/core/linker/injector_factory';
 import { ComponentResolver } from 'angular2/src/core/linker/component_resolver';
 import { CompilerConfig } from './config';
-import { XHR } from './xhr';
+import { XHR } from 'angular2/src/compiler/xhr';
 /**
  * An internal module of the Angular compiler that begins with component types,
  * extracts templates, and eventually produces a compiled version of the component
@@ -22,14 +20,12 @@ export declare class RuntimeCompiler implements ComponentResolver {
     private _styleCompiler;
     private _viewCompiler;
     private _xhr;
-    private _injectorCompiler;
     private _genConfig;
     private _styleCache;
     private _hostCacheKeys;
     private _compiledTemplateCache;
     private _compiledTemplateDone;
-    constructor(_runtimeMetadataResolver: RuntimeMetadataResolver, _templateNormalizer: DirectiveNormalizer, _templateParser: TemplateParser, _styleCompiler: StyleCompiler, _viewCompiler: ViewCompiler, _xhr: XHR, _injectorCompiler: InjectorCompiler, _genConfig: CompilerConfig);
-    createInjectorFactory(moduleClass: Type, extraProviders?: any[]): InjectorFactory<any>;
+    constructor(_runtimeMetadataResolver: RuntimeMetadataResolver, _templateNormalizer: DirectiveNormalizer, _templateParser: TemplateParser, _styleCompiler: StyleCompiler, _viewCompiler: ViewCompiler, _xhr: XHR, _genConfig: CompilerConfig);
     resolveComponent(componentType: Type): Promise<ComponentFactory>;
     clearCache(): void;
     private _loadAndCompileComponent(cacheKey, compMeta, viewDirectives, pipes, compilingComponentsPath);

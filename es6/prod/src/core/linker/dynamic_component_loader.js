@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Injectable, ReflectiveInjector } from 'angular2/src/core/di';
+import { Injectable } from 'angular2/src/core/di';
 import { ComponentResolver } from './component_resolver';
 import { isPresent } from 'angular2/src/facade/lang';
 /**
@@ -31,11 +31,7 @@ export let DynamicComponentLoader_ = class DynamicComponentLoader_ extends Dynam
     }
     loadNextToLocation(type, location, providers = null, projectableNodes = null) {
         return this._compiler.resolveComponent(type).then(componentFactory => {
-            var contextInjector = location.parentInjector;
-            var childInjector = isPresent(providers) && providers.length > 0 ?
-                ReflectiveInjector.fromResolvedProviders(providers, contextInjector) :
-                contextInjector;
-            return location.createComponent(componentFactory, location.length, childInjector, projectableNodes);
+            return location.createComponent(componentFactory, location.length, providers, projectableNodes);
         });
     }
 };

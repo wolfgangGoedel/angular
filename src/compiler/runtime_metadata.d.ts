@@ -18,8 +18,8 @@ export declare class RuntimeMetadataResolver {
     constructor(_directiveResolver: DirectiveResolver, _pipeResolver: PipeResolver, _viewResolver: ViewResolver, _platformDirectives: Type[], _platformPipes: Type[]);
     private sanitizeTokenName(token);
     getDirectiveMetadata(directiveType: Type): cpl.CompileDirectiveMetadata;
-    getTypeMetadata(type: Type, moduleUrl: string, deps?: any[]): cpl.CompileTypeMetadata;
-    getFactoryMetadata(factory: Function, moduleUrl: string, deps: any[]): cpl.CompileFactoryMetadata;
+    getTypeMetadata(type: Type, moduleUrl: string): cpl.CompileTypeMetadata;
+    getFactoryMetadata(factory: Function, moduleUrl: string): cpl.CompileFactoryMetadata;
     getPipeMetadata(pipeType: Type): cpl.CompilePipeMetadata;
     getViewDirectivesMetadata(component: Type): cpl.CompileDirectiveMetadata[];
     getViewPipesMetadata(component: Type): cpl.CompilePipeMetadata[];
@@ -31,5 +31,4 @@ export declare class RuntimeMetadataResolver {
         [key: string]: dimd.QueryMetadata;
     }, isViewQuery: boolean): cpl.CompileQueryMetadata[];
     getQueryMetadata(q: dimd.QueryMetadata, propertyName: string): cpl.CompileQueryMetadata;
-    getInjectorModuleMetadata(config: Type, extraProviders: any[]): cpl.CompileInjectorModuleMetadata;
 }

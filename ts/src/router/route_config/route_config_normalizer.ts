@@ -3,7 +3,7 @@ import {ComponentDefinition} from '../route_definition';
 import {isType, Type} from 'angular2/src/facade/lang';
 import {BaseException, WrappedException} from 'angular2/src/facade/exceptions';
 import {RouteRegistry} from '../route_registry';
-import {ComponentFactory} from 'angular2/core';
+
 
 /**
  * Given a JS Object that represents a route config, returns a corresponding Route, AsyncRoute,
@@ -77,7 +77,7 @@ export function normalizeRouteConfig(config: RouteDefinition,
     }
     return new Route(<{
       path: string;
-      component: Type | ComponentFactory;
+      component: Type;
       name?: string;
       data?: {[key: string]: any};
       useAsDefault?: boolean;
@@ -102,8 +102,8 @@ function wrapLoaderToReconfigureRegistry(loader: Function, registry: RouteRegist
   };
 }
 
-export function assertComponentExists(component: Type | ComponentFactory, path: string): void {
-  if (!isType(component) && !(component instanceof ComponentFactory)) {
+export function assertComponentExists(component: Type, path: string): void {
+  if (!isType(component)) {
     throw new BaseException(`Component for route "${path}" is not defined, or is not a class.`);
   }
 }

@@ -1,6 +1,7 @@
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { global, isPresent } from 'angular2/src/facade/lang';
 import { DOM } from 'angular2/src/platform/dom/dom_adapter';
+import { setTestabilityGetter } from 'angular2/core';
 class PublicTestability {
     constructor(testability) {
         this._testability = testability;
@@ -15,6 +16,7 @@ class PublicTestability {
     }
 }
 export class BrowserGetTestability {
+    static init() { setTestabilityGetter(new BrowserGetTestability()); }
     addToWindow(registry) {
         global.getAngularTestability = (elem, findInAncestors = true) => {
             var testability = registry.findTestabilityInTree(elem, findInAncestors);

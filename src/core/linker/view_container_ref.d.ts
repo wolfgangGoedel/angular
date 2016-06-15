@@ -1,4 +1,4 @@
-import { Injector } from 'angular2/src/core/di/injector';
+import { ResolvedProvider } from 'angular2/src/core/di/provider';
 import { AppElement } from './element';
 import { ElementRef } from './element_ref';
 import { TemplateRef } from './template_ref';
@@ -27,8 +27,6 @@ export declare abstract class ViewContainerRef {
      * <!-- TODO: rename to anchorElement -->
      */
     element: ElementRef;
-    injector: Injector;
-    parentInjector: Injector;
     /**
      * Destroys all Views in this container.
      */
@@ -54,16 +52,17 @@ export declare abstract class ViewContainerRef {
      * Instantiates a single {@link Component} and inserts its Host View into this container at the
      * specified `index`.
      *
-     * The component is instantiated using its {@link ComponentFactory} which can be
-     * obtained via {@link ComponentResolver#resolveComponent}.
+     * The component is instantiated using its {@link ProtoViewRef `protoView`} which can be
+     * obtained via {@link Compiler#compileInHost}.
      *
      * If `index` is not specified, the new View will be inserted as the last View in the container.
      *
-     * You can optionally specify the {@link Injector} that will be used as parent for the Component.
+     * You can optionally specify `dynamicallyCreatedProviders`, which configure the {@link Injector}
+     * that will be created for the Host View.
      *
      * Returns the {@link ComponentRef} of the Host View created for the newly instantiated Component.
      */
-    abstract createComponent(componentFactory: ComponentFactory, index?: number, injector?: Injector, projectableNodes?: any[][]): ComponentRef;
+    abstract createComponent(componentFactory: ComponentFactory, index?: number, dynamicallyCreatedProviders?: ResolvedProvider[], projectableNodes?: any[][]): ComponentRef;
     /**
      * Inserts a View identified by a {@link ViewRef} into the container at the specified `index`.
      *
@@ -96,10 +95,8 @@ export declare class ViewContainerRef_ implements ViewContainerRef {
     get(index: number): EmbeddedViewRef;
     length: number;
     element: ElementRef;
-    injector: Injector;
-    parentInjector: Injector;
     createEmbeddedView(templateRef: TemplateRef, index?: number): EmbeddedViewRef;
-    createComponent(componentFactory: ComponentFactory, index?: number, injector?: Injector, projectableNodes?: any[][]): ComponentRef;
+    createComponent(componentFactory: ComponentFactory, index?: number, dynamicallyCreatedProviders?: ResolvedProvider[], projectableNodes?: any[][]): ComponentRef;
     insert(viewRef: ViewRef, index?: number): ViewRef;
     indexOf(viewRef: ViewRef): number;
     remove(index?: number): void;

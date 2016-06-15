@@ -48,15 +48,13 @@ export declare abstract class ComponentRef {
 export declare class ComponentRef_ extends ComponentRef {
     private _hostElement;
     private _componentType;
-    private _metadata;
-    constructor(_hostElement: AppElement, _componentType: Type, _metadata: any[]);
+    constructor(_hostElement: AppElement, _componentType: Type);
     location: ElementRef;
     injector: Injector;
     instance: any;
     hostView: ViewRef;
     changeDetectorRef: ChangeDetectorRef;
     componentType: Type;
-    metadata: any[];
     destroy(): void;
     onDestroy(callback: Function): void;
 }
@@ -64,11 +62,8 @@ export declare class ComponentFactory {
     selector: string;
     private _viewFactory;
     private _componentType;
-    private _metadataPairs;
-    static cloneWithMetadata(original: ComponentFactory, metadata: any[]): ComponentFactory;
-    constructor(selector: string, _viewFactory: Function, _componentType: Type, _metadataPairs?: Array<Type | any[]>);
+    constructor(selector: string, _viewFactory: Function, _componentType: Type);
     componentType: Type;
-    metadata: any[];
     /**
      * Creates a new component.
      */

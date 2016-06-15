@@ -11,7 +11,7 @@ export declare class CompileQuery {
     constructor(meta: CompileQueryMetadata, queryList: o.Expression, ownerDirectiveExpression: o.Expression, view: CompileView);
     addValue(value: o.Expression, view: CompileView): void;
     private _isStatic();
-    afterChildren(targetStaticMethod: CompileMethod, targetDynamicMethod: CompileMethod): void;
+    afterChildren(targetStaticMethod: any, targetDynamicMethod: CompileMethod): void;
 }
 export declare function createQueryList(query: CompileQueryMetadata, directiveInstance: o.Expression, propertyName: string, compileView: CompileView): o.Expression;
 export declare function addQueryToTokenMap(map: CompileTokenMap<CompileQuery[]>, query: CompileQuery): void;

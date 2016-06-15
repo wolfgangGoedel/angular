@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Injectable } from 'angular2/src/core/di';
 import { Map, MapWrapper } from 'angular2/src/facade/collection';
-import { CONST, scheduleMicroTask } from 'angular2/src/facade/lang';
+import { CONST, CONST_EXPR, scheduleMicroTask } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { NgZone } from '../zone/ng_zone';
 import { ObservableWrapper } from 'angular2/src/facade/async';
@@ -109,14 +109,7 @@ export let TestabilityRegistry = class TestabilityRegistry {
     constructor() {
         /** @internal */
         this._applications = new Map();
-        this._testabilityGetter = new _NoopGetTestability();
-    }
-    /**
-     * Set the {@link GetTestability} implementation used by the Angular testing framework.
-     */
-    setTestabilityGetter(getter) {
-        this._testabilityGetter = getter;
-        getter.addToWindow(this);
+        _testabilityGetter.addToWindow(this);
     }
     registerApplication(token, testability) {
         this._applications.set(token, testability);
@@ -125,7 +118,7 @@ export let TestabilityRegistry = class TestabilityRegistry {
     getAllTestabilities() { return MapWrapper.values(this._applications); }
     getAllRootElements() { return MapWrapper.keys(this._applications); }
     findTestabilityInTree(elem, findInAncestors = true) {
-        return this._testabilityGetter.findTestabilityInTree(this, elem, findInAncestors);
+        return _testabilityGetter.findTestabilityInTree(this, elem, findInAncestors);
     }
 };
 TestabilityRegistry = __decorate([
@@ -142,3 +135,10 @@ _NoopGetTestability = __decorate([
     CONST(), 
     __metadata('design:paramtypes', [])
 ], _NoopGetTestability);
+/**
+ * Set the {@link GetTestability} implementation used by the Angular testing framework.
+ */
+export function setTestabilityGetter(getter) {
+    _testabilityGetter = getter;
+}
+var _testabilityGetter = CONST_EXPR(new _NoopGetTestability());

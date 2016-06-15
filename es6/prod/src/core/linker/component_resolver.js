@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Injectable } from 'angular2/src/core/di';
 import { isBlank, stringify } from 'angular2/src/facade/lang';
-import { BaseException, unimplemented } from 'angular2/src/facade/exceptions';
+import { BaseException } from 'angular2/src/facade/exceptions';
 import { PromiseWrapper } from 'angular2/src/facade/async';
 import { reflector } from 'angular2/src/core/reflection/reflection';
 import { ComponentFactory } from './component_factory';
@@ -30,9 +30,6 @@ export let ReflectorComponentResolver = class ReflectorComponentResolver extends
             throw new BaseException(`No precompiled component ${stringify(componentType)} found`);
         }
         return PromiseWrapper.resolve(componentFactory);
-    }
-    createInjectorFactory(injectorModule, extraProviders) {
-        return unimplemented();
     }
     clearCache() { }
 };

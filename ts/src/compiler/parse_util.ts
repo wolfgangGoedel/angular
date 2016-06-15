@@ -1,12 +1,8 @@
-import {isPresent} from 'angular2/src/facade/lang';
-
 export class ParseLocation {
   constructor(public file: ParseSourceFile, public offset: number, public line: number,
               public col: number) {}
 
-  toString(): string {
-    return isPresent(this.offset) ? `${this.file.url}@${this.line}:${this.col}` : this.file.url;
-  }
+  toString(): string { return `${this.file.url}@${this.line}:${this.col}`; }
 }
 
 export class ParseSourceFile {
@@ -27,40 +23,38 @@ export abstract class ParseError {
   toString(): string {
     var source = this.span.start.file.content;
     var ctxStart = this.span.start.offset;
-    var contextStr = '';
-    if (isPresent(ctxStart)) {
-      if (ctxStart > source.length - 1) {
-        ctxStart = source.length - 1;
-      }
-      var ctxEnd = ctxStart;
-      var ctxLen = 0;
-      var ctxLines = 0;
-
-      while (ctxLen < 100 && ctxStart > 0) {
-        ctxStart--;
-        ctxLen++;
-        if (source[ctxStart] == "\n") {
-          if (++ctxLines == 3) {
-            break;
-          }
-        }
-      }
-
-      ctxLen = 0;
-      ctxLines = 0;
-      while (ctxLen < 100 && ctxEnd < source.length - 1) {
-        ctxEnd++;
-        ctxLen++;
-        if (source[ctxEnd] == "\n") {
-          if (++ctxLines == 3) {
-            break;
-          }
-        }
-      }
-      let context = source.substring(ctxStart, this.span.start.offset) + '[ERROR ->]' +
-                    source.substring(this.span.start.offset, ctxEnd + 1);
-      contextStr = ` ("${context}")`;
+    if (ctxStart > source.length - 1) {
+      ctxStart = source.length - 1;
     }
-    return `${this.msg}${contextStr}: ${this.span.start}`;
+    var ctxEnd = ctxStart;
+    var ctxLen = 0;
+    var ctxLines = 0;
+
+    while (ctxLen < 100 && ctxStart > 0) {
+      ctxStart--;
+      ctxLen++;
+      if (source[ctxStart] == "\n") {
+        if (++ctxLines == 3) {
+          break;
+        }
+      }
+    }
+
+    ctxLen = 0;
+    ctxLines = 0;
+    while (ctxLen < 100 && ctxEnd < source.length - 1) {
+      ctxEnd++;
+      ctxLen++;
+      if (source[ctxEnd] == "\n") {
+        if (++ctxLines == 3) {
+          break;
+        }
+      }
+    }
+
+    let context = source.substring(ctxStart, this.span.start.offset) + '[ERROR ->]' +
+                  source.substring(this.span.start.offset, ctxEnd + 1);
+
+    return `${this.msg} ("${context}"): ${this.span.start}`;
   }
 }

@@ -4,7 +4,6 @@ import * as o from './output_ast';
 import { EmitterVisitorContext, AbstractEmitterVisitor, CATCH_ERROR_VAR, CATCH_STACK_VAR } from './abstract_emitter';
 import { getImportModulePath, ImportEnv } from './path_util';
 var _debugModuleUrl = 'asset://debug/lib';
-var _METADATA_MAP_VAR = `_METADATA`;
 export function debugOutputAstAsDart(ast) {
     var converter = new _DartEmitterVisitor(_debugModuleUrl);
     var ctx = EmitterVisitorContext.createRoot([]);
@@ -202,15 +201,6 @@ class _DartEmitterVisitor extends AbstractEmitterVisitor {
                 throw new BaseException(`Unknown builtin method: ${method}`);
         }
         return name;
-    }
-    visitReadVarExpr(ast, ctx) {
-        if (ast.builtin === o.BuiltinVar.MetadataMap) {
-            ctx.print(_METADATA_MAP_VAR);
-        }
-        else {
-            super.visitReadVarExpr(ast, ctx);
-        }
-        return null;
     }
     visitTryCatchStmt(stmt, ctx) {
         ctx.println(`try {`);

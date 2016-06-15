@@ -7,8 +7,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { CONST, CONST_EXPR, stringify, isString } from 'angular2/src/facade/lang';
-import { resolveForwardRef } from 'angular2/src/core/di/forward_ref';
+import { CONST, stringify, isString } from 'angular2/src/facade/lang';
+import { resolveForwardRef } from 'angular2/src/core/di';
 import { DependencyMetadata } from 'angular2/src/core/di/metadata';
 /**
  * Specifies that a constant attribute value should be injected.
@@ -458,52 +458,3 @@ ViewChildMetadata = __decorate([
     CONST(), 
     __metadata('design:paramtypes', [Object, Object])
 ], ViewChildMetadata);
-/**
- * Defines an injectable whose value is given by a property on an InjectorModule class.
- *
- * ### Example
- *
- * ```
- * @InjectorModule()
- * class MyModule {
- *   @Provides(SomeToken)
- *   someProp: string = 'Hello world';
- * }
- * ```
- * @experimental
- */
-export let ProviderPropertyMetadata = class ProviderPropertyMetadata {
-    constructor(token, { multi = false } = {}) {
-        this.token = token;
-        this._multi = multi;
-    }
-    get multi() { return this._multi; }
-};
-ProviderPropertyMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object, Object])
-], ProviderPropertyMetadata);
-/**
- * Defines an injector module from which an injector can be generated.
- *
- * ### Example
- *
- * ```
- * @InjectorModule({
- *   providers: [SomeService]
- * })
- * class MyModule {}
- *
- * ```
- * @experimental
- */
-export let InjectorModuleMetadata = class InjectorModuleMetadata {
-    constructor({ providers = CONST_EXPR([]) } = {}) {
-        this._providers = providers;
-    }
-    get providers() { return this._providers; }
-};
-InjectorModuleMetadata = __decorate([
-    CONST(), 
-    __metadata('design:paramtypes', [Object])
-], InjectorModuleMetadata);

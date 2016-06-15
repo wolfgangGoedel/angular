@@ -2,18 +2,37 @@ library angular.router.route_lifecycle_reflector;
 
 import 'package:angular2/src/router/lifecycle/lifecycle_annotations_impl.dart';
 import 'package:angular2/src/router/interfaces.dart';
+import 'package:angular2/src/core/reflection/reflection.dart';
 
-bool hasLifecycleHook(RouteLifecycleHook e, instance) {
+bool hasLifecycleHook(RouteLifecycleHook e, type) {
+  if (type is! Type) return false;
+
+  final List interfaces = reflector.interfaces(type);
+  var interface;
+
   if (e == routerOnActivate) {
-    return instance is OnActivate;
+    interface = OnActivate;
   } else if (e == routerOnDeactivate) {
-    return instance is OnDeactivate;
+    interface = OnDeactivate;
   } else if (e == routerOnReuse) {
-    return instance is OnReuse;
+    interface = OnReuse;
   } else if (e == routerCanDeactivate) {
-    return instance is CanDeactivate;
+    interface = CanDeactivate;
   } else if (e == routerCanReuse) {
-    return instance is CanReuse;
+    interface = CanReuse;
   }
-  return false;
+
+  return interfaces.contains(interface);
+}
+
+Function getCanActivateHook(type) {
+  final List annotations = reflector.annotations(type);
+
+  for (var annotation in annotations) {
+    if (annotation is CanActivate) {
+      return annotation.fn;
+    }
+  }
+
+  return null;
 }

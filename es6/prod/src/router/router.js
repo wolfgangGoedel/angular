@@ -12,12 +12,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 import { PromiseWrapper, EventEmitter, ObservableWrapper } from 'angular2/src/facade/async';
 import { Map, StringMapWrapper } from 'angular2/src/facade/collection';
-import { isBlank, isPresent } from 'angular2/src/facade/lang';
+import { isBlank, isPresent, Type } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { Location } from 'angular2/platform/common';
 import { Inject, Injectable } from 'angular2/core';
 import { RouteRegistry, ROUTER_PRIMARY_COMPONENT } from './route_registry';
-import { getCanActivateHook } from './utils';
+import { getCanActivateHook } from './lifecycle/route_lifecycle_reflector';
 let _resolveToTrue = PromiseWrapper.resolve(true);
 let _resolveToFalse = PromiseWrapper.resolve(false);
 /**
@@ -406,7 +406,7 @@ Router = __decorate([
     __metadata('design:paramtypes', [RouteRegistry, Router, Object, Router])
 ], Router);
 export let RootRouter = class RootRouter extends Router {
-    constructor(registry, location, primaryComponent /* Type | ComponentFactory*/) {
+    constructor(registry, location, primaryComponent) {
         super(registry, null, primaryComponent);
         this.root = this;
         this._location = location;
@@ -473,7 +473,7 @@ export let RootRouter = class RootRouter extends Router {
 RootRouter = __decorate([
     Injectable(),
     __param(2, Inject(ROUTER_PRIMARY_COMPONENT)), 
-    __metadata('design:paramtypes', [RouteRegistry, Location, Object])
+    __metadata('design:paramtypes', [RouteRegistry, Location, Type])
 ], RootRouter);
 class ChildRouter extends Router {
     constructor(parent, hostComponent) {

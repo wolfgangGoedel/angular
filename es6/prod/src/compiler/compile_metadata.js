@@ -89,13 +89,12 @@ export class CompileDiDependencyMetadata {
     }
 }
 export class CompileProviderMetadata {
-    constructor({ token, useClass, useValue, useExisting, useFactory, useProperty, deps, multi }) {
+    constructor({ token, useClass, useValue, useExisting, useFactory, deps, multi }) {
         this.token = token;
         this.useClass = useClass;
         this.useValue = useValue;
         this.useExisting = useExisting;
         this.useFactory = useFactory;
-        this.useProperty = useProperty;
         this.deps = normalizeBlank(deps);
         this.multi = normalizeBool(multi);
     }
@@ -106,7 +105,6 @@ export class CompileProviderMetadata {
             useExisting: _objFromJson(data['useExisting'], CompileTokenMetadata.fromJson),
             useValue: _objFromJson(data['useValue'], CompileIdentifierMetadata.fromJson),
             useFactory: _objFromJson(data['useFactory'], CompileFactoryMetadata.fromJson),
-            useProperty: data['useProperty'],
             multi: data['multi'],
             deps: _arrayFromJson(data['deps'], CompileDiDependencyMetadata.fromJson)
         });
@@ -120,7 +118,6 @@ export class CompileProviderMetadata {
             'useExisting': _objToJson(this.useExisting),
             'useValue': _objToJson(this.useValue),
             'useFactory': _objToJson(this.useFactory),
-            'useProperty': this.useProperty,
             'multi': this.multi,
             'deps': _arrayToJson(this.deps)
         };
@@ -209,14 +206,12 @@ export class CompileTokenMap {
     constructor() {
         this._valueMap = new Map();
         this._values = [];
-        this._tokens = [];
     }
     add(token, value) {
         var existing = this.get(token);
         if (isPresent(existing)) {
             throw new BaseException(`Can only add to a TokenMap! Token: ${token.name}`);
         }
-        this._tokens.push(token);
         this._values.push(value);
         var rk = token.runtimeCacheKey;
         if (isPresent(rk)) {
@@ -239,7 +234,6 @@ export class CompileTokenMap {
         }
         return result;
     }
-    keys() { return this._tokens; }
     values() { return this._values; }
     get size() { return this._values.length; }
 }
@@ -517,54 +511,13 @@ export class CompilePipeMetadata {
         };
     }
 }
-/**
- * Metadata regarding compilation of an InjectorModule.
- */
-export class CompileInjectorModuleMetadata {
-    constructor({ runtime, name, moduleUrl, prefix, value, diDeps, providers } = {}) {
-        this.isHost = false;
-        this.runtime = runtime;
-        this.name = name;
-        this.moduleUrl = moduleUrl;
-        this.prefix = prefix;
-        this.value = value;
-        this.diDeps = _normalizeArray(diDeps);
-        this.providers = _normalizeArray(providers);
-    }
-    static fromJson(data) {
-        return new CompileInjectorModuleMetadata({
-            name: data['name'],
-            moduleUrl: data['moduleUrl'],
-            prefix: data['prefix'],
-            value: data['value'],
-            diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson),
-            providers: _arrayFromJson(data['providers'], metadataFromJson)
-        });
-    }
-    get identifier() { return this; }
-    get type() { return this; }
-    toJson() {
-        return {
-            // Note: Runtime type can't be serialized...
-            'class': 'InjectorModule',
-            'name': this.name,
-            'moduleUrl': this.moduleUrl,
-            'prefix': this.prefix,
-            'isHost': this.isHost,
-            'value': this.value,
-            'diDeps': _arrayToJson(this.diDeps),
-            'providers': _arrayToJson(this.providers)
-        };
-    }
-}
 var _COMPILE_METADATA_FROM_JSON = {
     'Directive': CompileDirectiveMetadata.fromJson,
     'Pipe': CompilePipeMetadata.fromJson,
     'Type': CompileTypeMetadata.fromJson,
     'Provider': CompileProviderMetadata.fromJson,
     'Identifier': CompileIdentifierMetadata.fromJson,
-    'Factory': CompileFactoryMetadata.fromJson,
-    'InjectorModule': CompileInjectorModuleMetadata.fromJson,
+    'Factory': CompileFactoryMetadata.fromJson
 };
 function _arrayFromJson(obj, fn) {
     return isBlank(obj) ? null : obj.map(o => _objFromJson(o, fn));

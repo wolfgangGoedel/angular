@@ -975,32 +975,6 @@ System.register("rxjs/operator/toPromise", ["rxjs/util/root"], true, function(re
   return module.exports;
 });
 
-System.register("angular2/src/core/di/forward_ref", ["angular2/src/facade/lang"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  function forwardRef(forwardRefFn) {
-    forwardRefFn.__forward_ref__ = forwardRef;
-    forwardRefFn.toString = function() {
-      return lang_1.stringify(this());
-    };
-    return forwardRefFn;
-  }
-  exports.forwardRef = forwardRef;
-  function resolveForwardRef(type) {
-    if (lang_1.isFunction(type) && type.hasOwnProperty('__forward_ref__') && type.__forward_ref__ === forwardRef) {
-      return type();
-    } else {
-      return type;
-    }
-  }
-  exports.resolveForwardRef = resolveForwardRef;
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -1093,70 +1067,197 @@ System.register("angular2/src/core/di/metadata", ["angular2/src/facade/lang"], t
   return module.exports;
 });
 
-System.register("angular2/src/facade/base_wrapped_exception", [], true, function(require, exports, module) {
+System.register("angular2/src/core/util/decorators", ["angular2/src/facade/lang"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
+  var lang_1 = require("angular2/src/facade/lang");
+  var _nextClassId = 0;
+  function extractAnnotation(annotation) {
+    if (lang_1.isFunction(annotation) && annotation.hasOwnProperty('annotation')) {
+      annotation = annotation.annotation;
     }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var BaseWrappedException = (function(_super) {
-    __extends(BaseWrappedException, _super);
-    function BaseWrappedException(message) {
-      _super.call(this, message);
+    return annotation;
+  }
+  function applyParams(fnOrArray, key) {
+    if (fnOrArray === Object || fnOrArray === String || fnOrArray === Function || fnOrArray === Number || fnOrArray === Array) {
+      throw new Error("Can not use native " + lang_1.stringify(fnOrArray) + " as constructor");
     }
-    Object.defineProperty(BaseWrappedException.prototype, "wrapperMessage", {
-      get: function() {
-        return '';
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BaseWrappedException.prototype, "wrapperStack", {
-      get: function() {
-        return null;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BaseWrappedException.prototype, "originalException", {
-      get: function() {
-        return null;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BaseWrappedException.prototype, "originalStack", {
-      get: function() {
-        return null;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BaseWrappedException.prototype, "context", {
-      get: function() {
-        return null;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BaseWrappedException.prototype, "message", {
-      get: function() {
-        return '';
-      },
-      enumerable: true,
-      configurable: true
-    });
-    return BaseWrappedException;
-  }(Error));
-  exports.BaseWrappedException = BaseWrappedException;
+    if (lang_1.isFunction(fnOrArray)) {
+      return fnOrArray;
+    } else if (fnOrArray instanceof Array) {
+      var annotations = fnOrArray;
+      var fn = fnOrArray[fnOrArray.length - 1];
+      if (!lang_1.isFunction(fn)) {
+        throw new Error("Last position of Class method array must be Function in key " + key + " was '" + lang_1.stringify(fn) + "'");
+      }
+      var annoLength = annotations.length - 1;
+      if (annoLength != fn.length) {
+        throw new Error("Number of annotations (" + annoLength + ") does not match number of arguments (" + fn.length + ") in the function: " + lang_1.stringify(fn));
+      }
+      var paramsAnnotations = [];
+      for (var i = 0,
+          ii = annotations.length - 1; i < ii; i++) {
+        var paramAnnotations = [];
+        paramsAnnotations.push(paramAnnotations);
+        var annotation = annotations[i];
+        if (annotation instanceof Array) {
+          for (var j = 0; j < annotation.length; j++) {
+            paramAnnotations.push(extractAnnotation(annotation[j]));
+          }
+        } else if (lang_1.isFunction(annotation)) {
+          paramAnnotations.push(extractAnnotation(annotation));
+        } else {
+          paramAnnotations.push(annotation);
+        }
+      }
+      Reflect.defineMetadata('parameters', paramsAnnotations, fn);
+      return fn;
+    } else {
+      throw new Error("Only Function or Array is supported in Class definition for key '" + key + "' is '" + lang_1.stringify(fnOrArray) + "'");
+    }
+  }
+  function Class(clsDef) {
+    var constructor = applyParams(clsDef.hasOwnProperty('constructor') ? clsDef.constructor : undefined, 'constructor');
+    var proto = constructor.prototype;
+    if (clsDef.hasOwnProperty('extends')) {
+      if (lang_1.isFunction(clsDef.extends)) {
+        constructor.prototype = proto = Object.create(clsDef.extends.prototype);
+      } else {
+        throw new Error("Class definition 'extends' property must be a constructor function was: " + lang_1.stringify(clsDef.extends));
+      }
+    }
+    for (var key in clsDef) {
+      if (key != 'extends' && key != 'prototype' && clsDef.hasOwnProperty(key)) {
+        proto[key] = applyParams(clsDef[key], key);
+      }
+    }
+    if (this && this.annotations instanceof Array) {
+      Reflect.defineMetadata('annotations', this.annotations, constructor);
+    }
+    if (!constructor['name']) {
+      constructor['overriddenName'] = "class" + _nextClassId++;
+    }
+    return constructor;
+  }
+  exports.Class = Class;
+  var Reflect = lang_1.global.Reflect;
+  (function checkReflect() {
+    if (!(Reflect && Reflect.getMetadata)) {
+      throw 'reflect-metadata shim is required when using class decorators';
+    }
+  })();
+  function makeDecorator(annotationCls, chainFn) {
+    if (chainFn === void 0) {
+      chainFn = null;
+    }
+    function DecoratorFactory(objOrType) {
+      var annotationInstance = new annotationCls(objOrType);
+      if (this instanceof annotationCls) {
+        return annotationInstance;
+      } else {
+        var chainAnnotation = lang_1.isFunction(this) && this.annotations instanceof Array ? this.annotations : [];
+        chainAnnotation.push(annotationInstance);
+        var TypeDecorator = function TypeDecorator(cls) {
+          var annotations = Reflect.getOwnMetadata('annotations', cls);
+          annotations = annotations || [];
+          annotations.push(annotationInstance);
+          Reflect.defineMetadata('annotations', annotations, cls);
+          return cls;
+        };
+        TypeDecorator.annotations = chainAnnotation;
+        TypeDecorator.Class = Class;
+        if (chainFn)
+          chainFn(TypeDecorator);
+        return TypeDecorator;
+      }
+    }
+    DecoratorFactory.prototype = Object.create(annotationCls.prototype);
+    return DecoratorFactory;
+  }
+  exports.makeDecorator = makeDecorator;
+  function makeParamDecorator(annotationCls) {
+    function ParamDecoratorFactory() {
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
+      }
+      var annotationInstance = Object.create(annotationCls.prototype);
+      annotationCls.apply(annotationInstance, args);
+      if (this instanceof annotationCls) {
+        return annotationInstance;
+      } else {
+        ParamDecorator.annotation = annotationInstance;
+        return ParamDecorator;
+      }
+      function ParamDecorator(cls, unusedKey, index) {
+        var parameters = Reflect.getMetadata('parameters', cls);
+        parameters = parameters || [];
+        while (parameters.length <= index) {
+          parameters.push(null);
+        }
+        parameters[index] = parameters[index] || [];
+        var annotationsForParam = parameters[index];
+        annotationsForParam.push(annotationInstance);
+        Reflect.defineMetadata('parameters', parameters, cls);
+        return cls;
+      }
+    }
+    ParamDecoratorFactory.prototype = Object.create(annotationCls.prototype);
+    return ParamDecoratorFactory;
+  }
+  exports.makeParamDecorator = makeParamDecorator;
+  function makePropDecorator(decoratorCls) {
+    function PropDecoratorFactory() {
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
+      }
+      var decoratorInstance = Object.create(decoratorCls.prototype);
+      decoratorCls.apply(decoratorInstance, args);
+      if (this instanceof decoratorCls) {
+        return decoratorInstance;
+      } else {
+        return function PropDecorator(target, name) {
+          var meta = Reflect.getOwnMetadata('propMetadata', target.constructor);
+          meta = meta || {};
+          meta[name] = meta[name] || [];
+          meta[name].unshift(decoratorInstance);
+          Reflect.defineMetadata('propMetadata', meta, target.constructor);
+        };
+      }
+    }
+    PropDecoratorFactory.prototype = Object.create(decoratorCls.prototype);
+    return PropDecoratorFactory;
+  }
+  exports.makePropDecorator = makePropDecorator;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/di/forward_ref", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var lang_1 = require("angular2/src/facade/lang");
+  function forwardRef(forwardRefFn) {
+    forwardRefFn.__forward_ref__ = forwardRef;
+    forwardRefFn.toString = function() {
+      return lang_1.stringify(this());
+    };
+    return forwardRefFn;
+  }
+  exports.forwardRef = forwardRef;
+  function resolveForwardRef(type) {
+    if (lang_1.isFunction(type) && type.hasOwnProperty('__forward_ref__') && type.__forward_ref__ === forwardRef) {
+      return type();
+    } else {
+      return type;
+    }
+  }
+  exports.resolveForwardRef = resolveForwardRef;
   global.define = __define;
   return module.exports;
 });
@@ -1574,227 +1675,192 @@ System.register("angular2/src/facade/collection", ["angular2/src/facade/lang"], 
   return module.exports;
 });
 
-System.register("angular2/src/core/util/decorators", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/facade/base_wrapped_exception", [], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var _nextClassId = 0;
-  function extractAnnotation(annotation) {
-    if (lang_1.isFunction(annotation) && annotation.hasOwnProperty('annotation')) {
-      annotation = annotation.annotation;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
     }
-    return annotation;
-  }
-  function applyParams(fnOrArray, key) {
-    if (fnOrArray === Object || fnOrArray === String || fnOrArray === Function || fnOrArray === Number || fnOrArray === Array) {
-      throw new Error("Can not use native " + lang_1.stringify(fnOrArray) + " as constructor");
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var BaseWrappedException = (function(_super) {
+    __extends(BaseWrappedException, _super);
+    function BaseWrappedException(message) {
+      _super.call(this, message);
     }
-    if (lang_1.isFunction(fnOrArray)) {
-      return fnOrArray;
-    } else if (fnOrArray instanceof Array) {
-      var annotations = fnOrArray;
-      var fn = fnOrArray[fnOrArray.length - 1];
-      if (!lang_1.isFunction(fn)) {
-        throw new Error("Last position of Class method array must be Function in key " + key + " was '" + lang_1.stringify(fn) + "'");
-      }
-      var annoLength = annotations.length - 1;
-      if (annoLength != fn.length) {
-        throw new Error("Number of annotations (" + annoLength + ") does not match number of arguments (" + fn.length + ") in the function: " + lang_1.stringify(fn));
-      }
-      var paramsAnnotations = [];
-      for (var i = 0,
-          ii = annotations.length - 1; i < ii; i++) {
-        var paramAnnotations = [];
-        paramsAnnotations.push(paramAnnotations);
-        var annotation = annotations[i];
-        if (annotation instanceof Array) {
-          for (var j = 0; j < annotation.length; j++) {
-            paramAnnotations.push(extractAnnotation(annotation[j]));
-          }
-        } else if (lang_1.isFunction(annotation)) {
-          paramAnnotations.push(extractAnnotation(annotation));
-        } else {
-          paramAnnotations.push(annotation);
-        }
-      }
-      Reflect.defineMetadata('parameters', paramsAnnotations, fn);
-      return fn;
-    } else {
-      throw new Error("Only Function or Array is supported in Class definition for key '" + key + "' is '" + lang_1.stringify(fnOrArray) + "'");
-    }
-  }
-  function Class(clsDef) {
-    var constructor = applyParams(clsDef.hasOwnProperty('constructor') ? clsDef.constructor : undefined, 'constructor');
-    var proto = constructor.prototype;
-    if (clsDef.hasOwnProperty('extends')) {
-      if (lang_1.isFunction(clsDef.extends)) {
-        constructor.prototype = proto = Object.create(clsDef.extends.prototype);
-      } else {
-        throw new Error("Class definition 'extends' property must be a constructor function was: " + lang_1.stringify(clsDef.extends));
-      }
-    }
-    for (var key in clsDef) {
-      if (key != 'extends' && key != 'prototype' && clsDef.hasOwnProperty(key)) {
-        proto[key] = applyParams(clsDef[key], key);
-      }
-    }
-    if (this && this.annotations instanceof Array) {
-      Reflect.defineMetadata('annotations', this.annotations, constructor);
-    }
-    if (!constructor['name']) {
-      constructor['overriddenName'] = "class" + _nextClassId++;
-    }
-    return constructor;
-  }
-  exports.Class = Class;
-  var Reflect = lang_1.global.Reflect;
-  (function checkReflect() {
-    if (!(Reflect && Reflect.getMetadata)) {
-      throw 'reflect-metadata shim is required when using class decorators';
-    }
-  })();
-  function makeDecorator(annotationCls, chainFn) {
-    if (chainFn === void 0) {
-      chainFn = null;
-    }
-    function DecoratorFactory(objOrType) {
-      var annotationInstance = new annotationCls(objOrType);
-      if (this instanceof annotationCls) {
-        return annotationInstance;
-      } else {
-        var chainAnnotation = lang_1.isFunction(this) && this.annotations instanceof Array ? this.annotations : [];
-        chainAnnotation.push(annotationInstance);
-        var TypeDecorator = function TypeDecorator(cls) {
-          var annotations = Reflect.getOwnMetadata('annotations', cls);
-          annotations = annotations || [];
-          annotations.push(annotationInstance);
-          Reflect.defineMetadata('annotations', annotations, cls);
-          return cls;
-        };
-        TypeDecorator.annotations = chainAnnotation;
-        TypeDecorator.Class = Class;
-        if (chainFn)
-          chainFn(TypeDecorator);
-        return TypeDecorator;
-      }
-    }
-    DecoratorFactory.prototype = Object.create(annotationCls.prototype);
-    return DecoratorFactory;
-  }
-  exports.makeDecorator = makeDecorator;
-  function makeParamDecorator(annotationCls) {
-    function ParamDecoratorFactory() {
-      var args = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
-      }
-      var annotationInstance = Object.create(annotationCls.prototype);
-      annotationCls.apply(annotationInstance, args);
-      if (this instanceof annotationCls) {
-        return annotationInstance;
-      } else {
-        ParamDecorator.annotation = annotationInstance;
-        return ParamDecorator;
-      }
-      function ParamDecorator(cls, unusedKey, index) {
-        var parameters = Reflect.getMetadata('parameters', cls);
-        parameters = parameters || [];
-        while (parameters.length <= index) {
-          parameters.push(null);
-        }
-        parameters[index] = parameters[index] || [];
-        var annotationsForParam = parameters[index];
-        annotationsForParam.push(annotationInstance);
-        Reflect.defineMetadata('parameters', parameters, cls);
-        return cls;
-      }
-    }
-    ParamDecoratorFactory.prototype = Object.create(annotationCls.prototype);
-    return ParamDecoratorFactory;
-  }
-  exports.makeParamDecorator = makeParamDecorator;
-  function makePropDecorator(decoratorCls) {
-    function PropDecoratorFactory() {
-      var args = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
-      }
-      var decoratorInstance = Object.create(decoratorCls.prototype);
-      decoratorCls.apply(decoratorInstance, args);
-      if (this instanceof decoratorCls) {
-        return decoratorInstance;
-      } else {
-        return function PropDecorator(target, name) {
-          var meta = Reflect.getOwnMetadata('propMetadata', target.constructor);
-          meta = meta || {};
-          meta[name] = meta[name] || [];
-          meta[name].unshift(decoratorInstance);
-          Reflect.defineMetadata('propMetadata', meta, target.constructor);
-        };
-      }
-    }
-    PropDecoratorFactory.prototype = Object.create(decoratorCls.prototype);
-    return PropDecoratorFactory;
-  }
-  exports.makePropDecorator = makePropDecorator;
+    Object.defineProperty(BaseWrappedException.prototype, "wrapperMessage", {
+      get: function() {
+        return '';
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BaseWrappedException.prototype, "wrapperStack", {
+      get: function() {
+        return null;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BaseWrappedException.prototype, "originalException", {
+      get: function() {
+        return null;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BaseWrappedException.prototype, "originalStack", {
+      get: function() {
+        return null;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BaseWrappedException.prototype, "context", {
+      get: function() {
+        return null;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BaseWrappedException.prototype, "message", {
+      get: function() {
+        return '';
+      },
+      enumerable: true,
+      configurable: true
+    });
+    return BaseWrappedException;
+  }(Error));
+  exports.BaseWrappedException = BaseWrappedException;
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/core/di/injector", ["angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+System.register("angular2/src/facade/exception_handler", ["angular2/src/facade/lang", "angular2/src/facade/base_wrapped_exception", "angular2/src/facade/collection"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var _THROW_IF_NOT_FOUND = lang_1.CONST_EXPR(new Object());
-  exports.THROW_IF_NOT_FOUND = lang_1.CONST_EXPR(_THROW_IF_NOT_FOUND);
-  var _NullInjector = (function() {
-    function _NullInjector() {}
-    _NullInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = _THROW_IF_NOT_FOUND;
-      }
-      if (notFoundValue === _THROW_IF_NOT_FOUND) {
-        throw new exceptions_1.BaseException("No provider for " + lang_1.stringify(token) + "!");
-      }
-      return notFoundValue;
-    };
-    return _NullInjector;
-  }());
-  var Injector = (function() {
-    function Injector() {}
-    Injector.prototype.get = function(token, notFoundValue) {
-      return exceptions_1.unimplemented();
-    };
-    Injector.THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
-    Injector.NULL = new _NullInjector();
-    return Injector;
-  }());
-  exports.Injector = Injector;
-  var MapInjector = (function() {
-    function MapInjector(_parent, _values) {
-      this._parent = _parent;
-      this._values = _values;
-      if (lang_1.isBlank(this._parent)) {
-        this._parent = Injector.NULL;
-      }
+  var base_wrapped_exception_1 = require("angular2/src/facade/base_wrapped_exception");
+  var collection_1 = require("angular2/src/facade/collection");
+  var _ArrayLogger = (function() {
+    function _ArrayLogger() {
+      this.res = [];
     }
-    MapInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = _THROW_IF_NOT_FOUND;
-      }
-      if (token === Injector) {
-        return this;
-      }
-      return this._values.has(token) ? this._values.get(token) : this._parent.get(token, notFoundValue);
+    _ArrayLogger.prototype.log = function(s) {
+      this.res.push(s);
     };
-    return MapInjector;
+    _ArrayLogger.prototype.logError = function(s) {
+      this.res.push(s);
+    };
+    _ArrayLogger.prototype.logGroup = function(s) {
+      this.res.push(s);
+    };
+    _ArrayLogger.prototype.logGroupEnd = function() {};
+    ;
+    return _ArrayLogger;
   }());
-  exports.MapInjector = MapInjector;
+  var ExceptionHandler = (function() {
+    function ExceptionHandler(_logger, _rethrowException) {
+      if (_rethrowException === void 0) {
+        _rethrowException = true;
+      }
+      this._logger = _logger;
+      this._rethrowException = _rethrowException;
+    }
+    ExceptionHandler.exceptionToString = function(exception, stackTrace, reason) {
+      if (stackTrace === void 0) {
+        stackTrace = null;
+      }
+      if (reason === void 0) {
+        reason = null;
+      }
+      var l = new _ArrayLogger();
+      var e = new ExceptionHandler(l, false);
+      e.call(exception, stackTrace, reason);
+      return l.res.join("\n");
+    };
+    ExceptionHandler.prototype.call = function(exception, stackTrace, reason) {
+      if (stackTrace === void 0) {
+        stackTrace = null;
+      }
+      if (reason === void 0) {
+        reason = null;
+      }
+      var originalException = this._findOriginalException(exception);
+      var originalStack = this._findOriginalStack(exception);
+      var context = this._findContext(exception);
+      this._logger.logGroup("EXCEPTION: " + this._extractMessage(exception));
+      if (lang_1.isPresent(stackTrace) && lang_1.isBlank(originalStack)) {
+        this._logger.logError("STACKTRACE:");
+        this._logger.logError(this._longStackTrace(stackTrace));
+      }
+      if (lang_1.isPresent(reason)) {
+        this._logger.logError("REASON: " + reason);
+      }
+      if (lang_1.isPresent(originalException)) {
+        this._logger.logError("ORIGINAL EXCEPTION: " + this._extractMessage(originalException));
+      }
+      if (lang_1.isPresent(originalStack)) {
+        this._logger.logError("ORIGINAL STACKTRACE:");
+        this._logger.logError(this._longStackTrace(originalStack));
+      }
+      if (lang_1.isPresent(context)) {
+        this._logger.logError("ERROR CONTEXT:");
+        this._logger.logError(context);
+      }
+      this._logger.logGroupEnd();
+      if (this._rethrowException)
+        throw exception;
+    };
+    ExceptionHandler.prototype._extractMessage = function(exception) {
+      return exception instanceof base_wrapped_exception_1.BaseWrappedException ? exception.wrapperMessage : exception.toString();
+    };
+    ExceptionHandler.prototype._longStackTrace = function(stackTrace) {
+      return collection_1.isListLikeIterable(stackTrace) ? stackTrace.join("\n\n-----async gap-----\n") : stackTrace.toString();
+    };
+    ExceptionHandler.prototype._findContext = function(exception) {
+      try {
+        if (!(exception instanceof base_wrapped_exception_1.BaseWrappedException))
+          return null;
+        return lang_1.isPresent(exception.context) ? exception.context : this._findContext(exception.originalException);
+      } catch (e) {
+        return null;
+      }
+    };
+    ExceptionHandler.prototype._findOriginalException = function(exception) {
+      if (!(exception instanceof base_wrapped_exception_1.BaseWrappedException))
+        return null;
+      var e = exception.originalException;
+      while (e instanceof base_wrapped_exception_1.BaseWrappedException && lang_1.isPresent(e.originalException)) {
+        e = e.originalException;
+      }
+      return e;
+    };
+    ExceptionHandler.prototype._findOriginalStack = function(exception) {
+      if (!(exception instanceof base_wrapped_exception_1.BaseWrappedException))
+        return null;
+      var e = exception;
+      var stack = exception.originalStack;
+      while (e instanceof base_wrapped_exception_1.BaseWrappedException && lang_1.isPresent(e.originalException)) {
+        e = e.originalException;
+        if (e instanceof base_wrapped_exception_1.BaseWrappedException && lang_1.isPresent(e.originalException)) {
+          stack = e.originalStack;
+        }
+      }
+      return stack;
+    };
+    return ExceptionHandler;
+  }());
+  exports.ExceptionHandler = ExceptionHandler;
   global.define = __define;
   return module.exports;
 });
@@ -2006,7 +2072,7 @@ System.register("angular2/src/core/reflection/reflection_capabilities", ["angula
   return module.exports;
 });
 
-System.register("angular2/src/core/di/reflective_key", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/di/forward_ref"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/key", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/di/forward_ref"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -2014,45 +2080,45 @@ System.register("angular2/src/core/di/reflective_key", ["angular2/src/facade/lan
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var forward_ref_1 = require("angular2/src/core/di/forward_ref");
-  var ReflectiveKey = (function() {
-    function ReflectiveKey(token, id) {
+  var Key = (function() {
+    function Key(token, id) {
       this.token = token;
       this.id = id;
       if (lang_1.isBlank(token)) {
         throw new exceptions_1.BaseException('Token must be defined!');
       }
     }
-    Object.defineProperty(ReflectiveKey.prototype, "displayName", {
+    Object.defineProperty(Key.prototype, "displayName", {
       get: function() {
         return lang_1.stringify(this.token);
       },
       enumerable: true,
       configurable: true
     });
-    ReflectiveKey.get = function(token) {
+    Key.get = function(token) {
       return _globalKeyRegistry.get(forward_ref_1.resolveForwardRef(token));
     };
-    Object.defineProperty(ReflectiveKey, "numberOfKeys", {
+    Object.defineProperty(Key, "numberOfKeys", {
       get: function() {
         return _globalKeyRegistry.numberOfKeys;
       },
       enumerable: true,
       configurable: true
     });
-    return ReflectiveKey;
+    return Key;
   }());
-  exports.ReflectiveKey = ReflectiveKey;
+  exports.Key = Key;
   var KeyRegistry = (function() {
     function KeyRegistry() {
       this._allKeys = new Map();
     }
     KeyRegistry.prototype.get = function(token) {
-      if (token instanceof ReflectiveKey)
+      if (token instanceof Key)
         return token;
       if (this._allKeys.has(token)) {
         return this._allKeys.get(token);
       }
-      var newKey = new ReflectiveKey(token, ReflectiveKey.numberOfKeys);
+      var newKey = new Key(token, Key.numberOfKeys);
       this._allKeys.set(token, newKey);
       return newKey;
     };
@@ -2071,7 +2137,7 @@ System.register("angular2/src/core/di/reflective_key", ["angular2/src/facade/lan
   return module.exports;
 });
 
-System.register("angular2/src/core/di/reflective_exceptions", ["angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/exceptions", ["angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -2241,173 +2307,6 @@ System.register("angular2/src/core/di/reflective_exceptions", ["angular2/src/fac
   return module.exports;
 });
 
-System.register("angular2/src/core/di/provider", ["angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var Provider = (function() {
-    function Provider(token, _a) {
-      var useClass = _a.useClass,
-          useValue = _a.useValue,
-          useExisting = _a.useExisting,
-          useFactory = _a.useFactory,
-          useProperty = _a.useProperty,
-          deps = _a.deps,
-          multi = _a.multi;
-      this.token = token;
-      this.useClass = useClass;
-      this.useValue = useValue;
-      this.useExisting = useExisting;
-      this.useFactory = useFactory;
-      this.useProperty = useProperty;
-      this.dependencies = deps;
-      this._multi = multi;
-    }
-    Object.defineProperty(Provider.prototype, "multi", {
-      get: function() {
-        return lang_1.normalizeBool(this._multi);
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Provider = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], Provider);
-    return Provider;
-  }());
-  exports.Provider = Provider;
-  var Binding = (function(_super) {
-    __extends(Binding, _super);
-    function Binding(token, _a) {
-      var toClass = _a.toClass,
-          toValue = _a.toValue,
-          toAlias = _a.toAlias,
-          toFactory = _a.toFactory,
-          deps = _a.deps,
-          multi = _a.multi;
-      _super.call(this, token, {
-        useClass: toClass,
-        useValue: toValue,
-        useExisting: toAlias,
-        useFactory: toFactory,
-        deps: deps,
-        multi: multi
-      });
-    }
-    Object.defineProperty(Binding.prototype, "toClass", {
-      get: function() {
-        return this.useClass;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(Binding.prototype, "toAlias", {
-      get: function() {
-        return this.useExisting;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(Binding.prototype, "toFactory", {
-      get: function() {
-        return this.useFactory;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(Binding.prototype, "toValue", {
-      get: function() {
-        return this.useValue;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Binding = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], Binding);
-    return Binding;
-  }(Provider));
-  exports.Binding = Binding;
-  function bind(token) {
-    return new ProviderBuilder(token);
-  }
-  exports.bind = bind;
-  var ProviderBuilder = (function() {
-    function ProviderBuilder(token) {
-      this.token = token;
-    }
-    ProviderBuilder.prototype.toClass = function(type) {
-      if (!lang_1.isType(type)) {
-        throw new exceptions_1.BaseException("Trying to create a class provider but \"" + lang_1.stringify(type) + "\" is not a class!");
-      }
-      return new Provider(this.token, {useClass: type});
-    };
-    ProviderBuilder.prototype.toValue = function(value) {
-      return new Provider(this.token, {useValue: value});
-    };
-    ProviderBuilder.prototype.toAlias = function(aliasToken) {
-      if (lang_1.isBlank(aliasToken)) {
-        throw new exceptions_1.BaseException("Can not alias " + lang_1.stringify(this.token) + " to a blank value!");
-      }
-      return new Provider(this.token, {useExisting: aliasToken});
-    };
-    ProviderBuilder.prototype.toFactory = function(factory, dependencies) {
-      if (!lang_1.isFunction(factory)) {
-        throw new exceptions_1.BaseException("Trying to create a factory provider but \"" + lang_1.stringify(factory) + "\" is not a function!");
-      }
-      return new Provider(this.token, {
-        useFactory: factory,
-        deps: dependencies
-      });
-    };
-    return ProviderBuilder;
-  }());
-  exports.ProviderBuilder = ProviderBuilder;
-  function provide(token, _a) {
-    var useClass = _a.useClass,
-        useValue = _a.useValue,
-        useExisting = _a.useExisting,
-        useFactory = _a.useFactory,
-        deps = _a.deps,
-        multi = _a.multi;
-    return new Provider(token, {
-      useClass: useClass,
-      useValue: useValue,
-      useExisting: useExisting,
-      useFactory: useFactory,
-      deps: deps,
-      multi: multi
-    });
-  }
-  exports.provide = provide;
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/core/di/opaque_token", ["angular2/src/facade/lang"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -2441,6 +2340,73 @@ System.register("angular2/src/core/di/opaque_token", ["angular2/src/facade/lang"
     return OpaqueToken;
   }());
   exports.OpaqueToken = OpaqueToken;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/change_detection/differs/iterable_differs", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/core/di"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var lang_1 = require("angular2/src/facade/lang");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
+  var collection_1 = require("angular2/src/facade/collection");
+  var di_1 = require("angular2/src/core/di");
+  var IterableDiffers = (function() {
+    function IterableDiffers(factories) {
+      this.factories = factories;
+    }
+    IterableDiffers.create = function(factories, parent) {
+      if (lang_1.isPresent(parent)) {
+        var copied = collection_1.ListWrapper.clone(parent.factories);
+        factories = factories.concat(copied);
+        return new IterableDiffers(factories);
+      } else {
+        return new IterableDiffers(factories);
+      }
+    };
+    IterableDiffers.extend = function(factories) {
+      return new di_1.Provider(IterableDiffers, {
+        useFactory: function(parent) {
+          if (lang_1.isBlank(parent)) {
+            throw new exceptions_1.BaseException('Cannot extend IterableDiffers without a parent injector');
+          }
+          return IterableDiffers.create(factories, parent);
+        },
+        deps: [[IterableDiffers, new di_1.SkipSelfMetadata(), new di_1.OptionalMetadata()]]
+      });
+    };
+    IterableDiffers.prototype.find = function(iterable) {
+      var factory = this.factories.find(function(f) {
+        return f.supports(iterable);
+      });
+      if (lang_1.isPresent(factory)) {
+        return factory;
+      } else {
+        throw new exceptions_1.BaseException("Cannot find a differ supporting object '" + iterable + "' of type '" + lang_1.getTypeNameForDebugging(iterable) + "'");
+      }
+    };
+    IterableDiffers = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Array])], IterableDiffers);
+    return IterableDiffers;
+  }());
+  exports.IterableDiffers = IterableDiffers;
   global.define = __define;
   return module.exports;
 });
@@ -3597,10 +3563,6 @@ System.register("angular2/src/core/zone/ng_zone_impl", [], true, function(requir
       return Zone.current.get('isAngularZone') === true;
     };
     NgZoneImpl.prototype.runInner = function(fn) {
-      return this.inner.run(fn);
-    };
-    ;
-    NgZoneImpl.prototype.runInnerGuarded = function(fn) {
       return this.inner.runGuarded(fn);
     };
     ;
@@ -3622,6 +3584,8 @@ System.register("angular2/src/core/application_tokens", ["angular2/src/core/di",
   "use strict";
   var di_1 = require("angular2/src/core/di");
   var lang_1 = require("angular2/src/facade/lang");
+  exports.APP_COMPONENT_REF_PROMISE = lang_1.CONST_EXPR(new di_1.OpaqueToken('Promise<ComponentRef>'));
+  exports.APP_COMPONENT = lang_1.CONST_EXPR(new di_1.OpaqueToken('AppComponent'));
   exports.APP_ID = lang_1.CONST_EXPR(new di_1.OpaqueToken('AppId'));
   function appIdRandomProviderFactory() {
     return "" + _randomChar() + _randomChar() + _randomChar();
@@ -3741,12 +3705,8 @@ System.register("angular2/src/core/testability/testability", ["angular2/src/core
   var TestabilityRegistry = (function() {
     function TestabilityRegistry() {
       this._applications = new collection_1.Map();
-      this._testabilityGetter = new _NoopGetTestability();
+      _testabilityGetter.addToWindow(this);
     }
-    TestabilityRegistry.prototype.setTestabilityGetter = function(getter) {
-      this._testabilityGetter = getter;
-      getter.addToWindow(this);
-    };
     TestabilityRegistry.prototype.registerApplication = function(token, testability) {
       this._applications.set(token, testability);
     };
@@ -3763,7 +3723,7 @@ System.register("angular2/src/core/testability/testability", ["angular2/src/core
       if (findInAncestors === void 0) {
         findInAncestors = true;
       }
-      return this._testabilityGetter.findTestabilityInTree(this, elem, findInAncestors);
+      return _testabilityGetter.findTestabilityInTree(this, elem, findInAncestors);
     };
     TestabilityRegistry = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [])], TestabilityRegistry);
     return TestabilityRegistry;
@@ -3778,6 +3738,11 @@ System.register("angular2/src/core/testability/testability", ["angular2/src/core
     _NoopGetTestability = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], _NoopGetTestability);
     return _NoopGetTestability;
   }());
+  function setTestabilityGetter(getter) {
+    _testabilityGetter = getter;
+  }
+  exports.setTestabilityGetter = setTestabilityGetter;
+  var _testabilityGetter = lang_1.CONST_EXPR(new _NoopGetTestability());
   global.define = __define;
   return module.exports;
 });
@@ -4119,80 +4084,6 @@ System.register("angular2/src/core/linker/query_list", ["angular2/src/facade/col
   return module.exports;
 });
 
-System.register("angular2/src/core/linker/dynamic_component_loader", ["angular2/src/core/di", "angular2/src/core/linker/component_resolver", "angular2/src/facade/lang"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var di_1 = require("angular2/src/core/di");
-  var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
-  var lang_1 = require("angular2/src/facade/lang");
-  var DynamicComponentLoader = (function() {
-    function DynamicComponentLoader() {}
-    return DynamicComponentLoader;
-  }());
-  exports.DynamicComponentLoader = DynamicComponentLoader;
-  var DynamicComponentLoader_ = (function(_super) {
-    __extends(DynamicComponentLoader_, _super);
-    function DynamicComponentLoader_(_compiler) {
-      _super.call(this);
-      this._compiler = _compiler;
-    }
-    DynamicComponentLoader_.prototype.loadAsRoot = function(type, overrideSelectorOrNode, injector, onDispose, projectableNodes) {
-      return this._compiler.resolveComponent(type).then(function(componentFactory) {
-        var componentRef = componentFactory.create(injector, projectableNodes, lang_1.isPresent(overrideSelectorOrNode) ? overrideSelectorOrNode : componentFactory.selector);
-        if (lang_1.isPresent(onDispose)) {
-          componentRef.onDestroy(onDispose);
-        }
-        return componentRef;
-      });
-    };
-    DynamicComponentLoader_.prototype.loadNextToLocation = function(type, location, providers, projectableNodes) {
-      if (providers === void 0) {
-        providers = null;
-      }
-      if (projectableNodes === void 0) {
-        projectableNodes = null;
-      }
-      return this._compiler.resolveComponent(type).then(function(componentFactory) {
-        var contextInjector = location.parentInjector;
-        var childInjector = lang_1.isPresent(providers) && providers.length > 0 ? di_1.ReflectiveInjector.fromResolvedProviders(providers, contextInjector) : contextInjector;
-        return location.createComponent(componentFactory, location.length, childInjector, projectableNodes);
-      });
-    };
-    DynamicComponentLoader_ = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [component_resolver_1.ComponentResolver])], DynamicComponentLoader_);
-    return DynamicComponentLoader_;
-  }(DynamicComponentLoader));
-  exports.DynamicComponentLoader_ = DynamicComponentLoader_;
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/core/linker/template_ref", [], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -4353,73 +4244,6 @@ System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/excep
     return ViewRef_;
   }());
   exports.ViewRef_ = ViewRef_;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/linker/injector_factory", ["angular2/src/core/di/injector", "angular2/src/facade/exceptions", "angular2/src/facade/lang"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var injector_1 = require("angular2/src/core/di/injector");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var lang_1 = require("angular2/src/facade/lang");
-  var _UNDEFINED = lang_1.CONST_EXPR(new Object());
-  var CodegenInjector = (function() {
-    function CodegenInjector(parent, _needsMainModule, mainModule) {
-      this.parent = parent;
-      this.mainModule = mainModule;
-      if (_needsMainModule && lang_1.isBlank(mainModule)) {
-        throw new exceptions_1.BaseException('This injector needs a main module instance!');
-      }
-    }
-    CodegenInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = injector_1.THROW_IF_NOT_FOUND;
-      }
-      var result = this.getInternal(token, _UNDEFINED);
-      return result === _UNDEFINED ? this.parent.get(token, notFoundValue) : result;
-    };
-    return CodegenInjector;
-  }());
-  exports.CodegenInjector = CodegenInjector;
-  var InjectorFactory = (function() {
-    function InjectorFactory(_injectorFactory) {
-      this._injectorFactory = _injectorFactory;
-    }
-    InjectorFactory.prototype.create = function(parent, mainModule) {
-      if (parent === void 0) {
-        parent = null;
-      }
-      if (mainModule === void 0) {
-        mainModule = null;
-      }
-      if (lang_1.isBlank(parent)) {
-        parent = injector_1.Injector.NULL;
-      }
-      return this._injectorFactory(parent, mainModule);
-    };
-    InjectorFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], InjectorFactory);
-    return InjectorFactory;
-  }());
-  exports.InjectorFactory = InjectorFactory;
   global.define = __define;
   return module.exports;
 });
@@ -4640,7 +4464,7 @@ System.register("angular2/src/core/platform_directives_and_pipes", ["angular2/sr
   return module.exports;
 });
 
-System.register("angular2/src/core/platform_common_providers", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/console", "angular2/src/core/reflection/reflection", "angular2/src/core/reflection/reflector_reader", "angular2/src/core/testability/testability", "angular2/src/core/application_ref"], true, function(require, exports, module) {
+System.register("angular2/src/core/platform_common_providers", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/console", "angular2/src/core/reflection/reflection", "angular2/src/core/reflection/reflector_reader", "angular2/src/core/testability/testability"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -4651,11 +4475,10 @@ System.register("angular2/src/core/platform_common_providers", ["angular2/src/fa
   var reflection_1 = require("angular2/src/core/reflection/reflection");
   var reflector_reader_1 = require("angular2/src/core/reflection/reflector_reader");
   var testability_1 = require("angular2/src/core/testability/testability");
-  var application_ref_1 = require("angular2/src/core/application_ref");
   function reflectorFactory() {
     return reflection_1.reflector;
   }
-  exports.PLATFORM_COMMON_PROVIDERS = lang_1.CONST_EXPR([application_ref_1.PLATFORM_CORE_PROVIDERS, new di_1.Provider(reflection_1.Reflector, {
+  exports.PLATFORM_COMMON_PROVIDERS = lang_1.CONST_EXPR([new di_1.Provider(reflection_1.Reflector, {
     useFactory: reflectorFactory,
     deps: []
   }), new di_1.Provider(reflector_reader_1.ReflectorReader, {useExisting: reflection_1.Reflector}), testability_1.TestabilityRegistry, console_1.Console]);
@@ -4663,7 +4486,7 @@ System.register("angular2/src/core/platform_common_providers", ["angular2/src/fa
   return module.exports;
 });
 
-System.register("angular2/src/core/application_common_providers", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/application_tokens", "angular2/src/core/application_ref", "angular2/src/core/change_detection/change_detection", "angular2/src/core/linker/view_utils", "angular2/src/core/linker/component_resolver", "angular2/src/core/linker/component_resolver", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/core/linker/dynamic_component_loader"], true, function(require, exports, module) {
+System.register("angular2/src/core/application_common_providers", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/application_tokens", "angular2/src/core/change_detection/change_detection", "angular2/src/core/linker/view_utils", "angular2/src/core/linker/component_resolver", "angular2/src/core/linker/component_resolver", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/core/linker/dynamic_component_loader"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -4671,7 +4494,6 @@ System.register("angular2/src/core/application_common_providers", ["angular2/src
   var lang_1 = require("angular2/src/facade/lang");
   var di_1 = require("angular2/src/core/di");
   var application_tokens_1 = require("angular2/src/core/application_tokens");
-  var application_ref_1 = require("angular2/src/core/application_ref");
   var change_detection_1 = require("angular2/src/core/change_detection/change_detection");
   var view_utils_1 = require("angular2/src/core/linker/view_utils");
   var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
@@ -4679,7 +4501,7 @@ System.register("angular2/src/core/application_common_providers", ["angular2/src
   var dynamic_component_loader_1 = require("angular2/src/core/linker/dynamic_component_loader");
   var dynamic_component_loader_2 = require("angular2/src/core/linker/dynamic_component_loader");
   var __unused;
-  exports.APPLICATION_COMMON_PROVIDERS = lang_1.CONST_EXPR([application_ref_1.APPLICATION_CORE_PROVIDERS, new di_1.Provider(component_resolver_1.ComponentResolver, {useClass: component_resolver_2.ReflectorComponentResolver}), application_tokens_1.APP_ID_RANDOM_PROVIDER, view_utils_1.ViewUtils, new di_1.Provider(change_detection_1.IterableDiffers, {useValue: change_detection_1.defaultIterableDiffers}), new di_1.Provider(change_detection_1.KeyValueDiffers, {useValue: change_detection_1.defaultKeyValueDiffers}), new di_1.Provider(dynamic_component_loader_1.DynamicComponentLoader, {useClass: dynamic_component_loader_2.DynamicComponentLoader_})]);
+  exports.APPLICATION_COMMON_PROVIDERS = lang_1.CONST_EXPR([new di_1.Provider(component_resolver_1.ComponentResolver, {useClass: component_resolver_2.ReflectorComponentResolver}), application_tokens_1.APP_ID_RANDOM_PROVIDER, view_utils_1.ViewUtils, new di_1.Provider(change_detection_1.IterableDiffers, {useValue: change_detection_1.defaultIterableDiffers}), new di_1.Provider(change_detection_1.KeyValueDiffers, {useValue: change_detection_1.defaultKeyValueDiffers}), new di_1.Provider(dynamic_component_loader_1.DynamicComponentLoader, {useClass: dynamic_component_loader_2.DynamicComponentLoader_})]);
   global.define = __define;
   return module.exports;
 });
@@ -14388,7 +14210,7 @@ System.register("angular2/src/platform/dom/events/dom_events", ["angular2/src/pl
     DomEventsPlugin.prototype.addEventListener = function(element, eventName, handler) {
       var zone = this.manager.getZone();
       var outsideHandler = function(event) {
-        return zone.runGuarded(function() {
+        return zone.run(function() {
           return handler(event);
         });
       };
@@ -14400,7 +14222,7 @@ System.register("angular2/src/platform/dom/events/dom_events", ["angular2/src/pl
       var element = dom_adapter_1.DOM.getGlobalEventTarget(target);
       var zone = this.manager.getZone();
       var outsideHandler = function(event) {
-        return zone.runGuarded(function() {
+        return zone.run(function() {
           return handler(event);
         });
       };
@@ -16388,12 +16210,11 @@ System.register("angular2/src/compiler/html_ast", ["angular2/src/facade/lang"], 
   return module.exports;
 });
 
-System.register("angular2/src/compiler/parse_util", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/parse_util", [], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
   var ParseLocation = (function() {
     function ParseLocation(file, offset, line, col) {
       this.file = file;
@@ -16402,7 +16223,7 @@ System.register("angular2/src/compiler/parse_util", ["angular2/src/facade/lang"]
       this.col = col;
     }
     ParseLocation.prototype.toString = function() {
-      return lang_1.isPresent(this.offset) ? this.file.url + "@" + this.line + ":" + this.col : this.file.url;
+      return this.file.url + "@" + this.line + ":" + this.col;
     };
     return ParseLocation;
   }());
@@ -16434,38 +16255,34 @@ System.register("angular2/src/compiler/parse_util", ["angular2/src/facade/lang"]
     ParseError.prototype.toString = function() {
       var source = this.span.start.file.content;
       var ctxStart = this.span.start.offset;
-      var contextStr = '';
-      if (lang_1.isPresent(ctxStart)) {
-        if (ctxStart > source.length - 1) {
-          ctxStart = source.length - 1;
-        }
-        var ctxEnd = ctxStart;
-        var ctxLen = 0;
-        var ctxLines = 0;
-        while (ctxLen < 100 && ctxStart > 0) {
-          ctxStart--;
-          ctxLen++;
-          if (source[ctxStart] == "\n") {
-            if (++ctxLines == 3) {
-              break;
-            }
-          }
-        }
-        ctxLen = 0;
-        ctxLines = 0;
-        while (ctxLen < 100 && ctxEnd < source.length - 1) {
-          ctxEnd++;
-          ctxLen++;
-          if (source[ctxEnd] == "\n") {
-            if (++ctxLines == 3) {
-              break;
-            }
-          }
-        }
-        var context = source.substring(ctxStart, this.span.start.offset) + '[ERROR ->]' + source.substring(this.span.start.offset, ctxEnd + 1);
-        contextStr = " (\"" + context + "\")";
+      if (ctxStart > source.length - 1) {
+        ctxStart = source.length - 1;
       }
-      return "" + this.msg + contextStr + ": " + this.span.start;
+      var ctxEnd = ctxStart;
+      var ctxLen = 0;
+      var ctxLines = 0;
+      while (ctxLen < 100 && ctxStart > 0) {
+        ctxStart--;
+        ctxLen++;
+        if (source[ctxStart] == "\n") {
+          if (++ctxLines == 3) {
+            break;
+          }
+        }
+      }
+      ctxLen = 0;
+      ctxLines = 0;
+      while (ctxLen < 100 && ctxEnd < source.length - 1) {
+        ctxEnd++;
+        ctxLen++;
+        if (source[ctxEnd] == "\n") {
+          if (++ctxLines == 3) {
+            break;
+          }
+        }
+      }
+      var context = source.substring(ctxStart, this.span.start.offset) + '[ERROR ->]' + source.substring(this.span.start.offset, ctxEnd + 1);
+      return this.msg + " (\"" + context + "\"): " + this.span.start;
     };
     return ParseError;
   }());
@@ -17430,7 +17247,7 @@ System.register("angular2/src/core/linker/debug_context", ["angular2/src/facade/
   return module.exports;
 });
 
-System.register("angular2/src/core/linker/element_injector", ["angular2/src/facade/lang", "angular2/src/core/di/injector"], true, function(require, exports, module) {
+System.register("angular2/src/core/linker/element_injector", ["angular2/src/core/di/injector"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -17444,9 +17261,7 @@ System.register("angular2/src/core/linker/element_injector", ["angular2/src/faca
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var lang_1 = require("angular2/src/facade/lang");
   var injector_1 = require("angular2/src/core/di/injector");
-  var _UNDEFINED = lang_1.CONST_EXPR(new Object());
   var ElementInjector = (function(_super) {
     __extends(ElementInjector, _super);
     function ElementInjector(_view, _nodeIndex) {
@@ -17454,16 +17269,17 @@ System.register("angular2/src/core/linker/element_injector", ["angular2/src/faca
       this._view = _view;
       this._nodeIndex = _nodeIndex;
     }
-    ElementInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = injector_1.THROW_IF_NOT_FOUND;
+    ElementInjector.prototype.get = function(token) {
+      var result = this._view.injectorGet(token, this._nodeIndex, injector_1.UNDEFINED);
+      if (result === injector_1.UNDEFINED) {
+        result = this._view.parentInjector.get(token);
       }
-      var result = _UNDEFINED;
-      if (result === _UNDEFINED) {
-        result = this._view.injectorGet(token, this._nodeIndex, _UNDEFINED);
-      }
-      if (result === _UNDEFINED) {
-        result = this._view.parentInjector.get(token, notFoundValue);
+      return result;
+    };
+    ElementInjector.prototype.getOptional = function(token) {
+      var result = this._view.injectorGet(token, this._nodeIndex, injector_1.UNDEFINED);
+      if (result === injector_1.UNDEFINED) {
+        result = this._view.parentInjector.getOptional(token);
       }
       return result;
     };
@@ -17786,7 +17602,6 @@ System.register("angular2/src/compiler/output/output_ast", ["angular2/src/facade
     BuiltinVar[BuiltinVar["Super"] = 1] = "Super";
     BuiltinVar[BuiltinVar["CatchError"] = 2] = "CatchError";
     BuiltinVar[BuiltinVar["CatchStack"] = 3] = "CatchStack";
-    BuiltinVar[BuiltinVar["MetadataMap"] = 4] = "MetadataMap";
   })(exports.BuiltinVar || (exports.BuiltinVar = {}));
   var BuiltinVar = exports.BuiltinVar;
   var ReadVarExpr = (function(_super) {
@@ -18134,7 +17949,6 @@ System.register("angular2/src/compiler/output/output_ast", ["angular2/src/facade
   exports.SUPER_EXPR = new ReadVarExpr(BuiltinVar.Super);
   exports.CATCH_ERROR_VAR = new ReadVarExpr(BuiltinVar.CatchError);
   exports.CATCH_STACK_VAR = new ReadVarExpr(BuiltinVar.CatchStack);
-  exports.METADATA_MAP = new ReadVarExpr(BuiltinVar.MetadataMap);
   exports.NULL_EXPR = new LiteralExpr(null, null);
   (function(StmtModifier) {
     StmtModifier[StmtModifier["Final"] = 0] = "Final";
@@ -19081,14 +18895,13 @@ System.register("angular2/src/compiler/view_compiler/constants", ["angular2/src/
   return module.exports;
 });
 
-System.register("angular2/src/compiler/view_compiler/util", ["angular2/src/facade/lang", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/compile_metadata"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/view_compiler/util", ["angular2/src/facade/lang", "angular2/src/compiler/output/output_ast"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var lang_1 = require("angular2/src/facade/lang");
   var o = require("angular2/src/compiler/output/output_ast");
-  var compile_metadata_1 = require("angular2/src/compiler/compile_metadata");
   function getPropertyInView(property, viewPath) {
     if (viewPath.length === 0) {
       return property;
@@ -19113,11 +18926,8 @@ System.register("angular2/src/compiler/view_compiler/util", ["angular2/src/facad
   }
   exports.getPropertyInView = getPropertyInView;
   function injectFromViewParentInjector(token, optional) {
-    var args = [createDiTokenExpression(token)];
-    if (optional) {
-      args.push(o.NULL_EXPR);
-    }
-    return o.THIS_EXPR.prop('parentInjector').callMethod('get', args);
+    var method = optional ? 'getOptional' : 'get';
+    return o.THIS_EXPR.prop('parentInjector').callMethod(method, [createDiTokenExpression(token)]);
   }
   exports.injectFromViewParentInjector = injectFromViewParentInjector;
   function getViewFactoryName(component, embeddedTemplateIndex) {
@@ -19155,16 +18965,6 @@ System.register("angular2/src/compiler/view_compiler/util", ["angular2/src/facad
     return result;
   }
   exports.createFlatArray = createFlatArray;
-  function convertValueToOutputAst(value) {
-    if (value instanceof compile_metadata_1.CompileIdentifierMetadata) {
-      return o.importExpr(value);
-    } else if (value instanceof o.Expression) {
-      return value;
-    } else {
-      return o.literal(value);
-    }
-  }
-  exports.convertValueToOutputAst = convertValueToOutputAst;
   global.define = __define;
   return module.exports;
 });
@@ -20219,161 +20019,6 @@ System.register("angular2/src/compiler/view_compiler/event_binder", ["angular2/s
   return module.exports;
 });
 
-System.register("angular2/src/compiler/view_compiler/injector_compiler", ["angular2/src/facade/lang", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/identifiers", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/parse_util", "angular2/src/compiler/provider_parser", "angular2/src/compiler/view_compiler/constants", "angular2/src/compiler/view_compiler/util"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var compile_metadata_1 = require("angular2/src/compiler/compile_metadata");
-  var identifiers_1 = require("angular2/src/compiler/identifiers");
-  var o = require("angular2/src/compiler/output/output_ast");
-  var parse_util_1 = require("angular2/src/compiler/parse_util");
-  var provider_parser_1 = require("angular2/src/compiler/provider_parser");
-  var constants_1 = require("angular2/src/compiler/view_compiler/constants");
-  var util_1 = require("angular2/src/compiler/view_compiler/util");
-  var mainModuleProp = o.THIS_EXPR.prop('mainModule');
-  var parentInjectorProp = o.THIS_EXPR.prop('parent');
-  var InjectorCompileResult = (function() {
-    function InjectorCompileResult(statements, injectorFactoryVar) {
-      this.statements = statements;
-      this.injectorFactoryVar = injectorFactoryVar;
-    }
-    return InjectorCompileResult;
-  }());
-  exports.InjectorCompileResult = InjectorCompileResult;
-  var InjectorCompiler = (function() {
-    function InjectorCompiler() {}
-    InjectorCompiler.prototype.compileInjector = function(injectorModuleMeta) {
-      var builder = new _InjectorBuilder(injectorModuleMeta);
-      var sourceFileName = lang_1.isPresent(injectorModuleMeta.moduleUrl) ? "in InjectorModule " + injectorModuleMeta.name + " in " + injectorModuleMeta.moduleUrl : "in InjectorModule " + injectorModuleMeta.name;
-      var sourceFile = new parse_util_1.ParseSourceFile('', sourceFileName);
-      var providerParser = new provider_parser_1.AppProviderParser(new parse_util_1.ParseSourceSpan(new parse_util_1.ParseLocation(sourceFile, null, null, null), new parse_util_1.ParseLocation(sourceFile, null, null, null)), injectorModuleMeta.providers);
-      providerParser.parse().forEach(function(provider) {
-        return builder.addProvider(provider);
-      });
-      var injectorClass = builder.build();
-      var injectorFactoryVar = injectorClass.name + "Factory";
-      var injectorFactoryFnVar = injectorClass.name + "FactoryClosure";
-      var injectorFactoryFn = o.fn(injectorClass.constructorMethod.params, [new o.ReturnStatement(o.variable(injectorClass.name).instantiate(injectorClass.constructorMethod.params.map(function(param) {
-        return o.variable(param.name);
-      })))], o.importType(identifiers_1.Identifiers.Injector)).toDeclStmt(injectorFactoryFnVar);
-      var injectorFactoryStmt = o.variable(injectorFactoryVar).set(o.importExpr(identifiers_1.Identifiers.InjectorFactory, [o.importType(injectorModuleMeta)]).instantiate([o.variable(injectorFactoryFnVar)], o.importType(identifiers_1.Identifiers.InjectorFactory, [o.importType(injectorModuleMeta)], [o.TypeModifier.Const]))).toDeclStmt(null, [o.StmtModifier.Final]);
-      return new InjectorCompileResult([injectorClass, injectorFactoryFn, injectorFactoryStmt], injectorFactoryVar);
-    };
-    return InjectorCompiler;
-  }());
-  exports.InjectorCompiler = InjectorCompiler;
-  var _InjectorBuilder = (function() {
-    function _InjectorBuilder(_mainModuleType) {
-      this._mainModuleType = _mainModuleType;
-      this._instances = new compile_metadata_1.CompileTokenMap();
-      this._fields = [];
-      this._ctorStmts = [];
-      this._getters = [];
-      this._needsMainModule = false;
-      this._instances.add(identifiers_1.identifierToken(identifiers_1.Identifiers.Injector), o.THIS_EXPR);
-    }
-    _InjectorBuilder.prototype.addProvider = function(resolvedProvider) {
-      var _this = this;
-      var providerValueExpressions = resolvedProvider.providers.map(function(provider) {
-        return _this._getProviderValue(provider);
-      });
-      var propName = "_" + resolvedProvider.token.name + "_" + this._instances.size;
-      var instance = this._createProviderProperty(propName, resolvedProvider, providerValueExpressions, resolvedProvider.multiProvider, resolvedProvider.eager);
-      this._instances.add(resolvedProvider.token, instance);
-    };
-    _InjectorBuilder.prototype.build = function() {
-      var _this = this;
-      this._ctorStmts.push(o.SUPER_EXPR.callFn([o.variable(parentInjectorProp.name), o.literal(this._needsMainModule), o.variable(mainModuleProp.name)]).toStmt());
-      var getMethodStmts = this._instances.keys().map(function(token) {
-        var providerExpr = _this._instances.get(token);
-        return new o.IfStmt(constants_1.InjectMethodVars.token.identical(util_1.createDiTokenExpression(token)), [new o.ReturnStatement(providerExpr)]);
-      });
-      getMethodStmts.push(new o.IfStmt(constants_1.InjectMethodVars.token.identical(util_1.createDiTokenExpression(identifiers_1.identifierToken(this._mainModuleType))).and(o.not(mainModuleProp.equals(o.NULL_EXPR))), [new o.ReturnStatement(mainModuleProp)]));
-      var methods = [new o.ClassMethod('getInternal', [new o.FnParam(constants_1.InjectMethodVars.token.name, o.DYNAMIC_TYPE), new o.FnParam(constants_1.InjectMethodVars.notFoundResult.name, o.DYNAMIC_TYPE)], getMethodStmts.concat([new o.ReturnStatement(constants_1.InjectMethodVars.notFoundResult)]), o.DYNAMIC_TYPE)];
-      var ctor = new o.ClassMethod(null, [new o.FnParam(parentInjectorProp.name, o.importType(identifiers_1.Identifiers.Injector)), new o.FnParam(mainModuleProp.name, o.importType(this._mainModuleType))], this._ctorStmts);
-      var injClassName = this._mainModuleType.name + "Injector";
-      return new o.ClassStmt(injClassName, o.importExpr(identifiers_1.Identifiers.CodegenInjector, [o.importType(this._mainModuleType)]), this._fields, this._getters, ctor, methods);
-    };
-    _InjectorBuilder.prototype._getProviderValue = function(provider) {
-      var _this = this;
-      var result;
-      if (lang_1.isPresent(provider.useExisting)) {
-        result = this._getDependency(new compile_metadata_1.CompileDiDependencyMetadata({token: provider.useExisting}));
-      } else if (lang_1.isPresent(provider.useFactory)) {
-        var deps = lang_1.isPresent(provider.deps) ? provider.deps : provider.useFactory.diDeps;
-        var depsExpr = deps.map(function(dep) {
-          return _this._getDependency(dep);
-        });
-        result = o.importExpr(provider.useFactory).callFn(depsExpr);
-      } else if (lang_1.isPresent(provider.useClass)) {
-        var deps = lang_1.isPresent(provider.deps) ? provider.deps : provider.useClass.diDeps;
-        var depsExpr = deps.map(function(dep) {
-          return _this._getDependency(dep);
-        });
-        result = o.importExpr(provider.useClass).instantiate(depsExpr, o.importType(provider.useClass));
-      } else {
-        result = util_1.convertValueToOutputAst(provider.useValue);
-      }
-      if (lang_1.isPresent(provider.useProperty)) {
-        result = result.prop(provider.useProperty);
-      }
-      return result;
-    };
-    _InjectorBuilder.prototype._createProviderProperty = function(propName, provider, providerValueExpressions, isMulti, isEager) {
-      var resolvedProviderValueExpr;
-      var type;
-      if (isMulti) {
-        resolvedProviderValueExpr = o.literalArr(providerValueExpressions);
-        type = new o.ArrayType(o.DYNAMIC_TYPE);
-      } else {
-        resolvedProviderValueExpr = providerValueExpressions[0];
-        type = providerValueExpressions[0].type;
-      }
-      if (lang_1.isBlank(type)) {
-        type = o.DYNAMIC_TYPE;
-      }
-      if (isEager) {
-        this._fields.push(new o.ClassField(propName, type));
-        this._ctorStmts.push(o.THIS_EXPR.prop(propName).set(resolvedProviderValueExpr).toStmt());
-      } else {
-        var internalField = "_" + propName;
-        this._fields.push(new o.ClassField(internalField, type));
-        var getterStmts = [new o.IfStmt(o.THIS_EXPR.prop(internalField).isBlank(), [o.THIS_EXPR.prop(internalField).set(resolvedProviderValueExpr).toStmt()]), new o.ReturnStatement(o.THIS_EXPR.prop(internalField))];
-        this._getters.push(new o.ClassGetter(propName, getterStmts, type));
-      }
-      return o.THIS_EXPR.prop(propName);
-    };
-    _InjectorBuilder.prototype._getDependency = function(dep) {
-      var result = null;
-      if (dep.isValue) {
-        result = o.literal(dep.value);
-      }
-      if (!dep.isSkipSelf) {
-        if (lang_1.isBlank(result)) {
-          result = this._instances.get(dep.token);
-        }
-        if (lang_1.isBlank(result) && dep.token.equalsTo(identifiers_1.identifierToken(this._mainModuleType))) {
-          this._needsMainModule = true;
-          result = mainModuleProp;
-        }
-      }
-      if (lang_1.isBlank(result)) {
-        var args = [util_1.createDiTokenExpression(dep.token)];
-        if (dep.isOptional) {
-          args.push(o.NULL_EXPR);
-        }
-        result = parentInjectorProp.callMethod('get', args);
-      }
-      return result;
-    };
-    return _InjectorBuilder;
-  }());
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/compiler/directive_normalizer", ["angular2/src/compiler/compile_metadata", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/async", "angular2/src/compiler/xhr", "angular2/src/compiler/url_resolver", "angular2/src/compiler/style_url_resolver", "angular2/src/core/di", "angular2/src/core/metadata/view", "angular2/src/compiler/html_ast", "angular2/src/compiler/html_parser", "angular2/src/compiler/template_preparser"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -20555,15 +20200,6 @@ System.register("angular2/src/compiler/directive_resolver", ["angular2/src/core/
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
     var c = arguments.length,
         r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
@@ -20590,14 +20226,6 @@ System.register("angular2/src/compiler/directive_resolver", ["angular2/src/core/
   function _isDirectiveMetadata(type) {
     return type instanceof metadata_1.DirectiveMetadata;
   }
-  var NoDirectiveAnnotationError = (function(_super) {
-    __extends(NoDirectiveAnnotationError, _super);
-    function NoDirectiveAnnotationError(type) {
-      _super.call(this, "No Directive annotation found on " + lang_1.stringify(type));
-    }
-    return NoDirectiveAnnotationError;
-  }(exceptions_1.BaseException));
-  exports.NoDirectiveAnnotationError = NoDirectiveAnnotationError;
   var DirectiveResolver = (function() {
     function DirectiveResolver(_reflector) {
       if (lang_1.isPresent(_reflector)) {
@@ -20615,7 +20243,7 @@ System.register("angular2/src/compiler/directive_resolver", ["angular2/src/core/
           return this._mergeWithPropertyMetadata(metadata, propertyMetadata, type);
         }
       }
-      throw new NoDirectiveAnnotationError(type);
+      throw new exceptions_1.BaseException("No Directive annotation found on " + lang_1.stringify(type));
     };
     DirectiveResolver.prototype._mergeWithPropertyMetadata = function(dm, propertyMetadata, directiveType) {
       var inputs = [];
@@ -20709,6 +20337,7 @@ System.register("angular2/src/compiler/directive_resolver", ["angular2/src/core/
     return DirectiveResolver;
   }());
   exports.DirectiveResolver = DirectiveResolver;
+  exports.CODEGEN_DIRECTIVE_RESOLVER = new DirectiveResolver(reflection_1.reflector);
   global.define = __define;
   return module.exports;
 });
@@ -20765,6 +20394,7 @@ System.register("angular2/src/compiler/pipe_resolver", ["angular2/src/core/di", 
     return PipeResolver;
   }());
   exports.PipeResolver = PipeResolver;
+  exports.CODEGEN_PIPE_RESOLVER = new PipeResolver(reflection_1.reflector);
   global.define = __define;
   return module.exports;
 });
@@ -21169,9 +20799,6 @@ System.register("angular2/src/compiler/output/abstract_emitter", ["angular2/src/
             break;
           case o.BuiltinVar.CatchStack:
             varName = exports.CATCH_STACK_VAR.name;
-            break;
-          case o.BuiltinVar.MetadataMap:
-            varName = 'null';
             break;
           default:
             throw new exceptions_1.BaseException("Unknown builtin variable " + ast.builtin);
@@ -22028,52 +21655,6 @@ System.register("angular2/src/compiler/output/interpretive_view", ["angular2/src
     };
     return _InterpretiveAppView;
   }(view_1.DebugAppView));
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/compiler/output/interpretive_injector", ["angular2/src/core/linker/injector_factory", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var injector_factory_1 = require("angular2/src/core/linker/injector_factory");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var InterpretiveInjectorInstanceFactory = (function() {
-    function InterpretiveInjectorInstanceFactory() {}
-    InterpretiveInjectorInstanceFactory.prototype.createInstance = function(superClass, clazz, args, props, getters, methods) {
-      if (superClass === injector_factory_1.CodegenInjector) {
-        return new _InterpretiveInjector(args, clazz, props, getters, methods);
-      }
-      throw new exceptions_1.BaseException("Can't instantiate class " + superClass + " in interpretative mode");
-    };
-    return InterpretiveInjectorInstanceFactory;
-  }());
-  exports.InterpretiveInjectorInstanceFactory = InterpretiveInjectorInstanceFactory;
-  var _InterpretiveInjector = (function(_super) {
-    __extends(_InterpretiveInjector, _super);
-    function _InterpretiveInjector(args, clazz, props, getters, methods) {
-      _super.call(this, args[0], args[1], args[2]);
-      this.clazz = clazz;
-      this.props = props;
-      this.getters = getters;
-      this.methods = methods;
-    }
-    _InterpretiveInjector.prototype.getInternal = function(token, notFoundResult) {
-      var m = this.methods.get('getInternal');
-      return m(token, notFoundResult);
-    };
-    return _InterpretiveInjector;
-  }(injector_factory_1.CodegenInjector));
   global.define = __define;
   return module.exports;
 });
@@ -23316,49 +22897,49 @@ System.register("angular2/src/router/rules/route_handlers/sync_route_handler", [
   return module.exports;
 });
 
-System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+System.register("angular2/src/router/utils", ["angular2/src/facade/lang", "angular2/src/facade/collection"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var lang_1 = require("angular2/src/facade/lang");
-  var RouteLifecycleHook = (function() {
-    function RouteLifecycleHook(name) {
-      this.name = name;
+  var collection_1 = require("angular2/src/facade/collection");
+  var TouchMap = (function() {
+    function TouchMap(map) {
+      var _this = this;
+      this.map = {};
+      this.keys = {};
+      if (lang_1.isPresent(map)) {
+        collection_1.StringMapWrapper.forEach(map, function(value, key) {
+          _this.map[key] = lang_1.isPresent(value) ? value.toString() : null;
+          _this.keys[key] = true;
+        });
+      }
     }
-    RouteLifecycleHook = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], RouteLifecycleHook);
-    return RouteLifecycleHook;
+    TouchMap.prototype.get = function(key) {
+      collection_1.StringMapWrapper.delete(this.keys, key);
+      return this.map[key];
+    };
+    TouchMap.prototype.getUnused = function() {
+      var _this = this;
+      var unused = {};
+      var keys = collection_1.StringMapWrapper.keys(this.keys);
+      keys.forEach(function(key) {
+        return unused[key] = collection_1.StringMapWrapper.get(_this.map, key);
+      });
+      return unused;
+    };
+    return TouchMap;
   }());
-  exports.RouteLifecycleHook = RouteLifecycleHook;
-  var CanActivate = (function() {
-    function CanActivate(fn) {
-      this.fn = fn;
+  exports.TouchMap = TouchMap;
+  function normalizeString(obj) {
+    if (lang_1.isBlank(obj)) {
+      return null;
+    } else {
+      return obj.toString();
     }
-    CanActivate = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], CanActivate);
-    return CanActivate;
-  }());
-  exports.CanActivate = CanActivate;
-  exports.routerCanReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
-  exports.routerCanDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
-  exports.routerOnActivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
-  exports.routerOnReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
-  exports.routerOnDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));
+  }
+  exports.normalizeString = normalizeString;
   global.define = __define;
   return module.exports;
 });
@@ -23450,6 +23031,53 @@ System.register("angular2/src/router/route_config/route_config_decorator", ["ang
   return module.exports;
 });
 
+System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", ["angular2/src/facade/lang"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var lang_1 = require("angular2/src/facade/lang");
+  var RouteLifecycleHook = (function() {
+    function RouteLifecycleHook(name) {
+      this.name = name;
+    }
+    RouteLifecycleHook = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], RouteLifecycleHook);
+    return RouteLifecycleHook;
+  }());
+  exports.RouteLifecycleHook = RouteLifecycleHook;
+  var CanActivate = (function() {
+    function CanActivate(fn) {
+      this.fn = fn;
+    }
+    CanActivate = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], CanActivate);
+    return CanActivate;
+  }());
+  exports.CanActivate = CanActivate;
+  exports.routerCanReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
+  exports.routerCanDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
+  exports.routerOnActivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
+  exports.routerOnReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
+  exports.routerOnDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));
+  global.define = __define;
+  return module.exports;
+});
+
 System.register("angular2/compiler", ["angular2/src/compiler/compiler", "angular2/src/compiler/template_ast"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -23488,7 +23116,6 @@ System.register("angular2/compiler", ["angular2/src/compiler/compiler", "angular
   exports.CompileQueryMetadata = compiler_1.CompileQueryMetadata;
   exports.CompileTemplateMetadata = compiler_1.CompileTemplateMetadata;
   exports.CompileDirectiveMetadata = compiler_1.CompileDirectiveMetadata;
-  exports.CompileInjectorModuleMetadata = compiler_1.CompileInjectorModuleMetadata;
   exports.CompilePipeMetadata = compiler_1.CompilePipeMetadata;
   __export(require("angular2/src/compiler/template_ast"));
   global.define = __define;
@@ -23534,362 +23161,6 @@ System.register("rxjs/util/tryCatch", ["rxjs/util/errorObject"], true, function(
   return module.exports;
 });
 
-System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "angular2/src/core/di/forward_ref", "angular2/src/core/di/metadata"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
-  var forward_ref_1 = require("angular2/src/core/di/forward_ref");
-  var metadata_1 = require("angular2/src/core/di/metadata");
-  var AttributeMetadata = (function(_super) {
-    __extends(AttributeMetadata, _super);
-    function AttributeMetadata(attributeName) {
-      _super.call(this);
-      this.attributeName = attributeName;
-    }
-    Object.defineProperty(AttributeMetadata.prototype, "token", {
-      get: function() {
-        return this;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    AttributeMetadata.prototype.toString = function() {
-      return "@Attribute(" + lang_1.stringify(this.attributeName) + ")";
-    };
-    AttributeMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], AttributeMetadata);
-    return AttributeMetadata;
-  }(metadata_1.DependencyMetadata));
-  exports.AttributeMetadata = AttributeMetadata;
-  var QueryMetadata = (function(_super) {
-    __extends(QueryMetadata, _super);
-    function QueryMetadata(_selector, _a) {
-      var _b = _a === void 0 ? {} : _a,
-          _c = _b.descendants,
-          descendants = _c === void 0 ? false : _c,
-          _d = _b.first,
-          first = _d === void 0 ? false : _d,
-          _e = _b.read,
-          read = _e === void 0 ? null : _e;
-      _super.call(this);
-      this._selector = _selector;
-      this.descendants = descendants;
-      this.first = first;
-      this.read = read;
-    }
-    Object.defineProperty(QueryMetadata.prototype, "isViewQuery", {
-      get: function() {
-        return false;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(QueryMetadata.prototype, "selector", {
-      get: function() {
-        return forward_ref_1.resolveForwardRef(this._selector);
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(QueryMetadata.prototype, "isVarBindingQuery", {
-      get: function() {
-        return lang_1.isString(this.selector);
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(QueryMetadata.prototype, "varBindings", {
-      get: function() {
-        return this.selector.split(',');
-      },
-      enumerable: true,
-      configurable: true
-    });
-    QueryMetadata.prototype.toString = function() {
-      return "@Query(" + lang_1.stringify(this.selector) + ")";
-    };
-    QueryMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], QueryMetadata);
-    return QueryMetadata;
-  }(metadata_1.DependencyMetadata));
-  exports.QueryMetadata = QueryMetadata;
-  var ContentChildrenMetadata = (function(_super) {
-    __extends(ContentChildrenMetadata, _super);
-    function ContentChildrenMetadata(_selector, _a) {
-      var _b = _a === void 0 ? {} : _a,
-          _c = _b.descendants,
-          descendants = _c === void 0 ? false : _c,
-          _d = _b.read,
-          read = _d === void 0 ? null : _d;
-      _super.call(this, _selector, {
-        descendants: descendants,
-        read: read
-      });
-    }
-    ContentChildrenMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ContentChildrenMetadata);
-    return ContentChildrenMetadata;
-  }(QueryMetadata));
-  exports.ContentChildrenMetadata = ContentChildrenMetadata;
-  var ContentChildMetadata = (function(_super) {
-    __extends(ContentChildMetadata, _super);
-    function ContentChildMetadata(_selector, _a) {
-      var _b = (_a === void 0 ? {} : _a).read,
-          read = _b === void 0 ? null : _b;
-      _super.call(this, _selector, {
-        descendants: true,
-        first: true,
-        read: read
-      });
-    }
-    ContentChildMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ContentChildMetadata);
-    return ContentChildMetadata;
-  }(QueryMetadata));
-  exports.ContentChildMetadata = ContentChildMetadata;
-  var ViewQueryMetadata = (function(_super) {
-    __extends(ViewQueryMetadata, _super);
-    function ViewQueryMetadata(_selector, _a) {
-      var _b = _a === void 0 ? {} : _a,
-          _c = _b.descendants,
-          descendants = _c === void 0 ? false : _c,
-          _d = _b.first,
-          first = _d === void 0 ? false : _d,
-          _e = _b.read,
-          read = _e === void 0 ? null : _e;
-      _super.call(this, _selector, {
-        descendants: descendants,
-        first: first,
-        read: read
-      });
-    }
-    Object.defineProperty(ViewQueryMetadata.prototype, "isViewQuery", {
-      get: function() {
-        return true;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ViewQueryMetadata.prototype.toString = function() {
-      return "@ViewQuery(" + lang_1.stringify(this.selector) + ")";
-    };
-    ViewQueryMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewQueryMetadata);
-    return ViewQueryMetadata;
-  }(QueryMetadata));
-  exports.ViewQueryMetadata = ViewQueryMetadata;
-  var ViewChildrenMetadata = (function(_super) {
-    __extends(ViewChildrenMetadata, _super);
-    function ViewChildrenMetadata(_selector, _a) {
-      var _b = (_a === void 0 ? {} : _a).read,
-          read = _b === void 0 ? null : _b;
-      _super.call(this, _selector, {
-        descendants: true,
-        read: read
-      });
-    }
-    ViewChildrenMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewChildrenMetadata);
-    return ViewChildrenMetadata;
-  }(ViewQueryMetadata));
-  exports.ViewChildrenMetadata = ViewChildrenMetadata;
-  var ViewChildMetadata = (function(_super) {
-    __extends(ViewChildMetadata, _super);
-    function ViewChildMetadata(_selector, _a) {
-      var _b = (_a === void 0 ? {} : _a).read,
-          read = _b === void 0 ? null : _b;
-      _super.call(this, _selector, {
-        descendants: true,
-        first: true,
-        read: read
-      });
-    }
-    ViewChildMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewChildMetadata);
-    return ViewChildMetadata;
-  }(ViewQueryMetadata));
-  exports.ViewChildMetadata = ViewChildMetadata;
-  var ProviderPropertyMetadata = (function() {
-    function ProviderPropertyMetadata(token, _a) {
-      var _b = (_a === void 0 ? {} : _a).multi,
-          multi = _b === void 0 ? false : _b;
-      this.token = token;
-      this._multi = multi;
-    }
-    Object.defineProperty(ProviderPropertyMetadata.prototype, "multi", {
-      get: function() {
-        return this._multi;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ProviderPropertyMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ProviderPropertyMetadata);
-    return ProviderPropertyMetadata;
-  }());
-  exports.ProviderPropertyMetadata = ProviderPropertyMetadata;
-  var InjectorModuleMetadata = (function() {
-    function InjectorModuleMetadata(_a) {
-      var _b = (_a === void 0 ? {} : _a).providers,
-          providers = _b === void 0 ? lang_1.CONST_EXPR([]) : _b;
-      this._providers = providers;
-    }
-    Object.defineProperty(InjectorModuleMetadata.prototype, "providers", {
-      get: function() {
-        return this._providers;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    InjectorModuleMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], InjectorModuleMetadata);
-    return InjectorModuleMetadata;
-  }());
-  exports.InjectorModuleMetadata = InjectorModuleMetadata;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/facade/exception_handler", ["angular2/src/facade/lang", "angular2/src/facade/base_wrapped_exception", "angular2/src/facade/collection"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var base_wrapped_exception_1 = require("angular2/src/facade/base_wrapped_exception");
-  var collection_1 = require("angular2/src/facade/collection");
-  var _ArrayLogger = (function() {
-    function _ArrayLogger() {
-      this.res = [];
-    }
-    _ArrayLogger.prototype.log = function(s) {
-      this.res.push(s);
-    };
-    _ArrayLogger.prototype.logError = function(s) {
-      this.res.push(s);
-    };
-    _ArrayLogger.prototype.logGroup = function(s) {
-      this.res.push(s);
-    };
-    _ArrayLogger.prototype.logGroupEnd = function() {};
-    ;
-    return _ArrayLogger;
-  }());
-  var ExceptionHandler = (function() {
-    function ExceptionHandler(_logger, _rethrowException) {
-      if (_rethrowException === void 0) {
-        _rethrowException = true;
-      }
-      this._logger = _logger;
-      this._rethrowException = _rethrowException;
-    }
-    ExceptionHandler.exceptionToString = function(exception, stackTrace, reason) {
-      if (stackTrace === void 0) {
-        stackTrace = null;
-      }
-      if (reason === void 0) {
-        reason = null;
-      }
-      var l = new _ArrayLogger();
-      var e = new ExceptionHandler(l, false);
-      e.call(exception, stackTrace, reason);
-      return l.res.join("\n");
-    };
-    ExceptionHandler.prototype.call = function(exception, stackTrace, reason) {
-      if (stackTrace === void 0) {
-        stackTrace = null;
-      }
-      if (reason === void 0) {
-        reason = null;
-      }
-      var originalException = this._findOriginalException(exception);
-      var originalStack = this._findOriginalStack(exception);
-      var context = this._findContext(exception);
-      this._logger.logGroup("EXCEPTION: " + this._extractMessage(exception));
-      if (lang_1.isPresent(stackTrace) && lang_1.isBlank(originalStack)) {
-        this._logger.logError("STACKTRACE:");
-        this._logger.logError(this._longStackTrace(stackTrace));
-      }
-      if (lang_1.isPresent(reason)) {
-        this._logger.logError("REASON: " + reason);
-      }
-      if (lang_1.isPresent(originalException)) {
-        this._logger.logError("ORIGINAL EXCEPTION: " + this._extractMessage(originalException));
-      }
-      if (lang_1.isPresent(originalStack)) {
-        this._logger.logError("ORIGINAL STACKTRACE:");
-        this._logger.logError(this._longStackTrace(originalStack));
-      }
-      if (lang_1.isPresent(context)) {
-        this._logger.logError("ERROR CONTEXT:");
-        this._logger.logError(context);
-      }
-      this._logger.logGroupEnd();
-      if (this._rethrowException)
-        throw exception;
-    };
-    ExceptionHandler.prototype._extractMessage = function(exception) {
-      return exception instanceof base_wrapped_exception_1.BaseWrappedException ? exception.wrapperMessage : exception.toString();
-    };
-    ExceptionHandler.prototype._longStackTrace = function(stackTrace) {
-      return collection_1.isListLikeIterable(stackTrace) ? stackTrace.join("\n\n-----async gap-----\n") : stackTrace.toString();
-    };
-    ExceptionHandler.prototype._findContext = function(exception) {
-      try {
-        if (!(exception instanceof base_wrapped_exception_1.BaseWrappedException))
-          return null;
-        return lang_1.isPresent(exception.context) ? exception.context : this._findContext(exception.originalException);
-      } catch (e) {
-        return null;
-      }
-    };
-    ExceptionHandler.prototype._findOriginalException = function(exception) {
-      if (!(exception instanceof base_wrapped_exception_1.BaseWrappedException))
-        return null;
-      var e = exception.originalException;
-      while (e instanceof base_wrapped_exception_1.BaseWrappedException && lang_1.isPresent(e.originalException)) {
-        e = e.originalException;
-      }
-      return e;
-    };
-    ExceptionHandler.prototype._findOriginalStack = function(exception) {
-      if (!(exception instanceof base_wrapped_exception_1.BaseWrappedException))
-        return null;
-      var e = exception;
-      var stack = exception.originalStack;
-      while (e instanceof base_wrapped_exception_1.BaseWrappedException && lang_1.isPresent(e.originalException)) {
-        e = e.originalException;
-        if (e instanceof base_wrapped_exception_1.BaseWrappedException && lang_1.isPresent(e.originalException)) {
-          stack = e.originalStack;
-        }
-      }
-      return stack;
-    };
-    return ExceptionHandler;
-  }());
-  exports.ExceptionHandler = ExceptionHandler;
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/core/di/decorators", ["angular2/src/core/di/metadata", "angular2/src/core/util/decorators"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -23903,6 +23174,110 @@ System.register("angular2/src/core/di/decorators", ["angular2/src/core/di/metada
   exports.Self = decorators_1.makeParamDecorator(metadata_1.SelfMetadata);
   exports.Host = decorators_1.makeParamDecorator(metadata_1.HostMetadata);
   exports.SkipSelf = decorators_1.makeParamDecorator(metadata_1.SkipSelfMetadata);
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/facade/exceptions", ["angular2/src/facade/base_wrapped_exception", "angular2/src/facade/exception_handler", "angular2/src/facade/exception_handler"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var base_wrapped_exception_1 = require("angular2/src/facade/base_wrapped_exception");
+  var exception_handler_1 = require("angular2/src/facade/exception_handler");
+  var exception_handler_2 = require("angular2/src/facade/exception_handler");
+  exports.ExceptionHandler = exception_handler_2.ExceptionHandler;
+  var BaseException = (function(_super) {
+    __extends(BaseException, _super);
+    function BaseException(message) {
+      if (message === void 0) {
+        message = "--";
+      }
+      _super.call(this, message);
+      this.message = message;
+      this.stack = (new Error(message)).stack;
+    }
+    BaseException.prototype.toString = function() {
+      return this.message;
+    };
+    return BaseException;
+  }(Error));
+  exports.BaseException = BaseException;
+  var WrappedException = (function(_super) {
+    __extends(WrappedException, _super);
+    function WrappedException(_wrapperMessage, _originalException, _originalStack, _context) {
+      _super.call(this, _wrapperMessage);
+      this._wrapperMessage = _wrapperMessage;
+      this._originalException = _originalException;
+      this._originalStack = _originalStack;
+      this._context = _context;
+      this._wrapperStack = (new Error(_wrapperMessage)).stack;
+    }
+    Object.defineProperty(WrappedException.prototype, "wrapperMessage", {
+      get: function() {
+        return this._wrapperMessage;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(WrappedException.prototype, "wrapperStack", {
+      get: function() {
+        return this._wrapperStack;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(WrappedException.prototype, "originalException", {
+      get: function() {
+        return this._originalException;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(WrappedException.prototype, "originalStack", {
+      get: function() {
+        return this._originalStack;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(WrappedException.prototype, "context", {
+      get: function() {
+        return this._context;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(WrappedException.prototype, "message", {
+      get: function() {
+        return exception_handler_1.ExceptionHandler.exceptionToString(this);
+      },
+      enumerable: true,
+      configurable: true
+    });
+    WrappedException.prototype.toString = function() {
+      return this.message;
+    };
+    return WrappedException;
+  }(base_wrapped_exception_1.BaseWrappedException));
+  exports.WrappedException = WrappedException;
+  function makeTypeError(message) {
+    return new TypeError(message);
+  }
+  exports.makeTypeError = makeTypeError;
+  function unimplemented() {
+    throw new BaseException('unimplemented');
+  }
+  exports.unimplemented = unimplemented;
   global.define = __define;
   return module.exports;
 });
@@ -24063,6 +23438,49 @@ System.register("angular2/src/core/reflection/reflector", ["angular2/src/facade/
   return module.exports;
 });
 
+System.register("angular2/src/core/change_detection/change_detection", ["angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/facade/lang", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/constants", "angular2/src/core/change_detection/change_detector_ref", "angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/change_detection_util"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var iterable_differs_1 = require("angular2/src/core/change_detection/differs/iterable_differs");
+  var default_iterable_differ_1 = require("angular2/src/core/change_detection/differs/default_iterable_differ");
+  var keyvalue_differs_1 = require("angular2/src/core/change_detection/differs/keyvalue_differs");
+  var default_keyvalue_differ_1 = require("angular2/src/core/change_detection/differs/default_keyvalue_differ");
+  var lang_1 = require("angular2/src/facade/lang");
+  var default_keyvalue_differ_2 = require("angular2/src/core/change_detection/differs/default_keyvalue_differ");
+  exports.DefaultKeyValueDifferFactory = default_keyvalue_differ_2.DefaultKeyValueDifferFactory;
+  exports.KeyValueChangeRecord = default_keyvalue_differ_2.KeyValueChangeRecord;
+  var default_iterable_differ_2 = require("angular2/src/core/change_detection/differs/default_iterable_differ");
+  exports.DefaultIterableDifferFactory = default_iterable_differ_2.DefaultIterableDifferFactory;
+  exports.CollectionChangeRecord = default_iterable_differ_2.CollectionChangeRecord;
+  var constants_1 = require("angular2/src/core/change_detection/constants");
+  exports.ChangeDetectionStrategy = constants_1.ChangeDetectionStrategy;
+  exports.CHANGE_DETECTION_STRATEGY_VALUES = constants_1.CHANGE_DETECTION_STRATEGY_VALUES;
+  exports.ChangeDetectorState = constants_1.ChangeDetectorState;
+  exports.CHANGE_DETECTOR_STATE_VALUES = constants_1.CHANGE_DETECTOR_STATE_VALUES;
+  exports.isDefaultChangeDetectionStrategy = constants_1.isDefaultChangeDetectionStrategy;
+  var change_detector_ref_1 = require("angular2/src/core/change_detection/change_detector_ref");
+  exports.ChangeDetectorRef = change_detector_ref_1.ChangeDetectorRef;
+  var iterable_differs_2 = require("angular2/src/core/change_detection/differs/iterable_differs");
+  exports.IterableDiffers = iterable_differs_2.IterableDiffers;
+  var keyvalue_differs_2 = require("angular2/src/core/change_detection/differs/keyvalue_differs");
+  exports.KeyValueDiffers = keyvalue_differs_2.KeyValueDiffers;
+  var change_detection_util_1 = require("angular2/src/core/change_detection/change_detection_util");
+  exports.WrappedValue = change_detection_util_1.WrappedValue;
+  exports.ValueUnwrapper = change_detection_util_1.ValueUnwrapper;
+  exports.SimpleChange = change_detection_util_1.SimpleChange;
+  exports.devModeEqual = change_detection_util_1.devModeEqual;
+  exports.looseIdentical = change_detection_util_1.looseIdentical;
+  exports.uninitialized = change_detection_util_1.uninitialized;
+  exports.keyValDiff = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new default_keyvalue_differ_1.DefaultKeyValueDifferFactory())]);
+  exports.iterableDiff = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new default_iterable_differ_1.DefaultIterableDifferFactory())]);
+  exports.defaultIterableDiffers = lang_1.CONST_EXPR(new iterable_differs_1.IterableDiffers(exports.iterableDiff));
+  exports.defaultKeyValueDiffers = lang_1.CONST_EXPR(new keyvalue_differs_1.KeyValueDiffers(exports.keyValDiff));
+  global.define = __define;
+  return module.exports;
+});
+
 System.register("angular2/src/core/zone/ng_zone", ["angular2/src/facade/async", "angular2/src/core/zone/ng_zone_impl", "angular2/src/facade/exceptions", "angular2/src/core/zone/ng_zone_impl"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -24192,9 +23610,6 @@ System.register("angular2/src/core/zone/ng_zone", ["angular2/src/facade/async", 
     NgZone.prototype.run = function(fn) {
       return this._zoneImpl.runInner(fn);
     };
-    NgZone.prototype.runGuarded = function(fn) {
-      return this._zoneImpl.runInnerGuarded(fn);
-    };
     NgZone.prototype.runOutsideAngular = function(fn) {
       return this._zoneImpl.runOuter(fn);
     };
@@ -24231,7 +23646,7 @@ System.register("angular2/src/core/profile/profile", ["angular2/src/core/profile
   return module.exports;
 });
 
-System.register("angular2/src/core/linker", ["angular2/src/core/linker/component_resolver", "angular2/src/core/linker/query_list", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/core/linker/element_ref", "angular2/src/core/linker/template_ref", "angular2/src/core/linker/view_ref", "angular2/src/core/linker/view_container_ref", "angular2/src/core/linker/component_factory", "angular2/src/core/linker/exceptions", "angular2/src/core/linker/injector_factory"], true, function(require, exports, module) {
+System.register("angular2/src/core/linker", ["angular2/src/core/linker/component_resolver", "angular2/src/core/linker/query_list", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/core/linker/element_ref", "angular2/src/core/linker/template_ref", "angular2/src/core/linker/view_ref", "angular2/src/core/linker/view_container_ref", "angular2/src/core/linker/component_factory", "angular2/src/core/linker/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -24256,8 +23671,6 @@ System.register("angular2/src/core/linker", ["angular2/src/core/linker/component
   exports.ComponentFactory = component_factory_1.ComponentFactory;
   var exceptions_1 = require("angular2/src/core/linker/exceptions");
   exports.ExpressionChangedAfterItHasBeenCheckedException = exceptions_1.ExpressionChangedAfterItHasBeenCheckedException;
-  var injector_factory_1 = require("angular2/src/core/linker/injector_factory");
-  exports.InjectorFactory = injector_factory_1.InjectorFactory;
   global.define = __define;
   return module.exports;
 });
@@ -27241,7 +26654,6 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
           useValue = _a.useValue,
           useExisting = _a.useExisting,
           useFactory = _a.useFactory,
-          useProperty = _a.useProperty,
           deps = _a.deps,
           multi = _a.multi;
       this.token = token;
@@ -27249,7 +26661,6 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
       this.useValue = useValue;
       this.useExisting = useExisting;
       this.useFactory = useFactory;
-      this.useProperty = useProperty;
       this.deps = lang_1.normalizeBlank(deps);
       this.multi = lang_1.normalizeBool(multi);
     }
@@ -27260,7 +26671,6 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
         useExisting: _objFromJson(data['useExisting'], CompileTokenMetadata.fromJson),
         useValue: _objFromJson(data['useValue'], CompileIdentifierMetadata.fromJson),
         useFactory: _objFromJson(data['useFactory'], CompileFactoryMetadata.fromJson),
-        useProperty: data['useProperty'],
         multi: data['multi'],
         deps: _arrayFromJson(data['deps'], CompileDiDependencyMetadata.fromJson)
       });
@@ -27273,7 +26683,6 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
         'useExisting': _objToJson(this.useExisting),
         'useValue': _objToJson(this.useValue),
         'useFactory': _objToJson(this.useFactory),
-        'useProperty': this.useProperty,
         'multi': this.multi,
         'deps': _arrayToJson(this.deps)
       };
@@ -27389,14 +26798,12 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
     function CompileTokenMap() {
       this._valueMap = new Map();
       this._values = [];
-      this._tokens = [];
     }
     CompileTokenMap.prototype.add = function(token, value) {
       var existing = this.get(token);
       if (lang_1.isPresent(existing)) {
         throw new exceptions_1.BaseException("Can only add to a TokenMap! Token: " + token.name);
       }
-      this._tokens.push(token);
       this._values.push(value);
       var rk = token.runtimeCacheKey;
       if (lang_1.isPresent(rk)) {
@@ -27418,9 +26825,6 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
         result = this._valueMap.get(ak);
       }
       return result;
-    };
-    CompileTokenMap.prototype.keys = function() {
-      return this._tokens;
     };
     CompileTokenMap.prototype.values = function() {
       return this._values;
@@ -27787,72 +27191,13 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
     return CompilePipeMetadata;
   }());
   exports.CompilePipeMetadata = CompilePipeMetadata;
-  var CompileInjectorModuleMetadata = (function() {
-    function CompileInjectorModuleMetadata(_a) {
-      var _b = _a === void 0 ? {} : _a,
-          runtime = _b.runtime,
-          name = _b.name,
-          moduleUrl = _b.moduleUrl,
-          prefix = _b.prefix,
-          value = _b.value,
-          diDeps = _b.diDeps,
-          providers = _b.providers;
-      this.isHost = false;
-      this.runtime = runtime;
-      this.name = name;
-      this.moduleUrl = moduleUrl;
-      this.prefix = prefix;
-      this.value = value;
-      this.diDeps = _normalizeArray(diDeps);
-      this.providers = _normalizeArray(providers);
-    }
-    CompileInjectorModuleMetadata.fromJson = function(data) {
-      return new CompileInjectorModuleMetadata({
-        name: data['name'],
-        moduleUrl: data['moduleUrl'],
-        prefix: data['prefix'],
-        value: data['value'],
-        diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson),
-        providers: _arrayFromJson(data['providers'], metadataFromJson)
-      });
-    };
-    Object.defineProperty(CompileInjectorModuleMetadata.prototype, "identifier", {
-      get: function() {
-        return this;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(CompileInjectorModuleMetadata.prototype, "type", {
-      get: function() {
-        return this;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    CompileInjectorModuleMetadata.prototype.toJson = function() {
-      return {
-        'class': 'InjectorModule',
-        'name': this.name,
-        'moduleUrl': this.moduleUrl,
-        'prefix': this.prefix,
-        'isHost': this.isHost,
-        'value': this.value,
-        'diDeps': _arrayToJson(this.diDeps),
-        'providers': _arrayToJson(this.providers)
-      };
-    };
-    return CompileInjectorModuleMetadata;
-  }());
-  exports.CompileInjectorModuleMetadata = CompileInjectorModuleMetadata;
   var _COMPILE_METADATA_FROM_JSON = {
     'Directive': CompileDirectiveMetadata.fromJson,
     'Pipe': CompilePipeMetadata.fromJson,
     'Type': CompileTypeMetadata.fromJson,
     'Provider': CompileProviderMetadata.fromJson,
     'Identifier': CompileIdentifierMetadata.fromJson,
-    'Factory': CompileFactoryMetadata.fromJson,
-    'InjectorModule': CompileInjectorModuleMetadata.fromJson
+    'Factory': CompileFactoryMetadata.fromJson
   };
   function _arrayFromJson(obj, fn) {
     return lang_1.isBlank(obj) ? null : obj.map(function(o) {
@@ -28268,29 +27613,24 @@ System.register("angular2/src/compiler/offline_compiler", ["angular2/src/compile
   }());
   exports.NormalizedComponentWithViewDirectives = NormalizedComponentWithViewDirectives;
   var OfflineCompiler = (function() {
-    function OfflineCompiler(_directiveNormalizer, _templateParser, _styleCompiler, _viewCompiler, _injectorCompiler, _outputEmitter) {
+    function OfflineCompiler(_directiveNormalizer, _templateParser, _styleCompiler, _viewCompiler, _outputEmitter) {
       this._directiveNormalizer = _directiveNormalizer;
       this._templateParser = _templateParser;
       this._styleCompiler = _styleCompiler;
       this._viewCompiler = _viewCompiler;
-      this._injectorCompiler = _injectorCompiler;
       this._outputEmitter = _outputEmitter;
     }
     OfflineCompiler.prototype.normalizeDirectiveMetadata = function(directive) {
       return this._directiveNormalizer.normalizeDirective(directive);
     };
-    OfflineCompiler.prototype.compile = function(components, injectorModules) {
+    OfflineCompiler.prototype.compileTemplates = function(components) {
       var _this = this;
-      var moduleUrl;
-      if (components.length > 0) {
-        moduleUrl = _templateModuleUrl(components[0].component.type);
-      } else if (injectorModules.length > 0) {
-        moduleUrl = _templateModuleUrl(injectorModules[0].type);
-      } else {
-        throw new exceptions_1.BaseException('No components nor injectorModules given');
+      if (components.length === 0) {
+        throw new exceptions_1.BaseException('No components given');
       }
       var statements = [];
       var exportedVars = [];
+      var moduleUrl = _templateModuleUrl(components[0].component);
       components.forEach(function(componentWithDirs) {
         var compMeta = componentWithDirs.component;
         _assertComponent(compMeta);
@@ -28299,15 +27639,8 @@ System.register("angular2/src/compiler/offline_compiler", ["angular2/src/compile
         var hostMeta = compile_metadata_1.createHostComponentMeta(compMeta.type, compMeta.selector);
         var hostViewFactoryVar = _this._compileComponent(hostMeta, [compMeta], [], statements);
         var compFactoryVar = compMeta.type.name + "NgFactory";
-        statements.push(o.variable(compFactoryVar).set(o.importExpr(_COMPONENT_FACTORY_IDENTIFIER).instantiate([o.literal(compMeta.selector), o.variable(hostViewFactoryVar), o.importExpr(compMeta.type), o.METADATA_MAP], o.importType(_COMPONENT_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const]))).toDeclStmt(null, [o.StmtModifier.Final]));
+        statements.push(o.variable(compFactoryVar).set(o.importExpr(_COMPONENT_FACTORY_IDENTIFIER).instantiate([o.literal(compMeta.selector), o.variable(hostViewFactoryVar), o.importExpr(compMeta.type)], o.importType(_COMPONENT_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const]))).toDeclStmt(null, [o.StmtModifier.Final]));
         exportedVars.push(compFactoryVar);
-      });
-      injectorModules.forEach(function(injectorModuleMeta) {
-        var compileResult = _this._injectorCompiler.compileInjector(injectorModuleMeta);
-        compileResult.statements.forEach(function(stmt) {
-          return statements.push(stmt);
-        });
-        exportedVars.push(compileResult.injectorFactoryVar);
       });
       return this._codegenSourceModule(moduleUrl, statements, exportedVars);
     };
@@ -28332,7 +27665,7 @@ System.register("angular2/src/compiler/offline_compiler", ["angular2/src/compile
   exports.OfflineCompiler = OfflineCompiler;
   function _resolveViewStatements(compileResult) {
     compileResult.dependencies.forEach(function(dep) {
-      dep.factoryPlaceholder.moduleUrl = _templateModuleUrl(dep.comp.type);
+      dep.factoryPlaceholder.moduleUrl = _templateModuleUrl(dep.comp);
     });
     return compileResult.statements;
   }
@@ -28342,8 +27675,8 @@ System.register("angular2/src/compiler/offline_compiler", ["angular2/src/compile
     });
     return compileResult.statements;
   }
-  function _templateModuleUrl(type) {
-    var moduleUrl = type.moduleUrl;
+  function _templateModuleUrl(comp) {
+    var moduleUrl = comp.type.moduleUrl;
     var urlWithoutSuffix = moduleUrl.substring(0, moduleUrl.length - util_1.MODULE_SUFFIX.length);
     return urlWithoutSuffix + ".template" + util_1.MODULE_SUFFIX;
   }
@@ -28561,28 +27894,29 @@ System.register("angular2/src/compiler/view_compiler/compile_element", ["angular
       });
       this._resolvedProviders.values().forEach(function(resolvedProvider) {
         var providerValueExpressions = resolvedProvider.providers.map(function(provider) {
-          var providerValue;
           if (lang_1.isPresent(provider.useExisting)) {
-            providerValue = _this._getDependency(resolvedProvider.providerType, new compile_metadata_1.CompileDiDependencyMetadata({token: provider.useExisting}));
+            return _this._getDependency(resolvedProvider.providerType, new compile_metadata_1.CompileDiDependencyMetadata({token: provider.useExisting}));
           } else if (lang_1.isPresent(provider.useFactory)) {
             var deps = lang_1.isPresent(provider.deps) ? provider.deps : provider.useFactory.diDeps;
             var depsExpr = deps.map(function(dep) {
               return _this._getDependency(resolvedProvider.providerType, dep);
             });
-            providerValue = o.importExpr(provider.useFactory).callFn(depsExpr);
+            return o.importExpr(provider.useFactory).callFn(depsExpr);
           } else if (lang_1.isPresent(provider.useClass)) {
             var deps = lang_1.isPresent(provider.deps) ? provider.deps : provider.useClass.diDeps;
             var depsExpr = deps.map(function(dep) {
               return _this._getDependency(resolvedProvider.providerType, dep);
             });
-            providerValue = o.importExpr(provider.useClass).instantiate(depsExpr, o.importType(provider.useClass));
+            return o.importExpr(provider.useClass).instantiate(depsExpr, o.importType(provider.useClass));
           } else {
-            providerValue = util_1.convertValueToOutputAst(provider.useValue);
+            if (provider.useValue instanceof compile_metadata_1.CompileIdentifierMetadata) {
+              return o.importExpr(provider.useValue);
+            } else if (provider.useValue instanceof o.Expression) {
+              return provider.useValue;
+            } else {
+              return o.literal(provider.useValue);
+            }
           }
-          if (lang_1.isPresent(provider.useProperty)) {
-            providerValue = providerValue.prop(provider.useProperty);
-          }
-          return providerValue;
         });
         var propName = "_" + resolvedProvider.token.name + "_" + _this.nodeIndex + "_" + _this._instances.size;
         var instance = createProviderProperty(propName, resolvedProvider, providerValueExpressions, resolvedProvider.multiProvider, resolvedProvider.eager, _this);
@@ -29115,7 +28449,7 @@ System.register("angular2/src/compiler/view_compiler/property_binder", ["angular
   return module.exports;
 });
 
-System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di", "angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/compiler/compile_metadata", "angular2/src/core/metadata/directives", "angular2/src/core/metadata/di", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_lifecycle_reflector", "angular2/src/core/metadata/lifecycle_hooks", "angular2/src/core/reflection/reflection", "angular2/src/core/di", "angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/util", "angular2/src/compiler/assertions", "angular2/src/compiler/url_resolver", "angular2/src/core/di/provider", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/metadata", "angular2/src/core/metadata/di"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di", "angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/core/di/exceptions", "angular2/src/compiler/compile_metadata", "angular2/src/core/metadata/directives", "angular2/src/core/metadata/di", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_lifecycle_reflector", "angular2/src/core/metadata/lifecycle_hooks", "angular2/src/core/reflection/reflection", "angular2/src/core/di", "angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/util", "angular2/src/compiler/assertions", "angular2/src/compiler/url_resolver", "angular2/src/core/di/provider", "angular2/src/core/di/metadata", "angular2/src/core/metadata/di"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -29145,6 +28479,7 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
   var lang_1 = require("angular2/src/facade/lang");
   var collection_1 = require("angular2/src/facade/collection");
   var exceptions_1 = require("angular2/src/facade/exceptions");
+  var exceptions_2 = require("angular2/src/core/di/exceptions");
   var cpl = require("angular2/src/compiler/compile_metadata");
   var md = require("angular2/src/core/metadata/directives");
   var dimd = require("angular2/src/core/metadata/di");
@@ -29160,7 +28495,6 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
   var assertions_1 = require("angular2/src/compiler/assertions");
   var url_resolver_1 = require("angular2/src/compiler/url_resolver");
   var provider_1 = require("angular2/src/core/di/provider");
-  var reflective_provider_1 = require("angular2/src/core/di/reflective_provider");
   var metadata_1 = require("angular2/src/core/di/metadata");
   var di_3 = require("angular2/src/core/metadata/di");
   var RuntimeMetadataResolver = (function() {
@@ -29245,24 +28579,20 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
       }
       return meta;
     };
-    RuntimeMetadataResolver.prototype.getTypeMetadata = function(type, moduleUrl, deps) {
-      if (deps === void 0) {
-        deps = null;
-      }
-      type = di_1.resolveForwardRef(type);
+    RuntimeMetadataResolver.prototype.getTypeMetadata = function(type, moduleUrl) {
       return new cpl.CompileTypeMetadata({
         name: this.sanitizeTokenName(type),
         moduleUrl: moduleUrl,
         runtime: type,
-        diDeps: this.getDependenciesMetadata(type, deps)
+        diDeps: this.getDependenciesMetadata(type, null)
       });
     };
-    RuntimeMetadataResolver.prototype.getFactoryMetadata = function(factory, moduleUrl, deps) {
+    RuntimeMetadataResolver.prototype.getFactoryMetadata = function(factory, moduleUrl) {
       return new cpl.CompileFactoryMetadata({
         name: this.sanitizeTokenName(factory),
         moduleUrl: moduleUrl,
         runtime: factory,
-        diDeps: this.getDependenciesMetadata(factory, deps)
+        diDeps: this.getDependenciesMetadata(factory, null)
       });
     };
     RuntimeMetadataResolver.prototype.getPipeMetadata = function(pipeType) {
@@ -29310,7 +28640,16 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
     };
     RuntimeMetadataResolver.prototype.getDependenciesMetadata = function(typeOrFunc, dependencies) {
       var _this = this;
-      var deps = reflective_provider_1.constructDependencies(typeOrFunc, dependencies);
+      var deps;
+      try {
+        deps = provider_1.constructDependencies(typeOrFunc, dependencies);
+      } catch (e) {
+        if (e instanceof exceptions_2.NoAnnotationError) {
+          deps = [];
+        } else {
+          throw e;
+        }
+      }
       return deps.map(function(dep) {
         var compileToken;
         var p = dep.properties.find(function(p) {
@@ -29362,11 +28701,9 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
         if (lang_1.isArray(provider)) {
           return _this.getProvidersMetadata(provider);
         } else if (provider instanceof provider_1.Provider) {
-          return [_this.getProviderMetadata(provider), isValidType(provider.token) ? _this.getProvidersMetadata(reflective_provider_1.getInjectorModuleProviders(provider.token)) : []];
-        } else if (isValidType(provider)) {
-          return [_this.getTypeMetadata(provider, null), _this.getProvidersMetadata(reflective_provider_1.getInjectorModuleProviders(provider))];
+          return _this.getProviderMetadata(provider);
         } else {
-          throw new exceptions_1.BaseException("Invalid provider - only instances of Provider and Type are allowed, got: " + lang_1.stringify(provider));
+          return _this.getTypeMetadata(provider, null);
         }
       });
     };
@@ -29379,11 +28716,10 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
       }
       return new cpl.CompileProviderMetadata({
         token: this.getTokenMetadata(provider.token),
-        useClass: lang_1.isPresent(provider.useClass) ? this.getTypeMetadata(provider.useClass, null, compileDeps) : null,
+        useClass: lang_1.isPresent(provider.useClass) ? this.getTypeMetadata(provider.useClass, null) : null,
         useValue: lang_1.isPresent(provider.useValue) ? new cpl.CompileIdentifierMetadata({runtime: provider.useValue}) : null,
-        useFactory: lang_1.isPresent(provider.useFactory) ? this.getFactoryMetadata(provider.useFactory, null, compileDeps) : null,
+        useFactory: lang_1.isPresent(provider.useFactory) ? this.getFactoryMetadata(provider.useFactory, null) : null,
         useExisting: lang_1.isPresent(provider.useExisting) ? this.getTokenMetadata(provider.useExisting) : null,
-        useProperty: provider.useProperty,
         deps: compileDeps,
         multi: provider.multi
       });
@@ -29414,19 +28750,6 @@ System.register("angular2/src/compiler/runtime_metadata", ["angular2/src/core/di
         descendants: q.descendants,
         propertyName: propertyName,
         read: lang_1.isPresent(q.read) ? this.getTokenMetadata(q.read) : null
-      });
-    };
-    RuntimeMetadataResolver.prototype.getInjectorModuleMetadata = function(config, extraProviders) {
-      var providers = reflective_provider_1.getInjectorModuleProviders(config);
-      if (lang_1.isPresent(extraProviders)) {
-        providers = providers.concat(extraProviders);
-      }
-      return new cpl.CompileInjectorModuleMetadata({
-        name: this.sanitizeTokenName(config),
-        moduleUrl: null,
-        runtime: config,
-        diDeps: [],
-        providers: this.getProvidersMetadata(providers)
       });
     };
     RuntimeMetadataResolver = __decorate([di_2.Injectable(), __param(3, di_2.Optional()), __param(3, di_2.Inject(platform_directives_and_pipes_1.PLATFORM_DIRECTIVES)), __param(4, di_2.Optional()), __param(4, di_2.Inject(platform_directives_and_pipes_1.PLATFORM_PIPES)), __metadata('design:paramtypes', [directive_resolver_1.DirectiveResolver, pipe_resolver_1.PipeResolver, view_resolver_1.ViewResolver, Array, Array])], RuntimeMetadataResolver);
@@ -29556,7 +28879,6 @@ System.register("angular2/src/compiler/output/dart_emitter", ["angular2/src/faca
   var abstract_emitter_1 = require("angular2/src/compiler/output/abstract_emitter");
   var path_util_1 = require("angular2/src/compiler/output/path_util");
   var _debugModuleUrl = 'asset://debug/lib';
-  var _METADATA_MAP_VAR = "_METADATA";
   function debugOutputAstAsDart(ast) {
     var converter = new _DartEmitterVisitor(_debugModuleUrl);
     var ctx = abstract_emitter_1.EmitterVisitorContext.createRoot([]);
@@ -29753,14 +29075,6 @@ System.register("angular2/src/compiler/output/dart_emitter", ["angular2/src/faca
           throw new exceptions_1.BaseException("Unknown builtin method: " + method);
       }
       return name;
-    };
-    _DartEmitterVisitor.prototype.visitReadVarExpr = function(ast, ctx) {
-      if (ast.builtin === o.BuiltinVar.MetadataMap) {
-        ctx.print(_METADATA_MAP_VAR);
-      } else {
-        _super.prototype.visitReadVarExpr.call(this, ast, ctx);
-      }
-      return null;
     };
     _DartEmitterVisitor.prototype.visitTryCatchStmt = function(stmt, ctx) {
       ctx.println("try {");
@@ -30153,80 +29467,252 @@ System.register("angular2/src/router/rules/rules", ["angular2/src/facade/lang", 
   return module.exports;
 });
 
-System.register("angular2/src/router/utils", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/core", "angular2/src/core/reflection/reflection", "angular2/src/router/lifecycle/lifecycle_annotations_impl"], true, function(require, exports, module) {
+System.register("angular2/src/router/rules/route_paths/param_route_path", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/router/utils", "angular2/src/router/url_parser", "angular2/src/router/rules/route_paths/route_path"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var lang_1 = require("angular2/src/facade/lang");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
   var collection_1 = require("angular2/src/facade/collection");
-  var core_1 = require("angular2/core");
-  var reflection_1 = require("angular2/src/core/reflection/reflection");
-  var lifecycle_annotations_impl_1 = require("angular2/src/router/lifecycle/lifecycle_annotations_impl");
-  var TouchMap = (function() {
-    function TouchMap(map) {
-      var _this = this;
-      this.map = {};
-      this.keys = {};
-      if (lang_1.isPresent(map)) {
-        collection_1.StringMapWrapper.forEach(map, function(value, key) {
-          _this.map[key] = lang_1.isPresent(value) ? value.toString() : null;
-          _this.keys[key] = true;
-        });
-      }
+  var utils_1 = require("angular2/src/router/utils");
+  var url_parser_1 = require("angular2/src/router/url_parser");
+  var route_path_1 = require("angular2/src/router/rules/route_paths/route_path");
+  var ContinuationPathSegment = (function() {
+    function ContinuationPathSegment() {
+      this.name = '';
+      this.specificity = '';
+      this.hash = '...';
     }
-    TouchMap.prototype.get = function(key) {
-      collection_1.StringMapWrapper.delete(this.keys, key);
-      return this.map[key];
+    ContinuationPathSegment.prototype.generate = function(params) {
+      return '';
     };
-    TouchMap.prototype.getUnused = function() {
-      var _this = this;
-      var unused = {};
-      var keys = collection_1.StringMapWrapper.keys(this.keys);
-      keys.forEach(function(key) {
-        return unused[key] = collection_1.StringMapWrapper.get(_this.map, key);
-      });
-      return unused;
+    ContinuationPathSegment.prototype.match = function(path) {
+      return true;
     };
-    return TouchMap;
+    return ContinuationPathSegment;
   }());
-  exports.TouchMap = TouchMap;
-  function normalizeString(obj) {
-    if (lang_1.isBlank(obj)) {
-      return null;
-    } else {
-      return obj.toString();
+  var StaticPathSegment = (function() {
+    function StaticPathSegment(path) {
+      this.path = path;
+      this.name = '';
+      this.specificity = '2';
+      this.hash = path;
     }
-  }
-  exports.normalizeString = normalizeString;
-  function getComponentAnnotations(comp) {
-    if (comp instanceof core_1.ComponentFactory) {
-      return comp.metadata;
-    } else {
-      return reflection_1.reflector.annotations(comp);
+    StaticPathSegment.prototype.match = function(path) {
+      return path == this.path;
+    };
+    StaticPathSegment.prototype.generate = function(params) {
+      return this.path;
+    };
+    return StaticPathSegment;
+  }());
+  var DynamicPathSegment = (function() {
+    function DynamicPathSegment(name) {
+      this.name = name;
+      this.specificity = '1';
+      this.hash = ':';
     }
-  }
-  exports.getComponentAnnotations = getComponentAnnotations;
-  function getComponentType(comp) {
-    return comp instanceof core_1.ComponentFactory ? comp.componentType : comp;
-  }
-  exports.getComponentType = getComponentType;
-  function getCanActivateHook(component) {
-    var annotations = getComponentAnnotations(component);
-    for (var i = 0; i < annotations.length; i += 1) {
-      var annotation = annotations[i];
-      if (annotation instanceof lifecycle_annotations_impl_1.CanActivate) {
-        return annotation.fn;
+    DynamicPathSegment.prototype.match = function(path) {
+      return path.length > 0;
+    };
+    DynamicPathSegment.prototype.generate = function(params) {
+      if (!collection_1.StringMapWrapper.contains(params.map, this.name)) {
+        throw new exceptions_1.BaseException("Route generator for '" + this.name + "' was not included in parameters passed.");
       }
+      return encodeDynamicSegment(utils_1.normalizeString(params.get(this.name)));
+    };
+    DynamicPathSegment.paramMatcher = /^:([^\/]+)$/g;
+    return DynamicPathSegment;
+  }());
+  var StarPathSegment = (function() {
+    function StarPathSegment(name) {
+      this.name = name;
+      this.specificity = '0';
+      this.hash = '*';
     }
-    return null;
+    StarPathSegment.prototype.match = function(path) {
+      return true;
+    };
+    StarPathSegment.prototype.generate = function(params) {
+      return utils_1.normalizeString(params.get(this.name));
+    };
+    StarPathSegment.wildcardMatcher = /^\*([^\/]+)$/g;
+    return StarPathSegment;
+  }());
+  var ParamRoutePath = (function() {
+    function ParamRoutePath(routePath) {
+      this.routePath = routePath;
+      this.terminal = true;
+      this._assertValidPath(routePath);
+      this._parsePathString(routePath);
+      this.specificity = this._calculateSpecificity();
+      this.hash = this._calculateHash();
+      var lastSegment = this._segments[this._segments.length - 1];
+      this.terminal = !(lastSegment instanceof ContinuationPathSegment);
+    }
+    ParamRoutePath.prototype.matchUrl = function(url) {
+      var nextUrlSegment = url;
+      var currentUrlSegment;
+      var positionalParams = {};
+      var captured = [];
+      for (var i = 0; i < this._segments.length; i += 1) {
+        var pathSegment = this._segments[i];
+        currentUrlSegment = nextUrlSegment;
+        if (pathSegment instanceof ContinuationPathSegment) {
+          break;
+        }
+        if (lang_1.isPresent(currentUrlSegment)) {
+          if (pathSegment instanceof StarPathSegment) {
+            positionalParams[pathSegment.name] = currentUrlSegment.toString();
+            captured.push(currentUrlSegment.toString());
+            nextUrlSegment = null;
+            break;
+          }
+          captured.push(currentUrlSegment.path);
+          if (pathSegment instanceof DynamicPathSegment) {
+            positionalParams[pathSegment.name] = decodeDynamicSegment(currentUrlSegment.path);
+          } else if (!pathSegment.match(currentUrlSegment.path)) {
+            return null;
+          }
+          nextUrlSegment = currentUrlSegment.child;
+        } else if (!pathSegment.match('')) {
+          return null;
+        }
+      }
+      if (this.terminal && lang_1.isPresent(nextUrlSegment)) {
+        return null;
+      }
+      var urlPath = captured.join('/');
+      var auxiliary = [];
+      var urlParams = [];
+      var allParams = positionalParams;
+      if (lang_1.isPresent(currentUrlSegment)) {
+        var paramsSegment = url instanceof url_parser_1.RootUrl ? url : currentUrlSegment;
+        if (lang_1.isPresent(paramsSegment.params)) {
+          allParams = collection_1.StringMapWrapper.merge(paramsSegment.params, positionalParams);
+          urlParams = url_parser_1.convertUrlParamsToArray(paramsSegment.params);
+        } else {
+          allParams = positionalParams;
+        }
+        auxiliary = currentUrlSegment.auxiliary;
+      }
+      return new route_path_1.MatchedUrl(urlPath, urlParams, allParams, auxiliary, nextUrlSegment);
+    };
+    ParamRoutePath.prototype.generateUrl = function(params) {
+      var paramTokens = new utils_1.TouchMap(params);
+      var path = [];
+      for (var i = 0; i < this._segments.length; i++) {
+        var segment = this._segments[i];
+        if (!(segment instanceof ContinuationPathSegment)) {
+          path.push(segment.generate(paramTokens));
+        }
+      }
+      var urlPath = path.join('/');
+      var nonPositionalParams = paramTokens.getUnused();
+      var urlParams = nonPositionalParams;
+      return new route_path_1.GeneratedUrl(urlPath, urlParams);
+    };
+    ParamRoutePath.prototype.toString = function() {
+      return this.routePath;
+    };
+    ParamRoutePath.prototype._parsePathString = function(routePath) {
+      if (routePath.startsWith("/")) {
+        routePath = routePath.substring(1);
+      }
+      var segmentStrings = routePath.split('/');
+      this._segments = [];
+      var limit = segmentStrings.length - 1;
+      for (var i = 0; i <= limit; i++) {
+        var segment = segmentStrings[i],
+            match;
+        if (lang_1.isPresent(match = lang_1.RegExpWrapper.firstMatch(DynamicPathSegment.paramMatcher, segment))) {
+          this._segments.push(new DynamicPathSegment(match[1]));
+        } else if (lang_1.isPresent(match = lang_1.RegExpWrapper.firstMatch(StarPathSegment.wildcardMatcher, segment))) {
+          this._segments.push(new StarPathSegment(match[1]));
+        } else if (segment == '...') {
+          if (i < limit) {
+            throw new exceptions_1.BaseException("Unexpected \"...\" before the end of the path for \"" + routePath + "\".");
+          }
+          this._segments.push(new ContinuationPathSegment());
+        } else {
+          this._segments.push(new StaticPathSegment(segment));
+        }
+      }
+    };
+    ParamRoutePath.prototype._calculateSpecificity = function() {
+      var i,
+          length = this._segments.length,
+          specificity;
+      if (length == 0) {
+        specificity += '2';
+      } else {
+        specificity = '';
+        for (i = 0; i < length; i++) {
+          specificity += this._segments[i].specificity;
+        }
+      }
+      return specificity;
+    };
+    ParamRoutePath.prototype._calculateHash = function() {
+      var i,
+          length = this._segments.length;
+      var hashParts = [];
+      for (i = 0; i < length; i++) {
+        hashParts.push(this._segments[i].hash);
+      }
+      return hashParts.join('/');
+    };
+    ParamRoutePath.prototype._assertValidPath = function(path) {
+      if (lang_1.StringWrapper.contains(path, '#')) {
+        throw new exceptions_1.BaseException("Path \"" + path + "\" should not include \"#\". Use \"HashLocationStrategy\" instead.");
+      }
+      var illegalCharacter = lang_1.RegExpWrapper.firstMatch(ParamRoutePath.RESERVED_CHARS, path);
+      if (lang_1.isPresent(illegalCharacter)) {
+        throw new exceptions_1.BaseException("Path \"" + path + "\" contains \"" + illegalCharacter[0] + "\" which is not allowed in a route config.");
+      }
+    };
+    ParamRoutePath.RESERVED_CHARS = lang_1.RegExpWrapper.create('//|\\(|\\)|;|\\?|=');
+    return ParamRoutePath;
+  }());
+  exports.ParamRoutePath = ParamRoutePath;
+  var REGEXP_PERCENT = /%/g;
+  var REGEXP_SLASH = /\//g;
+  var REGEXP_OPEN_PARENT = /\(/g;
+  var REGEXP_CLOSE_PARENT = /\)/g;
+  var REGEXP_SEMICOLON = /;/g;
+  function encodeDynamicSegment(value) {
+    if (lang_1.isBlank(value)) {
+      return null;
+    }
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_PERCENT, '%25');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_SLASH, '%2F');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_OPEN_PARENT, '%28');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_CLOSE_PARENT, '%29');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_SEMICOLON, '%3B');
+    return value;
   }
-  exports.getCanActivateHook = getCanActivateHook;
+  var REGEXP_ENC_SEMICOLON = /%3B/ig;
+  var REGEXP_ENC_CLOSE_PARENT = /%29/ig;
+  var REGEXP_ENC_OPEN_PARENT = /%28/ig;
+  var REGEXP_ENC_SLASH = /%2F/ig;
+  var REGEXP_ENC_PERCENT = /%25/ig;
+  function decodeDynamicSegment(value) {
+    if (lang_1.isBlank(value)) {
+      return null;
+    }
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_SEMICOLON, ';');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_CLOSE_PARENT, ')');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_OPEN_PARENT, '(');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_SLASH, '/');
+    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_PERCENT, '%');
+    return value;
+  }
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/router/route_config/route_config_normalizer", ["angular2/src/router/route_config/route_config_decorator", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/core"], true, function(require, exports, module) {
+System.register("angular2/src/router/route_config/route_config_normalizer", ["angular2/src/router/route_config/route_config_decorator", "angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -30234,7 +29720,6 @@ System.register("angular2/src/router/route_config/route_config_normalizer", ["an
   var route_config_decorator_1 = require("angular2/src/router/route_config/route_config_decorator");
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
-  var core_1 = require("angular2/core");
   function normalizeRouteConfig(config, registry) {
     if (config instanceof route_config_decorator_1.AsyncRoute) {
       var wrappedLoader = wrapLoaderToReconfigureRegistry(config.loader, registry);
@@ -30318,11 +29803,40 @@ System.register("angular2/src/router/route_config/route_config_normalizer", ["an
     };
   }
   function assertComponentExists(component, path) {
-    if (!lang_1.isType(component) && !(component instanceof core_1.ComponentFactory)) {
+    if (!lang_1.isType(component)) {
       throw new exceptions_1.BaseException("Component for route \"" + path + "\" is not defined, or is not a class.");
     }
   }
   exports.assertComponentExists = assertComponentExists;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/router/lifecycle/route_lifecycle_reflector", ["angular2/src/facade/lang", "angular2/src/router/lifecycle/lifecycle_annotations_impl", "angular2/src/core/reflection/reflection"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var lang_1 = require("angular2/src/facade/lang");
+  var lifecycle_annotations_impl_1 = require("angular2/src/router/lifecycle/lifecycle_annotations_impl");
+  var reflection_1 = require("angular2/src/core/reflection/reflection");
+  function hasLifecycleHook(e, type) {
+    if (!(type instanceof lang_1.Type))
+      return false;
+    return e.name in type.prototype;
+  }
+  exports.hasLifecycleHook = hasLifecycleHook;
+  function getCanActivateHook(type) {
+    var annotations = reflection_1.reflector.annotations(type);
+    for (var i = 0; i < annotations.length; i += 1) {
+      var annotation = annotations[i];
+      if (annotation instanceof lifecycle_annotations_impl_1.CanActivate) {
+        return annotation.fn;
+      }
+    }
+    return null;
+  }
+  exports.getCanActivateHook = getCanActivateHook;
   global.define = __define;
   return module.exports;
 });
@@ -30449,110 +29963,6 @@ System.register("rxjs/Subscription", ["rxjs/util/isArray", "rxjs/util/isObject",
   return module.exports;
 });
 
-System.register("angular2/src/facade/exceptions", ["angular2/src/facade/base_wrapped_exception", "angular2/src/facade/exception_handler", "angular2/src/facade/exception_handler"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var base_wrapped_exception_1 = require("angular2/src/facade/base_wrapped_exception");
-  var exception_handler_1 = require("angular2/src/facade/exception_handler");
-  var exception_handler_2 = require("angular2/src/facade/exception_handler");
-  exports.ExceptionHandler = exception_handler_2.ExceptionHandler;
-  var BaseException = (function(_super) {
-    __extends(BaseException, _super);
-    function BaseException(message) {
-      if (message === void 0) {
-        message = "--";
-      }
-      _super.call(this, message);
-      this.message = message;
-      this.stack = (new Error(message)).stack;
-    }
-    BaseException.prototype.toString = function() {
-      return this.message;
-    };
-    return BaseException;
-  }(Error));
-  exports.BaseException = BaseException;
-  var WrappedException = (function(_super) {
-    __extends(WrappedException, _super);
-    function WrappedException(_wrapperMessage, _originalException, _originalStack, _context) {
-      _super.call(this, _wrapperMessage);
-      this._wrapperMessage = _wrapperMessage;
-      this._originalException = _originalException;
-      this._originalStack = _originalStack;
-      this._context = _context;
-      this._wrapperStack = (new Error(_wrapperMessage)).stack;
-    }
-    Object.defineProperty(WrappedException.prototype, "wrapperMessage", {
-      get: function() {
-        return this._wrapperMessage;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(WrappedException.prototype, "wrapperStack", {
-      get: function() {
-        return this._wrapperStack;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(WrappedException.prototype, "originalException", {
-      get: function() {
-        return this._originalException;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(WrappedException.prototype, "originalStack", {
-      get: function() {
-        return this._originalStack;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(WrappedException.prototype, "context", {
-      get: function() {
-        return this._context;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(WrappedException.prototype, "message", {
-      get: function() {
-        return exception_handler_1.ExceptionHandler.exceptionToString(this);
-      },
-      enumerable: true,
-      configurable: true
-    });
-    WrappedException.prototype.toString = function() {
-      return this.message;
-    };
-    return WrappedException;
-  }(base_wrapped_exception_1.BaseWrappedException));
-  exports.WrappedException = WrappedException;
-  function makeTypeError(message) {
-    return new TypeError(message);
-  }
-  exports.makeTypeError = makeTypeError;
-  function unimplemented() {
-    throw new BaseException('unimplemented');
-  }
-  exports.unimplemented = unimplemented;
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/core/reflection/reflection", ["angular2/src/core/reflection/reflector", "angular2/src/core/reflection/reflector", "angular2/src/core/reflection/reflection_capabilities"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -30568,32 +29978,37 @@ System.register("angular2/src/core/reflection/reflection", ["angular2/src/core/r
   return module.exports;
 });
 
-System.register("angular2/src/core/linker/view_container_ref", ["angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/facade/lang", "angular2/src/core/profile/profile"], true, function(require, exports, module) {
+System.register("angular2/src/core/change_detection", ["angular2/src/core/change_detection/change_detection"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var change_detection_1 = require("angular2/src/core/change_detection/change_detection");
+  exports.ChangeDetectionStrategy = change_detection_1.ChangeDetectionStrategy;
+  exports.ChangeDetectorRef = change_detection_1.ChangeDetectorRef;
+  exports.WrappedValue = change_detection_1.WrappedValue;
+  exports.SimpleChange = change_detection_1.SimpleChange;
+  exports.IterableDiffers = change_detection_1.IterableDiffers;
+  exports.KeyValueDiffers = change_detection_1.KeyValueDiffers;
+  exports.CollectionChangeRecord = change_detection_1.CollectionChangeRecord;
+  exports.KeyValueChangeRecord = change_detection_1.KeyValueChangeRecord;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/linker/view_container_ref", ["angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/core/di/injector", "angular2/src/facade/lang", "angular2/src/core/profile/profile"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var collection_1 = require("angular2/src/facade/collection");
   var exceptions_1 = require("angular2/src/facade/exceptions");
+  var injector_1 = require("angular2/src/core/di/injector");
   var lang_1 = require("angular2/src/facade/lang");
   var profile_1 = require("angular2/src/core/profile/profile");
   var ViewContainerRef = (function() {
     function ViewContainerRef() {}
     Object.defineProperty(ViewContainerRef.prototype, "element", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ViewContainerRef.prototype, "injector", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ViewContainerRef.prototype, "parentInjector", {
       get: function() {
         return exceptions_1.unimplemented();
       },
@@ -30637,20 +30052,6 @@ System.register("angular2/src/core/linker/view_container_ref", ["angular2/src/fa
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(ViewContainerRef_.prototype, "injector", {
-      get: function() {
-        return this._element.injector;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ViewContainerRef_.prototype, "parentInjector", {
-      get: function() {
-        return this._element.parentInjector;
-      },
-      enumerable: true,
-      configurable: true
-    });
     ViewContainerRef_.prototype.createEmbeddedView = function(templateRef, index) {
       if (index === void 0) {
         index = -1;
@@ -30659,19 +30060,20 @@ System.register("angular2/src/core/linker/view_container_ref", ["angular2/src/fa
       this.insert(viewRef, index);
       return viewRef;
     };
-    ViewContainerRef_.prototype.createComponent = function(componentFactory, index, injector, projectableNodes) {
+    ViewContainerRef_.prototype.createComponent = function(componentFactory, index, dynamicallyCreatedProviders, projectableNodes) {
       if (index === void 0) {
         index = -1;
       }
-      if (injector === void 0) {
-        injector = null;
+      if (dynamicallyCreatedProviders === void 0) {
+        dynamicallyCreatedProviders = null;
       }
       if (projectableNodes === void 0) {
         projectableNodes = null;
       }
       var s = this._createComponentInContainerScope();
-      var contextInjector = lang_1.isPresent(injector) ? injector : this._element.parentInjector;
-      var componentRef = componentFactory.create(contextInjector, projectableNodes);
+      var contextInjector = this._element.parentInjector;
+      var childInjector = lang_1.isPresent(dynamicallyCreatedProviders) && dynamicallyCreatedProviders.length > 0 ? new injector_1.Injector_(injector_1.ProtoInjector.fromResolvedProviders(dynamicallyCreatedProviders), contextInjector) : contextInjector;
+      var componentRef = componentFactory.create(childInjector, projectableNodes);
       this.insert(componentRef.hostView, index);
       return profile_1.wtfLeave(s, componentRef);
     };
@@ -32925,7 +32327,7 @@ System.register("angular2/src/compiler/html_parser", ["angular2/src/facade/lang"
   return module.exports;
 });
 
-System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/compile_metadata", "angular2/src/core/linker/view", "angular2/src/core/linker/debug_context", "angular2/src/core/linker/view_utils", "angular2/src/core/change_detection/change_detection", "angular2/src/core/linker/element", "angular2/src/core/linker/element_ref", "angular2/src/core/linker/view_container_ref", "angular2/src/core/render/api", "angular2/src/core/metadata/view", "angular2/src/core/linker/view_type", "angular2/src/core/linker", "angular2/src/core/di/injector", "angular2/src/core/linker/template_ref", "angular2/src/compiler/util", "angular2/src/core/linker/injector_factory"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/compile_metadata", "angular2/src/core/linker/view", "angular2/src/core/linker/debug_context", "angular2/src/core/linker/view_utils", "angular2/src/core/change_detection/change_detection", "angular2/src/core/linker/element", "angular2/src/core/linker/element_ref", "angular2/src/core/linker/view_container_ref", "angular2/src/core/render/api", "angular2/src/core/metadata/view", "angular2/src/core/linker/view_type", "angular2/src/core/linker", "angular2/src/core/di/injector", "angular2/src/core/linker/template_ref", "angular2/src/compiler/util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -32945,7 +32347,6 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
   var injector_1 = require("angular2/src/core/di/injector");
   var template_ref_1 = require("angular2/src/core/linker/template_ref");
   var util_1 = require("angular2/src/compiler/util");
-  var injector_factory_1 = require("angular2/src/core/linker/injector_factory");
   var APP_VIEW_MODULE_URL = 'asset:angular2/lib/src/core/linker/view' + util_1.MODULE_SUFFIX;
   var VIEW_UTILS_MODULE_URL = 'asset:angular2/lib/src/core/linker/view_utils' + util_1.MODULE_SUFFIX;
   var CD_MODULE_URL = 'asset:angular2/lib/src/core/change_detection/change_detection' + util_1.MODULE_SUFFIX;
@@ -32963,8 +32364,6 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
   var impTemplateRef_ = template_ref_1.TemplateRef_;
   var impValueUnwrapper = change_detection_1.ValueUnwrapper;
   var impInjector = injector_1.Injector;
-  var impCodegenInjector = injector_factory_1.CodegenInjector;
-  var impInjectorFactory = injector_factory_1.InjectorFactory;
   var impViewEncapsulation = view_2.ViewEncapsulation;
   var impViewType = view_type_1.ViewType;
   var impChangeDetectionStrategy = change_detection_1.ChangeDetectionStrategy;
@@ -33043,16 +32442,6 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
       name: 'Injector',
       moduleUrl: "asset:angular2/lib/src/core/di/injector" + util_1.MODULE_SUFFIX,
       runtime: impInjector
-    });
-    Identifiers.InjectorFactory = new compile_metadata_1.CompileIdentifierMetadata({
-      name: 'InjectorFactory',
-      moduleUrl: "asset:angular2/lib/src/core/linker/injector_factory" + util_1.MODULE_SUFFIX,
-      runtime: impInjectorFactory
-    });
-    Identifiers.CodegenInjector = new compile_metadata_1.CompileIdentifierMetadata({
-      name: 'CodegenInjector',
-      moduleUrl: "asset:angular2/lib/src/core/linker/injector_factory" + util_1.MODULE_SUFFIX,
-      runtime: impCodegenInjector
     });
     Identifiers.ViewEncapsulation = new compile_metadata_1.CompileIdentifierMetadata({
       name: 'ViewEncapsulation',
@@ -33386,8 +32775,6 @@ System.register("angular2/src/compiler/output/output_interpreter", ["angular2/sr
           case o.BuiltinVar.CatchStack:
             varName = CATCH_STACK_VAR;
             break;
-          case o.BuiltinVar.MetadataMap:
-            return null;
           default:
             throw new exceptions_1.BaseException("Unknown builtin variable " + ast.builtin);
         }
@@ -33709,7 +33096,7 @@ System.register("angular2/src/platform/location", ["angular2/src/platform/browse
   return module.exports;
 });
 
-System.register("angular2/src/router/rules/route_paths/param_route_path", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/router/utils", "angular2/src/router/url_parser", "angular2/src/router/rules/route_paths/route_path"], true, function(require, exports, module) {
+System.register("angular2/src/router/rules/rule_set", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/router/rules/rules", "angular2/src/router/route_config/route_config_impl", "angular2/src/router/rules/route_handlers/async_route_handler", "angular2/src/router/rules/route_handlers/sync_route_handler", "angular2/src/router/rules/route_paths/param_route_path", "angular2/src/router/rules/route_paths/regex_route_path"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -33717,239 +33104,134 @@ System.register("angular2/src/router/rules/route_paths/param_route_path", ["angu
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var collection_1 = require("angular2/src/facade/collection");
-  var utils_1 = require("angular2/src/router/utils");
-  var url_parser_1 = require("angular2/src/router/url_parser");
-  var route_path_1 = require("angular2/src/router/rules/route_paths/route_path");
-  var ContinuationPathSegment = (function() {
-    function ContinuationPathSegment() {
-      this.name = '';
-      this.specificity = '';
-      this.hash = '...';
+  var async_1 = require("angular2/src/facade/async");
+  var rules_1 = require("angular2/src/router/rules/rules");
+  var route_config_impl_1 = require("angular2/src/router/route_config/route_config_impl");
+  var async_route_handler_1 = require("angular2/src/router/rules/route_handlers/async_route_handler");
+  var sync_route_handler_1 = require("angular2/src/router/rules/route_handlers/sync_route_handler");
+  var param_route_path_1 = require("angular2/src/router/rules/route_paths/param_route_path");
+  var regex_route_path_1 = require("angular2/src/router/rules/route_paths/regex_route_path");
+  var RuleSet = (function() {
+    function RuleSet() {
+      this.rulesByName = new collection_1.Map();
+      this.auxRulesByName = new collection_1.Map();
+      this.auxRulesByPath = new collection_1.Map();
+      this.rules = [];
+      this.defaultRule = null;
     }
-    ContinuationPathSegment.prototype.generate = function(params) {
-      return '';
-    };
-    ContinuationPathSegment.prototype.match = function(path) {
-      return true;
-    };
-    return ContinuationPathSegment;
-  }());
-  var StaticPathSegment = (function() {
-    function StaticPathSegment(path) {
-      this.path = path;
-      this.name = '';
-      this.specificity = '2';
-      this.hash = path;
-    }
-    StaticPathSegment.prototype.match = function(path) {
-      return path == this.path;
-    };
-    StaticPathSegment.prototype.generate = function(params) {
-      return this.path;
-    };
-    return StaticPathSegment;
-  }());
-  var DynamicPathSegment = (function() {
-    function DynamicPathSegment(name) {
-      this.name = name;
-      this.specificity = '1';
-      this.hash = ':';
-    }
-    DynamicPathSegment.prototype.match = function(path) {
-      return path.length > 0;
-    };
-    DynamicPathSegment.prototype.generate = function(params) {
-      if (!collection_1.StringMapWrapper.contains(params.map, this.name)) {
-        throw new exceptions_1.BaseException("Route generator for '" + this.name + "' was not included in parameters passed.");
+    RuleSet.prototype.config = function(config) {
+      var handler;
+      if (lang_1.isPresent(config.name) && config.name[0].toUpperCase() != config.name[0]) {
+        var suggestedName = config.name[0].toUpperCase() + config.name.substring(1);
+        throw new exceptions_1.BaseException("Route \"" + config.path + "\" with name \"" + config.name + "\" does not begin with an uppercase letter. Route names should be CamelCase like \"" + suggestedName + "\".");
       }
-      return encodeDynamicSegment(utils_1.normalizeString(params.get(this.name)));
-    };
-    DynamicPathSegment.paramMatcher = /^:([^\/]+)$/g;
-    return DynamicPathSegment;
-  }());
-  var StarPathSegment = (function() {
-    function StarPathSegment(name) {
-      this.name = name;
-      this.specificity = '0';
-      this.hash = '*';
-    }
-    StarPathSegment.prototype.match = function(path) {
-      return true;
-    };
-    StarPathSegment.prototype.generate = function(params) {
-      return utils_1.normalizeString(params.get(this.name));
-    };
-    StarPathSegment.wildcardMatcher = /^\*([^\/]+)$/g;
-    return StarPathSegment;
-  }());
-  var ParamRoutePath = (function() {
-    function ParamRoutePath(routePath) {
-      this.routePath = routePath;
-      this.terminal = true;
-      this._assertValidPath(routePath);
-      this._parsePathString(routePath);
-      this.specificity = this._calculateSpecificity();
-      this.hash = this._calculateHash();
-      var lastSegment = this._segments[this._segments.length - 1];
-      this.terminal = !(lastSegment instanceof ContinuationPathSegment);
-    }
-    ParamRoutePath.prototype.matchUrl = function(url) {
-      var nextUrlSegment = url;
-      var currentUrlSegment;
-      var positionalParams = {};
-      var captured = [];
-      for (var i = 0; i < this._segments.length; i += 1) {
-        var pathSegment = this._segments[i];
-        currentUrlSegment = nextUrlSegment;
-        if (pathSegment instanceof ContinuationPathSegment) {
-          break;
+      if (config instanceof route_config_impl_1.AuxRoute) {
+        handler = new sync_route_handler_1.SyncRouteHandler(config.component, config.data);
+        var routePath_1 = this._getRoutePath(config);
+        var auxRule = new rules_1.RouteRule(routePath_1, handler, config.name);
+        this.auxRulesByPath.set(routePath_1.toString(), auxRule);
+        if (lang_1.isPresent(config.name)) {
+          this.auxRulesByName.set(config.name, auxRule);
         }
-        if (lang_1.isPresent(currentUrlSegment)) {
-          if (pathSegment instanceof StarPathSegment) {
-            positionalParams[pathSegment.name] = currentUrlSegment.toString();
-            captured.push(currentUrlSegment.toString());
-            nextUrlSegment = null;
-            break;
-          }
-          captured.push(currentUrlSegment.path);
-          if (pathSegment instanceof DynamicPathSegment) {
-            positionalParams[pathSegment.name] = decodeDynamicSegment(currentUrlSegment.path);
-          } else if (!pathSegment.match(currentUrlSegment.path)) {
-            return null;
-          }
-          nextUrlSegment = currentUrlSegment.child;
-        } else if (!pathSegment.match('')) {
-          return null;
-        }
+        return auxRule.terminal;
       }
-      if (this.terminal && lang_1.isPresent(nextUrlSegment)) {
+      var useAsDefault = false;
+      if (config instanceof route_config_impl_1.Redirect) {
+        var routePath_2 = this._getRoutePath(config);
+        var redirector = new rules_1.RedirectRule(routePath_2, config.redirectTo);
+        this._assertNoHashCollision(redirector.hash, config.path);
+        this.rules.push(redirector);
+        return true;
+      }
+      if (config instanceof route_config_impl_1.Route) {
+        handler = new sync_route_handler_1.SyncRouteHandler(config.component, config.data);
+        useAsDefault = lang_1.isPresent(config.useAsDefault) && config.useAsDefault;
+      } else if (config instanceof route_config_impl_1.AsyncRoute) {
+        handler = new async_route_handler_1.AsyncRouteHandler(config.loader, config.data);
+        useAsDefault = lang_1.isPresent(config.useAsDefault) && config.useAsDefault;
+      }
+      var routePath = this._getRoutePath(config);
+      var newRule = new rules_1.RouteRule(routePath, handler, config.name);
+      this._assertNoHashCollision(newRule.hash, config.path);
+      if (useAsDefault) {
+        if (lang_1.isPresent(this.defaultRule)) {
+          throw new exceptions_1.BaseException("Only one route can be default");
+        }
+        this.defaultRule = newRule;
+      }
+      this.rules.push(newRule);
+      if (lang_1.isPresent(config.name)) {
+        this.rulesByName.set(config.name, newRule);
+      }
+      return newRule.terminal;
+    };
+    RuleSet.prototype.recognize = function(urlParse) {
+      var solutions = [];
+      this.rules.forEach(function(routeRecognizer) {
+        var pathMatch = routeRecognizer.recognize(urlParse);
+        if (lang_1.isPresent(pathMatch)) {
+          solutions.push(pathMatch);
+        }
+      });
+      if (solutions.length == 0 && lang_1.isPresent(urlParse) && urlParse.auxiliary.length > 0) {
+        return [async_1.PromiseWrapper.resolve(new rules_1.PathMatch(null, null, urlParse.auxiliary))];
+      }
+      return solutions;
+    };
+    RuleSet.prototype.recognizeAuxiliary = function(urlParse) {
+      var routeRecognizer = this.auxRulesByPath.get(urlParse.path);
+      if (lang_1.isPresent(routeRecognizer)) {
+        return [routeRecognizer.recognize(urlParse)];
+      }
+      return [async_1.PromiseWrapper.resolve(null)];
+    };
+    RuleSet.prototype.hasRoute = function(name) {
+      return this.rulesByName.has(name);
+    };
+    RuleSet.prototype.componentLoaded = function(name) {
+      return this.hasRoute(name) && lang_1.isPresent(this.rulesByName.get(name).handler.componentType);
+    };
+    RuleSet.prototype.loadComponent = function(name) {
+      return this.rulesByName.get(name).handler.resolveComponentType();
+    };
+    RuleSet.prototype.generate = function(name, params) {
+      var rule = this.rulesByName.get(name);
+      if (lang_1.isBlank(rule)) {
         return null;
       }
-      var urlPath = captured.join('/');
-      var auxiliary = [];
-      var urlParams = [];
-      var allParams = positionalParams;
-      if (lang_1.isPresent(currentUrlSegment)) {
-        var paramsSegment = url instanceof url_parser_1.RootUrl ? url : currentUrlSegment;
-        if (lang_1.isPresent(paramsSegment.params)) {
-          allParams = collection_1.StringMapWrapper.merge(paramsSegment.params, positionalParams);
-          urlParams = url_parser_1.convertUrlParamsToArray(paramsSegment.params);
+      return rule.generate(params);
+    };
+    RuleSet.prototype.generateAuxiliary = function(name, params) {
+      var rule = this.auxRulesByName.get(name);
+      if (lang_1.isBlank(rule)) {
+        return null;
+      }
+      return rule.generate(params);
+    };
+    RuleSet.prototype._assertNoHashCollision = function(hash, path) {
+      this.rules.forEach(function(rule) {
+        if (hash == rule.hash) {
+          throw new exceptions_1.BaseException("Configuration '" + path + "' conflicts with existing route '" + rule.path + "'");
+        }
+      });
+    };
+    RuleSet.prototype._getRoutePath = function(config) {
+      if (lang_1.isPresent(config.regex)) {
+        if (lang_1.isFunction(config.serializer)) {
+          return new regex_route_path_1.RegexRoutePath(config.regex, config.serializer);
         } else {
-          allParams = positionalParams;
-        }
-        auxiliary = currentUrlSegment.auxiliary;
-      }
-      return new route_path_1.MatchedUrl(urlPath, urlParams, allParams, auxiliary, nextUrlSegment);
-    };
-    ParamRoutePath.prototype.generateUrl = function(params) {
-      var paramTokens = new utils_1.TouchMap(params);
-      var path = [];
-      for (var i = 0; i < this._segments.length; i++) {
-        var segment = this._segments[i];
-        if (!(segment instanceof ContinuationPathSegment)) {
-          path.push(segment.generate(paramTokens));
+          throw new exceptions_1.BaseException("Route provides a regex property, '" + config.regex + "', but no serializer property");
         }
       }
-      var urlPath = path.join('/');
-      var nonPositionalParams = paramTokens.getUnused();
-      var urlParams = nonPositionalParams;
-      return new route_path_1.GeneratedUrl(urlPath, urlParams);
-    };
-    ParamRoutePath.prototype.toString = function() {
-      return this.routePath;
-    };
-    ParamRoutePath.prototype._parsePathString = function(routePath) {
-      if (routePath.startsWith("/")) {
-        routePath = routePath.substring(1);
+      if (lang_1.isPresent(config.path)) {
+        var path = (config instanceof route_config_impl_1.AuxRoute && config.path.startsWith('/')) ? config.path.substring(1) : config.path;
+        return new param_route_path_1.ParamRoutePath(path);
       }
-      var segmentStrings = routePath.split('/');
-      this._segments = [];
-      var limit = segmentStrings.length - 1;
-      for (var i = 0; i <= limit; i++) {
-        var segment = segmentStrings[i],
-            match;
-        if (lang_1.isPresent(match = lang_1.RegExpWrapper.firstMatch(DynamicPathSegment.paramMatcher, segment))) {
-          this._segments.push(new DynamicPathSegment(match[1]));
-        } else if (lang_1.isPresent(match = lang_1.RegExpWrapper.firstMatch(StarPathSegment.wildcardMatcher, segment))) {
-          this._segments.push(new StarPathSegment(match[1]));
-        } else if (segment == '...') {
-          if (i < limit) {
-            throw new exceptions_1.BaseException("Unexpected \"...\" before the end of the path for \"" + routePath + "\".");
-          }
-          this._segments.push(new ContinuationPathSegment());
-        } else {
-          this._segments.push(new StaticPathSegment(segment));
-        }
-      }
+      throw new exceptions_1.BaseException('Route must provide either a path or regex property');
     };
-    ParamRoutePath.prototype._calculateSpecificity = function() {
-      var i,
-          length = this._segments.length,
-          specificity;
-      if (length == 0) {
-        specificity += '2';
-      } else {
-        specificity = '';
-        for (i = 0; i < length; i++) {
-          specificity += this._segments[i].specificity;
-        }
-      }
-      return specificity;
-    };
-    ParamRoutePath.prototype._calculateHash = function() {
-      var i,
-          length = this._segments.length;
-      var hashParts = [];
-      for (i = 0; i < length; i++) {
-        hashParts.push(this._segments[i].hash);
-      }
-      return hashParts.join('/');
-    };
-    ParamRoutePath.prototype._assertValidPath = function(path) {
-      if (lang_1.StringWrapper.contains(path, '#')) {
-        throw new exceptions_1.BaseException("Path \"" + path + "\" should not include \"#\". Use \"HashLocationStrategy\" instead.");
-      }
-      var illegalCharacter = lang_1.RegExpWrapper.firstMatch(ParamRoutePath.RESERVED_CHARS, path);
-      if (lang_1.isPresent(illegalCharacter)) {
-        throw new exceptions_1.BaseException("Path \"" + path + "\" contains \"" + illegalCharacter[0] + "\" which is not allowed in a route config.");
-      }
-    };
-    ParamRoutePath.RESERVED_CHARS = lang_1.RegExpWrapper.create('//|\\(|\\)|;|\\?|=');
-    return ParamRoutePath;
+    return RuleSet;
   }());
-  exports.ParamRoutePath = ParamRoutePath;
-  var REGEXP_PERCENT = /%/g;
-  var REGEXP_SLASH = /\//g;
-  var REGEXP_OPEN_PARENT = /\(/g;
-  var REGEXP_CLOSE_PARENT = /\)/g;
-  var REGEXP_SEMICOLON = /;/g;
-  function encodeDynamicSegment(value) {
-    if (lang_1.isBlank(value)) {
-      return null;
-    }
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_PERCENT, '%25');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_SLASH, '%2F');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_OPEN_PARENT, '%28');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_CLOSE_PARENT, '%29');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_SEMICOLON, '%3B');
-    return value;
-  }
-  var REGEXP_ENC_SEMICOLON = /%3B/ig;
-  var REGEXP_ENC_CLOSE_PARENT = /%29/ig;
-  var REGEXP_ENC_OPEN_PARENT = /%28/ig;
-  var REGEXP_ENC_SLASH = /%2F/ig;
-  var REGEXP_ENC_PERCENT = /%25/ig;
-  function decodeDynamicSegment(value) {
-    if (lang_1.isBlank(value)) {
-      return null;
-    }
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_SEMICOLON, ';');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_CLOSE_PARENT, ')');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_OPEN_PARENT, '(');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_SLASH, '/');
-    value = lang_1.StringWrapper.replaceAll(value, REGEXP_ENC_PERCENT, '%');
-    return value;
-  }
+  exports.RuleSet = RuleSet;
   global.define = __define;
   return module.exports;
 });
@@ -34147,64 +33429,213 @@ System.register("rxjs/Subscriber", ["rxjs/util/isFunction", "rxjs/Subscription",
   return module.exports;
 });
 
-System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/core/reflection/reflection", "angular2/src/core/di/reflective_key", "angular2/src/core/di/metadata", "angular2/src/core/metadata/di", "angular2/src/core/di/reflective_exceptions", "angular2/src/core/di/forward_ref", "angular2/src/core/di/provider"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/provider", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/core/reflection/reflection", "angular2/src/core/di/key", "angular2/src/core/di/metadata", "angular2/src/core/di/exceptions", "angular2/src/core/di/forward_ref"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
   var lang_1 = require("angular2/src/facade/lang");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
   var collection_1 = require("angular2/src/facade/collection");
   var reflection_1 = require("angular2/src/core/reflection/reflection");
-  var reflective_key_1 = require("angular2/src/core/di/reflective_key");
+  var key_1 = require("angular2/src/core/di/key");
   var metadata_1 = require("angular2/src/core/di/metadata");
-  var di_1 = require("angular2/src/core/metadata/di");
-  var reflective_exceptions_1 = require("angular2/src/core/di/reflective_exceptions");
+  var exceptions_2 = require("angular2/src/core/di/exceptions");
   var forward_ref_1 = require("angular2/src/core/di/forward_ref");
-  var provider_1 = require("angular2/src/core/di/provider");
-  var ReflectiveDependency = (function() {
-    function ReflectiveDependency(key, optional, lowerBoundVisibility, upperBoundVisibility, properties) {
+  var Dependency = (function() {
+    function Dependency(key, optional, lowerBoundVisibility, upperBoundVisibility, properties) {
       this.key = key;
       this.optional = optional;
       this.lowerBoundVisibility = lowerBoundVisibility;
       this.upperBoundVisibility = upperBoundVisibility;
       this.properties = properties;
     }
-    ReflectiveDependency.fromKey = function(key) {
-      return new ReflectiveDependency(key, false, null, null, []);
+    Dependency.fromKey = function(key) {
+      return new Dependency(key, false, null, null, []);
     };
-    return ReflectiveDependency;
+    return Dependency;
   }());
-  exports.ReflectiveDependency = ReflectiveDependency;
+  exports.Dependency = Dependency;
   var _EMPTY_LIST = lang_1.CONST_EXPR([]);
-  function _identityPostProcess(obj) {
-    return obj;
-  }
-  var ResolvedReflectiveProvider_ = (function() {
-    function ResolvedReflectiveProvider_(key, resolvedFactories, multiProvider) {
+  var Provider = (function() {
+    function Provider(token, _a) {
+      var useClass = _a.useClass,
+          useValue = _a.useValue,
+          useExisting = _a.useExisting,
+          useFactory = _a.useFactory,
+          deps = _a.deps,
+          multi = _a.multi;
+      this.token = token;
+      this.useClass = useClass;
+      this.useValue = useValue;
+      this.useExisting = useExisting;
+      this.useFactory = useFactory;
+      this.dependencies = deps;
+      this._multi = multi;
+    }
+    Object.defineProperty(Provider.prototype, "multi", {
+      get: function() {
+        return lang_1.normalizeBool(this._multi);
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Provider = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], Provider);
+    return Provider;
+  }());
+  exports.Provider = Provider;
+  var Binding = (function(_super) {
+    __extends(Binding, _super);
+    function Binding(token, _a) {
+      var toClass = _a.toClass,
+          toValue = _a.toValue,
+          toAlias = _a.toAlias,
+          toFactory = _a.toFactory,
+          deps = _a.deps,
+          multi = _a.multi;
+      _super.call(this, token, {
+        useClass: toClass,
+        useValue: toValue,
+        useExisting: toAlias,
+        useFactory: toFactory,
+        deps: deps,
+        multi: multi
+      });
+    }
+    Object.defineProperty(Binding.prototype, "toClass", {
+      get: function() {
+        return this.useClass;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(Binding.prototype, "toAlias", {
+      get: function() {
+        return this.useExisting;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(Binding.prototype, "toFactory", {
+      get: function() {
+        return this.useFactory;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(Binding.prototype, "toValue", {
+      get: function() {
+        return this.useValue;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Binding = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], Binding);
+    return Binding;
+  }(Provider));
+  exports.Binding = Binding;
+  var ResolvedProvider_ = (function() {
+    function ResolvedProvider_(key, resolvedFactories, multiProvider) {
       this.key = key;
       this.resolvedFactories = resolvedFactories;
       this.multiProvider = multiProvider;
     }
-    Object.defineProperty(ResolvedReflectiveProvider_.prototype, "resolvedFactory", {
+    Object.defineProperty(ResolvedProvider_.prototype, "resolvedFactory", {
       get: function() {
         return this.resolvedFactories[0];
       },
       enumerable: true,
       configurable: true
     });
-    return ResolvedReflectiveProvider_;
+    return ResolvedProvider_;
   }());
-  exports.ResolvedReflectiveProvider_ = ResolvedReflectiveProvider_;
-  var ResolvedReflectiveFactory = (function() {
-    function ResolvedReflectiveFactory(factory, dependencies, postProcess) {
+  exports.ResolvedProvider_ = ResolvedProvider_;
+  var ResolvedFactory = (function() {
+    function ResolvedFactory(factory, dependencies) {
       this.factory = factory;
       this.dependencies = dependencies;
-      this.postProcess = postProcess;
     }
-    return ResolvedReflectiveFactory;
+    return ResolvedFactory;
   }());
-  exports.ResolvedReflectiveFactory = ResolvedReflectiveFactory;
-  function resolveReflectiveFactory(provider) {
+  exports.ResolvedFactory = ResolvedFactory;
+  function bind(token) {
+    return new ProviderBuilder(token);
+  }
+  exports.bind = bind;
+  function provide(token, _a) {
+    var useClass = _a.useClass,
+        useValue = _a.useValue,
+        useExisting = _a.useExisting,
+        useFactory = _a.useFactory,
+        deps = _a.deps,
+        multi = _a.multi;
+    return new Provider(token, {
+      useClass: useClass,
+      useValue: useValue,
+      useExisting: useExisting,
+      useFactory: useFactory,
+      deps: deps,
+      multi: multi
+    });
+  }
+  exports.provide = provide;
+  var ProviderBuilder = (function() {
+    function ProviderBuilder(token) {
+      this.token = token;
+    }
+    ProviderBuilder.prototype.toClass = function(type) {
+      if (!lang_1.isType(type)) {
+        throw new exceptions_1.BaseException("Trying to create a class provider but \"" + lang_1.stringify(type) + "\" is not a class!");
+      }
+      return new Provider(this.token, {useClass: type});
+    };
+    ProviderBuilder.prototype.toValue = function(value) {
+      return new Provider(this.token, {useValue: value});
+    };
+    ProviderBuilder.prototype.toAlias = function(aliasToken) {
+      if (lang_1.isBlank(aliasToken)) {
+        throw new exceptions_1.BaseException("Can not alias " + lang_1.stringify(this.token) + " to a blank value!");
+      }
+      return new Provider(this.token, {useExisting: aliasToken});
+    };
+    ProviderBuilder.prototype.toFactory = function(factory, dependencies) {
+      if (!lang_1.isFunction(factory)) {
+        throw new exceptions_1.BaseException("Trying to create a factory provider but \"" + lang_1.stringify(factory) + "\" is not a function!");
+      }
+      return new Provider(this.token, {
+        useFactory: factory,
+        deps: dependencies
+      });
+    };
+    return ProviderBuilder;
+  }());
+  exports.ProviderBuilder = ProviderBuilder;
+  function resolveFactory(provider) {
     var factoryFn;
     var resolvedDeps;
     if (lang_1.isPresent(provider.useClass)) {
@@ -34215,7 +33646,7 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
       factoryFn = function(aliasInstance) {
         return aliasInstance;
       };
-      resolvedDeps = [ReflectiveDependency.fromKey(reflective_key_1.ReflectiveKey.get(provider.useExisting))];
+      resolvedDeps = [Dependency.fromKey(key_1.Key.get(provider.useExisting))];
     } else if (lang_1.isPresent(provider.useFactory)) {
       factoryFn = provider.useFactory;
       resolvedDeps = constructDependencies(provider.useFactory, provider.dependencies);
@@ -34225,27 +33656,26 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
       };
       resolvedDeps = _EMPTY_LIST;
     }
-    var postProcess = lang_1.isPresent(provider.useProperty) ? reflection_1.reflector.getter(provider.useProperty) : _identityPostProcess;
-    return new ResolvedReflectiveFactory(factoryFn, resolvedDeps, postProcess);
+    return new ResolvedFactory(factoryFn, resolvedDeps);
   }
-  exports.resolveReflectiveFactory = resolveReflectiveFactory;
-  function resolveReflectiveProvider(provider) {
-    return new ResolvedReflectiveProvider_(reflective_key_1.ReflectiveKey.get(provider.token), [resolveReflectiveFactory(provider)], provider.multi);
+  exports.resolveFactory = resolveFactory;
+  function resolveProvider(provider) {
+    return new ResolvedProvider_(key_1.Key.get(provider.token), [resolveFactory(provider)], provider.multi);
   }
-  exports.resolveReflectiveProvider = resolveReflectiveProvider;
-  function resolveReflectiveProviders(providers) {
+  exports.resolveProvider = resolveProvider;
+  function resolveProviders(providers) {
     var normalized = _normalizeProviders(providers, []);
-    var resolved = normalized.map(resolveReflectiveProvider);
-    return collection_1.MapWrapper.values(mergeResolvedReflectiveProviders(resolved, new Map()));
+    var resolved = normalized.map(resolveProvider);
+    return collection_1.MapWrapper.values(mergeResolvedProviders(resolved, new Map()));
   }
-  exports.resolveReflectiveProviders = resolveReflectiveProviders;
-  function mergeResolvedReflectiveProviders(providers, normalizedProvidersMap) {
+  exports.resolveProviders = resolveProviders;
+  function mergeResolvedProviders(providers, normalizedProvidersMap) {
     for (var i = 0; i < providers.length; i++) {
       var provider = providers[i];
       var existing = normalizedProvidersMap.get(provider.key.id);
       if (lang_1.isPresent(existing)) {
         if (provider.multiProvider !== existing.multiProvider) {
-          throw new reflective_exceptions_1.MixingMultiProvidersWithRegularProvidersError(existing, provider);
+          throw new exceptions_2.MixingMultiProvidersWithRegularProvidersError(existing, provider);
         }
         if (provider.multiProvider) {
           for (var j = 0; j < provider.resolvedFactories.length; j++) {
@@ -34257,7 +33687,7 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
       } else {
         var resolvedProvider;
         if (provider.multiProvider) {
-          resolvedProvider = new ResolvedReflectiveProvider_(provider.key, collection_1.ListWrapper.clone(provider.resolvedFactories), provider.multiProvider);
+          resolvedProvider = new ResolvedProvider_(provider.key, collection_1.ListWrapper.clone(provider.resolvedFactories), provider.multiProvider);
         } else {
           resolvedProvider = provider;
         }
@@ -34266,21 +33696,19 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
     }
     return normalizedProvidersMap;
   }
-  exports.mergeResolvedReflectiveProviders = mergeResolvedReflectiveProviders;
+  exports.mergeResolvedProviders = mergeResolvedProviders;
   function _normalizeProviders(providers, res) {
     providers.forEach(function(b) {
       if (b instanceof lang_1.Type) {
-        res.push(provider_1.provide(b, {useClass: b}));
-        _normalizeProviders(getInjectorModuleProviders(b), res);
-      } else if (b instanceof provider_1.Provider) {
+        res.push(provide(b, {useClass: b}));
+      } else if (b instanceof Provider) {
         res.push(b);
-        _normalizeProviders(getInjectorModuleProviders(b.token), res);
       } else if (b instanceof Array) {
         _normalizeProviders(b, res);
-      } else if (b instanceof provider_1.ProviderBuilder) {
-        throw new reflective_exceptions_1.InvalidProviderError(b.token);
+      } else if (b instanceof ProviderBuilder) {
+        throw new exceptions_2.InvalidProviderError(b.token);
       } else {
-        throw new reflective_exceptions_1.InvalidProviderError(b);
+        throw new exceptions_2.InvalidProviderError(b);
       }
     });
     return res;
@@ -34303,7 +33731,7 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
     if (lang_1.isBlank(params))
       return [];
     if (params.some(lang_1.isBlank)) {
-      throw new reflective_exceptions_1.NoAnnotationError(typeOrFunc, params);
+      throw new exceptions_2.NoAnnotationError(typeOrFunc, params);
     }
     return params.map(function(p) {
       return _extractToken(typeOrFunc, p, params);
@@ -34347,41 +33775,242 @@ System.register("angular2/src/core/di/reflective_provider", ["angular2/src/facad
     if (lang_1.isPresent(token)) {
       return _createDependency(token, optional, lowerBoundVisibility, upperBoundVisibility, depProps);
     } else {
-      throw new reflective_exceptions_1.NoAnnotationError(typeOrFunc, params);
+      throw new exceptions_2.NoAnnotationError(typeOrFunc, params);
     }
   }
   function _createDependency(token, optional, lowerBoundVisibility, upperBoundVisibility, depProps) {
-    return new ReflectiveDependency(reflective_key_1.ReflectiveKey.get(token), optional, lowerBoundVisibility, upperBoundVisibility, depProps);
+    return new Dependency(key_1.Key.get(token), optional, lowerBoundVisibility, upperBoundVisibility, depProps);
   }
-  function getInjectorModuleProviders(token) {
-    var providers = [];
-    var annotations = null;
-    try {
-      if (lang_1.isType(token)) {
-        annotations = reflection_1.reflector.annotations(forward_ref_1.resolveForwardRef(token));
-      }
-    } catch (e) {}
-    var metadata = lang_1.isPresent(annotations) ? annotations.find(function(type) {
-      return type instanceof di_1.InjectorModuleMetadata;
-    }) : null;
-    if (lang_1.isPresent(metadata)) {
-      var propertyMetadata = reflection_1.reflector.propMetadata(token);
-      collection_1.ListWrapper.addAll(providers, metadata.providers);
-      collection_1.StringMapWrapper.forEach(propertyMetadata, function(metadata, propName) {
-        metadata.forEach(function(a) {
-          if (a instanceof di_1.ProviderPropertyMetadata) {
-            providers.push(new provider_1.Provider(a.token, {
-              multi: a.multi,
-              useProperty: propName,
-              useExisting: token
-            }));
-          }
-        });
-      });
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/lang", "angular2/src/core/di/metadata", "angular2/src/core/change_detection"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
     }
-    return providers;
-  }
-  exports.getInjectorModuleProviders = getInjectorModuleProviders;
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var lang_1 = require("angular2/src/facade/lang");
+  var metadata_1 = require("angular2/src/core/di/metadata");
+  var change_detection_1 = require("angular2/src/core/change_detection");
+  var DirectiveMetadata = (function(_super) {
+    __extends(DirectiveMetadata, _super);
+    function DirectiveMetadata(_a) {
+      var _b = _a === void 0 ? {} : _a,
+          selector = _b.selector,
+          inputs = _b.inputs,
+          outputs = _b.outputs,
+          properties = _b.properties,
+          events = _b.events,
+          host = _b.host,
+          bindings = _b.bindings,
+          providers = _b.providers,
+          exportAs = _b.exportAs,
+          queries = _b.queries;
+      _super.call(this);
+      this.selector = selector;
+      this._inputs = inputs;
+      this._properties = properties;
+      this._outputs = outputs;
+      this._events = events;
+      this.host = host;
+      this.exportAs = exportAs;
+      this.queries = queries;
+      this._providers = providers;
+      this._bindings = bindings;
+    }
+    Object.defineProperty(DirectiveMetadata.prototype, "inputs", {
+      get: function() {
+        return lang_1.isPresent(this._properties) && this._properties.length > 0 ? this._properties : this._inputs;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(DirectiveMetadata.prototype, "properties", {
+      get: function() {
+        return this.inputs;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(DirectiveMetadata.prototype, "outputs", {
+      get: function() {
+        return lang_1.isPresent(this._events) && this._events.length > 0 ? this._events : this._outputs;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(DirectiveMetadata.prototype, "events", {
+      get: function() {
+        return this.outputs;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(DirectiveMetadata.prototype, "providers", {
+      get: function() {
+        return lang_1.isPresent(this._bindings) && this._bindings.length > 0 ? this._bindings : this._providers;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(DirectiveMetadata.prototype, "bindings", {
+      get: function() {
+        return this.providers;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    DirectiveMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], DirectiveMetadata);
+    return DirectiveMetadata;
+  }(metadata_1.InjectableMetadata));
+  exports.DirectiveMetadata = DirectiveMetadata;
+  var ComponentMetadata = (function(_super) {
+    __extends(ComponentMetadata, _super);
+    function ComponentMetadata(_a) {
+      var _b = _a === void 0 ? {} : _a,
+          selector = _b.selector,
+          inputs = _b.inputs,
+          outputs = _b.outputs,
+          properties = _b.properties,
+          events = _b.events,
+          host = _b.host,
+          exportAs = _b.exportAs,
+          moduleId = _b.moduleId,
+          bindings = _b.bindings,
+          providers = _b.providers,
+          viewBindings = _b.viewBindings,
+          viewProviders = _b.viewProviders,
+          _c = _b.changeDetection,
+          changeDetection = _c === void 0 ? change_detection_1.ChangeDetectionStrategy.Default : _c,
+          queries = _b.queries,
+          templateUrl = _b.templateUrl,
+          template = _b.template,
+          styleUrls = _b.styleUrls,
+          styles = _b.styles,
+          directives = _b.directives,
+          pipes = _b.pipes,
+          encapsulation = _b.encapsulation;
+      _super.call(this, {
+        selector: selector,
+        inputs: inputs,
+        outputs: outputs,
+        properties: properties,
+        events: events,
+        host: host,
+        exportAs: exportAs,
+        bindings: bindings,
+        providers: providers,
+        queries: queries
+      });
+      this.changeDetection = changeDetection;
+      this._viewProviders = viewProviders;
+      this._viewBindings = viewBindings;
+      this.templateUrl = templateUrl;
+      this.template = template;
+      this.styleUrls = styleUrls;
+      this.styles = styles;
+      this.directives = directives;
+      this.pipes = pipes;
+      this.encapsulation = encapsulation;
+      this.moduleId = moduleId;
+    }
+    Object.defineProperty(ComponentMetadata.prototype, "viewProviders", {
+      get: function() {
+        return lang_1.isPresent(this._viewBindings) && this._viewBindings.length > 0 ? this._viewBindings : this._viewProviders;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(ComponentMetadata.prototype, "viewBindings", {
+      get: function() {
+        return this.viewProviders;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ComponentMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], ComponentMetadata);
+    return ComponentMetadata;
+  }(DirectiveMetadata));
+  exports.ComponentMetadata = ComponentMetadata;
+  var PipeMetadata = (function(_super) {
+    __extends(PipeMetadata, _super);
+    function PipeMetadata(_a) {
+      var name = _a.name,
+          pure = _a.pure;
+      _super.call(this);
+      this.name = name;
+      this._pure = pure;
+    }
+    Object.defineProperty(PipeMetadata.prototype, "pure", {
+      get: function() {
+        return lang_1.isPresent(this._pure) ? this._pure : true;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    PipeMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], PipeMetadata);
+    return PipeMetadata;
+  }(metadata_1.InjectableMetadata));
+  exports.PipeMetadata = PipeMetadata;
+  var InputMetadata = (function() {
+    function InputMetadata(bindingPropertyName) {
+      this.bindingPropertyName = bindingPropertyName;
+    }
+    InputMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], InputMetadata);
+    return InputMetadata;
+  }());
+  exports.InputMetadata = InputMetadata;
+  var OutputMetadata = (function() {
+    function OutputMetadata(bindingPropertyName) {
+      this.bindingPropertyName = bindingPropertyName;
+    }
+    OutputMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], OutputMetadata);
+    return OutputMetadata;
+  }());
+  exports.OutputMetadata = OutputMetadata;
+  var HostBindingMetadata = (function() {
+    function HostBindingMetadata(hostPropertyName) {
+      this.hostPropertyName = hostPropertyName;
+    }
+    HostBindingMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], HostBindingMetadata);
+    return HostBindingMetadata;
+  }());
+  exports.HostBindingMetadata = HostBindingMetadata;
+  var HostListenerMetadata = (function() {
+    function HostListenerMetadata(eventName, args) {
+      this.eventName = eventName;
+      this.args = args;
+    }
+    HostListenerMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String, Array])], HostListenerMetadata);
+    return HostListenerMetadata;
+  }());
+  exports.HostListenerMetadata = HostListenerMetadata;
   global.define = __define;
   return module.exports;
 });
@@ -36578,7 +36207,7 @@ System.register("angular2/src/animate/animation_builder", ["angular2/src/core/di
   return module.exports;
 });
 
-System.register("angular2/src/compiler/provider_parser", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/facade/exceptions", "angular2/src/compiler/template_ast", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/identifiers", "angular2/src/compiler/parse_util"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/provider_parser", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/src/compiler/template_ast", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/identifiers", "angular2/src/compiler/parse_util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -36594,7 +36223,6 @@ System.register("angular2/src/compiler/provider_parser", ["angular2/src/facade/l
   };
   var lang_1 = require("angular2/src/facade/lang");
   var collection_1 = require("angular2/src/facade/collection");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
   var template_ast_1 = require("angular2/src/compiler/template_ast");
   var compile_metadata_1 = require("angular2/src/compiler/compile_metadata");
   var identifiers_1 = require("angular2/src/compiler/identifiers");
@@ -36855,105 +36483,6 @@ System.register("angular2/src/compiler/provider_parser", ["angular2/src/facade/l
     return ProviderElementContext;
   }());
   exports.ProviderElementContext = ProviderElementContext;
-  var AppProviderParser = (function() {
-    function AppProviderParser(_sourceSpan, providers) {
-      this._sourceSpan = _sourceSpan;
-      this._transformedProviders = new compile_metadata_1.CompileTokenMap();
-      this._seenProviders = new compile_metadata_1.CompileTokenMap();
-      this._errors = [];
-      this._allProviders = new compile_metadata_1.CompileTokenMap();
-      _resolveProviders(_normalizeProviders(providers, this._sourceSpan, this._errors), template_ast_1.ProviderAstType.PublicService, false, this._sourceSpan, this._errors, this._allProviders);
-    }
-    AppProviderParser.prototype.parse = function() {
-      var _this = this;
-      this._allProviders.values().forEach(function(provider) {
-        _this._getOrCreateLocalProvider(provider.token, provider.eager);
-      });
-      if (this._errors.length > 0) {
-        var errorString = this._errors.join('\n');
-        throw new exceptions_1.BaseException("Provider parse errors:\n" + errorString);
-      }
-      return this._transformedProviders.values();
-    };
-    AppProviderParser.prototype._getOrCreateLocalProvider = function(token, eager) {
-      var _this = this;
-      var resolvedProvider = this._allProviders.get(token);
-      if (lang_1.isBlank(resolvedProvider)) {
-        return null;
-      }
-      var transformedProviderAst = this._transformedProviders.get(token);
-      if (lang_1.isPresent(transformedProviderAst)) {
-        return transformedProviderAst;
-      }
-      if (lang_1.isPresent(this._seenProviders.get(token))) {
-        this._errors.push(new ProviderError("Cannot instantiate cyclic dependency! " + token.name, this._sourceSpan));
-        return null;
-      }
-      this._seenProviders.add(token, true);
-      var transformedProviders = resolvedProvider.providers.map(function(provider) {
-        var transformedUseValue = provider.useValue;
-        var transformedUseExisting = provider.useExisting;
-        var transformedDeps;
-        if (lang_1.isPresent(provider.useExisting)) {
-          var existingDiDep = _this._getDependency(new compile_metadata_1.CompileDiDependencyMetadata({token: provider.useExisting}), eager);
-          if (lang_1.isPresent(existingDiDep.token)) {
-            transformedUseExisting = existingDiDep.token;
-          } else {
-            transformedUseExisting = null;
-            transformedUseValue = existingDiDep.value;
-          }
-        } else if (lang_1.isPresent(provider.useFactory)) {
-          var deps = lang_1.isPresent(provider.deps) ? provider.deps : provider.useFactory.diDeps;
-          transformedDeps = deps.map(function(dep) {
-            return _this._getDependency(dep, eager);
-          });
-        } else if (lang_1.isPresent(provider.useClass)) {
-          var deps = lang_1.isPresent(provider.deps) ? provider.deps : provider.useClass.diDeps;
-          transformedDeps = deps.map(function(dep) {
-            return _this._getDependency(dep, eager);
-          });
-        }
-        return _transformProvider(provider, {
-          useExisting: transformedUseExisting,
-          useValue: transformedUseValue,
-          deps: transformedDeps
-        });
-      });
-      transformedProviderAst = _transformProviderAst(resolvedProvider, {
-        eager: eager,
-        providers: transformedProviders
-      });
-      this._transformedProviders.add(token, transformedProviderAst);
-      return transformedProviderAst;
-    };
-    AppProviderParser.prototype._getDependency = function(dep, eager) {
-      if (eager === void 0) {
-        eager = null;
-      }
-      var foundLocal = false;
-      if (!dep.isSkipSelf && lang_1.isPresent(dep.token)) {
-        if (dep.token.equalsTo(identifiers_1.identifierToken(identifiers_1.Identifiers.Injector))) {
-          foundLocal = true;
-        } else if (lang_1.isPresent(this._getOrCreateLocalProvider(dep.token, eager))) {
-          foundLocal = true;
-        }
-      }
-      var result = dep;
-      if (dep.isSelf && !foundLocal) {
-        if (dep.isOptional) {
-          result = new compile_metadata_1.CompileDiDependencyMetadata({
-            isValue: true,
-            value: null
-          });
-        } else {
-          this._errors.push(new ProviderError("No provider for " + dep.token.name, this._sourceSpan));
-        }
-      }
-      return result;
-    };
-    return AppProviderParser;
-  }());
-  exports.AppProviderParser = AppProviderParser;
   function _transformProvider(provider, _a) {
     var useExisting = _a.useExisting,
         useValue = _a.useValue,
@@ -36964,7 +36493,6 @@ System.register("angular2/src/compiler/provider_parser", ["angular2/src/facade/l
       useExisting: useExisting,
       useFactory: provider.useFactory,
       useValue: useValue,
-      useProperty: provider.useProperty,
       deps: deps,
       multi: provider.multi
     });
@@ -37158,142 +36686,384 @@ System.register("angular2/platform/common", ["angular2/src/platform/location"], 
   return module.exports;
 });
 
-System.register("angular2/src/router/rules/rule_set", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/router/rules/rules", "angular2/src/router/route_config/route_config_impl", "angular2/src/router/rules/route_handlers/async_route_handler", "angular2/src/router/rules/route_handlers/sync_route_handler", "angular2/src/router/rules/route_paths/param_route_path", "angular2/src/router/rules/route_paths/regex_route_path"], true, function(require, exports, module) {
+System.register("angular2/src/router/route_registry", ["angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/reflection/reflection", "angular2/core", "angular2/src/router/route_config/route_config_impl", "angular2/src/router/rules/rules", "angular2/src/router/rules/rule_set", "angular2/src/router/instruction", "angular2/src/router/route_config/route_config_normalizer", "angular2/src/router/url_parser"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var __param = (this && this.__param) || function(paramIndex, decorator) {
+    return function(target, key) {
+      decorator(target, key, paramIndex);
+    };
+  };
   var collection_1 = require("angular2/src/facade/collection");
   var async_1 = require("angular2/src/facade/async");
-  var rules_1 = require("angular2/src/router/rules/rules");
+  var lang_1 = require("angular2/src/facade/lang");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
+  var reflection_1 = require("angular2/src/core/reflection/reflection");
+  var core_1 = require("angular2/core");
   var route_config_impl_1 = require("angular2/src/router/route_config/route_config_impl");
-  var async_route_handler_1 = require("angular2/src/router/rules/route_handlers/async_route_handler");
-  var sync_route_handler_1 = require("angular2/src/router/rules/route_handlers/sync_route_handler");
-  var param_route_path_1 = require("angular2/src/router/rules/route_paths/param_route_path");
-  var regex_route_path_1 = require("angular2/src/router/rules/route_paths/regex_route_path");
-  var RuleSet = (function() {
-    function RuleSet() {
-      this.rulesByName = new collection_1.Map();
-      this.auxRulesByName = new collection_1.Map();
-      this.auxRulesByPath = new collection_1.Map();
-      this.rules = [];
-      this.defaultRule = null;
+  var rules_1 = require("angular2/src/router/rules/rules");
+  var rule_set_1 = require("angular2/src/router/rules/rule_set");
+  var instruction_1 = require("angular2/src/router/instruction");
+  var route_config_normalizer_1 = require("angular2/src/router/route_config/route_config_normalizer");
+  var url_parser_1 = require("angular2/src/router/url_parser");
+  var _resolveToNull = async_1.PromiseWrapper.resolve(null);
+  exports.ROUTER_PRIMARY_COMPONENT = lang_1.CONST_EXPR(new core_1.OpaqueToken('RouterPrimaryComponent'));
+  var RouteRegistry = (function() {
+    function RouteRegistry(_rootComponent) {
+      this._rootComponent = _rootComponent;
+      this._rules = new collection_1.Map();
     }
-    RuleSet.prototype.config = function(config) {
-      var handler;
-      if (lang_1.isPresent(config.name) && config.name[0].toUpperCase() != config.name[0]) {
-        var suggestedName = config.name[0].toUpperCase() + config.name.substring(1);
-        throw new exceptions_1.BaseException("Route \"" + config.path + "\" with name \"" + config.name + "\" does not begin with an uppercase letter. Route names should be CamelCase like \"" + suggestedName + "\".");
-      }
-      if (config instanceof route_config_impl_1.AuxRoute) {
-        handler = new sync_route_handler_1.SyncRouteHandler(config.component, config.data);
-        var routePath_1 = this._getRoutePath(config);
-        var auxRule = new rules_1.RouteRule(routePath_1, handler, config.name);
-        this.auxRulesByPath.set(routePath_1.toString(), auxRule);
-        if (lang_1.isPresent(config.name)) {
-          this.auxRulesByName.set(config.name, auxRule);
-        }
-        return auxRule.terminal;
-      }
-      var useAsDefault = false;
-      if (config instanceof route_config_impl_1.Redirect) {
-        var routePath_2 = this._getRoutePath(config);
-        var redirector = new rules_1.RedirectRule(routePath_2, config.redirectTo);
-        this._assertNoHashCollision(redirector.hash, config.path);
-        this.rules.push(redirector);
-        return true;
-      }
+    RouteRegistry.prototype.config = function(parentComponent, config) {
+      config = route_config_normalizer_1.normalizeRouteConfig(config, this);
       if (config instanceof route_config_impl_1.Route) {
-        handler = new sync_route_handler_1.SyncRouteHandler(config.component, config.data);
-        useAsDefault = lang_1.isPresent(config.useAsDefault) && config.useAsDefault;
-      } else if (config instanceof route_config_impl_1.AsyncRoute) {
-        handler = new async_route_handler_1.AsyncRouteHandler(config.loader, config.data);
-        useAsDefault = lang_1.isPresent(config.useAsDefault) && config.useAsDefault;
+        route_config_normalizer_1.assertComponentExists(config.component, config.path);
+      } else if (config instanceof route_config_impl_1.AuxRoute) {
+        route_config_normalizer_1.assertComponentExists(config.component, config.path);
       }
-      var routePath = this._getRoutePath(config);
-      var newRule = new rules_1.RouteRule(routePath, handler, config.name);
-      this._assertNoHashCollision(newRule.hash, config.path);
-      if (useAsDefault) {
-        if (lang_1.isPresent(this.defaultRule)) {
-          throw new exceptions_1.BaseException("Only one route can be default");
-        }
-        this.defaultRule = newRule;
+      var rules = this._rules.get(parentComponent);
+      if (lang_1.isBlank(rules)) {
+        rules = new rule_set_1.RuleSet();
+        this._rules.set(parentComponent, rules);
       }
-      this.rules.push(newRule);
-      if (lang_1.isPresent(config.name)) {
-        this.rulesByName.set(config.name, newRule);
-      }
-      return newRule.terminal;
-    };
-    RuleSet.prototype.recognize = function(urlParse) {
-      var solutions = [];
-      this.rules.forEach(function(routeRecognizer) {
-        var pathMatch = routeRecognizer.recognize(urlParse);
-        if (lang_1.isPresent(pathMatch)) {
-          solutions.push(pathMatch);
-        }
-      });
-      if (solutions.length == 0 && lang_1.isPresent(urlParse) && urlParse.auxiliary.length > 0) {
-        return [async_1.PromiseWrapper.resolve(new rules_1.PathMatch(null, null, urlParse.auxiliary))];
-      }
-      return solutions;
-    };
-    RuleSet.prototype.recognizeAuxiliary = function(urlParse) {
-      var routeRecognizer = this.auxRulesByPath.get(urlParse.path);
-      if (lang_1.isPresent(routeRecognizer)) {
-        return [routeRecognizer.recognize(urlParse)];
-      }
-      return [async_1.PromiseWrapper.resolve(null)];
-    };
-    RuleSet.prototype.hasRoute = function(name) {
-      return this.rulesByName.has(name);
-    };
-    RuleSet.prototype.componentLoaded = function(name) {
-      return this.hasRoute(name) && lang_1.isPresent(this.rulesByName.get(name).handler.componentType);
-    };
-    RuleSet.prototype.loadComponent = function(name) {
-      return this.rulesByName.get(name).handler.resolveComponentType();
-    };
-    RuleSet.prototype.generate = function(name, params) {
-      var rule = this.rulesByName.get(name);
-      if (lang_1.isBlank(rule)) {
-        return null;
-      }
-      return rule.generate(params);
-    };
-    RuleSet.prototype.generateAuxiliary = function(name, params) {
-      var rule = this.auxRulesByName.get(name);
-      if (lang_1.isBlank(rule)) {
-        return null;
-      }
-      return rule.generate(params);
-    };
-    RuleSet.prototype._assertNoHashCollision = function(hash, path) {
-      this.rules.forEach(function(rule) {
-        if (hash == rule.hash) {
-          throw new exceptions_1.BaseException("Configuration '" + path + "' conflicts with existing route '" + rule.path + "'");
-        }
-      });
-    };
-    RuleSet.prototype._getRoutePath = function(config) {
-      if (lang_1.isPresent(config.regex)) {
-        if (lang_1.isFunction(config.serializer)) {
-          return new regex_route_path_1.RegexRoutePath(config.regex, config.serializer);
+      var terminal = rules.config(config);
+      if (config instanceof route_config_impl_1.Route) {
+        if (terminal) {
+          assertTerminalComponent(config.component, config.path);
         } else {
-          throw new exceptions_1.BaseException("Route provides a regex property, '" + config.regex + "', but no serializer property");
+          this.configFromComponent(config.component);
         }
       }
-      if (lang_1.isPresent(config.path)) {
-        var path = (config instanceof route_config_impl_1.AuxRoute && config.path.startsWith('/')) ? config.path.substring(1) : config.path;
-        return new param_route_path_1.ParamRoutePath(path);
-      }
-      throw new exceptions_1.BaseException('Route must provide either a path or regex property');
     };
-    return RuleSet;
+    RouteRegistry.prototype.configFromComponent = function(component) {
+      var _this = this;
+      if (!lang_1.isType(component)) {
+        return ;
+      }
+      if (this._rules.has(component)) {
+        return ;
+      }
+      var annotations = reflection_1.reflector.annotations(component);
+      if (lang_1.isPresent(annotations)) {
+        for (var i = 0; i < annotations.length; i++) {
+          var annotation = annotations[i];
+          if (annotation instanceof route_config_impl_1.RouteConfig) {
+            var routeCfgs = annotation.configs;
+            routeCfgs.forEach(function(config) {
+              return _this.config(component, config);
+            });
+          }
+        }
+      }
+    };
+    RouteRegistry.prototype.recognize = function(url, ancestorInstructions) {
+      var parsedUrl = url_parser_1.parser.parse(url);
+      return this._recognize(parsedUrl, []);
+    };
+    RouteRegistry.prototype._recognize = function(parsedUrl, ancestorInstructions, _aux) {
+      var _this = this;
+      if (_aux === void 0) {
+        _aux = false;
+      }
+      var parentInstruction = collection_1.ListWrapper.last(ancestorInstructions);
+      var parentComponent = lang_1.isPresent(parentInstruction) ? parentInstruction.component.componentType : this._rootComponent;
+      var rules = this._rules.get(parentComponent);
+      if (lang_1.isBlank(rules)) {
+        return _resolveToNull;
+      }
+      var possibleMatches = _aux ? rules.recognizeAuxiliary(parsedUrl) : rules.recognize(parsedUrl);
+      var matchPromises = possibleMatches.map(function(candidate) {
+        return candidate.then(function(candidate) {
+          if (candidate instanceof rules_1.PathMatch) {
+            var auxParentInstructions = ancestorInstructions.length > 0 ? [collection_1.ListWrapper.last(ancestorInstructions)] : [];
+            var auxInstructions = _this._auxRoutesToUnresolved(candidate.remainingAux, auxParentInstructions);
+            var instruction = new instruction_1.ResolvedInstruction(candidate.instruction, null, auxInstructions);
+            if (lang_1.isBlank(candidate.instruction) || candidate.instruction.terminal) {
+              return instruction;
+            }
+            var newAncestorInstructions = ancestorInstructions.concat([instruction]);
+            return _this._recognize(candidate.remaining, newAncestorInstructions).then(function(childInstruction) {
+              if (lang_1.isBlank(childInstruction)) {
+                return null;
+              }
+              if (childInstruction instanceof instruction_1.RedirectInstruction) {
+                return childInstruction;
+              }
+              instruction.child = childInstruction;
+              return instruction;
+            });
+          }
+          if (candidate instanceof rules_1.RedirectMatch) {
+            var instruction = _this.generate(candidate.redirectTo, ancestorInstructions.concat([null]));
+            return new instruction_1.RedirectInstruction(instruction.component, instruction.child, instruction.auxInstruction, candidate.specificity);
+          }
+        });
+      });
+      if ((lang_1.isBlank(parsedUrl) || parsedUrl.path == '') && possibleMatches.length == 0) {
+        return async_1.PromiseWrapper.resolve(this.generateDefault(parentComponent));
+      }
+      return async_1.PromiseWrapper.all(matchPromises).then(mostSpecific);
+    };
+    RouteRegistry.prototype._auxRoutesToUnresolved = function(auxRoutes, parentInstructions) {
+      var _this = this;
+      var unresolvedAuxInstructions = {};
+      auxRoutes.forEach(function(auxUrl) {
+        unresolvedAuxInstructions[auxUrl.path] = new instruction_1.UnresolvedInstruction(function() {
+          return _this._recognize(auxUrl, parentInstructions, true);
+        });
+      });
+      return unresolvedAuxInstructions;
+    };
+    RouteRegistry.prototype.generate = function(linkParams, ancestorInstructions, _aux) {
+      if (_aux === void 0) {
+        _aux = false;
+      }
+      var params = splitAndFlattenLinkParams(linkParams);
+      var prevInstruction;
+      if (collection_1.ListWrapper.first(params) == '') {
+        params.shift();
+        prevInstruction = collection_1.ListWrapper.first(ancestorInstructions);
+        ancestorInstructions = [];
+      } else {
+        prevInstruction = ancestorInstructions.length > 0 ? ancestorInstructions.pop() : null;
+        if (collection_1.ListWrapper.first(params) == '.') {
+          params.shift();
+        } else if (collection_1.ListWrapper.first(params) == '..') {
+          while (collection_1.ListWrapper.first(params) == '..') {
+            if (ancestorInstructions.length <= 0) {
+              throw new exceptions_1.BaseException("Link \"" + collection_1.ListWrapper.toJSON(linkParams) + "\" has too many \"../\" segments.");
+            }
+            prevInstruction = ancestorInstructions.pop();
+            params = collection_1.ListWrapper.slice(params, 1);
+          }
+        } else {
+          var routeName = collection_1.ListWrapper.first(params);
+          var parentComponentType = this._rootComponent;
+          var grandparentComponentType = null;
+          if (ancestorInstructions.length > 1) {
+            var parentComponentInstruction = ancestorInstructions[ancestorInstructions.length - 1];
+            var grandComponentInstruction = ancestorInstructions[ancestorInstructions.length - 2];
+            parentComponentType = parentComponentInstruction.component.componentType;
+            grandparentComponentType = grandComponentInstruction.component.componentType;
+          } else if (ancestorInstructions.length == 1) {
+            parentComponentType = ancestorInstructions[0].component.componentType;
+            grandparentComponentType = this._rootComponent;
+          }
+          var childRouteExists = this.hasRoute(routeName, parentComponentType);
+          var parentRouteExists = lang_1.isPresent(grandparentComponentType) && this.hasRoute(routeName, grandparentComponentType);
+          if (parentRouteExists && childRouteExists) {
+            var msg = "Link \"" + collection_1.ListWrapper.toJSON(linkParams) + "\" is ambiguous, use \"./\" or \"../\" to disambiguate.";
+            throw new exceptions_1.BaseException(msg);
+          }
+          if (parentRouteExists) {
+            prevInstruction = ancestorInstructions.pop();
+          }
+        }
+      }
+      if (params[params.length - 1] == '') {
+        params.pop();
+      }
+      if (params.length > 0 && params[0] == '') {
+        params.shift();
+      }
+      if (params.length < 1) {
+        var msg = "Link \"" + collection_1.ListWrapper.toJSON(linkParams) + "\" must include a route name.";
+        throw new exceptions_1.BaseException(msg);
+      }
+      var generatedInstruction = this._generate(params, ancestorInstructions, prevInstruction, _aux, linkParams);
+      for (var i = ancestorInstructions.length - 1; i >= 0; i--) {
+        var ancestorInstruction = ancestorInstructions[i];
+        if (lang_1.isBlank(ancestorInstruction)) {
+          break;
+        }
+        generatedInstruction = ancestorInstruction.replaceChild(generatedInstruction);
+      }
+      return generatedInstruction;
+    };
+    RouteRegistry.prototype._generate = function(linkParams, ancestorInstructions, prevInstruction, _aux, _originalLink) {
+      var _this = this;
+      if (_aux === void 0) {
+        _aux = false;
+      }
+      var parentComponentType = this._rootComponent;
+      var componentInstruction = null;
+      var auxInstructions = {};
+      var parentInstruction = collection_1.ListWrapper.last(ancestorInstructions);
+      if (lang_1.isPresent(parentInstruction) && lang_1.isPresent(parentInstruction.component)) {
+        parentComponentType = parentInstruction.component.componentType;
+      }
+      if (linkParams.length == 0) {
+        var defaultInstruction = this.generateDefault(parentComponentType);
+        if (lang_1.isBlank(defaultInstruction)) {
+          throw new exceptions_1.BaseException("Link \"" + collection_1.ListWrapper.toJSON(_originalLink) + "\" does not resolve to a terminal instruction.");
+        }
+        return defaultInstruction;
+      }
+      if (lang_1.isPresent(prevInstruction) && !_aux) {
+        auxInstructions = collection_1.StringMapWrapper.merge(prevInstruction.auxInstruction, auxInstructions);
+        componentInstruction = prevInstruction.component;
+      }
+      var rules = this._rules.get(parentComponentType);
+      if (lang_1.isBlank(rules)) {
+        throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(parentComponentType) + "\" has no route config.");
+      }
+      var linkParamIndex = 0;
+      var routeParams = {};
+      if (linkParamIndex < linkParams.length && lang_1.isString(linkParams[linkParamIndex])) {
+        var routeName = linkParams[linkParamIndex];
+        if (routeName == '' || routeName == '.' || routeName == '..') {
+          throw new exceptions_1.BaseException("\"" + routeName + "/\" is only allowed at the beginning of a link DSL.");
+        }
+        linkParamIndex += 1;
+        if (linkParamIndex < linkParams.length) {
+          var linkParam = linkParams[linkParamIndex];
+          if (lang_1.isStringMap(linkParam) && !lang_1.isArray(linkParam)) {
+            routeParams = linkParam;
+            linkParamIndex += 1;
+          }
+        }
+        var routeRecognizer = (_aux ? rules.auxRulesByName : rules.rulesByName).get(routeName);
+        if (lang_1.isBlank(routeRecognizer)) {
+          throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(parentComponentType) + "\" has no route named \"" + routeName + "\".");
+        }
+        if (lang_1.isBlank(routeRecognizer.handler.componentType)) {
+          var generatedUrl = routeRecognizer.generateComponentPathValues(routeParams);
+          return new instruction_1.UnresolvedInstruction(function() {
+            return routeRecognizer.handler.resolveComponentType().then(function(_) {
+              return _this._generate(linkParams, ancestorInstructions, prevInstruction, _aux, _originalLink);
+            });
+          }, generatedUrl.urlPath, url_parser_1.convertUrlParamsToArray(generatedUrl.urlParams));
+        }
+        componentInstruction = _aux ? rules.generateAuxiliary(routeName, routeParams) : rules.generate(routeName, routeParams);
+      }
+      while (linkParamIndex < linkParams.length && lang_1.isArray(linkParams[linkParamIndex])) {
+        var auxParentInstruction = [parentInstruction];
+        var auxInstruction = this._generate(linkParams[linkParamIndex], auxParentInstruction, null, true, _originalLink);
+        auxInstructions[auxInstruction.component.urlPath] = auxInstruction;
+        linkParamIndex += 1;
+      }
+      var instruction = new instruction_1.ResolvedInstruction(componentInstruction, null, auxInstructions);
+      if (lang_1.isPresent(componentInstruction) && lang_1.isPresent(componentInstruction.componentType)) {
+        var childInstruction = null;
+        if (componentInstruction.terminal) {
+          if (linkParamIndex >= linkParams.length) {}
+        } else {
+          var childAncestorComponents = ancestorInstructions.concat([instruction]);
+          var remainingLinkParams = linkParams.slice(linkParamIndex);
+          childInstruction = this._generate(remainingLinkParams, childAncestorComponents, null, false, _originalLink);
+        }
+        instruction.child = childInstruction;
+      }
+      return instruction;
+    };
+    RouteRegistry.prototype.hasRoute = function(name, parentComponent) {
+      var rules = this._rules.get(parentComponent);
+      if (lang_1.isBlank(rules)) {
+        return false;
+      }
+      return rules.hasRoute(name);
+    };
+    RouteRegistry.prototype.generateDefault = function(componentCursor) {
+      var _this = this;
+      if (lang_1.isBlank(componentCursor)) {
+        return null;
+      }
+      var rules = this._rules.get(componentCursor);
+      if (lang_1.isBlank(rules) || lang_1.isBlank(rules.defaultRule)) {
+        return null;
+      }
+      var defaultChild = null;
+      if (lang_1.isPresent(rules.defaultRule.handler.componentType)) {
+        var componentInstruction = rules.defaultRule.generate({});
+        if (!rules.defaultRule.terminal) {
+          defaultChild = this.generateDefault(rules.defaultRule.handler.componentType);
+        }
+        return new instruction_1.DefaultInstruction(componentInstruction, defaultChild);
+      }
+      return new instruction_1.UnresolvedInstruction(function() {
+        return rules.defaultRule.handler.resolveComponentType().then(function(_) {
+          return _this.generateDefault(componentCursor);
+        });
+      });
+    };
+    RouteRegistry = __decorate([core_1.Injectable(), __param(0, core_1.Inject(exports.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [lang_1.Type])], RouteRegistry);
+    return RouteRegistry;
   }());
-  exports.RuleSet = RuleSet;
+  exports.RouteRegistry = RouteRegistry;
+  function splitAndFlattenLinkParams(linkParams) {
+    var accumulation = [];
+    linkParams.forEach(function(item) {
+      if (lang_1.isString(item)) {
+        var strItem = item;
+        accumulation = accumulation.concat(strItem.split('/'));
+      } else {
+        accumulation.push(item);
+      }
+    });
+    return accumulation;
+  }
+  function mostSpecific(instructions) {
+    instructions = instructions.filter(function(instruction) {
+      return lang_1.isPresent(instruction);
+    });
+    if (instructions.length == 0) {
+      return null;
+    }
+    if (instructions.length == 1) {
+      return instructions[0];
+    }
+    var first = instructions[0];
+    var rest = instructions.slice(1);
+    return rest.reduce(function(instruction, contender) {
+      if (compareSpecificityStrings(contender.specificity, instruction.specificity) == -1) {
+        return contender;
+      }
+      return instruction;
+    }, first);
+  }
+  function compareSpecificityStrings(a, b) {
+    var l = lang_1.Math.min(a.length, b.length);
+    for (var i = 0; i < l; i += 1) {
+      var ai = lang_1.StringWrapper.charCodeAt(a, i);
+      var bi = lang_1.StringWrapper.charCodeAt(b, i);
+      var difference = bi - ai;
+      if (difference != 0) {
+        return difference;
+      }
+    }
+    return a.length - b.length;
+  }
+  function assertTerminalComponent(component, path) {
+    if (!lang_1.isType(component)) {
+      return ;
+    }
+    var annotations = reflection_1.reflector.annotations(component);
+    if (lang_1.isPresent(annotations)) {
+      for (var i = 0; i < annotations.length; i++) {
+        var annotation = annotations[i];
+        if (annotation instanceof route_config_impl_1.RouteConfig) {
+          throw new exceptions_1.BaseException("Child routes are not allowed for \"" + path + "\". Use \"...\" on the parent's route path.");
+        }
+      }
+    }
+  }
   global.define = __define;
   return module.exports;
 });
@@ -37320,24 +37090,23 @@ System.register("rxjs/util/toSubscriber", ["rxjs/Subscriber", "rxjs/symbol/rxSub
   return module.exports;
 });
 
-System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facade/collection", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/reflective_exceptions", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/di/reflective_key", "angular2/src/core/di/metadata", "angular2/src/core/di/injector"], true, function(require, exports, module) {
+System.register("angular2/src/core/di/injector", ["angular2/src/facade/collection", "angular2/src/core/di/provider", "angular2/src/core/di/exceptions", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/di/key", "angular2/src/core/di/metadata"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
   var collection_1 = require("angular2/src/facade/collection");
-  var reflective_provider_1 = require("angular2/src/core/di/reflective_provider");
-  var reflective_exceptions_1 = require("angular2/src/core/di/reflective_exceptions");
+  var provider_1 = require("angular2/src/core/di/provider");
+  var exceptions_1 = require("angular2/src/core/di/exceptions");
   var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var reflective_key_1 = require("angular2/src/core/di/reflective_key");
+  var exceptions_2 = require("angular2/src/facade/exceptions");
+  var key_1 = require("angular2/src/core/di/key");
   var metadata_1 = require("angular2/src/core/di/metadata");
-  var injector_1 = require("angular2/src/core/di/injector");
   var __unused;
   var _MAX_CONSTRUCTION_COUNTER = 10;
-  var UNDEFINED = lang_1.CONST_EXPR(new Object());
-  var ReflectiveProtoInjectorInlineStrategy = (function() {
-    function ReflectiveProtoInjectorInlineStrategy(protoEI, providers) {
+  exports.UNDEFINED = lang_1.CONST_EXPR(new Object());
+  var ProtoInjectorInlineStrategy = (function() {
+    function ProtoInjectorInlineStrategy(protoEI, providers) {
       this.provider0 = null;
       this.provider1 = null;
       this.provider2 = null;
@@ -37400,7 +37169,7 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
         this.keyId9 = providers[9].key.id;
       }
     }
-    ReflectiveProtoInjectorInlineStrategy.prototype.getProviderAtIndex = function(index) {
+    ProtoInjectorInlineStrategy.prototype.getProviderAtIndex = function(index) {
       if (index == 0)
         return this.provider0;
       if (index == 1)
@@ -37421,16 +37190,16 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
         return this.provider8;
       if (index == 9)
         return this.provider9;
-      throw new reflective_exceptions_1.OutOfBoundsError(index);
+      throw new exceptions_1.OutOfBoundsError(index);
     };
-    ReflectiveProtoInjectorInlineStrategy.prototype.createInjectorStrategy = function(injector) {
-      return new ReflectiveInjectorInlineStrategy(injector, this);
+    ProtoInjectorInlineStrategy.prototype.createInjectorStrategy = function(injector) {
+      return new InjectorInlineStrategy(injector, this);
     };
-    return ReflectiveProtoInjectorInlineStrategy;
+    return ProtoInjectorInlineStrategy;
   }());
-  exports.ReflectiveProtoInjectorInlineStrategy = ReflectiveProtoInjectorInlineStrategy;
-  var ReflectiveProtoInjectorDynamicStrategy = (function() {
-    function ReflectiveProtoInjectorDynamicStrategy(protoInj, providers) {
+  exports.ProtoInjectorInlineStrategy = ProtoInjectorInlineStrategy;
+  var ProtoInjectorDynamicStrategy = (function() {
+    function ProtoInjectorDynamicStrategy(protoInj, providers) {
       this.providers = providers;
       var len = providers.length;
       this.keyIds = collection_1.ListWrapper.createFixedSize(len);
@@ -37438,119 +37207,119 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
         this.keyIds[i] = providers[i].key.id;
       }
     }
-    ReflectiveProtoInjectorDynamicStrategy.prototype.getProviderAtIndex = function(index) {
+    ProtoInjectorDynamicStrategy.prototype.getProviderAtIndex = function(index) {
       if (index < 0 || index >= this.providers.length) {
-        throw new reflective_exceptions_1.OutOfBoundsError(index);
+        throw new exceptions_1.OutOfBoundsError(index);
       }
       return this.providers[index];
     };
-    ReflectiveProtoInjectorDynamicStrategy.prototype.createInjectorStrategy = function(ei) {
-      return new ReflectiveInjectorDynamicStrategy(this, ei);
+    ProtoInjectorDynamicStrategy.prototype.createInjectorStrategy = function(ei) {
+      return new InjectorDynamicStrategy(this, ei);
     };
-    return ReflectiveProtoInjectorDynamicStrategy;
+    return ProtoInjectorDynamicStrategy;
   }());
-  exports.ReflectiveProtoInjectorDynamicStrategy = ReflectiveProtoInjectorDynamicStrategy;
-  var ReflectiveProtoInjector = (function() {
-    function ReflectiveProtoInjector(providers) {
+  exports.ProtoInjectorDynamicStrategy = ProtoInjectorDynamicStrategy;
+  var ProtoInjector = (function() {
+    function ProtoInjector(providers) {
       this.numberOfProviders = providers.length;
-      this._strategy = providers.length > _MAX_CONSTRUCTION_COUNTER ? new ReflectiveProtoInjectorDynamicStrategy(this, providers) : new ReflectiveProtoInjectorInlineStrategy(this, providers);
+      this._strategy = providers.length > _MAX_CONSTRUCTION_COUNTER ? new ProtoInjectorDynamicStrategy(this, providers) : new ProtoInjectorInlineStrategy(this, providers);
     }
-    ReflectiveProtoInjector.fromResolvedProviders = function(providers) {
-      return new ReflectiveProtoInjector(providers);
+    ProtoInjector.fromResolvedProviders = function(providers) {
+      return new ProtoInjector(providers);
     };
-    ReflectiveProtoInjector.prototype.getProviderAtIndex = function(index) {
+    ProtoInjector.prototype.getProviderAtIndex = function(index) {
       return this._strategy.getProviderAtIndex(index);
     };
-    return ReflectiveProtoInjector;
+    return ProtoInjector;
   }());
-  exports.ReflectiveProtoInjector = ReflectiveProtoInjector;
-  var ReflectiveInjectorInlineStrategy = (function() {
-    function ReflectiveInjectorInlineStrategy(injector, protoStrategy) {
+  exports.ProtoInjector = ProtoInjector;
+  var InjectorInlineStrategy = (function() {
+    function InjectorInlineStrategy(injector, protoStrategy) {
       this.injector = injector;
       this.protoStrategy = protoStrategy;
-      this.obj0 = UNDEFINED;
-      this.obj1 = UNDEFINED;
-      this.obj2 = UNDEFINED;
-      this.obj3 = UNDEFINED;
-      this.obj4 = UNDEFINED;
-      this.obj5 = UNDEFINED;
-      this.obj6 = UNDEFINED;
-      this.obj7 = UNDEFINED;
-      this.obj8 = UNDEFINED;
-      this.obj9 = UNDEFINED;
+      this.obj0 = exports.UNDEFINED;
+      this.obj1 = exports.UNDEFINED;
+      this.obj2 = exports.UNDEFINED;
+      this.obj3 = exports.UNDEFINED;
+      this.obj4 = exports.UNDEFINED;
+      this.obj5 = exports.UNDEFINED;
+      this.obj6 = exports.UNDEFINED;
+      this.obj7 = exports.UNDEFINED;
+      this.obj8 = exports.UNDEFINED;
+      this.obj9 = exports.UNDEFINED;
     }
-    ReflectiveInjectorInlineStrategy.prototype.resetConstructionCounter = function() {
+    InjectorInlineStrategy.prototype.resetConstructionCounter = function() {
       this.injector._constructionCounter = 0;
     };
-    ReflectiveInjectorInlineStrategy.prototype.instantiateProvider = function(provider) {
+    InjectorInlineStrategy.prototype.instantiateProvider = function(provider) {
       return this.injector._new(provider);
     };
-    ReflectiveInjectorInlineStrategy.prototype.getObjByKeyId = function(keyId) {
+    InjectorInlineStrategy.prototype.getObjByKeyId = function(keyId) {
       var p = this.protoStrategy;
       var inj = this.injector;
       if (p.keyId0 === keyId) {
-        if (this.obj0 === UNDEFINED) {
+        if (this.obj0 === exports.UNDEFINED) {
           this.obj0 = inj._new(p.provider0);
         }
         return this.obj0;
       }
       if (p.keyId1 === keyId) {
-        if (this.obj1 === UNDEFINED) {
+        if (this.obj1 === exports.UNDEFINED) {
           this.obj1 = inj._new(p.provider1);
         }
         return this.obj1;
       }
       if (p.keyId2 === keyId) {
-        if (this.obj2 === UNDEFINED) {
+        if (this.obj2 === exports.UNDEFINED) {
           this.obj2 = inj._new(p.provider2);
         }
         return this.obj2;
       }
       if (p.keyId3 === keyId) {
-        if (this.obj3 === UNDEFINED) {
+        if (this.obj3 === exports.UNDEFINED) {
           this.obj3 = inj._new(p.provider3);
         }
         return this.obj3;
       }
       if (p.keyId4 === keyId) {
-        if (this.obj4 === UNDEFINED) {
+        if (this.obj4 === exports.UNDEFINED) {
           this.obj4 = inj._new(p.provider4);
         }
         return this.obj4;
       }
       if (p.keyId5 === keyId) {
-        if (this.obj5 === UNDEFINED) {
+        if (this.obj5 === exports.UNDEFINED) {
           this.obj5 = inj._new(p.provider5);
         }
         return this.obj5;
       }
       if (p.keyId6 === keyId) {
-        if (this.obj6 === UNDEFINED) {
+        if (this.obj6 === exports.UNDEFINED) {
           this.obj6 = inj._new(p.provider6);
         }
         return this.obj6;
       }
       if (p.keyId7 === keyId) {
-        if (this.obj7 === UNDEFINED) {
+        if (this.obj7 === exports.UNDEFINED) {
           this.obj7 = inj._new(p.provider7);
         }
         return this.obj7;
       }
       if (p.keyId8 === keyId) {
-        if (this.obj8 === UNDEFINED) {
+        if (this.obj8 === exports.UNDEFINED) {
           this.obj8 = inj._new(p.provider8);
         }
         return this.obj8;
       }
       if (p.keyId9 === keyId) {
-        if (this.obj9 === UNDEFINED) {
+        if (this.obj9 === exports.UNDEFINED) {
           this.obj9 = inj._new(p.provider9);
         }
         return this.obj9;
       }
-      return UNDEFINED;
+      return exports.UNDEFINED;
     };
-    ReflectiveInjectorInlineStrategy.prototype.getObjAtIndex = function(index) {
+    InjectorInlineStrategy.prototype.getObjAtIndex = function(index) {
       if (index == 0)
         return this.obj0;
       if (index == 1)
@@ -37571,99 +37340,99 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
         return this.obj8;
       if (index == 9)
         return this.obj9;
-      throw new reflective_exceptions_1.OutOfBoundsError(index);
+      throw new exceptions_1.OutOfBoundsError(index);
     };
-    ReflectiveInjectorInlineStrategy.prototype.getMaxNumberOfObjects = function() {
+    InjectorInlineStrategy.prototype.getMaxNumberOfObjects = function() {
       return _MAX_CONSTRUCTION_COUNTER;
     };
-    return ReflectiveInjectorInlineStrategy;
+    return InjectorInlineStrategy;
   }());
-  exports.ReflectiveInjectorInlineStrategy = ReflectiveInjectorInlineStrategy;
-  var ReflectiveInjectorDynamicStrategy = (function() {
-    function ReflectiveInjectorDynamicStrategy(protoStrategy, injector) {
+  exports.InjectorInlineStrategy = InjectorInlineStrategy;
+  var InjectorDynamicStrategy = (function() {
+    function InjectorDynamicStrategy(protoStrategy, injector) {
       this.protoStrategy = protoStrategy;
       this.injector = injector;
       this.objs = collection_1.ListWrapper.createFixedSize(protoStrategy.providers.length);
-      collection_1.ListWrapper.fill(this.objs, UNDEFINED);
+      collection_1.ListWrapper.fill(this.objs, exports.UNDEFINED);
     }
-    ReflectiveInjectorDynamicStrategy.prototype.resetConstructionCounter = function() {
+    InjectorDynamicStrategy.prototype.resetConstructionCounter = function() {
       this.injector._constructionCounter = 0;
     };
-    ReflectiveInjectorDynamicStrategy.prototype.instantiateProvider = function(provider) {
+    InjectorDynamicStrategy.prototype.instantiateProvider = function(provider) {
       return this.injector._new(provider);
     };
-    ReflectiveInjectorDynamicStrategy.prototype.getObjByKeyId = function(keyId) {
+    InjectorDynamicStrategy.prototype.getObjByKeyId = function(keyId) {
       var p = this.protoStrategy;
       for (var i = 0; i < p.keyIds.length; i++) {
         if (p.keyIds[i] === keyId) {
-          if (this.objs[i] === UNDEFINED) {
+          if (this.objs[i] === exports.UNDEFINED) {
             this.objs[i] = this.injector._new(p.providers[i]);
           }
           return this.objs[i];
         }
       }
-      return UNDEFINED;
+      return exports.UNDEFINED;
     };
-    ReflectiveInjectorDynamicStrategy.prototype.getObjAtIndex = function(index) {
+    InjectorDynamicStrategy.prototype.getObjAtIndex = function(index) {
       if (index < 0 || index >= this.objs.length) {
-        throw new reflective_exceptions_1.OutOfBoundsError(index);
+        throw new exceptions_1.OutOfBoundsError(index);
       }
       return this.objs[index];
     };
-    ReflectiveInjectorDynamicStrategy.prototype.getMaxNumberOfObjects = function() {
+    InjectorDynamicStrategy.prototype.getMaxNumberOfObjects = function() {
       return this.objs.length;
     };
-    return ReflectiveInjectorDynamicStrategy;
+    return InjectorDynamicStrategy;
   }());
-  exports.ReflectiveInjectorDynamicStrategy = ReflectiveInjectorDynamicStrategy;
-  var ReflectiveInjector = (function() {
-    function ReflectiveInjector() {}
-    ReflectiveInjector.resolve = function(providers) {
-      return reflective_provider_1.resolveReflectiveProviders(providers);
+  exports.InjectorDynamicStrategy = InjectorDynamicStrategy;
+  var Injector = (function() {
+    function Injector() {}
+    Injector.resolve = function(providers) {
+      return provider_1.resolveProviders(providers);
     };
-    ReflectiveInjector.resolveAndCreate = function(providers, parent) {
-      if (parent === void 0) {
-        parent = null;
-      }
-      var ResolvedReflectiveProviders = ReflectiveInjector.resolve(providers);
-      return ReflectiveInjector.fromResolvedProviders(ResolvedReflectiveProviders, parent);
+    Injector.resolveAndCreate = function(providers) {
+      var resolvedProviders = Injector.resolve(providers);
+      return Injector.fromResolvedProviders(resolvedProviders);
     };
-    ReflectiveInjector.fromResolvedProviders = function(providers, parent) {
-      if (parent === void 0) {
-        parent = null;
-      }
-      return new ReflectiveInjector_(ReflectiveProtoInjector.fromResolvedProviders(providers), parent);
+    Injector.fromResolvedProviders = function(providers) {
+      return new Injector_(ProtoInjector.fromResolvedProviders(providers));
     };
-    ReflectiveInjector.fromResolvedBindings = function(providers) {
-      return ReflectiveInjector.fromResolvedProviders(providers);
+    Injector.fromResolvedBindings = function(providers) {
+      return Injector.fromResolvedProviders(providers);
     };
-    Object.defineProperty(ReflectiveInjector.prototype, "parent", {
+    Injector.prototype.get = function(token) {
+      return exceptions_2.unimplemented();
+    };
+    Injector.prototype.getOptional = function(token) {
+      return exceptions_2.unimplemented();
+    };
+    Object.defineProperty(Injector.prototype, "parent", {
       get: function() {
-        return exceptions_1.unimplemented();
+        return exceptions_2.unimplemented();
       },
       enumerable: true,
       configurable: true
     });
-    ReflectiveInjector.prototype.debugContext = function() {
+    Injector.prototype.debugContext = function() {
       return null;
     };
-    ReflectiveInjector.prototype.resolveAndCreateChild = function(providers) {
-      return exceptions_1.unimplemented();
+    Injector.prototype.resolveAndCreateChild = function(providers) {
+      return exceptions_2.unimplemented();
     };
-    ReflectiveInjector.prototype.createChildFromResolved = function(providers) {
-      return exceptions_1.unimplemented();
+    Injector.prototype.createChildFromResolved = function(providers) {
+      return exceptions_2.unimplemented();
     };
-    ReflectiveInjector.prototype.resolveAndInstantiate = function(provider) {
-      return exceptions_1.unimplemented();
+    Injector.prototype.resolveAndInstantiate = function(provider) {
+      return exceptions_2.unimplemented();
     };
-    ReflectiveInjector.prototype.instantiateResolved = function(provider) {
-      return exceptions_1.unimplemented();
+    Injector.prototype.instantiateResolved = function(provider) {
+      return exceptions_2.unimplemented();
     };
-    return ReflectiveInjector;
+    return Injector;
   }());
-  exports.ReflectiveInjector = ReflectiveInjector;
-  var ReflectiveInjector_ = (function() {
-    function ReflectiveInjector_(_proto, _parent, _debugContext) {
+  exports.Injector = Injector;
+  var Injector_ = (function() {
+    function Injector_(_proto, _parent, _debugContext) {
       if (_parent === void 0) {
         _parent = null;
       }
@@ -37676,55 +37445,55 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
       this._parent = _parent;
       this._strategy = _proto._strategy.createInjectorStrategy(this);
     }
-    ReflectiveInjector_.prototype.debugContext = function() {
+    Injector_.prototype.debugContext = function() {
       return this._debugContext();
     };
-    ReflectiveInjector_.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = injector_1.THROW_IF_NOT_FOUND;
-      }
-      return this._getByKey(reflective_key_1.ReflectiveKey.get(token), null, null, notFoundValue);
+    Injector_.prototype.get = function(token) {
+      return this._getByKey(key_1.Key.get(token), null, null, false);
     };
-    ReflectiveInjector_.prototype.getAt = function(index) {
+    Injector_.prototype.getOptional = function(token) {
+      return this._getByKey(key_1.Key.get(token), null, null, true);
+    };
+    Injector_.prototype.getAt = function(index) {
       return this._strategy.getObjAtIndex(index);
     };
-    Object.defineProperty(ReflectiveInjector_.prototype, "parent", {
+    Object.defineProperty(Injector_.prototype, "parent", {
       get: function() {
         return this._parent;
       },
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(ReflectiveInjector_.prototype, "internalStrategy", {
+    Object.defineProperty(Injector_.prototype, "internalStrategy", {
       get: function() {
         return this._strategy;
       },
       enumerable: true,
       configurable: true
     });
-    ReflectiveInjector_.prototype.resolveAndCreateChild = function(providers) {
-      var ResolvedReflectiveProviders = ReflectiveInjector.resolve(providers);
-      return this.createChildFromResolved(ResolvedReflectiveProviders);
+    Injector_.prototype.resolveAndCreateChild = function(providers) {
+      var resolvedProviders = Injector.resolve(providers);
+      return this.createChildFromResolved(resolvedProviders);
     };
-    ReflectiveInjector_.prototype.createChildFromResolved = function(providers) {
-      var proto = new ReflectiveProtoInjector(providers);
-      var inj = new ReflectiveInjector_(proto);
+    Injector_.prototype.createChildFromResolved = function(providers) {
+      var proto = new ProtoInjector(providers);
+      var inj = new Injector_(proto);
       inj._parent = this;
       return inj;
     };
-    ReflectiveInjector_.prototype.resolveAndInstantiate = function(provider) {
-      return this.instantiateResolved(ReflectiveInjector.resolve([provider])[0]);
+    Injector_.prototype.resolveAndInstantiate = function(provider) {
+      return this.instantiateResolved(Injector.resolve([provider])[0]);
     };
-    ReflectiveInjector_.prototype.instantiateResolved = function(provider) {
+    Injector_.prototype.instantiateResolved = function(provider) {
       return this._instantiateProvider(provider);
     };
-    ReflectiveInjector_.prototype._new = function(provider) {
+    Injector_.prototype._new = function(provider) {
       if (this._constructionCounter++ > this._strategy.getMaxNumberOfObjects()) {
-        throw new reflective_exceptions_1.CyclicDependencyError(this, provider.key);
+        throw new exceptions_1.CyclicDependencyError(this, provider.key);
       }
       return this._instantiateProvider(provider);
     };
-    ReflectiveInjector_.prototype._instantiateProvider = function(provider) {
+    Injector_.prototype._instantiateProvider = function(provider) {
       if (provider.multiProvider) {
         var res = collection_1.ListWrapper.createFixedSize(provider.resolvedFactories.length);
         for (var i = 0; i < provider.resolvedFactories.length; ++i) {
@@ -37735,7 +37504,7 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
         return this._instantiate(provider, provider.resolvedFactories[0]);
       }
     };
-    ReflectiveInjector_.prototype._instantiate = function(provider, resolvedFactory) {
+    Injector_.prototype._instantiate = function(provider, resolvedFactory) {
       var factory = resolvedFactory.factory;
       var deps = resolvedFactory.dependencies;
       var length = deps.length;
@@ -37760,28 +37529,28 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
       var d18;
       var d19;
       try {
-        d0 = length > 0 ? this._getByReflectiveDependency(provider, deps[0]) : null;
-        d1 = length > 1 ? this._getByReflectiveDependency(provider, deps[1]) : null;
-        d2 = length > 2 ? this._getByReflectiveDependency(provider, deps[2]) : null;
-        d3 = length > 3 ? this._getByReflectiveDependency(provider, deps[3]) : null;
-        d4 = length > 4 ? this._getByReflectiveDependency(provider, deps[4]) : null;
-        d5 = length > 5 ? this._getByReflectiveDependency(provider, deps[5]) : null;
-        d6 = length > 6 ? this._getByReflectiveDependency(provider, deps[6]) : null;
-        d7 = length > 7 ? this._getByReflectiveDependency(provider, deps[7]) : null;
-        d8 = length > 8 ? this._getByReflectiveDependency(provider, deps[8]) : null;
-        d9 = length > 9 ? this._getByReflectiveDependency(provider, deps[9]) : null;
-        d10 = length > 10 ? this._getByReflectiveDependency(provider, deps[10]) : null;
-        d11 = length > 11 ? this._getByReflectiveDependency(provider, deps[11]) : null;
-        d12 = length > 12 ? this._getByReflectiveDependency(provider, deps[12]) : null;
-        d13 = length > 13 ? this._getByReflectiveDependency(provider, deps[13]) : null;
-        d14 = length > 14 ? this._getByReflectiveDependency(provider, deps[14]) : null;
-        d15 = length > 15 ? this._getByReflectiveDependency(provider, deps[15]) : null;
-        d16 = length > 16 ? this._getByReflectiveDependency(provider, deps[16]) : null;
-        d17 = length > 17 ? this._getByReflectiveDependency(provider, deps[17]) : null;
-        d18 = length > 18 ? this._getByReflectiveDependency(provider, deps[18]) : null;
-        d19 = length > 19 ? this._getByReflectiveDependency(provider, deps[19]) : null;
+        d0 = length > 0 ? this._getByDependency(provider, deps[0]) : null;
+        d1 = length > 1 ? this._getByDependency(provider, deps[1]) : null;
+        d2 = length > 2 ? this._getByDependency(provider, deps[2]) : null;
+        d3 = length > 3 ? this._getByDependency(provider, deps[3]) : null;
+        d4 = length > 4 ? this._getByDependency(provider, deps[4]) : null;
+        d5 = length > 5 ? this._getByDependency(provider, deps[5]) : null;
+        d6 = length > 6 ? this._getByDependency(provider, deps[6]) : null;
+        d7 = length > 7 ? this._getByDependency(provider, deps[7]) : null;
+        d8 = length > 8 ? this._getByDependency(provider, deps[8]) : null;
+        d9 = length > 9 ? this._getByDependency(provider, deps[9]) : null;
+        d10 = length > 10 ? this._getByDependency(provider, deps[10]) : null;
+        d11 = length > 11 ? this._getByDependency(provider, deps[11]) : null;
+        d12 = length > 12 ? this._getByDependency(provider, deps[12]) : null;
+        d13 = length > 13 ? this._getByDependency(provider, deps[13]) : null;
+        d14 = length > 14 ? this._getByDependency(provider, deps[14]) : null;
+        d15 = length > 15 ? this._getByDependency(provider, deps[15]) : null;
+        d16 = length > 16 ? this._getByDependency(provider, deps[16]) : null;
+        d17 = length > 17 ? this._getByDependency(provider, deps[17]) : null;
+        d18 = length > 18 ? this._getByDependency(provider, deps[18]) : null;
+        d19 = length > 19 ? this._getByDependency(provider, deps[19]) : null;
       } catch (e) {
-        if (e instanceof reflective_exceptions_1.AbstractProviderError || e instanceof reflective_exceptions_1.InstantiationError) {
+        if (e instanceof exceptions_1.AbstractProviderError || e instanceof exceptions_1.InstantiationError) {
           e.addKey(this, provider.key);
         }
         throw e;
@@ -37853,73 +37622,77 @@ System.register("angular2/src/core/di/reflective_injector", ["angular2/src/facad
             obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16, d17, d18, d19);
             break;
           default:
-            throw new exceptions_1.BaseException("Cannot instantiate '" + provider.key.displayName + "' because it has more than 20 dependencies");
+            throw new exceptions_2.BaseException("Cannot instantiate '" + provider.key.displayName + "' because it has more than 20 dependencies");
         }
       } catch (e) {
-        throw new reflective_exceptions_1.InstantiationError(this, e, e.stack, provider.key);
+        throw new exceptions_1.InstantiationError(this, e, e.stack, provider.key);
       }
-      return resolvedFactory.postProcess(obj);
+      return obj;
     };
-    ReflectiveInjector_.prototype._getByReflectiveDependency = function(provider, dep) {
-      return this._getByKey(dep.key, dep.lowerBoundVisibility, dep.upperBoundVisibility, dep.optional ? null : injector_1.THROW_IF_NOT_FOUND);
+    Injector_.prototype._getByDependency = function(provider, dep) {
+      return this._getByKey(dep.key, dep.lowerBoundVisibility, dep.upperBoundVisibility, dep.optional);
     };
-    ReflectiveInjector_.prototype._getByKey = function(key, lowerBoundVisibility, upperBoundVisibility, notFoundValue) {
+    Injector_.prototype._getByKey = function(key, lowerBoundVisibility, upperBoundVisibility, optional) {
       if (key === INJECTOR_KEY) {
         return this;
       }
       if (upperBoundVisibility instanceof metadata_1.SelfMetadata) {
-        return this._getByKeySelf(key, notFoundValue);
+        return this._getByKeySelf(key, optional);
       } else {
-        return this._getByKeyDefault(key, notFoundValue, lowerBoundVisibility);
+        return this._getByKeyDefault(key, optional, lowerBoundVisibility);
       }
     };
-    ReflectiveInjector_.prototype._throwOrNull = function(key, notFoundValue) {
-      if (notFoundValue !== injector_1.THROW_IF_NOT_FOUND) {
-        return notFoundValue;
+    Injector_.prototype._throwOrNull = function(key, optional) {
+      if (optional) {
+        return null;
       } else {
-        throw new reflective_exceptions_1.NoProviderError(this, key);
+        throw new exceptions_1.NoProviderError(this, key);
       }
     };
-    ReflectiveInjector_.prototype._getByKeySelf = function(key, notFoundValue) {
+    Injector_.prototype._getByKeySelf = function(key, optional) {
       var obj = this._strategy.getObjByKeyId(key.id);
-      return (obj !== UNDEFINED) ? obj : this._throwOrNull(key, notFoundValue);
+      return (obj !== exports.UNDEFINED) ? obj : this._throwOrNull(key, optional);
     };
-    ReflectiveInjector_.prototype._getByKeyDefault = function(key, notFoundValue, lowerBoundVisibility) {
+    Injector_.prototype._getByKeyDefault = function(key, optional, lowerBoundVisibility) {
       var inj;
       if (lowerBoundVisibility instanceof metadata_1.SkipSelfMetadata) {
         inj = this._parent;
       } else {
         inj = this;
       }
-      while (inj instanceof ReflectiveInjector_) {
+      while (inj instanceof Injector_) {
         var inj_ = inj;
         var obj = inj_._strategy.getObjByKeyId(key.id);
-        if (obj !== UNDEFINED)
+        if (obj !== exports.UNDEFINED)
           return obj;
         inj = inj_._parent;
       }
       if (inj !== null) {
-        return inj.get(key.token, notFoundValue);
+        if (optional) {
+          return inj.getOptional(key.token);
+        } else {
+          return inj.get(key.token);
+        }
       } else {
-        return this._throwOrNull(key, notFoundValue);
+        return this._throwOrNull(key, optional);
       }
     };
-    Object.defineProperty(ReflectiveInjector_.prototype, "displayName", {
+    Object.defineProperty(Injector_.prototype, "displayName", {
       get: function() {
-        return "ReflectiveInjector(providers: [" + _mapProviders(this, function(b) {
+        return "Injector(providers: [" + _mapProviders(this, function(b) {
           return (" \"" + b.key.displayName + "\" ");
         }).join(", ") + "])";
       },
       enumerable: true,
       configurable: true
     });
-    ReflectiveInjector_.prototype.toString = function() {
+    Injector_.prototype.toString = function() {
       return this.displayName;
     };
-    return ReflectiveInjector_;
+    return Injector_;
   }());
-  exports.ReflectiveInjector_ = ReflectiveInjector_;
-  var INJECTOR_KEY = reflective_key_1.ReflectiveKey.get(injector_1.Injector);
+  exports.Injector_ = Injector_;
+  var INJECTOR_KEY = key_1.Key.get(Injector);
   function _mapProviders(injector, fn) {
     var res = [];
     for (var i = 0; i < injector._proto.numberOfProviders; ++i) {
@@ -38117,8 +37890,7 @@ System.register("angular2/src/platform/worker_app_common", ["angular2/src/compil
     PrintLogger.prototype.logGroupEnd = function() {};
     return PrintLogger;
   }());
-  exports.WORKER_APP_PLATFORM_MARKER = lang_1.CONST_EXPR(new core_1.OpaqueToken('WorkerAppPlatformMarker'));
-  exports.WORKER_APP_PLATFORM = lang_1.CONST_EXPR([core_1.PLATFORM_COMMON_PROVIDERS, lang_1.CONST_EXPR(new di_1.Provider(exports.WORKER_APP_PLATFORM_MARKER, {useValue: true}))]);
+  exports.WORKER_APP_PLATFORM = lang_1.CONST_EXPR([core_1.PLATFORM_COMMON_PROVIDERS]);
   exports.WORKER_APP_APPLICATION_COMMON = lang_1.CONST_EXPR([core_1.APPLICATION_COMMON_PROVIDERS, common_1.FORM_PROVIDERS, serializer_1.Serializer, new di_1.Provider(core_1.PLATFORM_PIPES, {
     useValue: common_1.COMMON_PIPES,
     multi: true
@@ -39178,7 +38950,7 @@ System.register("angular2/src/compiler/template_parser", ["angular2/src/facade/c
   return module.exports;
 });
 
-System.register("angular2/src/compiler/runtime_compiler", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/compiler/compile_metadata", "angular2/src/core/di", "angular2/src/compiler/style_compiler", "angular2/src/compiler/view_compiler/view_compiler", "angular2/src/compiler/view_compiler/injector_compiler", "angular2/src/compiler/template_parser", "angular2/src/compiler/directive_normalizer", "angular2/src/compiler/runtime_metadata", "angular2/src/core/linker/component_factory", "angular2/src/compiler/config", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/output/output_jit", "angular2/src/compiler/output/output_interpreter", "angular2/src/compiler/output/interpretive_view", "angular2/src/compiler/output/interpretive_injector", "angular2/src/compiler/xhr"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/runtime_compiler", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/compiler/compile_metadata", "angular2/src/core/di", "angular2/src/compiler/style_compiler", "angular2/src/compiler/view_compiler/view_compiler", "angular2/src/compiler/template_parser", "angular2/src/compiler/directive_normalizer", "angular2/src/compiler/runtime_metadata", "angular2/src/core/linker/component_factory", "angular2/src/compiler/config", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/output/output_jit", "angular2/src/compiler/output/output_interpreter", "angular2/src/compiler/output/interpretive_view", "angular2/src/compiler/xhr"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -39207,7 +38979,6 @@ System.register("angular2/src/compiler/runtime_compiler", ["angular2/src/facade/
   var di_1 = require("angular2/src/core/di");
   var style_compiler_1 = require("angular2/src/compiler/style_compiler");
   var view_compiler_1 = require("angular2/src/compiler/view_compiler/view_compiler");
-  var injector_compiler_1 = require("angular2/src/compiler/view_compiler/injector_compiler");
   var template_parser_1 = require("angular2/src/compiler/template_parser");
   var directive_normalizer_1 = require("angular2/src/compiler/directive_normalizer");
   var runtime_metadata_1 = require("angular2/src/compiler/runtime_metadata");
@@ -39217,37 +38988,21 @@ System.register("angular2/src/compiler/runtime_compiler", ["angular2/src/facade/
   var output_jit_1 = require("angular2/src/compiler/output/output_jit");
   var output_interpreter_1 = require("angular2/src/compiler/output/output_interpreter");
   var interpretive_view_1 = require("angular2/src/compiler/output/interpretive_view");
-  var interpretive_injector_1 = require("angular2/src/compiler/output/interpretive_injector");
   var xhr_1 = require("angular2/src/compiler/xhr");
   var RuntimeCompiler = (function() {
-    function RuntimeCompiler(_runtimeMetadataResolver, _templateNormalizer, _templateParser, _styleCompiler, _viewCompiler, _xhr, _injectorCompiler, _genConfig) {
+    function RuntimeCompiler(_runtimeMetadataResolver, _templateNormalizer, _templateParser, _styleCompiler, _viewCompiler, _xhr, _genConfig) {
       this._runtimeMetadataResolver = _runtimeMetadataResolver;
       this._templateNormalizer = _templateNormalizer;
       this._templateParser = _templateParser;
       this._styleCompiler = _styleCompiler;
       this._viewCompiler = _viewCompiler;
       this._xhr = _xhr;
-      this._injectorCompiler = _injectorCompiler;
       this._genConfig = _genConfig;
       this._styleCache = new Map();
       this._hostCacheKeys = new Map();
       this._compiledTemplateCache = new Map();
       this._compiledTemplateDone = new Map();
     }
-    RuntimeCompiler.prototype.createInjectorFactory = function(moduleClass, extraProviders) {
-      if (extraProviders === void 0) {
-        extraProviders = lang_1.CONST_EXPR([]);
-      }
-      var injectorModuleMeta = this._runtimeMetadataResolver.getInjectorModuleMetadata(moduleClass, extraProviders);
-      var compileResult = this._injectorCompiler.compileInjector(injectorModuleMeta);
-      var factory;
-      if (lang_1.IS_DART || !this._genConfig.useJit) {
-        factory = output_interpreter_1.interpretStatements(compileResult.statements, compileResult.injectorFactoryVar, new interpretive_injector_1.InterpretiveInjectorInstanceFactory());
-      } else {
-        factory = output_jit_1.jitStatements(injectorModuleMeta.type.name + ".ngfactory.js", compileResult.statements, compileResult.injectorFactoryVar);
-      }
-      return factory;
-    };
     RuntimeCompiler.prototype.resolveComponent = function(componentType) {
       var compMeta = this._runtimeMetadataResolver.getDirectiveMetadata(componentType);
       var hostCacheKey = this._hostCacheKeys.get(componentType);
@@ -39356,7 +39111,7 @@ System.register("angular2/src/compiler/runtime_compiler", ["angular2/src/facade/
       }
       return cssTextPromise;
     };
-    RuntimeCompiler = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [runtime_metadata_1.RuntimeMetadataResolver, directive_normalizer_1.DirectiveNormalizer, template_parser_1.TemplateParser, style_compiler_1.StyleCompiler, view_compiler_1.ViewCompiler, xhr_1.XHR, injector_compiler_1.InjectorCompiler, config_1.CompilerConfig])], RuntimeCompiler);
+    RuntimeCompiler = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [runtime_metadata_1.RuntimeMetadataResolver, directive_normalizer_1.DirectiveNormalizer, template_parser_1.TemplateParser, style_compiler_1.StyleCompiler, view_compiler_1.ViewCompiler, xhr_1.XHR, config_1.CompilerConfig])], RuntimeCompiler);
     return RuntimeCompiler;
   }());
   exports.RuntimeCompiler = RuntimeCompiler;
@@ -39382,823 +39137,7 @@ System.register("angular2/src/compiler/runtime_compiler", ["angular2/src/facade/
   return module.exports;
 });
 
-System.register("angular2/src/router/route_registry", ["angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/core", "angular2/src/router/route_config/route_config_impl", "angular2/src/router/rules/rules", "angular2/src/router/rules/rule_set", "angular2/src/router/instruction", "angular2/src/router/route_config/route_config_normalizer", "angular2/src/router/url_parser", "angular2/src/router/utils"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var __param = (this && this.__param) || function(paramIndex, decorator) {
-    return function(target, key) {
-      decorator(target, key, paramIndex);
-    };
-  };
-  var collection_1 = require("angular2/src/facade/collection");
-  var async_1 = require("angular2/src/facade/async");
-  var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var core_1 = require("angular2/core");
-  var route_config_impl_1 = require("angular2/src/router/route_config/route_config_impl");
-  var rules_1 = require("angular2/src/router/rules/rules");
-  var rule_set_1 = require("angular2/src/router/rules/rule_set");
-  var instruction_1 = require("angular2/src/router/instruction");
-  var route_config_normalizer_1 = require("angular2/src/router/route_config/route_config_normalizer");
-  var url_parser_1 = require("angular2/src/router/url_parser");
-  var utils_1 = require("angular2/src/router/utils");
-  var _resolveToNull = async_1.PromiseWrapper.resolve(null);
-  exports.ROUTER_PRIMARY_COMPONENT = lang_1.CONST_EXPR(new core_1.OpaqueToken('RouterPrimaryComponent'));
-  var RouteRegistry = (function() {
-    function RouteRegistry(_rootComponent) {
-      this._rootComponent = _rootComponent;
-      this._rules = new collection_1.Map();
-    }
-    RouteRegistry.prototype.config = function(parentComponent, config) {
-      config = route_config_normalizer_1.normalizeRouteConfig(config, this);
-      if (config instanceof route_config_impl_1.Route) {
-        route_config_normalizer_1.assertComponentExists(config.component, config.path);
-      } else if (config instanceof route_config_impl_1.AuxRoute) {
-        route_config_normalizer_1.assertComponentExists(config.component, config.path);
-      }
-      var rules = this._rules.get(parentComponent);
-      if (lang_1.isBlank(rules)) {
-        rules = new rule_set_1.RuleSet();
-        this._rules.set(parentComponent, rules);
-      }
-      var terminal = rules.config(config);
-      if (config instanceof route_config_impl_1.Route) {
-        if (terminal) {
-          assertTerminalComponent(config.component, config.path);
-        } else {
-          this.configFromComponent(config.component);
-        }
-      }
-    };
-    RouteRegistry.prototype.configFromComponent = function(component) {
-      var _this = this;
-      if (!lang_1.isType(component) && !(component instanceof core_1.ComponentFactory)) {
-        return ;
-      }
-      if (this._rules.has(component)) {
-        return ;
-      }
-      var annotations = utils_1.getComponentAnnotations(component);
-      if (lang_1.isPresent(annotations)) {
-        for (var i = 0; i < annotations.length; i++) {
-          var annotation = annotations[i];
-          if (annotation instanceof route_config_impl_1.RouteConfig) {
-            var routeCfgs = annotation.configs;
-            routeCfgs.forEach(function(config) {
-              return _this.config(component, config);
-            });
-          }
-        }
-      }
-    };
-    RouteRegistry.prototype.recognize = function(url, ancestorInstructions) {
-      var parsedUrl = url_parser_1.parser.parse(url);
-      return this._recognize(parsedUrl, []);
-    };
-    RouteRegistry.prototype._recognize = function(parsedUrl, ancestorInstructions, _aux) {
-      var _this = this;
-      if (_aux === void 0) {
-        _aux = false;
-      }
-      var parentInstruction = collection_1.ListWrapper.last(ancestorInstructions);
-      var parentComponent = lang_1.isPresent(parentInstruction) ? parentInstruction.component.componentType : this._rootComponent;
-      var rules = this._rules.get(parentComponent);
-      if (lang_1.isBlank(rules)) {
-        return _resolveToNull;
-      }
-      var possibleMatches = _aux ? rules.recognizeAuxiliary(parsedUrl) : rules.recognize(parsedUrl);
-      var matchPromises = possibleMatches.map(function(candidate) {
-        return candidate.then(function(candidate) {
-          if (candidate instanceof rules_1.PathMatch) {
-            var auxParentInstructions = ancestorInstructions.length > 0 ? [collection_1.ListWrapper.last(ancestorInstructions)] : [];
-            var auxInstructions = _this._auxRoutesToUnresolved(candidate.remainingAux, auxParentInstructions);
-            var instruction = new instruction_1.ResolvedInstruction(candidate.instruction, null, auxInstructions);
-            if (lang_1.isBlank(candidate.instruction) || candidate.instruction.terminal) {
-              return instruction;
-            }
-            var newAncestorInstructions = ancestorInstructions.concat([instruction]);
-            return _this._recognize(candidate.remaining, newAncestorInstructions).then(function(childInstruction) {
-              if (lang_1.isBlank(childInstruction)) {
-                return null;
-              }
-              if (childInstruction instanceof instruction_1.RedirectInstruction) {
-                return childInstruction;
-              }
-              instruction.child = childInstruction;
-              return instruction;
-            });
-          }
-          if (candidate instanceof rules_1.RedirectMatch) {
-            var instruction = _this.generate(candidate.redirectTo, ancestorInstructions.concat([null]));
-            return new instruction_1.RedirectInstruction(instruction.component, instruction.child, instruction.auxInstruction, candidate.specificity);
-          }
-        });
-      });
-      if ((lang_1.isBlank(parsedUrl) || parsedUrl.path == '') && possibleMatches.length == 0) {
-        return async_1.PromiseWrapper.resolve(this.generateDefault(parentComponent));
-      }
-      return async_1.PromiseWrapper.all(matchPromises).then(mostSpecific);
-    };
-    RouteRegistry.prototype._auxRoutesToUnresolved = function(auxRoutes, parentInstructions) {
-      var _this = this;
-      var unresolvedAuxInstructions = {};
-      auxRoutes.forEach(function(auxUrl) {
-        unresolvedAuxInstructions[auxUrl.path] = new instruction_1.UnresolvedInstruction(function() {
-          return _this._recognize(auxUrl, parentInstructions, true);
-        });
-      });
-      return unresolvedAuxInstructions;
-    };
-    RouteRegistry.prototype.generate = function(linkParams, ancestorInstructions, _aux) {
-      if (_aux === void 0) {
-        _aux = false;
-      }
-      var params = splitAndFlattenLinkParams(linkParams);
-      var prevInstruction;
-      if (collection_1.ListWrapper.first(params) == '') {
-        params.shift();
-        prevInstruction = collection_1.ListWrapper.first(ancestorInstructions);
-        ancestorInstructions = [];
-      } else {
-        prevInstruction = ancestorInstructions.length > 0 ? ancestorInstructions.pop() : null;
-        if (collection_1.ListWrapper.first(params) == '.') {
-          params.shift();
-        } else if (collection_1.ListWrapper.first(params) == '..') {
-          while (collection_1.ListWrapper.first(params) == '..') {
-            if (ancestorInstructions.length <= 0) {
-              throw new exceptions_1.BaseException("Link \"" + collection_1.ListWrapper.toJSON(linkParams) + "\" has too many \"../\" segments.");
-            }
-            prevInstruction = ancestorInstructions.pop();
-            params = collection_1.ListWrapper.slice(params, 1);
-          }
-        } else {
-          var routeName = collection_1.ListWrapper.first(params);
-          var parentComponentType = this._rootComponent;
-          var grandparentComponentType = null;
-          if (ancestorInstructions.length > 1) {
-            var parentComponentInstruction = ancestorInstructions[ancestorInstructions.length - 1];
-            var grandComponentInstruction = ancestorInstructions[ancestorInstructions.length - 2];
-            parentComponentType = parentComponentInstruction.component.componentType;
-            grandparentComponentType = grandComponentInstruction.component.componentType;
-          } else if (ancestorInstructions.length == 1) {
-            parentComponentType = ancestorInstructions[0].component.componentType;
-            grandparentComponentType = this._rootComponent;
-          }
-          var childRouteExists = this.hasRoute(routeName, parentComponentType);
-          var parentRouteExists = lang_1.isPresent(grandparentComponentType) && this.hasRoute(routeName, grandparentComponentType);
-          if (parentRouteExists && childRouteExists) {
-            var msg = "Link \"" + collection_1.ListWrapper.toJSON(linkParams) + "\" is ambiguous, use \"./\" or \"../\" to disambiguate.";
-            throw new exceptions_1.BaseException(msg);
-          }
-          if (parentRouteExists) {
-            prevInstruction = ancestorInstructions.pop();
-          }
-        }
-      }
-      if (params[params.length - 1] == '') {
-        params.pop();
-      }
-      if (params.length > 0 && params[0] == '') {
-        params.shift();
-      }
-      if (params.length < 1) {
-        var msg = "Link \"" + collection_1.ListWrapper.toJSON(linkParams) + "\" must include a route name.";
-        throw new exceptions_1.BaseException(msg);
-      }
-      var generatedInstruction = this._generate(params, ancestorInstructions, prevInstruction, _aux, linkParams);
-      for (var i = ancestorInstructions.length - 1; i >= 0; i--) {
-        var ancestorInstruction = ancestorInstructions[i];
-        if (lang_1.isBlank(ancestorInstruction)) {
-          break;
-        }
-        generatedInstruction = ancestorInstruction.replaceChild(generatedInstruction);
-      }
-      return generatedInstruction;
-    };
-    RouteRegistry.prototype._generate = function(linkParams, ancestorInstructions, prevInstruction, _aux, _originalLink) {
-      var _this = this;
-      if (_aux === void 0) {
-        _aux = false;
-      }
-      var parentComponentType = this._rootComponent;
-      var componentInstruction = null;
-      var auxInstructions = {};
-      var parentInstruction = collection_1.ListWrapper.last(ancestorInstructions);
-      if (lang_1.isPresent(parentInstruction) && lang_1.isPresent(parentInstruction.component)) {
-        parentComponentType = parentInstruction.component.componentType;
-      }
-      if (linkParams.length == 0) {
-        var defaultInstruction = this.generateDefault(parentComponentType);
-        if (lang_1.isBlank(defaultInstruction)) {
-          throw new exceptions_1.BaseException("Link \"" + collection_1.ListWrapper.toJSON(_originalLink) + "\" does not resolve to a terminal instruction.");
-        }
-        return defaultInstruction;
-      }
-      if (lang_1.isPresent(prevInstruction) && !_aux) {
-        auxInstructions = collection_1.StringMapWrapper.merge(prevInstruction.auxInstruction, auxInstructions);
-        componentInstruction = prevInstruction.component;
-      }
-      var rules = this._rules.get(parentComponentType);
-      if (lang_1.isBlank(rules)) {
-        throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(utils_1.getComponentType(parentComponentType)) + "\" has no route config.");
-      }
-      var linkParamIndex = 0;
-      var routeParams = {};
-      if (linkParamIndex < linkParams.length && lang_1.isString(linkParams[linkParamIndex])) {
-        var routeName = linkParams[linkParamIndex];
-        if (routeName == '' || routeName == '.' || routeName == '..') {
-          throw new exceptions_1.BaseException("\"" + routeName + "/\" is only allowed at the beginning of a link DSL.");
-        }
-        linkParamIndex += 1;
-        if (linkParamIndex < linkParams.length) {
-          var linkParam = linkParams[linkParamIndex];
-          if (lang_1.isStringMap(linkParam) && !lang_1.isArray(linkParam)) {
-            routeParams = linkParam;
-            linkParamIndex += 1;
-          }
-        }
-        var routeRecognizer = (_aux ? rules.auxRulesByName : rules.rulesByName).get(routeName);
-        if (lang_1.isBlank(routeRecognizer)) {
-          throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(utils_1.getComponentType(parentComponentType)) + "\" has no route named \"" + routeName + "\".");
-        }
-        if (lang_1.isBlank(routeRecognizer.handler.componentType)) {
-          var generatedUrl = routeRecognizer.generateComponentPathValues(routeParams);
-          return new instruction_1.UnresolvedInstruction(function() {
-            return routeRecognizer.handler.resolveComponentType().then(function(_) {
-              return _this._generate(linkParams, ancestorInstructions, prevInstruction, _aux, _originalLink);
-            });
-          }, generatedUrl.urlPath, url_parser_1.convertUrlParamsToArray(generatedUrl.urlParams));
-        }
-        componentInstruction = _aux ? rules.generateAuxiliary(routeName, routeParams) : rules.generate(routeName, routeParams);
-      }
-      while (linkParamIndex < linkParams.length && lang_1.isArray(linkParams[linkParamIndex])) {
-        var auxParentInstruction = [parentInstruction];
-        var auxInstruction = this._generate(linkParams[linkParamIndex], auxParentInstruction, null, true, _originalLink);
-        auxInstructions[auxInstruction.component.urlPath] = auxInstruction;
-        linkParamIndex += 1;
-      }
-      var instruction = new instruction_1.ResolvedInstruction(componentInstruction, null, auxInstructions);
-      if (lang_1.isPresent(componentInstruction) && lang_1.isPresent(componentInstruction.componentType)) {
-        var childInstruction = null;
-        if (componentInstruction.terminal) {
-          if (linkParamIndex >= linkParams.length) {}
-        } else {
-          var childAncestorComponents = ancestorInstructions.concat([instruction]);
-          var remainingLinkParams = linkParams.slice(linkParamIndex);
-          childInstruction = this._generate(remainingLinkParams, childAncestorComponents, null, false, _originalLink);
-        }
-        instruction.child = childInstruction;
-      }
-      return instruction;
-    };
-    RouteRegistry.prototype.hasRoute = function(name, parentComponent) {
-      var rules = this._rules.get(parentComponent);
-      if (lang_1.isBlank(rules)) {
-        return false;
-      }
-      return rules.hasRoute(name);
-    };
-    RouteRegistry.prototype.generateDefault = function(componentCursor) {
-      var _this = this;
-      if (lang_1.isBlank(componentCursor)) {
-        return null;
-      }
-      var rules = this._rules.get(componentCursor);
-      if (lang_1.isBlank(rules) || lang_1.isBlank(rules.defaultRule)) {
-        return null;
-      }
-      var defaultChild = null;
-      if (lang_1.isPresent(rules.defaultRule.handler.componentType)) {
-        var componentInstruction = rules.defaultRule.generate({});
-        if (!rules.defaultRule.terminal) {
-          defaultChild = this.generateDefault(rules.defaultRule.handler.componentType);
-        }
-        return new instruction_1.DefaultInstruction(componentInstruction, defaultChild);
-      }
-      return new instruction_1.UnresolvedInstruction(function() {
-        return rules.defaultRule.handler.resolveComponentType().then(function(_) {
-          return _this.generateDefault(componentCursor);
-        });
-      });
-    };
-    RouteRegistry = __decorate([core_1.Injectable(), __param(0, core_1.Inject(exports.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [Object])], RouteRegistry);
-    return RouteRegistry;
-  }());
-  exports.RouteRegistry = RouteRegistry;
-  function splitAndFlattenLinkParams(linkParams) {
-    var accumulation = [];
-    linkParams.forEach(function(item) {
-      if (lang_1.isString(item)) {
-        var strItem = item;
-        accumulation = accumulation.concat(strItem.split('/'));
-      } else {
-        accumulation.push(item);
-      }
-    });
-    return accumulation;
-  }
-  function mostSpecific(instructions) {
-    instructions = instructions.filter(function(instruction) {
-      return lang_1.isPresent(instruction);
-    });
-    if (instructions.length == 0) {
-      return null;
-    }
-    if (instructions.length == 1) {
-      return instructions[0];
-    }
-    var first = instructions[0];
-    var rest = instructions.slice(1);
-    return rest.reduce(function(instruction, contender) {
-      if (compareSpecificityStrings(contender.specificity, instruction.specificity) == -1) {
-        return contender;
-      }
-      return instruction;
-    }, first);
-  }
-  function compareSpecificityStrings(a, b) {
-    var l = lang_1.Math.min(a.length, b.length);
-    for (var i = 0; i < l; i += 1) {
-      var ai = lang_1.StringWrapper.charCodeAt(a, i);
-      var bi = lang_1.StringWrapper.charCodeAt(b, i);
-      var difference = bi - ai;
-      if (difference != 0) {
-        return difference;
-      }
-    }
-    return a.length - b.length;
-  }
-  function assertTerminalComponent(component, path) {
-    if (!lang_1.isType(component) && !(component instanceof core_1.ComponentFactory)) {
-      return ;
-    }
-    var annotations = utils_1.getComponentAnnotations(component);
-    if (lang_1.isPresent(annotations)) {
-      for (var i = 0; i < annotations.length; i++) {
-        var annotation = annotations[i];
-        if (annotation instanceof route_config_impl_1.RouteConfig) {
-          throw new exceptions_1.BaseException("Child routes are not allowed for \"" + path + "\". Use \"...\" on the parent's route path.");
-        }
-      }
-    }
-  }
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("rxjs/Observable", ["rxjs/util/root", "rxjs/util/SymbolShim", "rxjs/util/toSubscriber", "rxjs/util/tryCatch", "rxjs/util/errorObject"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var root_1 = require("rxjs/util/root");
-  var SymbolShim_1 = require("rxjs/util/SymbolShim");
-  var toSubscriber_1 = require("rxjs/util/toSubscriber");
-  var tryCatch_1 = require("rxjs/util/tryCatch");
-  var errorObject_1 = require("rxjs/util/errorObject");
-  var Observable = (function() {
-    function Observable(subscribe) {
-      this._isScalar = false;
-      if (subscribe) {
-        this._subscribe = subscribe;
-      }
-    }
-    Observable.prototype.lift = function(operator) {
-      var observable = new Observable();
-      observable.source = this;
-      observable.operator = operator;
-      return observable;
-    };
-    Observable.prototype.subscribe = function(observerOrNext, error, complete) {
-      var operator = this.operator;
-      var subscriber = toSubscriber_1.toSubscriber(observerOrNext, error, complete);
-      if (operator) {
-        subscriber.add(this._subscribe(operator.call(subscriber)));
-      } else {
-        subscriber.add(this._subscribe(subscriber));
-      }
-      if (subscriber.syncErrorThrowable) {
-        subscriber.syncErrorThrowable = false;
-        if (subscriber.syncErrorThrown) {
-          throw subscriber.syncErrorValue;
-        }
-      }
-      return subscriber;
-    };
-    Observable.prototype.forEach = function(next, thisArg, PromiseCtor) {
-      if (!PromiseCtor) {
-        if (root_1.root.Rx && root_1.root.Rx.config && root_1.root.Rx.config.Promise) {
-          PromiseCtor = root_1.root.Rx.config.Promise;
-        } else if (root_1.root.Promise) {
-          PromiseCtor = root_1.root.Promise;
-        }
-      }
-      if (!PromiseCtor) {
-        throw new Error('no Promise impl found');
-      }
-      var source = this;
-      return new PromiseCtor(function(resolve, reject) {
-        source.subscribe(function(value) {
-          var result = tryCatch_1.tryCatch(next).call(thisArg, value);
-          if (result === errorObject_1.errorObject) {
-            reject(errorObject_1.errorObject.e);
-          }
-        }, reject, resolve);
-      });
-    };
-    Observable.prototype._subscribe = function(subscriber) {
-      return this.source.subscribe(subscriber);
-    };
-    Observable.prototype[SymbolShim_1.SymbolShim.observable] = function() {
-      return this;
-    };
-    Observable.create = function(subscribe) {
-      return new Observable(subscribe);
-    };
-    return Observable;
-  }());
-  exports.Observable = Observable;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/di", ["angular2/src/core/di/metadata", "angular2/src/core/di/decorators", "angular2/src/core/di/forward_ref", "angular2/src/core/di/injector", "angular2/src/core/di/reflective_injector", "angular2/src/core/di/provider", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/reflective_key", "angular2/src/core/di/reflective_exceptions", "angular2/src/core/di/opaque_token"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  function __export(m) {
-    for (var p in m)
-      if (!exports.hasOwnProperty(p))
-        exports[p] = m[p];
-  }
-  var metadata_1 = require("angular2/src/core/di/metadata");
-  exports.InjectMetadata = metadata_1.InjectMetadata;
-  exports.OptionalMetadata = metadata_1.OptionalMetadata;
-  exports.InjectableMetadata = metadata_1.InjectableMetadata;
-  exports.SelfMetadata = metadata_1.SelfMetadata;
-  exports.HostMetadata = metadata_1.HostMetadata;
-  exports.SkipSelfMetadata = metadata_1.SkipSelfMetadata;
-  exports.DependencyMetadata = metadata_1.DependencyMetadata;
-  __export(require("angular2/src/core/di/decorators"));
-  var forward_ref_1 = require("angular2/src/core/di/forward_ref");
-  exports.forwardRef = forward_ref_1.forwardRef;
-  exports.resolveForwardRef = forward_ref_1.resolveForwardRef;
-  var injector_1 = require("angular2/src/core/di/injector");
-  exports.Injector = injector_1.Injector;
-  exports.MapInjector = injector_1.MapInjector;
-  var reflective_injector_1 = require("angular2/src/core/di/reflective_injector");
-  exports.ReflectiveInjector = reflective_injector_1.ReflectiveInjector;
-  var provider_1 = require("angular2/src/core/di/provider");
-  exports.Binding = provider_1.Binding;
-  exports.ProviderBuilder = provider_1.ProviderBuilder;
-  exports.bind = provider_1.bind;
-  exports.Provider = provider_1.Provider;
-  exports.provide = provider_1.provide;
-  var reflective_provider_1 = require("angular2/src/core/di/reflective_provider");
-  exports.ResolvedReflectiveFactory = reflective_provider_1.ResolvedReflectiveFactory;
-  exports.ReflectiveDependency = reflective_provider_1.ReflectiveDependency;
-  var reflective_key_1 = require("angular2/src/core/di/reflective_key");
-  exports.ReflectiveKey = reflective_key_1.ReflectiveKey;
-  var reflective_exceptions_1 = require("angular2/src/core/di/reflective_exceptions");
-  exports.NoProviderError = reflective_exceptions_1.NoProviderError;
-  exports.AbstractProviderError = reflective_exceptions_1.AbstractProviderError;
-  exports.CyclicDependencyError = reflective_exceptions_1.CyclicDependencyError;
-  exports.InstantiationError = reflective_exceptions_1.InstantiationError;
-  exports.InvalidProviderError = reflective_exceptions_1.InvalidProviderError;
-  exports.NoAnnotationError = reflective_exceptions_1.NoAnnotationError;
-  exports.OutOfBoundsError = reflective_exceptions_1.OutOfBoundsError;
-  var opaque_token_1 = require("angular2/src/core/di/opaque_token");
-  exports.OpaqueToken = opaque_token_1.OpaqueToken;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/linker/component_factory", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/linker/view_utils", "angular2/src/core/reflection/reflection"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var view_utils_1 = require("angular2/src/core/linker/view_utils");
-  var reflection_1 = require("angular2/src/core/reflection/reflection");
-  var ComponentRef = (function() {
-    function ComponentRef() {}
-    Object.defineProperty(ComponentRef.prototype, "location", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef.prototype, "injector", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef.prototype, "instance", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef.prototype, "hostView", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef.prototype, "changeDetectorRef", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef.prototype, "componentType", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    return ComponentRef;
-  }());
-  exports.ComponentRef = ComponentRef;
-  var ComponentRef_ = (function(_super) {
-    __extends(ComponentRef_, _super);
-    function ComponentRef_(_hostElement, _componentType, _metadata) {
-      _super.call(this);
-      this._hostElement = _hostElement;
-      this._componentType = _componentType;
-      this._metadata = _metadata;
-    }
-    Object.defineProperty(ComponentRef_.prototype, "location", {
-      get: function() {
-        return this._hostElement.elementRef;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef_.prototype, "injector", {
-      get: function() {
-        return this._hostElement.injector;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef_.prototype, "instance", {
-      get: function() {
-        return this._hostElement.component;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef_.prototype, "hostView", {
-      get: function() {
-        return this._hostElement.parentView.ref;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef_.prototype, "changeDetectorRef", {
-      get: function() {
-        return this._hostElement.parentView.ref;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef_.prototype, "componentType", {
-      get: function() {
-        return this._componentType;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef_.prototype, "metadata", {
-      get: function() {
-        return this._metadata;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ComponentRef_.prototype.destroy = function() {
-      this._hostElement.parentView.destroy();
-    };
-    ComponentRef_.prototype.onDestroy = function(callback) {
-      this.hostView.onDestroy(callback);
-    };
-    return ComponentRef_;
-  }(ComponentRef));
-  exports.ComponentRef_ = ComponentRef_;
-  var ComponentFactory = (function() {
-    function ComponentFactory(selector, _viewFactory, _componentType, _metadataPairs) {
-      if (_metadataPairs === void 0) {
-        _metadataPairs = null;
-      }
-      this.selector = selector;
-      this._viewFactory = _viewFactory;
-      this._componentType = _componentType;
-      this._metadataPairs = _metadataPairs;
-    }
-    ComponentFactory.cloneWithMetadata = function(original, metadata) {
-      return new ComponentFactory(original.selector, original._viewFactory, original._componentType, [original.componentType, metadata]);
-    };
-    Object.defineProperty(ComponentFactory.prototype, "componentType", {
-      get: function() {
-        return this._componentType;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentFactory.prototype, "metadata", {
-      get: function() {
-        if (lang_1.isPresent(this._metadataPairs)) {
-          for (var i = 0; i < this._metadataPairs.length; i += 2) {
-            if (this._metadataPairs[i] === this._componentType) {
-              return this._metadataPairs[i + 1];
-            }
-          }
-          return [];
-        } else {
-          return reflection_1.reflector.annotations(this._componentType);
-        }
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ComponentFactory.prototype.create = function(injector, projectableNodes, rootSelectorOrNode) {
-      if (projectableNodes === void 0) {
-        projectableNodes = null;
-      }
-      if (rootSelectorOrNode === void 0) {
-        rootSelectorOrNode = null;
-      }
-      var vu = injector.get(view_utils_1.ViewUtils);
-      if (lang_1.isBlank(projectableNodes)) {
-        projectableNodes = [];
-      }
-      var hostView = this._viewFactory(vu, injector, null);
-      var hostElement = hostView.create(projectableNodes, rootSelectorOrNode);
-      return new ComponentRef_(hostElement, this.componentType, this.metadata);
-    };
-    ComponentFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String, Function, lang_1.Type, Array])], ComponentFactory);
-    return ComponentFactory;
-  }());
-  exports.ComponentFactory = ComponentFactory;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/platform/common_dom", ["angular2/src/platform/dom/dom_adapter", "angular2/src/platform/dom/dom_renderer", "angular2/src/platform/dom/dom_tokens", "angular2/src/platform/dom/shared_styles_host", "angular2/src/platform/dom/events/dom_events", "angular2/src/platform/dom/events/event_manager", "angular2/src/platform/dom/debug/by", "angular2/src/platform/dom/debug/ng_probe"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  function __export(m) {
-    for (var p in m)
-      if (!exports.hasOwnProperty(p))
-        exports[p] = m[p];
-  }
-  var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
-  exports.DOM = dom_adapter_1.DOM;
-  exports.setRootDomAdapter = dom_adapter_1.setRootDomAdapter;
-  exports.DomAdapter = dom_adapter_1.DomAdapter;
-  var dom_renderer_1 = require("angular2/src/platform/dom/dom_renderer");
-  exports.DomRenderer = dom_renderer_1.DomRenderer;
-  var dom_tokens_1 = require("angular2/src/platform/dom/dom_tokens");
-  exports.DOCUMENT = dom_tokens_1.DOCUMENT;
-  var shared_styles_host_1 = require("angular2/src/platform/dom/shared_styles_host");
-  exports.SharedStylesHost = shared_styles_host_1.SharedStylesHost;
-  exports.DomSharedStylesHost = shared_styles_host_1.DomSharedStylesHost;
-  var dom_events_1 = require("angular2/src/platform/dom/events/dom_events");
-  exports.DomEventsPlugin = dom_events_1.DomEventsPlugin;
-  var event_manager_1 = require("angular2/src/platform/dom/events/event_manager");
-  exports.EVENT_MANAGER_PLUGINS = event_manager_1.EVENT_MANAGER_PLUGINS;
-  exports.EventManager = event_manager_1.EventManager;
-  exports.EventManagerPlugin = event_manager_1.EventManagerPlugin;
-  __export(require("angular2/src/platform/dom/debug/by"));
-  __export(require("angular2/src/platform/dom/debug/ng_probe"));
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/compiler/compiler", ["angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/template_ast", "angular2/src/compiler/template_parser", "angular2/src/compiler/config", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/offline_compiler", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/url_resolver", "angular2/src/compiler/xhr", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/compiler/template_parser", "angular2/src/compiler/html_parser", "angular2/src/compiler/directive_normalizer", "angular2/src/compiler/runtime_metadata", "angular2/src/compiler/style_compiler", "angular2/src/compiler/view_compiler/view_compiler", "angular2/src/compiler/view_compiler/injector_compiler", "angular2/src/compiler/config", "angular2/src/core/linker/component_resolver", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/schema/element_schema_registry", "angular2/src/compiler/schema/dom_element_schema_registry", "angular2/src/compiler/url_resolver", "angular2/src/compiler/expression_parser/parser", "angular2/src/compiler/expression_parser/lexer", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  function __export(m) {
-    for (var p in m)
-      if (!exports.hasOwnProperty(p))
-        exports[p] = m[p];
-  }
-  var platform_directives_and_pipes_1 = require("angular2/src/core/platform_directives_and_pipes");
-  exports.PLATFORM_DIRECTIVES = platform_directives_and_pipes_1.PLATFORM_DIRECTIVES;
-  exports.PLATFORM_PIPES = platform_directives_and_pipes_1.PLATFORM_PIPES;
-  __export(require("angular2/src/compiler/template_ast"));
-  var template_parser_1 = require("angular2/src/compiler/template_parser");
-  exports.TEMPLATE_TRANSFORMS = template_parser_1.TEMPLATE_TRANSFORMS;
-  var config_1 = require("angular2/src/compiler/config");
-  exports.CompilerConfig = config_1.CompilerConfig;
-  exports.RenderTypes = config_1.RenderTypes;
-  __export(require("angular2/src/compiler/compile_metadata"));
-  __export(require("angular2/src/compiler/offline_compiler"));
-  var runtime_compiler_1 = require("angular2/src/compiler/runtime_compiler");
-  exports.RuntimeCompiler = runtime_compiler_1.RuntimeCompiler;
-  __export(require("angular2/src/compiler/url_resolver"));
-  __export(require("angular2/src/compiler/xhr"));
-  var view_resolver_1 = require("angular2/src/compiler/view_resolver");
-  exports.ViewResolver = view_resolver_1.ViewResolver;
-  var directive_resolver_1 = require("angular2/src/compiler/directive_resolver");
-  exports.DirectiveResolver = directive_resolver_1.DirectiveResolver;
-  var pipe_resolver_1 = require("angular2/src/compiler/pipe_resolver");
-  exports.PipeResolver = pipe_resolver_1.PipeResolver;
-  var lang_1 = require("angular2/src/facade/lang");
-  var di_1 = require("angular2/src/core/di");
-  var template_parser_2 = require("angular2/src/compiler/template_parser");
-  var html_parser_1 = require("angular2/src/compiler/html_parser");
-  var directive_normalizer_1 = require("angular2/src/compiler/directive_normalizer");
-  var runtime_metadata_1 = require("angular2/src/compiler/runtime_metadata");
-  var style_compiler_1 = require("angular2/src/compiler/style_compiler");
-  var view_compiler_1 = require("angular2/src/compiler/view_compiler/view_compiler");
-  var injector_compiler_1 = require("angular2/src/compiler/view_compiler/injector_compiler");
-  var config_2 = require("angular2/src/compiler/config");
-  var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
-  var runtime_compiler_2 = require("angular2/src/compiler/runtime_compiler");
-  var element_schema_registry_1 = require("angular2/src/compiler/schema/element_schema_registry");
-  var dom_element_schema_registry_1 = require("angular2/src/compiler/schema/dom_element_schema_registry");
-  var url_resolver_2 = require("angular2/src/compiler/url_resolver");
-  var parser_1 = require("angular2/src/compiler/expression_parser/parser");
-  var lexer_1 = require("angular2/src/compiler/expression_parser/lexer");
-  var view_resolver_2 = require("angular2/src/compiler/view_resolver");
-  var directive_resolver_2 = require("angular2/src/compiler/directive_resolver");
-  var pipe_resolver_2 = require("angular2/src/compiler/pipe_resolver");
-  function createCompilerConfig() {
-    return new config_2.CompilerConfig(lang_1.assertionsEnabled(), false, true);
-  }
-  exports.COMPILER_PROVIDERS = lang_1.CONST_EXPR([lexer_1.Lexer, parser_1.Parser, html_parser_1.HtmlParser, template_parser_2.TemplateParser, directive_normalizer_1.DirectiveNormalizer, runtime_metadata_1.RuntimeMetadataResolver, url_resolver_2.DEFAULT_PACKAGE_URL_PROVIDER, style_compiler_1.StyleCompiler, view_compiler_1.ViewCompiler, injector_compiler_1.InjectorCompiler, new di_1.Provider(config_2.CompilerConfig, {
-    useFactory: createCompilerConfig,
-    deps: []
-  }), runtime_compiler_2.RuntimeCompiler, new di_1.Provider(component_resolver_1.ComponentResolver, {useExisting: runtime_compiler_2.RuntimeCompiler}), dom_element_schema_registry_1.DomElementSchemaRegistry, new di_1.Provider(element_schema_registry_1.ElementSchemaRegistry, {useExisting: dom_element_schema_registry_1.DomElementSchemaRegistry}), url_resolver_2.UrlResolver, view_resolver_2.ViewResolver, directive_resolver_2.DirectiveResolver, pipe_resolver_2.PipeResolver]);
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/router/router", ["angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/platform/common", "angular2/core", "angular2/src/router/route_registry", "angular2/src/router/utils"], true, function(require, exports, module) {
+System.register("angular2/src/router/router", ["angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/platform/common", "angular2/core", "angular2/src/router/route_registry", "angular2/src/router/lifecycle/route_lifecycle_reflector"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -40240,7 +39179,7 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
   var common_1 = require("angular2/platform/common");
   var core_1 = require("angular2/core");
   var route_registry_1 = require("angular2/src/router/route_registry");
-  var utils_1 = require("angular2/src/router/utils");
+  var route_lifecycle_reflector_1 = require("angular2/src/router/lifecycle/route_lifecycle_reflector");
   var _resolveToTrue = async_1.PromiseWrapper.resolve(true);
   var _resolveToFalse = async_1.PromiseWrapper.resolve(false);
   var Router = (function() {
@@ -40604,7 +39543,7 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
         this._locationSub = null;
       }
     };
-    RootRouter = __decorate([core_1.Injectable(), __param(2, core_1.Inject(route_registry_1.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [route_registry_1.RouteRegistry, common_1.Location, Object])], RootRouter);
+    RootRouter = __decorate([core_1.Injectable(), __param(2, core_1.Inject(route_registry_1.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [route_registry_1.RouteRegistry, common_1.Location, lang_1.Type])], RootRouter);
     return RootRouter;
   }(Router));
   exports.RootRouter = RootRouter;
@@ -40643,12 +39582,444 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
       if (nextInstruction.component.reuse) {
         return true;
       }
-      var hook = utils_1.getCanActivateHook(nextInstruction.component.componentType);
+      var hook = route_lifecycle_reflector_1.getCanActivateHook(nextInstruction.component.componentType);
       if (lang_1.isPresent(hook)) {
         return hook(nextInstruction.component, lang_1.isPresent(prevInstruction) ? prevInstruction.component : null);
       }
       return true;
     });
+  }
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("rxjs/Observable", ["rxjs/util/root", "rxjs/util/SymbolShim", "rxjs/util/toSubscriber", "rxjs/util/tryCatch", "rxjs/util/errorObject"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var root_1 = require("rxjs/util/root");
+  var SymbolShim_1 = require("rxjs/util/SymbolShim");
+  var toSubscriber_1 = require("rxjs/util/toSubscriber");
+  var tryCatch_1 = require("rxjs/util/tryCatch");
+  var errorObject_1 = require("rxjs/util/errorObject");
+  var Observable = (function() {
+    function Observable(subscribe) {
+      this._isScalar = false;
+      if (subscribe) {
+        this._subscribe = subscribe;
+      }
+    }
+    Observable.prototype.lift = function(operator) {
+      var observable = new Observable();
+      observable.source = this;
+      observable.operator = operator;
+      return observable;
+    };
+    Observable.prototype.subscribe = function(observerOrNext, error, complete) {
+      var operator = this.operator;
+      var subscriber = toSubscriber_1.toSubscriber(observerOrNext, error, complete);
+      if (operator) {
+        subscriber.add(this._subscribe(operator.call(subscriber)));
+      } else {
+        subscriber.add(this._subscribe(subscriber));
+      }
+      if (subscriber.syncErrorThrowable) {
+        subscriber.syncErrorThrowable = false;
+        if (subscriber.syncErrorThrown) {
+          throw subscriber.syncErrorValue;
+        }
+      }
+      return subscriber;
+    };
+    Observable.prototype.forEach = function(next, thisArg, PromiseCtor) {
+      if (!PromiseCtor) {
+        if (root_1.root.Rx && root_1.root.Rx.config && root_1.root.Rx.config.Promise) {
+          PromiseCtor = root_1.root.Rx.config.Promise;
+        } else if (root_1.root.Promise) {
+          PromiseCtor = root_1.root.Promise;
+        }
+      }
+      if (!PromiseCtor) {
+        throw new Error('no Promise impl found');
+      }
+      var source = this;
+      return new PromiseCtor(function(resolve, reject) {
+        source.subscribe(function(value) {
+          var result = tryCatch_1.tryCatch(next).call(thisArg, value);
+          if (result === errorObject_1.errorObject) {
+            reject(errorObject_1.errorObject.e);
+          }
+        }, reject, resolve);
+      });
+    };
+    Observable.prototype._subscribe = function(subscriber) {
+      return this.source.subscribe(subscriber);
+    };
+    Observable.prototype[SymbolShim_1.SymbolShim.observable] = function() {
+      return this;
+    };
+    Observable.create = function(subscribe) {
+      return new Observable(subscribe);
+    };
+    return Observable;
+  }());
+  exports.Observable = Observable;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/di", ["angular2/src/core/di/metadata", "angular2/src/core/di/decorators", "angular2/src/core/di/forward_ref", "angular2/src/core/di/injector", "angular2/src/core/di/provider", "angular2/src/core/di/key", "angular2/src/core/di/exceptions", "angular2/src/core/di/opaque_token"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  function __export(m) {
+    for (var p in m)
+      if (!exports.hasOwnProperty(p))
+        exports[p] = m[p];
+  }
+  var metadata_1 = require("angular2/src/core/di/metadata");
+  exports.InjectMetadata = metadata_1.InjectMetadata;
+  exports.OptionalMetadata = metadata_1.OptionalMetadata;
+  exports.InjectableMetadata = metadata_1.InjectableMetadata;
+  exports.SelfMetadata = metadata_1.SelfMetadata;
+  exports.HostMetadata = metadata_1.HostMetadata;
+  exports.SkipSelfMetadata = metadata_1.SkipSelfMetadata;
+  exports.DependencyMetadata = metadata_1.DependencyMetadata;
+  __export(require("angular2/src/core/di/decorators"));
+  var forward_ref_1 = require("angular2/src/core/di/forward_ref");
+  exports.forwardRef = forward_ref_1.forwardRef;
+  exports.resolveForwardRef = forward_ref_1.resolveForwardRef;
+  var injector_1 = require("angular2/src/core/di/injector");
+  exports.Injector = injector_1.Injector;
+  var provider_1 = require("angular2/src/core/di/provider");
+  exports.Binding = provider_1.Binding;
+  exports.ProviderBuilder = provider_1.ProviderBuilder;
+  exports.ResolvedFactory = provider_1.ResolvedFactory;
+  exports.Dependency = provider_1.Dependency;
+  exports.bind = provider_1.bind;
+  exports.Provider = provider_1.Provider;
+  exports.provide = provider_1.provide;
+  var key_1 = require("angular2/src/core/di/key");
+  exports.Key = key_1.Key;
+  var exceptions_1 = require("angular2/src/core/di/exceptions");
+  exports.NoProviderError = exceptions_1.NoProviderError;
+  exports.AbstractProviderError = exceptions_1.AbstractProviderError;
+  exports.CyclicDependencyError = exceptions_1.CyclicDependencyError;
+  exports.InstantiationError = exceptions_1.InstantiationError;
+  exports.InvalidProviderError = exceptions_1.InvalidProviderError;
+  exports.NoAnnotationError = exceptions_1.NoAnnotationError;
+  exports.OutOfBoundsError = exceptions_1.OutOfBoundsError;
+  var opaque_token_1 = require("angular2/src/core/di/opaque_token");
+  exports.OpaqueToken = opaque_token_1.OpaqueToken;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/linker/component_factory", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/linker/view_utils"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var lang_1 = require("angular2/src/facade/lang");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
+  var view_utils_1 = require("angular2/src/core/linker/view_utils");
+  var ComponentRef = (function() {
+    function ComponentRef() {}
+    Object.defineProperty(ComponentRef.prototype, "location", {
+      get: function() {
+        return exceptions_1.unimplemented();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(ComponentRef.prototype, "injector", {
+      get: function() {
+        return exceptions_1.unimplemented();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(ComponentRef.prototype, "instance", {
+      get: function() {
+        return exceptions_1.unimplemented();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ;
+    Object.defineProperty(ComponentRef.prototype, "hostView", {
+      get: function() {
+        return exceptions_1.unimplemented();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ;
+    Object.defineProperty(ComponentRef.prototype, "changeDetectorRef", {
+      get: function() {
+        return exceptions_1.unimplemented();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(ComponentRef.prototype, "componentType", {
+      get: function() {
+        return exceptions_1.unimplemented();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    return ComponentRef;
+  }());
+  exports.ComponentRef = ComponentRef;
+  var ComponentRef_ = (function(_super) {
+    __extends(ComponentRef_, _super);
+    function ComponentRef_(_hostElement, _componentType) {
+      _super.call(this);
+      this._hostElement = _hostElement;
+      this._componentType = _componentType;
+    }
+    Object.defineProperty(ComponentRef_.prototype, "location", {
+      get: function() {
+        return this._hostElement.elementRef;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(ComponentRef_.prototype, "injector", {
+      get: function() {
+        return this._hostElement.injector;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(ComponentRef_.prototype, "instance", {
+      get: function() {
+        return this._hostElement.component;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ;
+    Object.defineProperty(ComponentRef_.prototype, "hostView", {
+      get: function() {
+        return this._hostElement.parentView.ref;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ;
+    Object.defineProperty(ComponentRef_.prototype, "changeDetectorRef", {
+      get: function() {
+        return this._hostElement.parentView.ref;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ;
+    Object.defineProperty(ComponentRef_.prototype, "componentType", {
+      get: function() {
+        return this._componentType;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ComponentRef_.prototype.destroy = function() {
+      this._hostElement.parentView.destroy();
+    };
+    ComponentRef_.prototype.onDestroy = function(callback) {
+      this.hostView.onDestroy(callback);
+    };
+    return ComponentRef_;
+  }(ComponentRef));
+  exports.ComponentRef_ = ComponentRef_;
+  var ComponentFactory = (function() {
+    function ComponentFactory(selector, _viewFactory, _componentType) {
+      this.selector = selector;
+      this._viewFactory = _viewFactory;
+      this._componentType = _componentType;
+    }
+    Object.defineProperty(ComponentFactory.prototype, "componentType", {
+      get: function() {
+        return this._componentType;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ComponentFactory.prototype.create = function(injector, projectableNodes, rootSelectorOrNode) {
+      if (projectableNodes === void 0) {
+        projectableNodes = null;
+      }
+      if (rootSelectorOrNode === void 0) {
+        rootSelectorOrNode = null;
+      }
+      var vu = injector.get(view_utils_1.ViewUtils);
+      if (lang_1.isBlank(projectableNodes)) {
+        projectableNodes = [];
+      }
+      var hostView = this._viewFactory(vu, injector, null);
+      var hostElement = hostView.create(projectableNodes, rootSelectorOrNode);
+      return new ComponentRef_(hostElement, this._componentType);
+    };
+    ComponentFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String, Function, lang_1.Type])], ComponentFactory);
+    return ComponentFactory;
+  }());
+  exports.ComponentFactory = ComponentFactory;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/platform/common_dom", ["angular2/src/platform/dom/dom_adapter", "angular2/src/platform/dom/dom_renderer", "angular2/src/platform/dom/dom_tokens", "angular2/src/platform/dom/shared_styles_host", "angular2/src/platform/dom/events/dom_events", "angular2/src/platform/dom/events/event_manager", "angular2/src/platform/dom/debug/by", "angular2/src/platform/dom/debug/ng_probe"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  function __export(m) {
+    for (var p in m)
+      if (!exports.hasOwnProperty(p))
+        exports[p] = m[p];
+  }
+  var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
+  exports.DOM = dom_adapter_1.DOM;
+  exports.setRootDomAdapter = dom_adapter_1.setRootDomAdapter;
+  exports.DomAdapter = dom_adapter_1.DomAdapter;
+  var dom_renderer_1 = require("angular2/src/platform/dom/dom_renderer");
+  exports.DomRenderer = dom_renderer_1.DomRenderer;
+  var dom_tokens_1 = require("angular2/src/platform/dom/dom_tokens");
+  exports.DOCUMENT = dom_tokens_1.DOCUMENT;
+  var shared_styles_host_1 = require("angular2/src/platform/dom/shared_styles_host");
+  exports.SharedStylesHost = shared_styles_host_1.SharedStylesHost;
+  exports.DomSharedStylesHost = shared_styles_host_1.DomSharedStylesHost;
+  var dom_events_1 = require("angular2/src/platform/dom/events/dom_events");
+  exports.DomEventsPlugin = dom_events_1.DomEventsPlugin;
+  var event_manager_1 = require("angular2/src/platform/dom/events/event_manager");
+  exports.EVENT_MANAGER_PLUGINS = event_manager_1.EVENT_MANAGER_PLUGINS;
+  exports.EventManager = event_manager_1.EventManager;
+  exports.EventManagerPlugin = event_manager_1.EventManagerPlugin;
+  __export(require("angular2/src/platform/dom/debug/by"));
+  __export(require("angular2/src/platform/dom/debug/ng_probe"));
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/compiler/compiler", ["angular2/src/core/platform_directives_and_pipes", "angular2/src/compiler/template_ast", "angular2/src/compiler/template_parser", "angular2/src/compiler/config", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/offline_compiler", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/url_resolver", "angular2/src/compiler/xhr", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver", "angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/compiler/template_parser", "angular2/src/compiler/html_parser", "angular2/src/compiler/directive_normalizer", "angular2/src/compiler/runtime_metadata", "angular2/src/compiler/style_compiler", "angular2/src/compiler/view_compiler/view_compiler", "angular2/src/compiler/config", "angular2/src/core/linker/component_resolver", "angular2/src/compiler/runtime_compiler", "angular2/src/compiler/schema/element_schema_registry", "angular2/src/compiler/schema/dom_element_schema_registry", "angular2/src/compiler/url_resolver", "angular2/src/compiler/expression_parser/parser", "angular2/src/compiler/expression_parser/lexer", "angular2/src/compiler/view_resolver", "angular2/src/compiler/directive_resolver", "angular2/src/compiler/pipe_resolver"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  function __export(m) {
+    for (var p in m)
+      if (!exports.hasOwnProperty(p))
+        exports[p] = m[p];
+  }
+  var platform_directives_and_pipes_1 = require("angular2/src/core/platform_directives_and_pipes");
+  exports.PLATFORM_DIRECTIVES = platform_directives_and_pipes_1.PLATFORM_DIRECTIVES;
+  exports.PLATFORM_PIPES = platform_directives_and_pipes_1.PLATFORM_PIPES;
+  __export(require("angular2/src/compiler/template_ast"));
+  var template_parser_1 = require("angular2/src/compiler/template_parser");
+  exports.TEMPLATE_TRANSFORMS = template_parser_1.TEMPLATE_TRANSFORMS;
+  var config_1 = require("angular2/src/compiler/config");
+  exports.CompilerConfig = config_1.CompilerConfig;
+  exports.RenderTypes = config_1.RenderTypes;
+  __export(require("angular2/src/compiler/compile_metadata"));
+  __export(require("angular2/src/compiler/offline_compiler"));
+  var runtime_compiler_1 = require("angular2/src/compiler/runtime_compiler");
+  exports.RuntimeCompiler = runtime_compiler_1.RuntimeCompiler;
+  __export(require("angular2/src/compiler/url_resolver"));
+  __export(require("angular2/src/compiler/xhr"));
+  var view_resolver_1 = require("angular2/src/compiler/view_resolver");
+  exports.ViewResolver = view_resolver_1.ViewResolver;
+  var directive_resolver_1 = require("angular2/src/compiler/directive_resolver");
+  exports.DirectiveResolver = directive_resolver_1.DirectiveResolver;
+  var pipe_resolver_1 = require("angular2/src/compiler/pipe_resolver");
+  exports.PipeResolver = pipe_resolver_1.PipeResolver;
+  var lang_1 = require("angular2/src/facade/lang");
+  var di_1 = require("angular2/src/core/di");
+  var template_parser_2 = require("angular2/src/compiler/template_parser");
+  var html_parser_1 = require("angular2/src/compiler/html_parser");
+  var directive_normalizer_1 = require("angular2/src/compiler/directive_normalizer");
+  var runtime_metadata_1 = require("angular2/src/compiler/runtime_metadata");
+  var style_compiler_1 = require("angular2/src/compiler/style_compiler");
+  var view_compiler_1 = require("angular2/src/compiler/view_compiler/view_compiler");
+  var config_2 = require("angular2/src/compiler/config");
+  var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
+  var runtime_compiler_2 = require("angular2/src/compiler/runtime_compiler");
+  var element_schema_registry_1 = require("angular2/src/compiler/schema/element_schema_registry");
+  var dom_element_schema_registry_1 = require("angular2/src/compiler/schema/dom_element_schema_registry");
+  var url_resolver_2 = require("angular2/src/compiler/url_resolver");
+  var parser_1 = require("angular2/src/compiler/expression_parser/parser");
+  var lexer_1 = require("angular2/src/compiler/expression_parser/lexer");
+  var view_resolver_2 = require("angular2/src/compiler/view_resolver");
+  var directive_resolver_2 = require("angular2/src/compiler/directive_resolver");
+  var pipe_resolver_2 = require("angular2/src/compiler/pipe_resolver");
+  function createCompilerConfig() {
+    return new config_2.CompilerConfig(lang_1.assertionsEnabled(), false, true);
+  }
+  exports.COMPILER_PROVIDERS = lang_1.CONST_EXPR([lexer_1.Lexer, parser_1.Parser, html_parser_1.HtmlParser, template_parser_2.TemplateParser, directive_normalizer_1.DirectiveNormalizer, runtime_metadata_1.RuntimeMetadataResolver, url_resolver_2.DEFAULT_PACKAGE_URL_PROVIDER, style_compiler_1.StyleCompiler, view_compiler_1.ViewCompiler, new di_1.Provider(config_2.CompilerConfig, {
+    useFactory: createCompilerConfig,
+    deps: []
+  }), runtime_compiler_2.RuntimeCompiler, new di_1.Provider(component_resolver_1.ComponentResolver, {useExisting: runtime_compiler_2.RuntimeCompiler}), dom_element_schema_registry_1.DomElementSchemaRegistry, new di_1.Provider(element_schema_registry_1.ElementSchemaRegistry, {useExisting: dom_element_schema_registry_1.DomElementSchemaRegistry}), url_resolver_2.UrlResolver, view_resolver_2.ViewResolver, directive_resolver_2.DirectiveResolver, pipe_resolver_2.PipeResolver]);
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/router/router_providers_common", ["angular2/platform/common", "angular2/src/router/router", "angular2/src/router/route_registry", "angular2/src/facade/lang", "angular2/core", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var common_1 = require("angular2/platform/common");
+  var router_1 = require("angular2/src/router/router");
+  var route_registry_1 = require("angular2/src/router/route_registry");
+  var lang_1 = require("angular2/src/facade/lang");
+  var core_1 = require("angular2/core");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
+  exports.ROUTER_PROVIDERS_COMMON = lang_1.CONST_EXPR([route_registry_1.RouteRegistry, lang_1.CONST_EXPR(new core_1.Provider(common_1.LocationStrategy, {useClass: common_1.PathLocationStrategy})), common_1.Location, lang_1.CONST_EXPR(new core_1.Provider(router_1.Router, {
+    useFactory: routerFactory,
+    deps: lang_1.CONST_EXPR([route_registry_1.RouteRegistry, common_1.Location, route_registry_1.ROUTER_PRIMARY_COMPONENT, core_1.ApplicationRef])
+  })), lang_1.CONST_EXPR(new core_1.Provider(route_registry_1.ROUTER_PRIMARY_COMPONENT, {
+    useFactory: routerPrimaryComponentFactory,
+    deps: lang_1.CONST_EXPR([core_1.ApplicationRef])
+  }))]);
+  function routerFactory(registry, location, primaryComponent, appRef) {
+    var rootRouter = new router_1.RootRouter(registry, location, primaryComponent);
+    appRef.registerDisposeListener(function() {
+      return rootRouter.dispose();
+    });
+    return rootRouter;
+  }
+  function routerPrimaryComponentFactory(app) {
+    if (app.componentTypes.length == 0) {
+      throw new exceptions_1.BaseException("Bootstrap at least one component before injecting Router.");
+    }
+    return app.componentTypes[0];
   }
   global.define = __define;
   return module.exports;
@@ -40851,11 +40222,20 @@ System.register("rxjs/Subject", ["rxjs/Observable", "rxjs/Subscriber", "rxjs/Sub
   return module.exports;
 });
 
-System.register("angular2/src/core/change_detection/differs/iterable_differs", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/facade/collection", "angular2/src/core/di"], true, function(require, exports, module) {
+System.register("angular2/src/core/metadata/di", ["angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/di/metadata"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
     var c = arguments.length,
         r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
@@ -40873,47 +40253,170 @@ System.register("angular2/src/core/change_detection/differs/iterable_differs", [
       return Reflect.metadata(k, v);
   };
   var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var collection_1 = require("angular2/src/facade/collection");
   var di_1 = require("angular2/src/core/di");
-  var IterableDiffers = (function() {
-    function IterableDiffers(factories) {
-      this.factories = factories;
+  var metadata_1 = require("angular2/src/core/di/metadata");
+  var AttributeMetadata = (function(_super) {
+    __extends(AttributeMetadata, _super);
+    function AttributeMetadata(attributeName) {
+      _super.call(this);
+      this.attributeName = attributeName;
     }
-    IterableDiffers.create = function(factories, parent) {
-      if (lang_1.isPresent(parent)) {
-        var copied = collection_1.ListWrapper.clone(parent.factories);
-        factories = factories.concat(copied);
-        return new IterableDiffers(factories);
-      } else {
-        return new IterableDiffers(factories);
-      }
+    Object.defineProperty(AttributeMetadata.prototype, "token", {
+      get: function() {
+        return this;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    AttributeMetadata.prototype.toString = function() {
+      return "@Attribute(" + lang_1.stringify(this.attributeName) + ")";
     };
-    IterableDiffers.extend = function(factories) {
-      return new di_1.Provider(IterableDiffers, {
-        useFactory: function(parent) {
-          if (lang_1.isBlank(parent)) {
-            throw new exceptions_1.BaseException('Cannot extend IterableDiffers without a parent injector');
-          }
-          return IterableDiffers.create(factories, parent);
-        },
-        deps: [[IterableDiffers, new di_1.SkipSelfMetadata(), new di_1.OptionalMetadata()]]
+    AttributeMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], AttributeMetadata);
+    return AttributeMetadata;
+  }(metadata_1.DependencyMetadata));
+  exports.AttributeMetadata = AttributeMetadata;
+  var QueryMetadata = (function(_super) {
+    __extends(QueryMetadata, _super);
+    function QueryMetadata(_selector, _a) {
+      var _b = _a === void 0 ? {} : _a,
+          _c = _b.descendants,
+          descendants = _c === void 0 ? false : _c,
+          _d = _b.first,
+          first = _d === void 0 ? false : _d,
+          _e = _b.read,
+          read = _e === void 0 ? null : _e;
+      _super.call(this);
+      this._selector = _selector;
+      this.descendants = descendants;
+      this.first = first;
+      this.read = read;
+    }
+    Object.defineProperty(QueryMetadata.prototype, "isViewQuery", {
+      get: function() {
+        return false;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(QueryMetadata.prototype, "selector", {
+      get: function() {
+        return di_1.resolveForwardRef(this._selector);
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(QueryMetadata.prototype, "isVarBindingQuery", {
+      get: function() {
+        return lang_1.isString(this.selector);
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(QueryMetadata.prototype, "varBindings", {
+      get: function() {
+        return this.selector.split(',');
+      },
+      enumerable: true,
+      configurable: true
+    });
+    QueryMetadata.prototype.toString = function() {
+      return "@Query(" + lang_1.stringify(this.selector) + ")";
+    };
+    QueryMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], QueryMetadata);
+    return QueryMetadata;
+  }(metadata_1.DependencyMetadata));
+  exports.QueryMetadata = QueryMetadata;
+  var ContentChildrenMetadata = (function(_super) {
+    __extends(ContentChildrenMetadata, _super);
+    function ContentChildrenMetadata(_selector, _a) {
+      var _b = _a === void 0 ? {} : _a,
+          _c = _b.descendants,
+          descendants = _c === void 0 ? false : _c,
+          _d = _b.read,
+          read = _d === void 0 ? null : _d;
+      _super.call(this, _selector, {
+        descendants: descendants,
+        read: read
       });
-    };
-    IterableDiffers.prototype.find = function(iterable) {
-      var factory = this.factories.find(function(f) {
-        return f.supports(iterable);
+    }
+    ContentChildrenMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ContentChildrenMetadata);
+    return ContentChildrenMetadata;
+  }(QueryMetadata));
+  exports.ContentChildrenMetadata = ContentChildrenMetadata;
+  var ContentChildMetadata = (function(_super) {
+    __extends(ContentChildMetadata, _super);
+    function ContentChildMetadata(_selector, _a) {
+      var _b = (_a === void 0 ? {} : _a).read,
+          read = _b === void 0 ? null : _b;
+      _super.call(this, _selector, {
+        descendants: true,
+        first: true,
+        read: read
       });
-      if (lang_1.isPresent(factory)) {
-        return factory;
-      } else {
-        throw new exceptions_1.BaseException("Cannot find a differ supporting object '" + iterable + "' of type '" + lang_1.getTypeNameForDebugging(iterable) + "'");
-      }
+    }
+    ContentChildMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ContentChildMetadata);
+    return ContentChildMetadata;
+  }(QueryMetadata));
+  exports.ContentChildMetadata = ContentChildMetadata;
+  var ViewQueryMetadata = (function(_super) {
+    __extends(ViewQueryMetadata, _super);
+    function ViewQueryMetadata(_selector, _a) {
+      var _b = _a === void 0 ? {} : _a,
+          _c = _b.descendants,
+          descendants = _c === void 0 ? false : _c,
+          _d = _b.first,
+          first = _d === void 0 ? false : _d,
+          _e = _b.read,
+          read = _e === void 0 ? null : _e;
+      _super.call(this, _selector, {
+        descendants: descendants,
+        first: first,
+        read: read
+      });
+    }
+    Object.defineProperty(ViewQueryMetadata.prototype, "isViewQuery", {
+      get: function() {
+        return true;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    ViewQueryMetadata.prototype.toString = function() {
+      return "@ViewQuery(" + lang_1.stringify(this.selector) + ")";
     };
-    IterableDiffers = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Array])], IterableDiffers);
-    return IterableDiffers;
-  }());
-  exports.IterableDiffers = IterableDiffers;
+    ViewQueryMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewQueryMetadata);
+    return ViewQueryMetadata;
+  }(QueryMetadata));
+  exports.ViewQueryMetadata = ViewQueryMetadata;
+  var ViewChildrenMetadata = (function(_super) {
+    __extends(ViewChildrenMetadata, _super);
+    function ViewChildrenMetadata(_selector, _a) {
+      var _b = (_a === void 0 ? {} : _a).read,
+          read = _b === void 0 ? null : _b;
+      _super.call(this, _selector, {
+        descendants: true,
+        read: read
+      });
+    }
+    ViewChildrenMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewChildrenMetadata);
+    return ViewChildrenMetadata;
+  }(ViewQueryMetadata));
+  exports.ViewChildrenMetadata = ViewChildrenMetadata;
+  var ViewChildMetadata = (function(_super) {
+    __extends(ViewChildMetadata, _super);
+    function ViewChildMetadata(_selector, _a) {
+      var _b = (_a === void 0 ? {} : _a).read,
+          read = _b === void 0 ? null : _b;
+      _super.call(this, _selector, {
+        descendants: true,
+        first: true,
+        read: read
+      });
+    }
+    ViewChildMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object, Object])], ViewChildMetadata);
+    return ViewChildMetadata;
+  }(ViewQueryMetadata));
+  exports.ViewChildMetadata = ViewChildMetadata;
   global.define = __define;
   return module.exports;
 });
@@ -40974,9 +40477,6 @@ System.register("angular2/src/core/linker/component_resolver", ["angular2/src/co
         throw new exceptions_1.BaseException("No precompiled component " + lang_1.stringify(componentType) + " found");
       }
       return async_1.PromiseWrapper.resolve(componentFactory);
-    };
-    ReflectorComponentResolver.prototype.createInjectorFactory = function(injectorModule, extraProviders) {
-      return exceptions_1.unimplemented();
     };
     ReflectorComponentResolver.prototype.clearCache = function() {};
     ReflectorComponentResolver = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [])], ReflectorComponentResolver);
@@ -41700,36 +41200,28 @@ System.register("angular2/src/platform/server/parse5_adapter", ["parse5/index", 
   return module.exports;
 });
 
-System.register("angular2/src/router/router_providers_common", ["angular2/platform/common", "angular2/src/router/router", "angular2/src/router/route_registry", "angular2/src/facade/lang", "angular2/core", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+System.register("angular2/src/web_workers/worker/router_providers", ["angular2/core", "angular2/platform/common", "angular2/src/web_workers/worker/platform_location", "angular2/src/router/router_providers_common"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var common_1 = require("angular2/platform/common");
-  var router_1 = require("angular2/src/router/router");
-  var route_registry_1 = require("angular2/src/router/route_registry");
-  var lang_1 = require("angular2/src/facade/lang");
   var core_1 = require("angular2/core");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  exports.ROUTER_PROVIDERS_COMMON = lang_1.CONST_EXPR([route_registry_1.RouteRegistry, lang_1.CONST_EXPR(new core_1.Provider(common_1.LocationStrategy, {useClass: common_1.PathLocationStrategy})), common_1.Location, lang_1.CONST_EXPR(new core_1.Provider(router_1.Router, {
-    useFactory: routerFactory,
-    deps: lang_1.CONST_EXPR([route_registry_1.RouteRegistry, common_1.Location, route_registry_1.ROUTER_PRIMARY_COMPONENT, core_1.ApplicationRef])
-  })), lang_1.CONST_EXPR(new core_1.Provider(route_registry_1.ROUTER_PRIMARY_COMPONENT, {
-    useFactory: routerPrimaryComponentFactory,
-    deps: lang_1.CONST_EXPR([core_1.ApplicationRef])
-  }))]);
-  function routerFactory(registry, location, primaryComponent, appRef) {
-    var rootRouter = new router_1.RootRouter(registry, location, primaryComponent);
-    appRef.registerDisposeListener(function() {
-      return rootRouter.dispose();
+  var common_1 = require("angular2/platform/common");
+  var platform_location_1 = require("angular2/src/web_workers/worker/platform_location");
+  var router_providers_common_1 = require("angular2/src/router/router_providers_common");
+  exports.WORKER_APP_ROUTER = [router_providers_common_1.ROUTER_PROVIDERS_COMMON, new core_1.Provider(common_1.PlatformLocation, {useClass: platform_location_1.WebWorkerPlatformLocation}), new core_1.Provider(core_1.APP_INITIALIZER, {
+    useFactory: function(platformLocation, zone) {
+      return function() {
+        return initRouter(platformLocation, zone);
+      };
+    },
+    multi: true,
+    deps: [common_1.PlatformLocation, core_1.NgZone]
+  })];
+  function initRouter(platformLocation, zone) {
+    return zone.run(function() {
+      return platformLocation.init();
     });
-    return rootRouter;
-  }
-  function routerPrimaryComponentFactory(app) {
-    if (app.componentFactories.length == 0) {
-      throw new exceptions_1.BaseException("Bootstrap at least one component before injecting Router.");
-    }
-    return app.componentFactories[0];
   }
   global.define = __define;
   return module.exports;
@@ -41906,50 +41398,58 @@ System.register("angular2/src/facade/async", ["angular2/src/facade/lang", "angul
   return module.exports;
 });
 
-System.register("angular2/src/core/change_detection/change_detection", ["angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/facade/lang", "angular2/src/core/change_detection/differs/default_keyvalue_differ", "angular2/src/core/change_detection/differs/default_iterable_differ", "angular2/src/core/change_detection/constants", "angular2/src/core/change_detection/change_detector_ref", "angular2/src/core/change_detection/differs/iterable_differs", "angular2/src/core/change_detection/differs/keyvalue_differs", "angular2/src/core/change_detection/change_detection_util"], true, function(require, exports, module) {
+System.register("angular2/src/core/metadata", ["angular2/src/core/metadata/di", "angular2/src/core/metadata/directives", "angular2/src/core/metadata/view", "angular2/src/core/metadata/di", "angular2/src/core/metadata/directives", "angular2/src/core/metadata/view", "angular2/src/core/util/decorators"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var iterable_differs_1 = require("angular2/src/core/change_detection/differs/iterable_differs");
-  var default_iterable_differ_1 = require("angular2/src/core/change_detection/differs/default_iterable_differ");
-  var keyvalue_differs_1 = require("angular2/src/core/change_detection/differs/keyvalue_differs");
-  var default_keyvalue_differ_1 = require("angular2/src/core/change_detection/differs/default_keyvalue_differ");
-  var lang_1 = require("angular2/src/facade/lang");
-  var default_keyvalue_differ_2 = require("angular2/src/core/change_detection/differs/default_keyvalue_differ");
-  exports.DefaultKeyValueDifferFactory = default_keyvalue_differ_2.DefaultKeyValueDifferFactory;
-  exports.KeyValueChangeRecord = default_keyvalue_differ_2.KeyValueChangeRecord;
-  var default_iterable_differ_2 = require("angular2/src/core/change_detection/differs/default_iterable_differ");
-  exports.DefaultIterableDifferFactory = default_iterable_differ_2.DefaultIterableDifferFactory;
-  exports.CollectionChangeRecord = default_iterable_differ_2.CollectionChangeRecord;
-  var constants_1 = require("angular2/src/core/change_detection/constants");
-  exports.ChangeDetectionStrategy = constants_1.ChangeDetectionStrategy;
-  exports.CHANGE_DETECTION_STRATEGY_VALUES = constants_1.CHANGE_DETECTION_STRATEGY_VALUES;
-  exports.ChangeDetectorState = constants_1.ChangeDetectorState;
-  exports.CHANGE_DETECTOR_STATE_VALUES = constants_1.CHANGE_DETECTOR_STATE_VALUES;
-  exports.isDefaultChangeDetectionStrategy = constants_1.isDefaultChangeDetectionStrategy;
-  var change_detector_ref_1 = require("angular2/src/core/change_detection/change_detector_ref");
-  exports.ChangeDetectorRef = change_detector_ref_1.ChangeDetectorRef;
-  var iterable_differs_2 = require("angular2/src/core/change_detection/differs/iterable_differs");
-  exports.IterableDiffers = iterable_differs_2.IterableDiffers;
-  var keyvalue_differs_2 = require("angular2/src/core/change_detection/differs/keyvalue_differs");
-  exports.KeyValueDiffers = keyvalue_differs_2.KeyValueDiffers;
-  var change_detection_util_1 = require("angular2/src/core/change_detection/change_detection_util");
-  exports.WrappedValue = change_detection_util_1.WrappedValue;
-  exports.ValueUnwrapper = change_detection_util_1.ValueUnwrapper;
-  exports.SimpleChange = change_detection_util_1.SimpleChange;
-  exports.devModeEqual = change_detection_util_1.devModeEqual;
-  exports.looseIdentical = change_detection_util_1.looseIdentical;
-  exports.uninitialized = change_detection_util_1.uninitialized;
-  exports.keyValDiff = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new default_keyvalue_differ_1.DefaultKeyValueDifferFactory())]);
-  exports.iterableDiff = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new default_iterable_differ_1.DefaultIterableDifferFactory())]);
-  exports.defaultIterableDiffers = lang_1.CONST_EXPR(new iterable_differs_1.IterableDiffers(exports.iterableDiff));
-  exports.defaultKeyValueDiffers = lang_1.CONST_EXPR(new keyvalue_differs_1.KeyValueDiffers(exports.keyValDiff));
+  var di_1 = require("angular2/src/core/metadata/di");
+  exports.QueryMetadata = di_1.QueryMetadata;
+  exports.ContentChildrenMetadata = di_1.ContentChildrenMetadata;
+  exports.ContentChildMetadata = di_1.ContentChildMetadata;
+  exports.ViewChildrenMetadata = di_1.ViewChildrenMetadata;
+  exports.ViewQueryMetadata = di_1.ViewQueryMetadata;
+  exports.ViewChildMetadata = di_1.ViewChildMetadata;
+  exports.AttributeMetadata = di_1.AttributeMetadata;
+  var directives_1 = require("angular2/src/core/metadata/directives");
+  exports.ComponentMetadata = directives_1.ComponentMetadata;
+  exports.DirectiveMetadata = directives_1.DirectiveMetadata;
+  exports.PipeMetadata = directives_1.PipeMetadata;
+  exports.InputMetadata = directives_1.InputMetadata;
+  exports.OutputMetadata = directives_1.OutputMetadata;
+  exports.HostBindingMetadata = directives_1.HostBindingMetadata;
+  exports.HostListenerMetadata = directives_1.HostListenerMetadata;
+  var view_1 = require("angular2/src/core/metadata/view");
+  exports.ViewMetadata = view_1.ViewMetadata;
+  exports.ViewEncapsulation = view_1.ViewEncapsulation;
+  var di_2 = require("angular2/src/core/metadata/di");
+  var directives_2 = require("angular2/src/core/metadata/directives");
+  var view_2 = require("angular2/src/core/metadata/view");
+  var decorators_1 = require("angular2/src/core/util/decorators");
+  exports.Component = decorators_1.makeDecorator(directives_2.ComponentMetadata, function(fn) {
+    return fn.View = View;
+  });
+  exports.Directive = decorators_1.makeDecorator(directives_2.DirectiveMetadata);
+  var View = decorators_1.makeDecorator(view_2.ViewMetadata, function(fn) {
+    return fn.View = View;
+  });
+  exports.Attribute = decorators_1.makeParamDecorator(di_2.AttributeMetadata);
+  exports.Query = decorators_1.makeParamDecorator(di_2.QueryMetadata);
+  exports.ContentChildren = decorators_1.makePropDecorator(di_2.ContentChildrenMetadata);
+  exports.ContentChild = decorators_1.makePropDecorator(di_2.ContentChildMetadata);
+  exports.ViewChildren = decorators_1.makePropDecorator(di_2.ViewChildrenMetadata);
+  exports.ViewChild = decorators_1.makePropDecorator(di_2.ViewChildMetadata);
+  exports.ViewQuery = decorators_1.makeParamDecorator(di_2.ViewQueryMetadata);
+  exports.Pipe = decorators_1.makeDecorator(directives_2.PipeMetadata);
+  exports.Input = decorators_1.makePropDecorator(directives_2.InputMetadata);
+  exports.Output = decorators_1.makePropDecorator(directives_2.OutputMetadata);
+  exports.HostBinding = decorators_1.makePropDecorator(directives_2.HostBindingMetadata);
+  exports.HostListener = decorators_1.makePropDecorator(directives_2.HostListenerMetadata);
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng_zone", "angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/application_tokens", "angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/core/testability/testability", "angular2/src/core/linker/component_resolver", "angular2/src/facade/exceptions", "angular2/src/core/console", "angular2/src/core/profile/profile"], true, function(require, exports, module) {
+System.register("angular2/src/core/linker/dynamic_component_loader", ["angular2/src/core/di", "angular2/src/core/linker/component_resolver", "angular2/src/facade/lang"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -41979,6 +41479,99 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
       return Reflect.metadata(k, v);
   };
+  var di_1 = require("angular2/src/core/di");
+  var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
+  var lang_1 = require("angular2/src/facade/lang");
+  var DynamicComponentLoader = (function() {
+    function DynamicComponentLoader() {}
+    return DynamicComponentLoader;
+  }());
+  exports.DynamicComponentLoader = DynamicComponentLoader;
+  var DynamicComponentLoader_ = (function(_super) {
+    __extends(DynamicComponentLoader_, _super);
+    function DynamicComponentLoader_(_compiler) {
+      _super.call(this);
+      this._compiler = _compiler;
+    }
+    DynamicComponentLoader_.prototype.loadAsRoot = function(type, overrideSelectorOrNode, injector, onDispose, projectableNodes) {
+      return this._compiler.resolveComponent(type).then(function(componentFactory) {
+        var componentRef = componentFactory.create(injector, projectableNodes, lang_1.isPresent(overrideSelectorOrNode) ? overrideSelectorOrNode : componentFactory.selector);
+        if (lang_1.isPresent(onDispose)) {
+          componentRef.onDestroy(onDispose);
+        }
+        return componentRef;
+      });
+    };
+    DynamicComponentLoader_.prototype.loadNextToLocation = function(type, location, providers, projectableNodes) {
+      if (providers === void 0) {
+        providers = null;
+      }
+      if (projectableNodes === void 0) {
+        projectableNodes = null;
+      }
+      return this._compiler.resolveComponent(type).then(function(componentFactory) {
+        return location.createComponent(componentFactory, location.length, providers, projectableNodes);
+      });
+    };
+    DynamicComponentLoader_ = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [component_resolver_1.ComponentResolver])], DynamicComponentLoader_);
+    return DynamicComponentLoader_;
+  }(DynamicComponentLoader));
+  exports.DynamicComponentLoader_ = DynamicComponentLoader_;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/platform/worker_app", ["angular2/src/core/zone/ng_zone", "angular2/src/core/di", "angular2/src/platform/server/parse5_adapter", "angular2/src/web_workers/shared/post_message_bus", "angular2/src/platform/worker_app_common", "angular2/core", "angular2/src/web_workers/shared/message_bus", "angular2/src/compiler/compiler"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var ng_zone_1 = require("angular2/src/core/zone/ng_zone");
+  var di_1 = require("angular2/src/core/di");
+  var parse5_adapter_1 = require("angular2/src/platform/server/parse5_adapter");
+  var post_message_bus_1 = require("angular2/src/web_workers/shared/post_message_bus");
+  var worker_app_common_1 = require("angular2/src/platform/worker_app_common");
+  var core_1 = require("angular2/core");
+  var message_bus_1 = require("angular2/src/web_workers/shared/message_bus");
+  var compiler_1 = require("angular2/src/compiler/compiler");
+  var _postMessage = {postMessage: function(message, transferrables) {
+      postMessage(message, transferrables);
+    }};
+  exports.WORKER_APP_APPLICATION = [worker_app_common_1.WORKER_APP_APPLICATION_COMMON, compiler_1.COMPILER_PROVIDERS, new di_1.Provider(message_bus_1.MessageBus, {
+    useFactory: createMessageBus,
+    deps: [ng_zone_1.NgZone]
+  }), new di_1.Provider(core_1.APP_INITIALIZER, {
+    useValue: setupWebWorker,
+    multi: true
+  })];
+  function createMessageBus(zone) {
+    var sink = new post_message_bus_1.PostMessageBusSink(_postMessage);
+    var source = new post_message_bus_1.PostMessageBusSource();
+    var bus = new post_message_bus_1.PostMessageBus(sink, source);
+    bus.attachToZone(zone);
+    return bus;
+  }
+  function setupWebWorker() {
+    parse5_adapter_1.Parse5DomAdapter.makeCurrent();
+  }
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng_zone", "angular2/src/facade/lang", "angular2/src/core/di", "angular2/src/core/application_tokens", "angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/core/testability/testability", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/facade/exceptions", "angular2/src/core/console", "angular2/src/core/profile/profile", "angular2/src/facade/lang"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var ng_zone_1 = require("angular2/src/core/zone/ng_zone");
   var lang_1 = require("angular2/src/facade/lang");
   var di_1 = require("angular2/src/core/di");
@@ -41986,70 +41579,79 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
   var async_1 = require("angular2/src/facade/async");
   var collection_1 = require("angular2/src/facade/collection");
   var testability_1 = require("angular2/src/core/testability/testability");
-  var component_resolver_1 = require("angular2/src/core/linker/component_resolver");
+  var dynamic_component_loader_1 = require("angular2/src/core/linker/dynamic_component_loader");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var console_1 = require("angular2/src/core/console");
   var profile_1 = require("angular2/src/core/profile/profile");
+  var lang_2 = require("angular2/src/facade/lang");
+  function _componentProviders(appComponentType) {
+    return [di_1.provide(application_tokens_1.APP_COMPONENT, {useValue: appComponentType}), di_1.provide(application_tokens_1.APP_COMPONENT_REF_PROMISE, {
+      useFactory: function(dynamicComponentLoader, appRef, injector) {
+        var ref;
+        return dynamicComponentLoader.loadAsRoot(appComponentType, null, injector, function() {
+          appRef._unloadComponent(ref);
+        }).then(function(componentRef) {
+          ref = componentRef;
+          var testability = injector.getOptional(testability_1.Testability);
+          if (lang_1.isPresent(testability)) {
+            injector.get(testability_1.TestabilityRegistry).registerApplication(componentRef.location.nativeElement, testability);
+          }
+          return componentRef;
+        });
+      },
+      deps: [dynamic_component_loader_1.DynamicComponentLoader, ApplicationRef, di_1.Injector]
+    }), di_1.provide(appComponentType, {
+      useFactory: function(p) {
+        return p.then(function(ref) {
+          return ref.instance;
+        });
+      },
+      deps: [application_tokens_1.APP_COMPONENT_REF_PROMISE]
+    })];
+  }
   function createNgZone() {
     return new ng_zone_1.NgZone({enableLongStackTrace: lang_1.assertionsEnabled()});
   }
   exports.createNgZone = createNgZone;
   var _platform;
-  var _inPlatformCreate = false;
-  function createPlatform(injector) {
-    if (_inPlatformCreate) {
-      throw new exceptions_1.BaseException('Already creating a platform...');
+  var _platformProviders;
+  function platform(providers) {
+    lang_2.lockMode();
+    if (lang_1.isPresent(_platform)) {
+      if (collection_1.ListWrapper.equals(_platformProviders, providers)) {
+        return _platform;
+      } else {
+        throw new exceptions_1.BaseException("platform cannot be initialized with different sets of providers.");
+      }
+    } else {
+      return _createPlatform(providers);
     }
-    if (lang_1.isPresent(_platform) && !_platform.disposed) {
-      throw new exceptions_1.BaseException("There can be only one platform. Destroy the previous one to create a new one.");
-    }
-    lang_1.lockMode();
-    _inPlatformCreate = true;
-    try {
-      _platform = injector.get(PlatformRef);
-      _platform.init(injector);
-    } finally {
-      _inPlatformCreate = false;
-    }
-    return _platform;
   }
-  exports.createPlatform = createPlatform;
-  function assertPlatform(requiredToken) {
-    var platform = getPlatform();
-    if (lang_1.isBlank(platform)) {
-      throw new exceptions_1.BaseException('Not platform exists!');
-    }
-    if (lang_1.isPresent(platform) && lang_1.isBlank(platform.injector.get(requiredToken, null))) {
-      throw new exceptions_1.BaseException('A platform with a different configuration has been created. Please destroy it first.');
-    }
-    return platform;
-  }
-  exports.assertPlatform = assertPlatform;
+  exports.platform = platform;
   function disposePlatform() {
-    if (lang_1.isPresent(_platform) && !_platform.disposed) {
+    if (lang_1.isPresent(_platform)) {
       _platform.dispose();
+      _platform = null;
     }
   }
   exports.disposePlatform = disposePlatform;
-  function getPlatform() {
-    return lang_1.isPresent(_platform) && !_platform.disposed ? _platform : null;
-  }
-  exports.getPlatform = getPlatform;
-  function coreBootstrap(injector, componentFactory) {
-    var appRef = injector.get(ApplicationRef);
-    return appRef.bootstrap(componentFactory);
-  }
-  exports.coreBootstrap = coreBootstrap;
-  function coreLoadAndBootstrap(injector, componentType) {
-    var appRef = injector.get(ApplicationRef);
-    return appRef.run(function() {
-      var componentResolver = injector.get(component_resolver_1.ComponentResolver);
-      return async_1.PromiseWrapper.all([componentResolver.resolveComponent(componentType), appRef.waitForAsyncInitializers()]).then(function(arr) {
-        return appRef.bootstrap(arr[0]);
-      });
+  function _createPlatform(providers) {
+    _platformProviders = providers;
+    var injector = di_1.Injector.resolveAndCreate(providers);
+    _platform = new PlatformRef_(injector, function() {
+      _platform = null;
+      _platformProviders = null;
     });
+    _runPlatformInitializers(injector);
+    return _platform;
   }
-  exports.coreLoadAndBootstrap = coreLoadAndBootstrap;
+  function _runPlatformInitializers(injector) {
+    var inits = injector.getOptional(application_tokens_1.PLATFORM_INITIALIZER);
+    if (lang_1.isPresent(inits))
+      inits.forEach(function(init) {
+        return init();
+      });
+  }
   var PlatformRef = (function() {
     function PlatformRef() {}
     Object.defineProperty(PlatformRef.prototype, "injector", {
@@ -42060,35 +41662,18 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
       configurable: true
     });
     ;
-    Object.defineProperty(PlatformRef.prototype, "disposed", {
-      get: function() {
-        throw exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
     return PlatformRef;
   }());
   exports.PlatformRef = PlatformRef;
   var PlatformRef_ = (function(_super) {
     __extends(PlatformRef_, _super);
-    function PlatformRef_() {
-      _super.apply(this, arguments);
+    function PlatformRef_(_injector, _dispose) {
+      _super.call(this);
+      this._injector = _injector;
+      this._dispose = _dispose;
       this._applications = [];
       this._disposeListeners = [];
-      this._disposed = false;
     }
-    PlatformRef_.prototype.init = function(injector) {
-      if (!_inPlatformCreate) {
-        throw new exceptions_1.BaseException('Platforms have to be initialized via `createPlatform`!');
-      }
-      this._injector = injector;
-      var inits = injector.get(application_tokens_1.PLATFORM_INITIALIZER, null);
-      if (lang_1.isPresent(inits))
-        inits.forEach(function(init) {
-          return init();
-        });
-    };
     PlatformRef_.prototype.registerDisposeListener = function(dispose) {
       this._disposeListeners.push(dispose);
     };
@@ -42099,15 +41684,68 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(PlatformRef_.prototype, "disposed", {
-      get: function() {
-        return this._disposed;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    PlatformRef_.prototype.addApplication = function(appRef) {
-      this._applications.push(appRef);
+    PlatformRef_.prototype.application = function(providers) {
+      var app = this._initApp(createNgZone(), providers);
+      if (async_1.PromiseWrapper.isPromise(app)) {
+        throw new exceptions_1.BaseException("Cannot use asyncronous app initializers with application. Use asyncApplication instead.");
+      }
+      return app;
+    };
+    PlatformRef_.prototype.asyncApplication = function(bindingFn, additionalProviders) {
+      var _this = this;
+      var zone = createNgZone();
+      var completer = async_1.PromiseWrapper.completer();
+      if (bindingFn === null) {
+        completer.resolve(this._initApp(zone, additionalProviders));
+      } else {
+        zone.run(function() {
+          async_1.PromiseWrapper.then(bindingFn(zone), function(providers) {
+            if (lang_1.isPresent(additionalProviders)) {
+              providers = collection_1.ListWrapper.concat(providers, additionalProviders);
+            }
+            var promise = _this._initApp(zone, providers);
+            completer.resolve(promise);
+          });
+        });
+      }
+      return completer.promise;
+    };
+    PlatformRef_.prototype._initApp = function(zone, providers) {
+      var _this = this;
+      var injector;
+      var app;
+      zone.run(function() {
+        providers = collection_1.ListWrapper.concat(providers, [di_1.provide(ng_zone_1.NgZone, {useValue: zone}), di_1.provide(ApplicationRef, {
+          useFactory: function() {
+            return app;
+          },
+          deps: []
+        })]);
+        var exceptionHandler;
+        try {
+          injector = _this.injector.resolveAndCreateChild(providers);
+          exceptionHandler = injector.get(exceptions_1.ExceptionHandler);
+          async_1.ObservableWrapper.subscribe(zone.onError, function(error) {
+            exceptionHandler.call(error.error, error.stackTrace);
+          });
+        } catch (e) {
+          if (lang_1.isPresent(exceptionHandler)) {
+            exceptionHandler.call(e, e.stack);
+          } else {
+            lang_1.print(e.toString());
+          }
+        }
+      });
+      app = new ApplicationRef_(this, zone, injector);
+      this._applications.push(app);
+      var promise = _runAppInitializers(injector);
+      if (promise !== null) {
+        return async_1.PromiseWrapper.then(promise, function(_) {
+          return app;
+        });
+      } else {
+        return app;
+      }
     };
     PlatformRef_.prototype.dispose = function() {
       collection_1.ListWrapper.clone(this._applications).forEach(function(app) {
@@ -42116,15 +41754,31 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
       this._disposeListeners.forEach(function(dispose) {
         return dispose();
       });
-      this._disposed = true;
+      this._dispose();
     };
     PlatformRef_.prototype._applicationDisposed = function(app) {
       collection_1.ListWrapper.remove(this._applications, app);
     };
-    PlatformRef_ = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [])], PlatformRef_);
     return PlatformRef_;
   }(PlatformRef));
   exports.PlatformRef_ = PlatformRef_;
+  function _runAppInitializers(injector) {
+    var inits = injector.getOptional(application_tokens_1.APP_INITIALIZER);
+    var promises = [];
+    if (lang_1.isPresent(inits)) {
+      inits.forEach(function(init) {
+        var retVal = init();
+        if (async_1.PromiseWrapper.isPromise(retVal)) {
+          promises.push(retVal);
+        }
+      });
+    }
+    if (promises.length > 0) {
+      return async_1.PromiseWrapper.all(promises);
+    } else {
+      return null;
+    }
+  }
   var ApplicationRef = (function() {
     function ApplicationRef() {}
     Object.defineProperty(ApplicationRef.prototype, "injector", {
@@ -42151,14 +41805,6 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
       configurable: true
     });
     ;
-    Object.defineProperty(ApplicationRef.prototype, "componentFactories", {
-      get: function() {
-        return exceptions_1.unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
     return ApplicationRef;
   }());
   exports.ApplicationRef = ApplicationRef;
@@ -42173,46 +41819,18 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
       this._bootstrapListeners = [];
       this._disposeListeners = [];
       this._rootComponents = [];
-      this._rootComponentFactories = [];
+      this._rootComponentTypes = [];
       this._changeDetectorRefs = [];
       this._runningTick = false;
       this._enforceNoNewChanges = false;
-      var zone = _injector.get(ng_zone_1.NgZone);
-      this._enforceNoNewChanges = lang_1.assertionsEnabled();
-      zone.run(function() {
-        _this._exceptionHandler = _injector.get(exceptions_1.ExceptionHandler);
-      });
-      this._asyncInitDonePromise = this.run(function() {
-        var inits = _injector.get(application_tokens_1.APP_INITIALIZER, null);
-        var asyncInitResults = [];
-        var asyncInitDonePromise;
-        if (lang_1.isPresent(inits)) {
-          for (var i = 0; i < inits.length; i++) {
-            var initResult = inits[i]();
-            if (lang_1.isPromise(initResult)) {
-              asyncInitResults.push(initResult);
-            }
-          }
-        }
-        if (asyncInitResults.length > 0) {
-          asyncInitDonePromise = async_1.PromiseWrapper.all(asyncInitResults).then(function(_) {
-            return _this._asyncInitDone = true;
+      if (lang_1.isPresent(this._zone)) {
+        async_1.ObservableWrapper.subscribe(this._zone.onMicrotaskEmpty, function(_) {
+          _this._zone.run(function() {
+            _this.tick();
           });
-          _this._asyncInitDone = false;
-        } else {
-          _this._asyncInitDone = true;
-          asyncInitDonePromise = async_1.PromiseWrapper.resolve(true);
-        }
-        return asyncInitDonePromise;
-      });
-      async_1.ObservableWrapper.subscribe(zone.onError, function(error) {
-        _this._exceptionHandler.call(error.error, error.stackTrace);
-      });
-      async_1.ObservableWrapper.subscribe(this._zone.onMicrotaskEmpty, function(_) {
-        _this._zone.run(function() {
-          _this.tick();
         });
-      });
+      }
+      this._enforceNoNewChanges = lang_1.assertionsEnabled();
     }
     ApplicationRef_.prototype.registerBootstrapListener = function(listener) {
       this._bootstrapListeners.push(listener);
@@ -42226,53 +41844,39 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
     ApplicationRef_.prototype.unregisterChangeDetector = function(changeDetector) {
       collection_1.ListWrapper.remove(this._changeDetectorRefs, changeDetector);
     };
-    ApplicationRef_.prototype.waitForAsyncInitializers = function() {
-      return this._asyncInitDonePromise;
-    };
-    ApplicationRef_.prototype.run = function(callback) {
+    ApplicationRef_.prototype.bootstrap = function(componentType, providers) {
       var _this = this;
-      var zone = this.injector.get(ng_zone_1.NgZone);
-      var result;
       var completer = async_1.PromiseWrapper.completer();
-      zone.run(function() {
+      this._zone.run(function() {
+        var componentProviders = _componentProviders(componentType);
+        if (lang_1.isPresent(providers)) {
+          componentProviders.push(providers);
+        }
+        var exceptionHandler = _this._injector.get(exceptions_1.ExceptionHandler);
+        _this._rootComponentTypes.push(componentType);
         try {
-          result = callback();
-          if (lang_1.isPromise(result)) {
-            async_1.PromiseWrapper.then(result, function(ref) {
-              completer.resolve(ref);
-            }, function(err, stackTrace) {
-              completer.reject(err, stackTrace);
-              _this._exceptionHandler.call(err, stackTrace);
-            });
-          }
+          var injector = _this._injector.resolveAndCreateChild(componentProviders);
+          var compRefToken = injector.get(application_tokens_1.APP_COMPONENT_REF_PROMISE);
+          var tick = function(componentRef) {
+            _this._loadComponent(componentRef);
+            completer.resolve(componentRef);
+          };
+          var tickResult = async_1.PromiseWrapper.then(compRefToken, tick);
+          async_1.PromiseWrapper.then(tickResult, null, function(err, stackTrace) {
+            completer.reject(err, stackTrace);
+            exceptionHandler.call(err, stackTrace);
+          });
         } catch (e) {
-          _this._exceptionHandler.call(e, e.stack);
-          throw e;
+          exceptionHandler.call(e, e.stack);
+          completer.reject(e, e.stack);
         }
       });
-      return lang_1.isPromise(result) ? completer.promise : result;
-    };
-    ApplicationRef_.prototype.bootstrap = function(componentFactory) {
-      var _this = this;
-      if (!this._asyncInitDone) {
-        throw new exceptions_1.BaseException('Cannot bootstrap as there are still asynchronous initializers running. Wait for them using waitForAsyncInitializers().');
-      }
-      return this.run(function() {
-        _this._rootComponentFactories.push(componentFactory);
-        var compRef = componentFactory.create(_this._injector, [], componentFactory.selector);
-        compRef.onDestroy(function() {
-          _this._unloadComponent(compRef);
-        });
-        var testability = compRef.injector.get(testability_1.Testability, null);
-        if (lang_1.isPresent(testability)) {
-          compRef.injector.get(testability_1.TestabilityRegistry).registerApplication(compRef.location.nativeElement, testability);
-        }
-        _this._loadComponent(compRef);
+      return completer.promise.then(function(ref) {
         var c = _this._injector.get(console_1.Console);
         if (lang_1.assertionsEnabled()) {
           c.log("Angular 2 is running in the development mode. Call enableProdMode() to enable the production mode.");
         }
-        return compRef;
+        return ref;
       });
     };
     ApplicationRef_.prototype._loadComponent = function(componentRef) {
@@ -42335,118 +41939,20 @@ System.register("angular2/src/core/application_ref", ["angular2/src/core/zone/ng
     };
     Object.defineProperty(ApplicationRef_.prototype, "componentTypes", {
       get: function() {
-        return this._rootComponentFactories.map(function(factory) {
-          return factory.componentType;
-        });
+        return this._rootComponentTypes;
       },
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(ApplicationRef_.prototype, "componentFactories", {
-      get: function() {
-        return this._rootComponentFactories;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
     ApplicationRef_._tickScope = profile_1.wtfCreateScope('ApplicationRef#tick()');
-    ApplicationRef_ = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [PlatformRef_, ng_zone_1.NgZone, di_1.Injector])], ApplicationRef_);
     return ApplicationRef_;
   }(ApplicationRef));
   exports.ApplicationRef_ = ApplicationRef_;
-  exports.PLATFORM_CORE_PROVIDERS = lang_1.CONST_EXPR([PlatformRef_, lang_1.CONST_EXPR(new di_1.Provider(PlatformRef, {useExisting: PlatformRef_}))]);
-  exports.APPLICATION_CORE_PROVIDERS = lang_1.CONST_EXPR([lang_1.CONST_EXPR(new di_1.Provider(ng_zone_1.NgZone, {
-    useFactory: createNgZone,
-    deps: lang_1.CONST_EXPR([])
-  })), ApplicationRef_, lang_1.CONST_EXPR(new di_1.Provider(ApplicationRef, {useExisting: ApplicationRef_}))]);
   global.define = __define;
   return module.exports;
 });
 
-System.register("angular2/src/platform/worker_app", ["angular2/src/core/zone/ng_zone", "angular2/src/core/di", "angular2/src/platform/server/parse5_adapter", "angular2/src/web_workers/shared/post_message_bus", "angular2/src/platform/worker_app_common", "angular2/core", "angular2/src/web_workers/shared/message_bus", "angular2/src/compiler/compiler"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var ng_zone_1 = require("angular2/src/core/zone/ng_zone");
-  var di_1 = require("angular2/src/core/di");
-  var parse5_adapter_1 = require("angular2/src/platform/server/parse5_adapter");
-  var post_message_bus_1 = require("angular2/src/web_workers/shared/post_message_bus");
-  var worker_app_common_1 = require("angular2/src/platform/worker_app_common");
-  var core_1 = require("angular2/core");
-  var message_bus_1 = require("angular2/src/web_workers/shared/message_bus");
-  var compiler_1 = require("angular2/src/compiler/compiler");
-  var _postMessage = {postMessage: function(message, transferrables) {
-      postMessage(message, transferrables);
-    }};
-  exports.WORKER_APP_APPLICATION = [worker_app_common_1.WORKER_APP_APPLICATION_COMMON, compiler_1.COMPILER_PROVIDERS, new di_1.Provider(message_bus_1.MessageBus, {
-    useFactory: createMessageBus,
-    deps: [ng_zone_1.NgZone]
-  }), new di_1.Provider(core_1.APP_INITIALIZER, {
-    useValue: setupWebWorker,
-    multi: true
-  })];
-  function createMessageBus(zone) {
-    var sink = new post_message_bus_1.PostMessageBusSink(_postMessage);
-    var source = new post_message_bus_1.PostMessageBusSource();
-    var bus = new post_message_bus_1.PostMessageBus(sink, source);
-    bus.attachToZone(zone);
-    return bus;
-  }
-  function setupWebWorker() {
-    parse5_adapter_1.Parse5DomAdapter.makeCurrent();
-  }
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/web_workers/worker/router_providers", ["angular2/core", "angular2/platform/common", "angular2/src/web_workers/worker/platform_location", "angular2/src/router/router_providers_common"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var core_1 = require("angular2/core");
-  var common_1 = require("angular2/platform/common");
-  var platform_location_1 = require("angular2/src/web_workers/worker/platform_location");
-  var router_providers_common_1 = require("angular2/src/router/router_providers_common");
-  exports.WORKER_APP_ROUTER = [router_providers_common_1.ROUTER_PROVIDERS_COMMON, new core_1.Provider(common_1.PlatformLocation, {useClass: platform_location_1.WebWorkerPlatformLocation}), new core_1.Provider(core_1.APP_INITIALIZER, {
-    useFactory: function(platformLocation, zone) {
-      return function() {
-        return initRouter(platformLocation, zone);
-      };
-    },
-    multi: true,
-    deps: [common_1.PlatformLocation, core_1.NgZone]
-  })];
-  function initRouter(platformLocation, zone) {
-    return zone.runGuarded(function() {
-      return platformLocation.init();
-    });
-  }
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/change_detection", ["angular2/src/core/change_detection/change_detection"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var change_detection_1 = require("angular2/src/core/change_detection/change_detection");
-  exports.ChangeDetectionStrategy = change_detection_1.ChangeDetectionStrategy;
-  exports.ChangeDetectorRef = change_detection_1.ChangeDetectorRef;
-  exports.WrappedValue = change_detection_1.WrappedValue;
-  exports.SimpleChange = change_detection_1.SimpleChange;
-  exports.IterableDiffers = change_detection_1.IterableDiffers;
-  exports.KeyValueDiffers = change_detection_1.KeyValueDiffers;
-  exports.CollectionChangeRecord = change_detection_1.CollectionChangeRecord;
-  exports.KeyValueChangeRecord = change_detection_1.KeyValueChangeRecord;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/platform/worker_app", ["angular2/src/facade/lang", "angular2/src/platform/worker_app_common", "angular2/src/platform/worker_app", "angular2/core", "angular2/src/platform/worker_app_common", "angular2/src/platform/worker_app", "angular2/src/web_workers/shared/client_message_broker", "angular2/src/web_workers/shared/service_message_broker", "angular2/src/web_workers/shared/serializer", "angular2/src/web_workers/shared/message_bus", "angular2/src/web_workers/worker/router_providers"], true, function(require, exports, module) {
+System.register("angular2/platform/worker_app", ["angular2/src/platform/worker_app_common", "angular2/src/platform/worker_app", "angular2/src/web_workers/shared/client_message_broker", "angular2/src/web_workers/shared/service_message_broker", "angular2/src/web_workers/shared/serializer", "angular2/src/web_workers/shared/message_bus", "angular2/src/web_workers/worker/router_providers"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -42456,15 +41962,11 @@ System.register("angular2/platform/worker_app", ["angular2/src/facade/lang", "an
       if (!exports.hasOwnProperty(p))
         exports[p] = m[p];
   }
-  var lang_1 = require("angular2/src/facade/lang");
   var worker_app_common_1 = require("angular2/src/platform/worker_app_common");
+  exports.WORKER_APP_PLATFORM = worker_app_common_1.WORKER_APP_PLATFORM;
+  exports.WORKER_APP_APPLICATION_COMMON = worker_app_common_1.WORKER_APP_APPLICATION_COMMON;
   var worker_app_1 = require("angular2/src/platform/worker_app");
-  var core_1 = require("angular2/core");
-  var worker_app_common_2 = require("angular2/src/platform/worker_app_common");
-  exports.WORKER_APP_PLATFORM = worker_app_common_2.WORKER_APP_PLATFORM;
-  exports.WORKER_APP_APPLICATION_COMMON = worker_app_common_2.WORKER_APP_APPLICATION_COMMON;
-  var worker_app_2 = require("angular2/src/platform/worker_app");
-  exports.WORKER_APP_APPLICATION = worker_app_2.WORKER_APP_APPLICATION;
+  exports.WORKER_APP_APPLICATION = worker_app_1.WORKER_APP_APPLICATION;
   var client_message_broker_1 = require("angular2/src/web_workers/shared/client_message_broker");
   exports.ClientMessageBroker = client_message_broker_1.ClientMessageBroker;
   exports.ClientMessageBrokerFactory = client_message_broker_1.ClientMessageBrokerFactory;
@@ -42479,303 +41981,6 @@ System.register("angular2/platform/worker_app", ["angular2/src/facade/lang", "an
   __export(require("angular2/src/web_workers/shared/message_bus"));
   var router_providers_1 = require("angular2/src/web_workers/worker/router_providers");
   exports.WORKER_APP_ROUTER = router_providers_1.WORKER_APP_ROUTER;
-  function workerAppPlatform() {
-    if (lang_1.isBlank(core_1.getPlatform())) {
-      core_1.createPlatform(core_1.ReflectiveInjector.resolveAndCreate(worker_app_common_1.WORKER_APP_PLATFORM));
-    }
-    return core_1.assertPlatform(worker_app_common_1.WORKER_APP_PLATFORM_MARKER);
-  }
-  exports.workerAppPlatform = workerAppPlatform;
-  function bootstrapApp(appComponentType, customProviders) {
-    var appInjector = core_1.ReflectiveInjector.resolveAndCreate([worker_app_1.WORKER_APP_APPLICATION, lang_1.isPresent(customProviders) ? customProviders : []], workerAppPlatform().injector);
-    return core_1.coreLoadAndBootstrap(appInjector, appComponentType);
-  }
-  exports.bootstrapApp = bootstrapApp;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/metadata/directives", ["angular2/src/facade/lang", "angular2/src/core/di/metadata", "angular2/src/core/change_detection"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
-  var metadata_1 = require("angular2/src/core/di/metadata");
-  var change_detection_1 = require("angular2/src/core/change_detection");
-  var DirectiveMetadata = (function(_super) {
-    __extends(DirectiveMetadata, _super);
-    function DirectiveMetadata(_a) {
-      var _b = _a === void 0 ? {} : _a,
-          selector = _b.selector,
-          inputs = _b.inputs,
-          outputs = _b.outputs,
-          properties = _b.properties,
-          events = _b.events,
-          host = _b.host,
-          bindings = _b.bindings,
-          providers = _b.providers,
-          exportAs = _b.exportAs,
-          queries = _b.queries;
-      _super.call(this);
-      this.selector = selector;
-      this._inputs = inputs;
-      this._properties = properties;
-      this._outputs = outputs;
-      this._events = events;
-      this.host = host;
-      this.exportAs = exportAs;
-      this.queries = queries;
-      this._providers = providers;
-      this._bindings = bindings;
-    }
-    Object.defineProperty(DirectiveMetadata.prototype, "inputs", {
-      get: function() {
-        return lang_1.isPresent(this._properties) && this._properties.length > 0 ? this._properties : this._inputs;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(DirectiveMetadata.prototype, "properties", {
-      get: function() {
-        return this.inputs;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(DirectiveMetadata.prototype, "outputs", {
-      get: function() {
-        return lang_1.isPresent(this._events) && this._events.length > 0 ? this._events : this._outputs;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(DirectiveMetadata.prototype, "events", {
-      get: function() {
-        return this.outputs;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(DirectiveMetadata.prototype, "providers", {
-      get: function() {
-        return lang_1.isPresent(this._bindings) && this._bindings.length > 0 ? this._bindings : this._providers;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(DirectiveMetadata.prototype, "bindings", {
-      get: function() {
-        return this.providers;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    DirectiveMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], DirectiveMetadata);
-    return DirectiveMetadata;
-  }(metadata_1.InjectableMetadata));
-  exports.DirectiveMetadata = DirectiveMetadata;
-  var ComponentMetadata = (function(_super) {
-    __extends(ComponentMetadata, _super);
-    function ComponentMetadata(_a) {
-      var _b = _a === void 0 ? {} : _a,
-          selector = _b.selector,
-          inputs = _b.inputs,
-          outputs = _b.outputs,
-          properties = _b.properties,
-          events = _b.events,
-          host = _b.host,
-          exportAs = _b.exportAs,
-          moduleId = _b.moduleId,
-          bindings = _b.bindings,
-          providers = _b.providers,
-          viewBindings = _b.viewBindings,
-          viewProviders = _b.viewProviders,
-          _c = _b.changeDetection,
-          changeDetection = _c === void 0 ? change_detection_1.ChangeDetectionStrategy.Default : _c,
-          queries = _b.queries,
-          templateUrl = _b.templateUrl,
-          template = _b.template,
-          styleUrls = _b.styleUrls,
-          styles = _b.styles,
-          directives = _b.directives,
-          pipes = _b.pipes,
-          encapsulation = _b.encapsulation;
-      _super.call(this, {
-        selector: selector,
-        inputs: inputs,
-        outputs: outputs,
-        properties: properties,
-        events: events,
-        host: host,
-        exportAs: exportAs,
-        bindings: bindings,
-        providers: providers,
-        queries: queries
-      });
-      this.changeDetection = changeDetection;
-      this._viewProviders = viewProviders;
-      this._viewBindings = viewBindings;
-      this.templateUrl = templateUrl;
-      this.template = template;
-      this.styleUrls = styleUrls;
-      this.styles = styles;
-      this.directives = directives;
-      this.pipes = pipes;
-      this.encapsulation = encapsulation;
-      this.moduleId = moduleId;
-    }
-    Object.defineProperty(ComponentMetadata.prototype, "viewProviders", {
-      get: function() {
-        return lang_1.isPresent(this._viewBindings) && this._viewBindings.length > 0 ? this._viewBindings : this._viewProviders;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentMetadata.prototype, "viewBindings", {
-      get: function() {
-        return this.viewProviders;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ComponentMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], ComponentMetadata);
-    return ComponentMetadata;
-  }(DirectiveMetadata));
-  exports.ComponentMetadata = ComponentMetadata;
-  var PipeMetadata = (function(_super) {
-    __extends(PipeMetadata, _super);
-    function PipeMetadata(_a) {
-      var name = _a.name,
-          pure = _a.pure;
-      _super.call(this);
-      this.name = name;
-      this._pure = pure;
-    }
-    Object.defineProperty(PipeMetadata.prototype, "pure", {
-      get: function() {
-        return lang_1.isPresent(this._pure) ? this._pure : true;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    PipeMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Object])], PipeMetadata);
-    return PipeMetadata;
-  }(metadata_1.InjectableMetadata));
-  exports.PipeMetadata = PipeMetadata;
-  var InputMetadata = (function() {
-    function InputMetadata(bindingPropertyName) {
-      this.bindingPropertyName = bindingPropertyName;
-    }
-    InputMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], InputMetadata);
-    return InputMetadata;
-  }());
-  exports.InputMetadata = InputMetadata;
-  var OutputMetadata = (function() {
-    function OutputMetadata(bindingPropertyName) {
-      this.bindingPropertyName = bindingPropertyName;
-    }
-    OutputMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], OutputMetadata);
-    return OutputMetadata;
-  }());
-  exports.OutputMetadata = OutputMetadata;
-  var HostBindingMetadata = (function() {
-    function HostBindingMetadata(hostPropertyName) {
-      this.hostPropertyName = hostPropertyName;
-    }
-    HostBindingMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], HostBindingMetadata);
-    return HostBindingMetadata;
-  }());
-  exports.HostBindingMetadata = HostBindingMetadata;
-  var HostListenerMetadata = (function() {
-    function HostListenerMetadata(eventName, args) {
-      this.eventName = eventName;
-      this.args = args;
-    }
-    HostListenerMetadata = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String, Array])], HostListenerMetadata);
-    return HostListenerMetadata;
-  }());
-  exports.HostListenerMetadata = HostListenerMetadata;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/metadata", ["angular2/src/core/metadata/di", "angular2/src/core/metadata/directives", "angular2/src/core/metadata/view", "angular2/src/core/metadata/di", "angular2/src/core/metadata/directives", "angular2/src/core/metadata/view", "angular2/src/core/util/decorators"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var di_1 = require("angular2/src/core/metadata/di");
-  exports.QueryMetadata = di_1.QueryMetadata;
-  exports.ContentChildrenMetadata = di_1.ContentChildrenMetadata;
-  exports.ContentChildMetadata = di_1.ContentChildMetadata;
-  exports.ViewChildrenMetadata = di_1.ViewChildrenMetadata;
-  exports.ViewQueryMetadata = di_1.ViewQueryMetadata;
-  exports.ViewChildMetadata = di_1.ViewChildMetadata;
-  exports.AttributeMetadata = di_1.AttributeMetadata;
-  exports.ProviderPropertyMetadata = di_1.ProviderPropertyMetadata;
-  exports.InjectorModuleMetadata = di_1.InjectorModuleMetadata;
-  var directives_1 = require("angular2/src/core/metadata/directives");
-  exports.ComponentMetadata = directives_1.ComponentMetadata;
-  exports.DirectiveMetadata = directives_1.DirectiveMetadata;
-  exports.PipeMetadata = directives_1.PipeMetadata;
-  exports.InputMetadata = directives_1.InputMetadata;
-  exports.OutputMetadata = directives_1.OutputMetadata;
-  exports.HostBindingMetadata = directives_1.HostBindingMetadata;
-  exports.HostListenerMetadata = directives_1.HostListenerMetadata;
-  var view_1 = require("angular2/src/core/metadata/view");
-  exports.ViewMetadata = view_1.ViewMetadata;
-  exports.ViewEncapsulation = view_1.ViewEncapsulation;
-  var di_2 = require("angular2/src/core/metadata/di");
-  var directives_2 = require("angular2/src/core/metadata/directives");
-  var view_2 = require("angular2/src/core/metadata/view");
-  var decorators_1 = require("angular2/src/core/util/decorators");
-  exports.Component = decorators_1.makeDecorator(directives_2.ComponentMetadata, function(fn) {
-    return fn.View = View;
-  });
-  exports.Directive = decorators_1.makeDecorator(directives_2.DirectiveMetadata);
-  var View = decorators_1.makeDecorator(view_2.ViewMetadata, function(fn) {
-    return fn.View = View;
-  });
-  exports.Attribute = decorators_1.makeParamDecorator(di_2.AttributeMetadata);
-  exports.Query = decorators_1.makeParamDecorator(di_2.QueryMetadata);
-  exports.ContentChildren = decorators_1.makePropDecorator(di_2.ContentChildrenMetadata);
-  exports.ContentChild = decorators_1.makePropDecorator(di_2.ContentChildMetadata);
-  exports.ViewChildren = decorators_1.makePropDecorator(di_2.ViewChildrenMetadata);
-  exports.ViewChild = decorators_1.makePropDecorator(di_2.ViewChildMetadata);
-  exports.ViewQuery = decorators_1.makeParamDecorator(di_2.ViewQueryMetadata);
-  exports.Pipe = decorators_1.makeDecorator(directives_2.PipeMetadata);
-  exports.Input = decorators_1.makePropDecorator(directives_2.InputMetadata);
-  exports.Output = decorators_1.makePropDecorator(directives_2.OutputMetadata);
-  exports.HostBinding = decorators_1.makePropDecorator(directives_2.HostBindingMetadata);
-  exports.HostListener = decorators_1.makePropDecorator(directives_2.HostListenerMetadata);
-  exports.InjectorModule = decorators_1.makeDecorator(di_2.InjectorModuleMetadata);
-  exports.Provides = decorators_1.makePropDecorator(di_2.ProviderPropertyMetadata);
   global.define = __define;
   return module.exports;
 });
@@ -42798,17 +42003,13 @@ System.register("angular2/core", ["angular2/src/core/metadata", "angular2/src/co
   var lang_1 = require("angular2/src/facade/lang");
   exports.enableProdMode = lang_1.enableProdMode;
   var application_ref_1 = require("angular2/src/core/application_ref");
-  exports.createPlatform = application_ref_1.createPlatform;
-  exports.assertPlatform = application_ref_1.assertPlatform;
-  exports.disposePlatform = application_ref_1.disposePlatform;
-  exports.getPlatform = application_ref_1.getPlatform;
-  exports.coreBootstrap = application_ref_1.coreBootstrap;
-  exports.coreLoadAndBootstrap = application_ref_1.coreLoadAndBootstrap;
+  exports.platform = application_ref_1.platform;
   exports.createNgZone = application_ref_1.createNgZone;
   exports.PlatformRef = application_ref_1.PlatformRef;
   exports.ApplicationRef = application_ref_1.ApplicationRef;
   var application_tokens_1 = require("angular2/src/core/application_tokens");
   exports.APP_ID = application_tokens_1.APP_ID;
+  exports.APP_COMPONENT = application_tokens_1.APP_COMPONENT;
   exports.APP_INITIALIZER = application_tokens_1.APP_INITIALIZER;
   exports.PACKAGE_ROOT_URL = application_tokens_1.PACKAGE_ROOT_URL;
   exports.PLATFORM_INITIALIZER = application_tokens_1.PLATFORM_INITIALIZER;

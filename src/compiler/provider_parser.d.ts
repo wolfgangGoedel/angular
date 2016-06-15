@@ -33,14 +33,3 @@ export declare class ProviderElementContext {
     private _getLocalDependency(requestingProviderType, dep, eager?);
     private _getDependency(requestingProviderType, dep, eager?);
 }
-export declare class AppProviderParser {
-    private _sourceSpan;
-    private _transformedProviders;
-    private _seenProviders;
-    private _allProviders;
-    private _errors;
-    constructor(_sourceSpan: ParseSourceSpan, providers: any[]);
-    parse(): ProviderAst[];
-    private _getOrCreateLocalProvider(token, eager);
-    private _getDependency(dep, eager?);
-}

@@ -11,6 +11,7 @@ import {
 } from 'angular2/src/facade/lang';
 import {StringMapWrapper} from 'angular2/src/facade/collection';
 import {BaseException} from 'angular2/src/facade/exceptions';
+import {NoAnnotationError} from 'angular2/src/core/di/exceptions';
 import * as cpl from './compile_metadata';
 import * as md from 'angular2/src/core/metadata/directives';
 import * as dimd from 'angular2/src/core/metadata/di';
@@ -26,12 +27,7 @@ import {PLATFORM_DIRECTIVES, PLATFORM_PIPES} from 'angular2/src/core/platform_di
 import {MODULE_SUFFIX, sanitizeIdentifier} from './util';
 import {assertArrayOfStrings} from './assertions';
 import {getUrlScheme} from 'angular2/src/compiler/url_resolver';
-import {Provider} from 'angular2/src/core/di/provider';
-import {
-  constructDependencies,
-  ReflectiveDependency,
-  getInjectorModuleProviders
-} from 'angular2/src/core/di/reflective_provider';
+import {Provider, constructDependencies, Dependency} from 'angular2/src/core/di/provider';
 import {
   OptionalMetadata,
   SelfMetadata,
@@ -126,23 +122,21 @@ export class RuntimeMetadataResolver {
     return meta;
   }
 
-  getTypeMetadata(type: Type, moduleUrl: string, deps: any[] = null): cpl.CompileTypeMetadata {
-    type = resolveForwardRef(type);
+  getTypeMetadata(type: Type, moduleUrl: string): cpl.CompileTypeMetadata {
     return new cpl.CompileTypeMetadata({
       name: this.sanitizeTokenName(type),
       moduleUrl: moduleUrl,
       runtime: type,
-      diDeps: this.getDependenciesMetadata(type, deps)
+      diDeps: this.getDependenciesMetadata(type, null)
     });
   }
 
-  getFactoryMetadata(factory: Function, moduleUrl: string,
-                     deps: any[]): cpl.CompileFactoryMetadata {
+  getFactoryMetadata(factory: Function, moduleUrl: string): cpl.CompileFactoryMetadata {
     return new cpl.CompileFactoryMetadata({
       name: this.sanitizeTokenName(factory),
       moduleUrl: moduleUrl,
       runtime: factory,
-      diDeps: this.getDependenciesMetadata(factory, deps)
+      diDeps: this.getDependenciesMetadata(factory, null)
     });
   }
 
@@ -189,7 +183,16 @@ export class RuntimeMetadataResolver {
 
   getDependenciesMetadata(typeOrFunc: Type | Function,
                           dependencies: any[]): cpl.CompileDiDependencyMetadata[] {
-    var deps: ReflectiveDependency[] = constructDependencies(typeOrFunc, dependencies);
+    var deps: Dependency[];
+    try {
+      deps = constructDependencies(typeOrFunc, dependencies);
+    } catch (e) {
+      if (e instanceof NoAnnotationError) {
+        deps = [];
+      } else {
+        throw e;
+      }
+    }
     return deps.map((dep) => {
       var compileToken;
       var p = <AttributeMetadata>dep.properties.find(p => p instanceof AttributeMetadata);
@@ -239,20 +242,9 @@ export class RuntimeMetadataResolver {
       if (isArray(provider)) {
         return this.getProvidersMetadata(provider);
       } else if (provider instanceof Provider) {
-        return [
-          this.getProviderMetadata(provider),
-          isValidType(provider.token) ?
-              this.getProvidersMetadata(getInjectorModuleProviders(provider.token)) :
-              []
-        ];
-      } else if (isValidType(provider)) {
-        return [
-          this.getTypeMetadata(provider, null),
-          this.getProvidersMetadata(getInjectorModuleProviders(provider))
-        ];
+        return this.getProviderMetadata(provider);
       } else {
-        throw new BaseException(
-            `Invalid provider - only instances of Provider and Type are allowed, got: ${stringify(provider)}`);
+        return this.getTypeMetadata(provider, null);
       }
     });
   }
@@ -266,18 +258,15 @@ export class RuntimeMetadataResolver {
     }
     return new cpl.CompileProviderMetadata({
       token: this.getTokenMetadata(provider.token),
-      useClass: isPresent(provider.useClass) ?
-                    this.getTypeMetadata(provider.useClass, null, compileDeps) :
-                    null,
+      useClass: isPresent(provider.useClass) ? this.getTypeMetadata(provider.useClass, null) : null,
       useValue: isPresent(provider.useValue) ?
                     new cpl.CompileIdentifierMetadata({runtime: provider.useValue}) :
                     null,
       useFactory: isPresent(provider.useFactory) ?
-                      this.getFactoryMetadata(provider.useFactory, null, compileDeps) :
+                      this.getFactoryMetadata(provider.useFactory, null) :
                       null,
       useExisting: isPresent(provider.useExisting) ? this.getTokenMetadata(provider.useExisting) :
                                                      null,
-      useProperty: provider.useProperty,
       deps: compileDeps,
       multi: provider.multi
     });
@@ -307,21 +296,6 @@ export class RuntimeMetadataResolver {
       descendants: q.descendants,
       propertyName: propertyName,
       read: isPresent(q.read) ? this.getTokenMetadata(q.read) : null
-    });
-  }
-
-  getInjectorModuleMetadata(config: Type,
-                            extraProviders: any[]): cpl.CompileInjectorModuleMetadata {
-    var providers = getInjectorModuleProviders(config);
-    if (isPresent(extraProviders)) {
-      providers = providers.concat(extraProviders);
-    }
-    return new cpl.CompileInjectorModuleMetadata({
-      name: this.sanitizeTokenName(config),
-      moduleUrl: null,
-      runtime: config,
-      diDeps: [],
-      providers: this.getProvidersMetadata(providers)
     });
   }
 }
@@ -359,7 +333,7 @@ function flattenArray(tree: any[], out: Array<Type | any[]>): void {
   }
 }
 
-function isValidType(value: any): boolean {
+function isValidType(value: Type): boolean {
   return isPresent(value) && (value instanceof Type);
 }
 

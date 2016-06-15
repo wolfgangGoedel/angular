@@ -1,4 +1,4 @@
-import {ReflectiveInjector, Provider, PLATFORM_INITIALIZER} from 'angular2/core';
+import {Injector, Provider, PLATFORM_INITIALIZER} from 'angular2/core';
 import {BaseException, ExceptionHandler} from 'angular2/src/facade/exceptions';
 import {ListWrapper} from 'angular2/src/facade/collection';
 import {FunctionWrapper, isPresent, Type} from 'angular2/src/facade/lang';
@@ -6,7 +6,7 @@ import {FunctionWrapper, isPresent, Type} from 'angular2/src/facade/lang';
 export class TestInjector {
   private _instantiated: boolean = false;
 
-  private _injector: ReflectiveInjector = null;
+  private _injector: Injector = null;
 
   private _providers: Array<Type | Provider | any[]> = [];
 
@@ -28,7 +28,7 @@ export class TestInjector {
   }
 
   createInjector() {
-    var rootInjector = ReflectiveInjector.resolveAndCreate(this.platformProviders);
+    var rootInjector = Injector.resolveAndCreate(this.platformProviders);
     this._injector = rootInjector.resolveAndCreateChild(
         ListWrapper.concat(this.applicationProviders, this._providers));
     this._instantiated = true;
@@ -76,7 +76,7 @@ export function setBaseTestProviders(platformProviders: Array<Type | Provider | 
   testInjector.platformProviders = platformProviders;
   testInjector.applicationProviders = applicationProviders;
   var injector = testInjector.createInjector();
-  let inits: Function[] = injector.get(PLATFORM_INITIALIZER, null);
+  let inits: Function[] = injector.getOptional(PLATFORM_INITIALIZER);
   if (isPresent(inits)) {
     inits.forEach(init => init());
   }
@@ -201,7 +201,7 @@ export class FunctionWithParamTokens {
   /**
    * Returns the value of the executed function.
    */
-  execute(injector: ReflectiveInjector): any {
+  execute(injector: Injector): any {
     var params = this._tokens.map(t => injector.get(t));
     return FunctionWrapper.apply(this.fn, params);
   }

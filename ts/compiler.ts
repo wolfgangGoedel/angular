@@ -31,7 +31,6 @@ export {
   CompileQueryMetadata,
   CompileTemplateMetadata,
   CompileDirectiveMetadata,
-  CompileInjectorModuleMetadata,
   CompilePipeMetadata
 } from 'angular2/src/compiler/compiler';
 

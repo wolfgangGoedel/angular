@@ -23,30 +23,23 @@ export class NormalizedComponentWithViewDirectives {
     }
 }
 export class OfflineCompiler {
-    constructor(_directiveNormalizer, _templateParser, _styleCompiler, _viewCompiler, _injectorCompiler, _outputEmitter) {
+    constructor(_directiveNormalizer, _templateParser, _styleCompiler, _viewCompiler, _outputEmitter) {
         this._directiveNormalizer = _directiveNormalizer;
         this._templateParser = _templateParser;
         this._styleCompiler = _styleCompiler;
         this._viewCompiler = _viewCompiler;
-        this._injectorCompiler = _injectorCompiler;
         this._outputEmitter = _outputEmitter;
     }
     normalizeDirectiveMetadata(directive) {
         return this._directiveNormalizer.normalizeDirective(directive);
     }
-    compile(components, injectorModules) {
-        var moduleUrl;
-        if (components.length > 0) {
-            moduleUrl = _templateModuleUrl(components[0].component.type);
-        }
-        else if (injectorModules.length > 0) {
-            moduleUrl = _templateModuleUrl(injectorModules[0].type);
-        }
-        else {
-            throw new BaseException('No components nor injectorModules given');
+    compileTemplates(components) {
+        if (components.length === 0) {
+            throw new BaseException('No components given');
         }
         var statements = [];
         var exportedVars = [];
+        var moduleUrl = _templateModuleUrl(components[0].component);
         components.forEach(componentWithDirs => {
             var compMeta = componentWithDirs.component;
             _assertComponent(compMeta);
@@ -60,16 +53,10 @@ export class OfflineCompiler {
                 .instantiate([
                 o.literal(compMeta.selector),
                 o.variable(hostViewFactoryVar),
-                o.importExpr(compMeta.type),
-                o.METADATA_MAP
+                o.importExpr(compMeta.type)
             ], o.importType(_COMPONENT_FACTORY_IDENTIFIER, null, [o.TypeModifier.Const])))
                 .toDeclStmt(null, [o.StmtModifier.Final]));
             exportedVars.push(compFactoryVar);
-        });
-        injectorModules.forEach((injectorModuleMeta) => {
-            var compileResult = this._injectorCompiler.compileInjector(injectorModuleMeta);
-            compileResult.statements.forEach(stmt => statements.push(stmt));
-            exportedVars.push(compileResult.injectorFactoryVar);
         });
         return this._codegenSourceModule(moduleUrl, statements, exportedVars);
     }
@@ -94,7 +81,7 @@ export class OfflineCompiler {
     }
 }
 function _resolveViewStatements(compileResult) {
-    compileResult.dependencies.forEach((dep) => { dep.factoryPlaceholder.moduleUrl = _templateModuleUrl(dep.comp.type); });
+    compileResult.dependencies.forEach((dep) => { dep.factoryPlaceholder.moduleUrl = _templateModuleUrl(dep.comp); });
     return compileResult.statements;
 }
 function _resolveStyleStatements(compileResult) {
@@ -103,8 +90,8 @@ function _resolveStyleStatements(compileResult) {
     });
     return compileResult.statements;
 }
-function _templateModuleUrl(type) {
-    var moduleUrl = type.moduleUrl;
+function _templateModuleUrl(comp) {
+    var moduleUrl = comp.type.moduleUrl;
     var urlWithoutSuffix = moduleUrl.substring(0, moduleUrl.length - MODULE_SUFFIX.length);
     return `${urlWithoutSuffix}.template${MODULE_SUFFIX}`;
 }

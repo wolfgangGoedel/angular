@@ -15,12 +15,7 @@ import {
   CompileIdentifierMetadata,
   CompileTypeMetadata
 } from '../compile_metadata';
-import {
-  getPropertyInView,
-  createDiTokenExpression,
-  injectFromViewParentInjector,
-  convertValueToOutputAst
-} from './util';
+import {getPropertyInView, createDiTokenExpression, injectFromViewParentInjector} from './util';
 import {CompileQuery, createQueryList, addQueryToTokenMap} from './compile_query';
 import {CompileMethod} from './compile_method';
 
@@ -128,27 +123,28 @@ export class CompileElement extends CompileNode {
     // some as getters. We rely on the fact that they are already sorted topologically.
     this._resolvedProviders.values().forEach((resolvedProvider) => {
       var providerValueExpressions = resolvedProvider.providers.map((provider) => {
-        var providerValue: o.Expression;
         if (isPresent(provider.useExisting)) {
-          providerValue =
-              this._getDependency(resolvedProvider.providerType,
-                                  new CompileDiDependencyMetadata({token: provider.useExisting}));
+          return this._getDependency(
+              resolvedProvider.providerType,
+              new CompileDiDependencyMetadata({token: provider.useExisting}));
         } else if (isPresent(provider.useFactory)) {
           var deps = isPresent(provider.deps) ? provider.deps : provider.useFactory.diDeps;
           var depsExpr = deps.map((dep) => this._getDependency(resolvedProvider.providerType, dep));
-          providerValue = o.importExpr(provider.useFactory).callFn(depsExpr);
+          return o.importExpr(provider.useFactory).callFn(depsExpr);
         } else if (isPresent(provider.useClass)) {
           var deps = isPresent(provider.deps) ? provider.deps : provider.useClass.diDeps;
           var depsExpr = deps.map((dep) => this._getDependency(resolvedProvider.providerType, dep));
-          providerValue = o.importExpr(provider.useClass)
-                              .instantiate(depsExpr, o.importType(provider.useClass));
+          return o.importExpr(provider.useClass)
+              .instantiate(depsExpr, o.importType(provider.useClass));
         } else {
-          providerValue = convertValueToOutputAst(provider.useValue);
+          if (provider.useValue instanceof CompileIdentifierMetadata) {
+            return o.importExpr(provider.useValue);
+          } else if (provider.useValue instanceof o.Expression) {
+            return provider.useValue;
+          } else {
+            return o.literal(provider.useValue);
+          }
         }
-        if (isPresent(provider.useProperty)) {
-          providerValue = providerValue.prop(provider.useProperty);
-        }
-        return providerValue;
       });
       var propName = `_${resolvedProvider.token.name}_${this.nodeIndex}_${this._instances.size}`;
       var instance =
