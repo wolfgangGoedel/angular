@@ -47,9 +47,7 @@ import "package:angular2/core.dart"
         Pipe,
         Host,
         HostMetadata,
-        SkipSelfMetadata,
-        InjectorModule,
-        Provides;
+        SkipSelfMetadata;
 import "package:angular2/common.dart" show NgIf;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 
@@ -320,38 +318,6 @@ class DuplicatePipe2 implements PipeTransform {
 
 @Component(selector: "root")
 class TestComp {}
-
-class Engine {}
-
-@Injectable()
-class Car {
-  Engine engine;
-  Car(Engine engine) {
-    this.engine = engine;
-  }
-}
-
-@Injectable()
-class SomeService {}
-
-@InjectorModule(providers: const [Car])
-class SomeModuleWithProvider {
-  SomeModuleWithProvider() {}
-}
-
-@InjectorModule()
-class SomeModuleWithDeps {
-  SomeService someService;
-  SomeModuleWithDeps(this.someService) {}
-}
-
-@InjectorModule()
-class SomeModuleWithProp {
-  @Provides(Engine)
-  String a = "aChildValue";
-  @Provides("multiProp", multi: true)
-  var multiProp = "aMultiValue";
-}
 
 main() {
   TestComponentBuilder tcb;
@@ -753,76 +719,6 @@ No provider for SimpleDirective ("[ERROR ->]<div needsDirectiveFromHost></div>")
         expect(purePipe1).toBeAnInstanceOf(ImpurePipe);
         expect(purePipe2).toBeAnInstanceOf(ImpurePipe);
         expect(purePipe1).not.toBe(purePipe2);
-      }));
-    });
-    describe("modules", () {
-      it("should use the providers of modules (types)", fakeAsync(() {
-        var injector = createComp(
-                "",
-                tcb.overrideProviders(
-                    TestComp, [SomeModuleWithProvider, Engine]),
-                TestComp)
-            .injector;
-        expect(injector.get(SomeModuleWithProvider))
-            .toBeAnInstanceOf(SomeModuleWithProvider);
-        expect(injector.get(Car)).toBeAnInstanceOf(Car);
-      }));
-      it("should use the providers of modules (providers)", fakeAsync(() {
-        var injector = createComp(
-                "",
-                tcb.overrideProviders(TestComp, [
-                  provide(SomeModuleWithProvider,
-                      useClass: SomeModuleWithProvider),
-                  Engine
-                ]),
-                TestComp)
-            .injector;
-        expect(injector.get(SomeModuleWithProvider))
-            .toBeAnInstanceOf(SomeModuleWithProvider);
-        expect(injector.get(Car)).toBeAnInstanceOf(Car);
-      }));
-      it("should inject deps into modules", fakeAsync(() {
-        var injector = createComp(
-                "",
-                tcb.overrideProviders(
-                    TestComp, [SomeModuleWithDeps, SomeService]),
-                TestComp)
-            .injector;
-        expect(injector.get(SomeModuleWithDeps).someService)
-            .toBeAnInstanceOf(SomeService);
-      }));
-    });
-    describe("provider properties", () {
-      it("should support provider properties", fakeAsync(() {
-        var inj = createComp("",
-                tcb.overrideProviders(TestComp, [SomeModuleWithProp]), TestComp)
-            .injector;
-        expect(inj.get(Engine)).toBe("aChildValue");
-      }));
-      it("should support multi providers", fakeAsync(() {
-        var inj = createComp(
-                "",
-                tcb.overrideProviders(TestComp, [
-                  SomeModuleWithProp,
-                  new Provider("multiProp",
-                      useValue: "bMultiValue", multi: true)
-                ]),
-                TestComp)
-            .injector;
-        expect(inj.get("multiProp")).toEqual(["aMultiValue", "bMultiValue"]);
-      }));
-      it("should throw if the module is missing when the value is read",
-          fakeAsync(() {
-        var inj = createComp(
-                "",
-                tcb.overrideProviders(TestComp, [
-                  new Provider(Engine,
-                      useProperty: "a", useExisting: SomeModuleWithProp)
-                ]),
-                TestComp)
-            .injector;
-        expect(() => inj.get(Engine)).toThrowError(containsRegexp(
-            '''No provider for ${ stringify ( SomeModuleWithProp )}!'''));
       }));
     });
   });

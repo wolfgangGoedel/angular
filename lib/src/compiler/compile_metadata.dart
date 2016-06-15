@@ -167,7 +167,6 @@ class CompileProviderMetadata {
   dynamic useValue;
   CompileTokenMetadata useExisting;
   CompileFactoryMetadata useFactory;
-  String useProperty;
   List<CompileDiDependencyMetadata> deps;
   bool multi;
   CompileProviderMetadata(
@@ -176,7 +175,6 @@ class CompileProviderMetadata {
       dynamic useValue,
       CompileTokenMetadata useExisting,
       CompileFactoryMetadata useFactory,
-      String useProperty,
       List<CompileDiDependencyMetadata> deps,
       bool multi}) {
     this.token = token;
@@ -184,7 +182,6 @@ class CompileProviderMetadata {
     this.useValue = useValue;
     this.useExisting = useExisting;
     this.useFactory = useFactory;
-    this.useProperty = useProperty;
     this.deps = deps;
     this.multi = normalizeBool(multi);
   }
@@ -198,7 +195,6 @@ class CompileProviderMetadata {
             _objFromJson(data["useValue"], CompileIdentifierMetadata.fromJson),
         useFactory:
             _objFromJson(data["useFactory"], CompileFactoryMetadata.fromJson),
-        useProperty: data["useProperty"],
         multi: data["multi"],
         deps:
             _arrayFromJson(data["deps"], CompileDiDependencyMetadata.fromJson));
@@ -213,7 +209,6 @@ class CompileProviderMetadata {
       "useExisting": _objToJson(this.useExisting),
       "useValue": _objToJson(this.useValue),
       "useFactory": _objToJson(this.useFactory),
-      "useProperty": this.useProperty,
       "multi": this.multi,
       "deps": _arrayToJson(this.deps)
     };
@@ -332,14 +327,12 @@ class CompileTokenMetadata implements CompileMetadataWithIdentifier {
 class CompileTokenMap<VALUE> {
   var _valueMap = new Map<dynamic, VALUE>();
   List<VALUE> _values = [];
-  List<CompileTokenMetadata> _tokens = [];
   add(CompileTokenMetadata token, VALUE value) {
     var existing = this.get(token);
     if (isPresent(existing)) {
       throw new BaseException(
           '''Can only add to a TokenMap! Token: ${ token . name}''');
     }
-    this._tokens.add(token);
     this._values.add(value);
     var rk = token.runtimeCacheKey;
     if (isPresent(rk)) {
@@ -362,10 +355,6 @@ class CompileTokenMap<VALUE> {
       result = this._valueMap[ak];
     }
     return result;
-  }
-
-  List<CompileTokenMetadata> keys() {
-    return this._tokens;
   }
 
   List<VALUE> values() {
@@ -786,79 +775,13 @@ class CompilePipeMetadata implements CompileMetadataWithType {
   }
 }
 
-/**
- * Metadata regarding compilation of an InjectorModule.
- */
-class CompileInjectorModuleMetadata
-    implements CompileMetadataWithType, CompileTypeMetadata {
-  Type runtime;
-  String name;
-  String prefix;
-  String moduleUrl;
-  var isHost = false;
-  dynamic value;
-  List<CompileDiDependencyMetadata> diDeps;
-  List<dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ >
-      providers;
-  CompileInjectorModuleMetadata(
-      {Type runtime,
-      String name,
-      String moduleUrl,
-      String prefix,
-      dynamic value,
-      List<CompileDiDependencyMetadata> diDeps,
-      List<
-          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > providers}) {
-    this.runtime = runtime;
-    this.name = name;
-    this.moduleUrl = moduleUrl;
-    this.prefix = prefix;
-    this.value = value;
-    this.diDeps = _normalizeArray(diDeps);
-    this.providers = _normalizeArray(providers);
-  }
-  static CompileInjectorModuleMetadata fromJson(Map<String, dynamic> data) {
-    return new CompileInjectorModuleMetadata(
-        name: data["name"],
-        moduleUrl: data["moduleUrl"],
-        prefix: data["prefix"],
-        value: data["value"],
-        diDeps: _arrayFromJson(
-            data["diDeps"], CompileDiDependencyMetadata.fromJson),
-        providers: _arrayFromJson(data["providers"], metadataFromJson));
-  }
-
-  CompileIdentifierMetadata get identifier {
-    return this;
-  }
-
-  CompileInjectorModuleMetadata get type {
-    return this;
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      // Note: Runtime type can't be serialized...
-      "class": "InjectorModule",
-      "name": this.name,
-      "moduleUrl": this.moduleUrl,
-      "prefix": this.prefix,
-      "isHost": this.isHost,
-      "value": this.value,
-      "diDeps": _arrayToJson(this.diDeps),
-      "providers": _arrayToJson(this.providers)
-    };
-  }
-}
-
 var _COMPILE_METADATA_FROM_JSON = {
   "Directive": CompileDirectiveMetadata.fromJson,
   "Pipe": CompilePipeMetadata.fromJson,
   "Type": CompileTypeMetadata.fromJson,
   "Provider": CompileProviderMetadata.fromJson,
   "Identifier": CompileIdentifierMetadata.fromJson,
-  "Factory": CompileFactoryMetadata.fromJson,
-  "InjectorModule": CompileInjectorModuleMetadata.fromJson
+  "Factory": CompileFactoryMetadata.fromJson
 };
 dynamic _arrayFromJson(List<dynamic> obj, dynamic fn(Map<String, dynamic> a)) {
   return isBlank(obj) ? null : obj.map((o) => _objFromJson(o, fn)).toList();

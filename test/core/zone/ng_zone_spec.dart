@@ -686,28 +686,15 @@ commonTests() {
   });
   describe("exceptions", () {
     it(
-        "should call the on error callback when it is invoked via zone.runGuarded",
+        "should call the on error callback when it is defined",
         inject([AsyncTestCompleter], (async) {
           macroTask(() {
             var exception = new BaseException("sync");
-            _zone.runGuarded(() {
+            _zone.run(() {
               throw exception;
             });
             expect(_errors.length).toBe(1);
             expect(_errors[0]).toBe(exception);
-            async.done();
-          });
-        }),
-        testTimeout);
-    it(
-        "should not call the on error callback but rethrow when it is invoked via zone.run",
-        inject([AsyncTestCompleter], (async) {
-          macroTask(() {
-            var exception = new BaseException("sync");
-            expect(() => _zone.run(() {
-                  throw exception;
-                })).toThrowError("sync");
-            expect(_errors.length).toBe(0);
             async.done();
           });
         }),

@@ -82,14 +82,6 @@ const _ENTRYPOINTS = const [
       'AngularEntrypoint', 'package:angular2/src/core/angular_entrypoint.dart'),
 ];
 
-const _INJECTOR_MODULES = const [
-  const ClassDescriptor('InjectorModule', 'package:angular2/src/core/metadata.dart'),
-  const ClassDescriptor('InjectorModule', 'package:angular2/angular2.dart'),
-  const ClassDescriptor('InjectorModule', 'package:angular2/core.dart'),
-  const ClassDescriptor('InjectorModule', 'package:angular2/web_worker/worker.dart'),
-];
-
-
 /// Checks if a given [Annotation] matches any of the given
 /// [ClassDescriptors].
 class AnnotationMatcher extends ClassMatcherBase {
@@ -102,8 +94,7 @@ class AnnotationMatcher extends ClassMatcherBase {
       ..addAll(_PIPES)
       ..addAll(_INJECTABLES)
       ..addAll(_VIEWS)
-      ..addAll(_ENTRYPOINTS)
-      ..addAll(_INJECTOR_MODULES));
+      ..addAll(_ENTRYPOINTS));
   }
 
   bool _implementsWithWarning(Annotation annotation, AssetId assetId,
@@ -134,10 +125,6 @@ class AnnotationMatcher extends ClassMatcherBase {
   /// Checks if an [Annotation] node implements [Pipe].
   bool isPipe(Annotation annotation, AssetId assetId) =>
       _implementsWithWarning(annotation, assetId, _PIPES);
-
-  /// Checks if an [Annotation] node implements [InjectorModule].
-  bool isInjectorModule(Annotation annotation, AssetId assetId) =>
-      _implementsWithWarning(annotation, assetId, _INJECTOR_MODULES);
 
   /// Checks if an [Annotation] node implements [AngularEntrypoint]
   bool isEntrypoint(Annotation annotation, AssetId assetId) =>

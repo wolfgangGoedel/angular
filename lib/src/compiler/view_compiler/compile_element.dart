@@ -22,8 +22,7 @@ import "util.dart"
     show
         getPropertyInView,
         createDiTokenExpression,
-        injectFromViewParentInjector,
-        convertValueToOutputAst;
+        injectFromViewParentInjector;
 import "compile_query.dart"
     show CompileQuery, createQueryList, addQueryToTokenMap;
 import "compile_method.dart" show CompileMethod;
@@ -161,9 +160,8 @@ class CompileElement extends CompileNode {
     // some as getters. We rely on the fact that they are already sorted topologically.
     this._resolvedProviders.values().forEach((resolvedProvider) {
       var providerValueExpressions = resolvedProvider.providers.map((provider) {
-        o.Expression providerValue;
         if (isPresent(provider.useExisting)) {
-          providerValue = this._getDependency(resolvedProvider.providerType,
+          return this._getDependency(resolvedProvider.providerType,
               new CompileDiDependencyMetadata(token: provider.useExisting));
         } else if (isPresent(provider.useFactory)) {
           var deps = isPresent(provider.deps)
@@ -173,7 +171,7 @@ class CompileElement extends CompileNode {
               .map((dep) =>
                   this._getDependency(resolvedProvider.providerType, dep))
               .toList();
-          providerValue = o.importExpr(provider.useFactory).callFn(depsExpr);
+          return o.importExpr(provider.useFactory).callFn(depsExpr);
         } else if (isPresent(provider.useClass)) {
           var deps = isPresent(provider.deps)
               ? provider.deps
@@ -182,16 +180,18 @@ class CompileElement extends CompileNode {
               .map((dep) =>
                   this._getDependency(resolvedProvider.providerType, dep))
               .toList();
-          providerValue = o
+          return o
               .importExpr(provider.useClass)
               .instantiate(depsExpr, o.importType(provider.useClass));
         } else {
-          providerValue = convertValueToOutputAst(provider.useValue);
+          if (provider.useValue is CompileIdentifierMetadata) {
+            return o.importExpr(provider.useValue);
+          } else if (provider.useValue is o.Expression) {
+            return provider.useValue;
+          } else {
+            return o.literal(provider.useValue);
+          }
         }
-        if (isPresent(provider.useProperty)) {
-          providerValue = providerValue.prop(provider.useProperty);
-        }
-        return providerValue;
       }).toList();
       var propName =
           '''_${ resolvedProvider . token . name}_${ this . nodeIndex}_${ this . _instances . size}''';

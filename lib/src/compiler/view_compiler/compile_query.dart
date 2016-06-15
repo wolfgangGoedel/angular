@@ -69,8 +69,7 @@ class CompileQuery {
     return isStatic;
   }
 
-  afterChildren(
-      CompileMethod targetStaticMethod, CompileMethod targetDynamicMethod) {
+  afterChildren(targetStaticMethod, CompileMethod targetDynamicMethod) {
     var values = createQueryValues(this._values);
     var updateStmts = [
       this.queryList.callMethod("reset", [o.literalArr(values)]).toStmt()

@@ -33,11 +33,10 @@ o.Expression getPropertyInView(
 
 o.Expression injectFromViewParentInjector(
     CompileTokenMetadata token, bool optional) {
-  var args = [createDiTokenExpression(token)];
-  if (optional) {
-    args.add(o.NULL_EXPR);
-  }
-  return o.THIS_EXPR.prop("parentInjector").callMethod("get", args);
+  var method = optional ? "getOptional" : "get";
+  return o.THIS_EXPR
+      .prop("parentInjector")
+      .callMethod(method, [createDiTokenExpression(token)]);
 }
 
 String getViewFactoryName(
@@ -77,14 +76,4 @@ o.Expression createFlatArray(List<o.Expression> expressions) {
         o.BuiltinMethod.ConcatArray, [o.literalArr(lastNonArrayExpressions)]);
   }
   return result;
-}
-
-o.Expression convertValueToOutputAst(dynamic value) {
-  if (value is CompileIdentifierMetadata) {
-    return o.importExpr(value);
-  } else if (value is o.Expression) {
-    return value;
-  } else {
-    return o.literal(value);
-  }
 }

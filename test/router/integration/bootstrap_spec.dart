@@ -54,7 +54,7 @@ main() {
         ]);
     // do not refactor out the `bootstrap` functionality. We still want to
 
-    // keep this test around so we can ensure that bootstrap a router works
+    // keep this test around so we can ensure that bootstrapping a router works
     it(
         "should bootstrap a simple app",
         inject([AsyncTestCompleter], (async) {

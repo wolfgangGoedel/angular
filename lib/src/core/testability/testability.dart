@@ -113,15 +113,9 @@ class Testability {
 class TestabilityRegistry {
   /** @internal */
   var _applications = new Map<dynamic, Testability>();
-  GetTestability _testabilityGetter = new _NoopGetTestability();
-  /**
-   * Set the [GetTestability] implementation used by the Angular testing framework.
-   */
-  void setTestabilityGetter(GetTestability getter) {
-    this._testabilityGetter = getter;
-    getter.addToWindow(this);
+  TestabilityRegistry() {
+    _testabilityGetter.addToWindow(this);
   }
-
   registerApplication(dynamic token, Testability testability) {
     this._applications[token] = testability;
   }
@@ -140,9 +134,8 @@ class TestabilityRegistry {
 
   Testability findTestabilityInTree(dynamic elem,
       [bool findInAncestors = true]) {
-    return this
-        ._testabilityGetter
-        .findTestabilityInTree(this, elem, findInAncestors);
+    return _testabilityGetter.findTestabilityInTree(
+        this, elem, findInAncestors);
   }
 }
 
@@ -165,3 +158,12 @@ class _NoopGetTestability implements GetTestability {
 
   const _NoopGetTestability();
 }
+
+/**
+ * Set the [GetTestability] implementation used by the Angular testing framework.
+ */
+void setTestabilityGetter(GetTestability getter) {
+  _testabilityGetter = getter;
+}
+
+GetTestability _testabilityGetter = const _NoopGetTestability();

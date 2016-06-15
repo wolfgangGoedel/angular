@@ -131,5 +131,4 @@ import3.AppView<dynamic> viewFactory_CompA_Host0(import5.ViewUtils viewUtils,
 
 const import11.ComponentFactory CompANgFactory =
     const import11.ComponentFactory(
-        'comp-a', viewFactory_CompA_Host0, import4.CompA, _METADATA);
-const _METADATA = const [];
+        'comp-a', viewFactory_CompA_Host0, import4.CompA);

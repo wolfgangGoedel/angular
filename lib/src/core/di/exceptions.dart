@@ -1,11 +1,11 @@
-library angular2.src.core.di.reflective_exceptions;
+library angular2.src.core.di.exceptions;
 
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "package:angular2/src/facade/lang.dart" show stringify, isBlank;
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException, unimplemented;
-import "reflective_key.dart" show ReflectiveKey;
-import "reflective_injector.dart" show ReflectiveInjector;
+import "key.dart" show Key;
+import "injector.dart" show Injector;
 
 List<dynamic> findFirstClosedCycle(List<dynamic> keys) {
   var res = [];
@@ -37,13 +37,13 @@ class AbstractProviderError extends BaseException {
   /** @internal */
   String message;
   /** @internal */
-  List<ReflectiveKey> keys;
+  List<Key> keys;
   /** @internal */
-  List<ReflectiveInjector> injectors;
+  List<Injector> injectors;
   /** @internal */
   Function constructResolvingMessage;
-  AbstractProviderError(ReflectiveInjector injector, ReflectiveKey key,
-      Function constructResolvingMessage)
+  AbstractProviderError(
+      Injector injector, Key key, Function constructResolvingMessage)
       : super("DI Exception") {
     /* super call moved to initializer */;
     this.keys = [key];
@@ -51,7 +51,7 @@ class AbstractProviderError extends BaseException {
     this.constructResolvingMessage = constructResolvingMessage;
     this.message = this.constructResolvingMessage(this.keys);
   }
-  void addKey(ReflectiveInjector injector, ReflectiveKey key) {
+  void addKey(Injector injector, Key key) {
     this.injectors.add(injector);
     this.keys.add(key);
     this.message = this.constructResolvingMessage(this.keys);
@@ -77,7 +77,7 @@ class AbstractProviderError extends BaseException {
  * ```
  */
 class NoProviderError extends AbstractProviderError {
-  NoProviderError(ReflectiveInjector injector, ReflectiveKey key)
+  NoProviderError(Injector injector, Key key)
       : super(injector, key, (List<dynamic> keys) {
           var first = stringify(ListWrapper.first(keys).token);
           return '''No provider for ${ first}!${ constructResolvingPath ( keys )}''';
@@ -103,7 +103,7 @@ class NoProviderError extends AbstractProviderError {
  * Retrieving `A` or `B` throws a `CyclicDependencyError` as the graph above cannot be constructed.
  */
 class CyclicDependencyError extends AbstractProviderError {
-  CyclicDependencyError(ReflectiveInjector injector, ReflectiveKey key)
+  CyclicDependencyError(Injector injector, Key key)
       : super(injector, key, (List<dynamic> keys) {
           return '''Cannot instantiate cyclic dependency!${ constructResolvingPath ( keys )}''';
         }) {
@@ -139,17 +139,17 @@ class CyclicDependencyError extends AbstractProviderError {
  */
 class InstantiationError extends WrappedException {
   /** @internal */
-  List<ReflectiveKey> keys;
+  List<Key> keys;
   /** @internal */
-  List<ReflectiveInjector> injectors;
-  InstantiationError(ReflectiveInjector injector, originalException,
-      originalStack, ReflectiveKey key)
+  List<Injector> injectors;
+  InstantiationError(
+      Injector injector, originalException, originalStack, Key key)
       : super("DI Exception", originalException, originalStack, null) {
     /* super call moved to initializer */;
     this.keys = [key];
     this.injectors = [injector];
   }
-  void addKey(ReflectiveInjector injector, ReflectiveKey key) {
+  void addKey(Injector injector, Key key) {
     this.injectors.add(injector);
     this.keys.add(key);
   }
@@ -159,7 +159,7 @@ class InstantiationError extends WrappedException {
     return '''Error during instantiation of ${ first}!${ constructResolvingPath ( this . keys )}.''';
   }
 
-  ReflectiveKey get causeKey {
+  Key get causeKey {
     return this.keys[0];
   }
 

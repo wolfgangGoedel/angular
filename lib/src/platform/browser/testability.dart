@@ -99,6 +99,10 @@ class PublicTestability implements _JsObjectProxyable {
 class BrowserGetTestability implements GetTestability {
   const BrowserGetTestability();
 
+  static init() {
+    setTestabilityGetter(const BrowserGetTestability());
+  }
+
   void addToWindow(TestabilityRegistry registry) {
     var jsRegistry = js.context['ngTestabilityRegistries'];
     if (jsRegistry == null) {

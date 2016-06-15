@@ -29,8 +29,8 @@ class SingleClientServerMessageBus extends GenericMessageBus {
             source.attachTo(stream);
             stream.listen(null, onDone: _handleDisconnect);
           }).catchError((error) {
-            connected = false;
             throw error;
+            connected = false;
           });
           connected = true;
         } else {

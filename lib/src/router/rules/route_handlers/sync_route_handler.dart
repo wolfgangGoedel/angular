@@ -2,12 +2,12 @@ library angular2.src.router.rules.route_handlers.sync_route_handler;
 
 import "dart:async";
 import "package:angular2/src/facade/async.dart" show PromiseWrapper;
-import "package:angular2/src/facade/lang.dart" show isPresent;
+import "package:angular2/src/facade/lang.dart" show isPresent, Type;
 import "route_handler.dart" show RouteHandler;
 import "../../instruction.dart" show RouteData, BLANK_ROUTE_DATA;
 
 class SyncRouteHandler implements RouteHandler {
-  dynamic componentType;
+  Type componentType;
   RouteData data;
   /** @internal */
   Future<dynamic> _resolvedComponent = null;

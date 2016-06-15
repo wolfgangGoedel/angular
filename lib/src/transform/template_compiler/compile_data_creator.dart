@@ -41,9 +41,8 @@ class CompileDataResults {
   final NgMeta ngMeta;
   final Map<ReflectionInfoModel, NormalizedComponentWithViewDirectives>
       viewDefinitions;
-  final List<CompileInjectorModuleMetadata> injectorDefinitions;
 
-  CompileDataResults._(this.ngMeta, this.viewDefinitions, this.injectorDefinitions);
+  CompileDataResults._(this.ngMeta, this.viewDefinitions);
 }
 
 /// Creates [ViewDefinition] objects for all `View` `Directive`s defined in
@@ -77,44 +76,40 @@ class _CompileDataCreator {
         ngDeps.reflectables.any((reflectable) {
           if (ngMeta.identifiers.containsKey(reflectable.name)) {
             final metadata = ngMeta.identifiers[reflectable.name];
-            return metadata is CompileDirectiveMetadata ||
-                metadata is CompileInjectorModuleMetadata;
+            return metadata is CompileDirectiveMetadata;
           }
           return false;
         });
 
-    if (!hasTemplate) return new CompileDataResults._(ngMeta, const {}, const []);
+    if (!hasTemplate) return new CompileDataResults._(ngMeta, const {});
 
-    final compileComponentData =
+    final compileData =
         <ReflectionInfoModel, NormalizedComponentWithViewDirectives>{};
     final platformDirectives =
         await _readPlatformTypes(this.platformDirectives, 'directives');
     final platformPipes = await _readPlatformTypes(this.platformPipes, 'pipes');
     final ngMetaMap = await _extractNgMeta();
 
-    final List<CompileInjectorModuleMetadata> injectorModuleMetadatas = [];
     for (var reflectable in ngDeps.reflectables) {
       if (ngMeta.identifiers.containsKey(reflectable.name)) {
-        final compileMetadata = ngMeta.identifiers[reflectable.name];
-        if (compileMetadata is CompileDirectiveMetadata &&
-            compileMetadata.template != null) {
-          final compileComponentDatum = new NormalizedComponentWithViewDirectives(
-              compileMetadata,
+        final compileDirectiveMetadata = ngMeta.identifiers[reflectable.name];
+        if (compileDirectiveMetadata is CompileDirectiveMetadata &&
+            compileDirectiveMetadata.template != null) {
+          final compileDatum = new NormalizedComponentWithViewDirectives(
+              compileDirectiveMetadata,
               <CompileDirectiveMetadata>[],
               <CompilePipeMetadata>[]);
-          compileComponentDatum.directives.addAll(platformDirectives);
-          compileComponentDatum.directives
+          compileDatum.directives.addAll(platformDirectives);
+          compileDatum.directives
               .addAll(_resolveTypeMetadata(ngMetaMap, reflectable.directives));
-          compileComponentDatum.pipes.addAll(platformPipes);
-          compileComponentDatum.pipes
+          compileDatum.pipes.addAll(platformPipes);
+          compileDatum.pipes
               .addAll(_resolveTypeMetadata(ngMetaMap, reflectable.pipes));
-          compileComponentData[reflectable] = compileComponentDatum;
-        } else if (compileMetadata is CompileInjectorModuleMetadata) {
-          injectorModuleMetadatas.add(compileMetadata);
+          compileData[reflectable] = compileDatum;
         }
       }
     }
-    return new CompileDataResults._(ngMeta, compileComponentData, injectorModuleMetadatas);
+    return new CompileDataResults._(ngMeta, compileData);
   }
 
   List<dynamic> _resolveTypeMetadata(

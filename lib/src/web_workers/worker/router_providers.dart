@@ -19,7 +19,7 @@ var WORKER_APP_ROUTER = [
 ];
 Future<bool> initRouter(
     WebWorkerPlatformLocation platformLocation, NgZone zone) {
-  return zone.runGuarded(() {
+  return zone.run(() {
     return platformLocation.init();
   });
 }

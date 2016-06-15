@@ -18,8 +18,8 @@ import "package:angular2/src/facade/lang.dart"
         getTypeNameForDebugging;
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException;
-import "package:angular2/core.dart"
-    show Injectable, Inject, OpaqueToken, ComponentFactory;
+import "package:angular2/src/core/reflection/reflection.dart" show reflector;
+import "package:angular2/core.dart" show Injectable, Inject, OpaqueToken;
 import "route_config/route_config_impl.dart"
     show RouteConfig, AsyncRoute, Route, AuxRoute, Redirect, RouteDefinition;
 import "rules/rules.dart" show PathMatch, RedirectMatch, RouteMatch;
@@ -36,7 +36,6 @@ import "route_config/route_config_normalizer.dart"
 import "url_parser.dart"
     show parser, Url, convertUrlParamsToArray, pathSegmentsToUrl;
 import "rules/route_paths/route_path.dart" show GeneratedUrl;
-import "utils.dart" show getComponentAnnotations, getComponentType;
 
 var _resolveToNull = PromiseWrapper.resolve/*< Instruction >*/(null);
 // A LinkItemArray is an array, which describes a set of routes
@@ -92,7 +91,7 @@ const OpaqueToken ROUTER_PRIMARY_COMPONENT =
  */
 @Injectable()
 class RouteRegistry {
-  dynamic /* Type | ComponentFactory */ _rootComponent;
+  Type _rootComponent;
   var _rules = new Map<dynamic, RuleSet>();
   RouteRegistry(@Inject(ROUTER_PRIMARY_COMPONENT) this._rootComponent) {}
   /**
@@ -125,7 +124,7 @@ class RouteRegistry {
    * Reads the annotations of a component and configures the registry based on them
    */
   void configFromComponent(dynamic component) {
-    if (!isType(component) && !(component is ComponentFactory)) {
+    if (!isType(component)) {
       return;
     }
     // Don't read the annotations from a type more than once –
@@ -134,7 +133,7 @@ class RouteRegistry {
     if (this._rules.containsKey(component)) {
       return;
     }
-    var annotations = getComponentAnnotations(component);
+    var annotations = reflector.annotations(component);
     if (isPresent(annotations)) {
       for (var i = 0; i < annotations.length; i++) {
         var annotation = annotations[i];
@@ -366,7 +365,7 @@ class RouteRegistry {
     var rules = this._rules[parentComponentType];
     if (isBlank(rules)) {
       throw new BaseException(
-          '''Component "${ getTypeNameForDebugging ( getComponentType ( parentComponentType ) )}" has no route config.''');
+          '''Component "${ getTypeNameForDebugging ( parentComponentType )}" has no route config.''');
     }
     var linkParamIndex = 0;
     Map<String, dynamic> routeParams = {};
@@ -390,7 +389,7 @@ class RouteRegistry {
           (_aux ? rules.auxRulesByName : rules.rulesByName)[routeName];
       if (isBlank(routeRecognizer)) {
         throw new BaseException(
-            '''Component "${ getTypeNameForDebugging ( getComponentType ( parentComponentType ) )}" has no route named "${ routeName}".''');
+            '''Component "${ getTypeNameForDebugging ( parentComponentType )}" has no route named "${ routeName}".''');
       }
       // Create an "unresolved instruction" for async routes
 
@@ -454,8 +453,7 @@ class RouteRegistry {
     return rules.hasRoute(name);
   }
 
-  Instruction generateDefault(
-      dynamic /* Type | ComponentFactory */ componentCursor) {
+  Instruction generateDefault(Type componentCursor) {
     if (isBlank(componentCursor)) {
       return null;
     }
@@ -540,10 +538,10 @@ num compareSpecificityStrings(String a, String b) {
 }
 
 assertTerminalComponent(component, path) {
-  if (!isType(component) && !(component is ComponentFactory)) {
+  if (!isType(component)) {
     return;
   }
-  var annotations = getComponentAnnotations(component);
+  var annotations = reflector.annotations(component);
   if (isPresent(annotations)) {
     for (var i = 0; i < annotations.length; i++) {
       var annotation = annotations[i];

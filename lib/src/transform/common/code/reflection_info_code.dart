@@ -90,8 +90,7 @@ class ReflectionInfoVisitor extends RecursiveAstVisitor<ReflectionInfoModel> {
           viewDirectives = _extractReferencedTypes(node, 'directives');
           viewPipes = _extractReferencedTypes(node, 'pipes');
           keepAnnotation = false;
-        } else if (_annotationMatcher.isDirective(node, assetId) ||
-            _annotationMatcher.isInjectorModule(node, assetId)) {
+        } else if (_annotationMatcher.isDirective(node, assetId)) {
           keepAnnotation = false;
         }
         if (keepAnnotation) {
@@ -218,20 +217,6 @@ abstract class ReflectionWriterMixin
       writeFn(l[i]);
     }
     buffer.write(suffix);
-  }
-
-  writeLocalMetadataMap(List<ReflectionInfoModel> models) {
-    buffer.write('const _METADATA = const ');
-    _writeListWithSeparator(models, _writeLocalMetadataEntry,
-        prefix: '[', suffix: ']', separator: ',\n');
-    buffer.writeln(';');
-  }
-
-  _writeLocalMetadataEntry(ReflectionInfoModel model) {
-    buffer.write('${model.name}, ');
-    _writeListWithSeparator(
-        model.annotations.where( (am) => !am.name.endsWith('NgFactory') ).toList(),
-        writeAnnotationModel, prefix: 'const [', suffix: ']');
   }
 
   void writeRegistration(ReflectionInfoModel model) {

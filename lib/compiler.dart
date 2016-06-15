@@ -34,6 +34,5 @@ export "package:angular2/src/compiler/compiler.dart"
         CompileQueryMetadata,
         CompileTemplateMetadata,
         CompileDirectiveMetadata,
-        CompileInjectorModuleMetadata,
         CompilePipeMetadata;
 export "package:angular2/src/compiler/template_ast.dart";
