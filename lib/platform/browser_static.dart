@@ -16,9 +16,9 @@ export "package:angular2/src/platform/browser_common.dart"
 import "package:angular2/src/facade/lang.dart" show Type, isPresent, isBlank;
 import "package:angular2/src/platform/browser_common.dart"
     show
-        BROWSER_PROVIDERS,
         BROWSER_APP_COMMON_PROVIDERS,
-        BROWSER_PLATFORM_MARKER;
+        BROWSER_PLATFORM_MARKER,
+        createInitDomAdapter;
 import "package:angular2/core.dart"
     show
         ComponentRef,
@@ -27,17 +27,40 @@ import "package:angular2/core.dart"
         PlatformRef,
         getPlatform,
         createPlatform,
-        assertPlatform;
+        assertPlatform,
+        PLATFORM_INITIALIZER,
+        MapInjector;
+import "package:angular2/src/core/application_ref.dart" show PlatformRef_;
+import "package:angular2/src/core/reflection/reflection.dart"
+    show Reflector, reflector;
+import "package:angular2/src/core/reflection/reflector_reader.dart"
+    show ReflectorReader;
+import "package:angular2/src/core/testability/testability.dart"
+    show TestabilityRegistry;
+import "package:angular2/src/core/console.dart" show Console;
 
 /**
  * An array of providers that should be passed into `application()` when bootstrapping a component
  * when all templates
  * have been precompiled offline.
  */
-const List<dynamic> BROWSER_APP_PROVIDERS = BROWSER_APP_COMMON_PROVIDERS;
+const List<dynamic> BROWSER_APP_PROVIDERS = const [
+  BROWSER_APP_COMMON_PROVIDERS
+];
 PlatformRef browserStaticPlatform() {
   if (isBlank(getPlatform())) {
-    createPlatform(ReflectiveInjector.resolveAndCreate(BROWSER_PROVIDERS));
+    var tokens = new Map<dynamic, dynamic>();
+    var platform = new PlatformRef_();
+    tokens[PlatformRef] = platform;
+    tokens[PlatformRef_] = platform;
+    tokens[Reflector] = reflector;
+    tokens[ReflectorReader] = reflector;
+    var testabilityRegistry = new TestabilityRegistry();
+    tokens[TestabilityRegistry] = testabilityRegistry;
+    tokens[Console] = new Console();
+    tokens[BROWSER_PLATFORM_MARKER] = true;
+    tokens[PLATFORM_INITIALIZER] = [createInitDomAdapter(testabilityRegistry)];
+    createPlatform(new MapInjector(null, tokens));
   }
   return assertPlatform(BROWSER_PLATFORM_MARKER);
 }

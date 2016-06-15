@@ -6,24 +6,7 @@ import "package:angular2/src/core/linker/view.dart" show AppView, DebugAppView;
 import "package:angular2/src/core/linker/debug_context.dart"
     show StaticNodeDebugInfo, DebugContext;
 import "package:angular2/src/core/linker/view_utils.dart"
-    show
-        ViewUtils,
-        flattenNestedViewRenderNodes,
-        interpolate,
-        checkBinding,
-        castByValue,
-        EMPTY_ARRAY,
-        EMPTY_MAP,
-        pureProxy1,
-        pureProxy2,
-        pureProxy3,
-        pureProxy4,
-        pureProxy5,
-        pureProxy6,
-        pureProxy7,
-        pureProxy8,
-        pureProxy9,
-        pureProxy10;
+    show ViewUtils, flattenNestedViewRenderNodes, interpolate, checkBinding;
 import "package:angular2/src/core/change_detection/change_detection.dart"
     show
         uninitialized,
@@ -46,6 +29,8 @@ import "package:angular2/src/core/di/injector.dart" show Injector;
 import "package:angular2/src/core/linker/template_ref.dart"
     show TemplateRef, TemplateRef_;
 import "util.dart" show MODULE_SUFFIX;
+import "package:angular2/src/core/linker/injector_factory.dart"
+    show CodegenInjector, InjectorFactory;
 
 var APP_VIEW_MODULE_URL =
     "asset:angular2/lib/src/core/linker/view" + MODULE_SUFFIX;
@@ -73,6 +58,8 @@ var impTemplateRef = TemplateRef;
 var impTemplateRef_ = TemplateRef_;
 var impValueUnwrapper = ValueUnwrapper;
 var impInjector = Injector;
+var impCodegenInjector = CodegenInjector;
+var impInjectorFactory = InjectorFactory;
 var impViewEncapsulation = ViewEncapsulation;
 var impViewType = ViewType;
 var impChangeDetectionStrategy = ChangeDetectionStrategy;
@@ -85,9 +72,6 @@ var impFlattenNestedViewRenderNodes = flattenNestedViewRenderNodes;
 var impDevModeEqual = devModeEqual;
 var impInterpolate = interpolate;
 var impCheckBinding = checkBinding;
-var impCastByValue = castByValue;
-var impEMPTY_ARRAY = EMPTY_ARRAY;
-var impEMPTY_MAP = EMPTY_MAP;
 
 class Identifiers {
   static var ViewUtils = new CompileIdentifierMetadata(
@@ -148,6 +132,16 @@ class Identifiers {
       name: "Injector",
       moduleUrl: '''asset:angular2/lib/src/core/di/injector${ MODULE_SUFFIX}''',
       runtime: impInjector);
+  static var InjectorFactory = new CompileIdentifierMetadata(
+      name: "InjectorFactory",
+      moduleUrl:
+          '''asset:angular2/lib/src/core/linker/injector_factory${ MODULE_SUFFIX}''',
+      runtime: impInjectorFactory);
+  static var CodegenInjector = new CompileIdentifierMetadata(
+      name: "CodegenInjector",
+      moduleUrl:
+          '''asset:angular2/lib/src/core/linker/injector_factory${ MODULE_SUFFIX}''',
+      runtime: impCodegenInjector);
   static var ViewEncapsulation = new CompileIdentifierMetadata(
       name: "ViewEncapsulation",
       moduleUrl: "asset:angular2/lib/src/core/metadata/view" + MODULE_SUFFIX,
@@ -199,61 +193,6 @@ class Identifiers {
       name: "interpolate",
       moduleUrl: VIEW_UTILS_MODULE_URL,
       runtime: impInterpolate);
-  static var castByValue = new CompileIdentifierMetadata(
-      name: "castByValue",
-      moduleUrl: VIEW_UTILS_MODULE_URL,
-      runtime: impCastByValue);
-  static var EMPTY_ARRAY = new CompileIdentifierMetadata(
-      name: "EMPTY_ARRAY",
-      moduleUrl: VIEW_UTILS_MODULE_URL,
-      runtime: impEMPTY_ARRAY);
-  static var EMPTY_MAP = new CompileIdentifierMetadata(
-      name: "EMPTY_MAP",
-      moduleUrl: VIEW_UTILS_MODULE_URL,
-      runtime: impEMPTY_MAP);
-  static var pureProxies = [
-    null,
-    new CompileIdentifierMetadata(
-        name: "pureProxy1",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy1),
-    new CompileIdentifierMetadata(
-        name: "pureProxy2",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy2),
-    new CompileIdentifierMetadata(
-        name: "pureProxy3",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy3),
-    new CompileIdentifierMetadata(
-        name: "pureProxy4",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy4),
-    new CompileIdentifierMetadata(
-        name: "pureProxy5",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy5),
-    new CompileIdentifierMetadata(
-        name: "pureProxy6",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy6),
-    new CompileIdentifierMetadata(
-        name: "pureProxy7",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy7),
-    new CompileIdentifierMetadata(
-        name: "pureProxy8",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy8),
-    new CompileIdentifierMetadata(
-        name: "pureProxy9",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy9),
-    new CompileIdentifierMetadata(
-        name: "pureProxy10",
-        moduleUrl: VIEW_UTILS_MODULE_URL,
-        runtime: pureProxy10)
-  ];
 }
 
 CompileTokenMetadata identifierToken(CompileIdentifierMetadata identifier) {

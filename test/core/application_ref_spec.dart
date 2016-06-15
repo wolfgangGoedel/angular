@@ -40,11 +40,14 @@ import "package:angular2/core.dart"
         ComponentResolver,
         ChangeDetectorRef;
 import "package:angular2/src/core/console.dart" show Console;
-import "package:angular2/src/facade/exceptions.dart" show BaseException;
+import "package:angular2/src/facade/exceptions.dart"
+    show BaseException, unimplemented;
 import "package:angular2/src/facade/async.dart"
     show PromiseWrapper, PromiseCompleter, TimerWrapper;
 import "package:angular2/src/core/linker/component_factory.dart"
     show ComponentFactory, ComponentRef_, ComponentRef;
+import "package:angular2/src/core/linker/injector_factory.dart"
+    show InjectorFactory;
 import "package:angular2/src/facade/exception_handler.dart"
     show ExceptionHandler;
 
@@ -184,12 +187,17 @@ class _MockComponentResolver implements ComponentResolver {
     return PromiseWrapper.resolve(this._compFactory);
   }
 
+  InjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
+      [List<dynamic> extraProviders]) {
+    return unimplemented();
+  }
+
   clearCache() {}
 }
 
 class _MockComponentRef extends ComponentRef_ {
   Injector _injector;
-  _MockComponentRef(this._injector) : super(null, null) {
+  _MockComponentRef(this._injector) : super(null, null, null) {
     /* super call moved to initializer */;
   }
   Injector get injector {
@@ -205,5 +213,4 @@ class _MockComponentRef extends ComponentRef_ {
 
 class _MockConsole implements Console {
   log(message) {}
-  warn(message) {}
 }

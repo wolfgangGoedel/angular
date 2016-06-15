@@ -121,6 +121,12 @@ class Provider {
    */
   final Function useFactory;
   /**
+   * Specifies the property of the configuration class to use as value.
+   *
+   * Only used in conjunction with the @Injector class.
+   */
+  final String useProperty;
+  /**
    * Specifies a set of dependencies
    * (as `token`s) which should be injected into the factory function.
    *
@@ -147,6 +153,7 @@ class Provider {
       dynamic useValue,
       dynamic useExisting,
       Function useFactory,
+      String useProperty,
       List<Object> deps,
       bool multi})
       : token = token,
@@ -154,6 +161,7 @@ class Provider {
         useValue = useValue,
         useExisting = useExisting,
         useFactory = useFactory,
+        useProperty = useProperty,
         dependencies = deps,
         _multi = multi;
   // TODO: Provide a full working example after alpha38 is released.

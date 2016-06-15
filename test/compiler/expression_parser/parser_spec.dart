@@ -21,9 +21,7 @@ main() {
     return createParser().parseBinding(text, location);
   }
   dynamic parseTemplateBindings(text, [location = null]) {
-    return createParser()
-        .parseTemplateBindings(text, location)
-        .templateBindings;
+    return createParser().parseTemplateBindings(text, location);
   }
   dynamic parseInterpolation(text, [location = null]) {
     return createParser().parseInterpolation(text, location);
@@ -291,7 +289,7 @@ main() {
       keyValues(List<dynamic> templateBindings) {
         return templateBindings.map((binding) {
           if (binding.keyIsVar) {
-            return "let " +
+            return "#" +
                 binding.key +
                 (isBlank(binding.name) ? "=null" : "=" + binding.name);
           } else {
@@ -339,8 +337,8 @@ main() {
         expect(exprSources(bindings)).toEqual(["1+1"]);
       });
       it("should detect names as value", () {
-        var bindings = parseTemplateBindings("a:let b");
-        expect(keyValues(bindings)).toEqual(["a", "let b=\$implicit"]);
+        var bindings = parseTemplateBindings("a:#b");
+        expect(keyValues(bindings)).toEqual(["a", "#b=\$implicit"]);
       });
       it("should allow space and colon as separators", () {
         var bindings = parseTemplateBindings("a:b");
@@ -364,48 +362,30 @@ main() {
         var bindings = parseTemplateBindings("a 1,b 2", "location");
         expect(bindings[0].expression.location).toEqual("location");
       });
-      it("should support var notation with a deprecation warning", () {
-        var bindings = createParser().parseTemplateBindings("var i", null);
-        expect(keyValues(bindings.templateBindings))
-            .toEqual(["let i=\$implicit"]);
-        expect(bindings.warnings).toEqual([
-          "\"var\" inside of expressions is deprecated. Use \"let\" instead!"
-        ]);
-      });
-      it("should support # notation with a deprecation warning", () {
-        var bindings = createParser().parseTemplateBindings("#i", null);
-        expect(keyValues(bindings.templateBindings))
-            .toEqual(["let i=\$implicit"]);
-        expect(bindings.warnings).toEqual([
-          "\"#\" inside of expressions is deprecated. Use \"let\" instead!"
-        ]);
-      });
-      it("should support let notation", () {
-        var bindings = parseTemplateBindings("let i");
-        expect(keyValues(bindings)).toEqual(["let i=\$implicit"]);
-        bindings = parseTemplateBindings("let i");
-        expect(keyValues(bindings)).toEqual(["let i=\$implicit"]);
-        bindings = parseTemplateBindings("let a; let b");
+      it("should support var/# notation", () {
+        var bindings = parseTemplateBindings("var i");
+        expect(keyValues(bindings)).toEqual(["#i=\$implicit"]);
+        bindings = parseTemplateBindings("#i");
+        expect(keyValues(bindings)).toEqual(["#i=\$implicit"]);
+        bindings = parseTemplateBindings("var a; var b");
+        expect(keyValues(bindings)).toEqual(["#a=\$implicit", "#b=\$implicit"]);
+        bindings = parseTemplateBindings("#a; #b;");
+        expect(keyValues(bindings)).toEqual(["#a=\$implicit", "#b=\$implicit"]);
+        bindings = parseTemplateBindings("var i-a = k-a");
+        expect(keyValues(bindings)).toEqual(["#i-a=k-a"]);
+        bindings = parseTemplateBindings("keyword var item; var i = k");
         expect(keyValues(bindings))
-            .toEqual(["let a=\$implicit", "let b=\$implicit"]);
-        bindings = parseTemplateBindings("let a; let b;");
+            .toEqual(["keyword", "#item=\$implicit", "#i=k"]);
+        bindings = parseTemplateBindings("keyword: #item; #i = k");
         expect(keyValues(bindings))
-            .toEqual(["let a=\$implicit", "let b=\$implicit"]);
-        bindings = parseTemplateBindings("let i-a = k-a");
-        expect(keyValues(bindings)).toEqual(["let i-a=k-a"]);
-        bindings = parseTemplateBindings("keyword let item; let i = k");
-        expect(keyValues(bindings))
-            .toEqual(["keyword", "let item=\$implicit", "let i=k"]);
-        bindings = parseTemplateBindings("keyword: let item; let i = k");
-        expect(keyValues(bindings))
-            .toEqual(["keyword", "let item=\$implicit", "let i=k"]);
+            .toEqual(["keyword", "#item=\$implicit", "#i=k"]);
         bindings = parseTemplateBindings(
-            "directive: let item in expr; let a = b", "location");
+            "directive: var item in expr; var a = b", "location");
         expect(keyValues(bindings)).toEqual([
           "directive",
-          "let item=\$implicit",
+          "#item=\$implicit",
           "directiveIn=expr in location",
-          "let a=b"
+          "#a=b"
         ]);
       });
       it("should parse pipes", () {

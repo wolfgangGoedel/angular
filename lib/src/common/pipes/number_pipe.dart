@@ -15,6 +15,7 @@ import "package:angular2/src/facade/intl.dart"
     show NumberFormatter, NumberFormatStyle;
 import "package:angular2/core.dart"
     show Injectable, PipeTransform, WrappedValue, Pipe;
+import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "invalid_pipe_argument_exception.dart" show InvalidPipeArgumentException;
 
 String defaultLocale = "en-US";
@@ -89,7 +90,8 @@ class NumberPipe {
 @Pipe(name: "number")
 @Injectable()
 class DecimalPipe extends NumberPipe implements PipeTransform {
-  String transform(dynamic value, [String digits = null]) {
+  String transform(dynamic value, List<dynamic> args) {
+    String digits = ListWrapper.first(args);
     return NumberPipe._format(value, NumberFormatStyle.Decimal, digits);
   }
 
@@ -115,7 +117,8 @@ class DecimalPipe extends NumberPipe implements PipeTransform {
 @Pipe(name: "percent")
 @Injectable()
 class PercentPipe extends NumberPipe implements PipeTransform {
-  String transform(dynamic value, [String digits = null]) {
+  String transform(dynamic value, List<dynamic> args) {
+    String digits = ListWrapper.first(args);
     return NumberPipe._format(value, NumberFormatStyle.Percent, digits);
   }
 
@@ -145,10 +148,10 @@ class PercentPipe extends NumberPipe implements PipeTransform {
 @Pipe(name: "currency")
 @Injectable()
 class CurrencyPipe extends NumberPipe implements PipeTransform {
-  String transform(dynamic value,
-      [String currencyCode = "USD",
-      bool symbolDisplay = false,
-      String digits = null]) {
+  String transform(dynamic value, List<dynamic> args) {
+    String currencyCode = isPresent(args) && args.length > 0 ? args[0] : "USD";
+    bool symbolDisplay = isPresent(args) && args.length > 1 ? args[1] : false;
+    String digits = isPresent(args) && args.length > 2 ? args[2] : null;
     return NumberPipe._format(
         value, NumberFormatStyle.Currency, digits, currencyCode, symbolDisplay);
   }

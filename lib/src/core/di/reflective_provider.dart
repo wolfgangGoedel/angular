@@ -3,7 +3,7 @@ library angular2.src.core.di.reflective_provider;
 import "package:angular2/src/facade/lang.dart"
     show Type, isBlank, isPresent, isArray, isType;
 import "package:angular2/src/facade/collection.dart"
-    show MapWrapper, ListWrapper;
+    show MapWrapper, ListWrapper, StringMapWrapper;
 import "package:angular2/src/core/reflection/reflection.dart" show reflector;
 import "reflective_key.dart" show ReflectiveKey;
 import "metadata.dart"
@@ -15,6 +15,8 @@ import "metadata.dart"
         HostMetadata,
         SkipSelfMetadata,
         DependencyMetadata;
+import "../metadata/di.dart"
+    show InjectorModuleMetadata, ProviderPropertyMetadata;
 import "reflective_exceptions.dart"
     show
         NoAnnotationError,
@@ -41,6 +43,9 @@ class ReflectiveDependency {
 }
 
 const _EMPTY_LIST = const [];
+_identityPostProcess(obj) {
+  return obj;
+}
 
 /**
  * An internal resolved representation of a [Provider] used by the [Injector].
@@ -98,6 +103,7 @@ class ResolvedReflectiveProvider_ implements ResolvedReflectiveBinding {
 class ResolvedReflectiveFactory {
   Function factory;
   List<ReflectiveDependency> dependencies;
+  Function postProcess;
   ResolvedReflectiveFactory(
       /**
        * Factory function which can return an instance of an object represented by a key.
@@ -106,7 +112,11 @@ class ResolvedReflectiveFactory {
       /**
        * Arguments (dependencies) to the `factory` function.
        */
-      this.dependencies) {}
+      this.dependencies,
+      /**
+       * A function to use to post process the factory value (might be null).
+       */
+      this.postProcess) {}
 }
 
 /**
@@ -132,7 +142,10 @@ ResolvedReflectiveFactory resolveReflectiveFactory(Provider provider) {
     factoryFn = () => provider.useValue;
     resolvedDeps = _EMPTY_LIST;
   }
-  return new ResolvedReflectiveFactory(factoryFn, resolvedDeps);
+  var postProcess = isPresent(provider.useProperty)
+      ? reflector.getter(provider.useProperty)
+      : _identityPostProcess;
+  return new ResolvedReflectiveFactory(factoryFn, resolvedDeps, postProcess);
 }
 
 /**
@@ -203,8 +216,10 @@ List<Provider> _normalizeProviders(
   providers.forEach((b) {
     if (b is Type) {
       res.add(provide(b, useClass: b));
+      _normalizeProviders(getInjectorModuleProviders(b), res);
     } else if (b is Provider) {
       res.add(b);
+      _normalizeProviders(getInjectorModuleProviders(b.token), res);
     } else if (b is List) {
       _normalizeProviders(b, res);
     } else if (b is ProviderBuilder) {
@@ -287,4 +302,35 @@ ReflectiveDependency _createDependency(
     token, optional, lowerBoundVisibility, upperBoundVisibility, depProps) {
   return new ReflectiveDependency(ReflectiveKey.get(token), optional,
       lowerBoundVisibility, upperBoundVisibility, depProps);
+}
+
+/**
+ * Retruns [InjectorModuleMetadata] providers for a given token if possible.
+ */
+List<dynamic> getInjectorModuleProviders(dynamic token) {
+  var providers = [];
+  List<dynamic> annotations = null;
+  try {
+    if (isType(token)) {
+      annotations = reflector.annotations(resolveForwardRef(token));
+    }
+  } catch (e, e_stack) {}
+  InjectorModuleMetadata metadata = isPresent(annotations)
+      ? annotations.firstWhere((type) => type is InjectorModuleMetadata,
+          orElse: () => null)
+      : null;
+  if (isPresent(metadata)) {
+    var propertyMetadata = reflector.propMetadata(token);
+    ListWrapper.addAll(providers, metadata.providers);
+    StringMapWrapper.forEach(propertyMetadata,
+        (List<dynamic> metadata, String propName) {
+      metadata.forEach((a) {
+        if (a is ProviderPropertyMetadata) {
+          providers.add(new Provider(a.token,
+              multi: a.multi, useProperty: propName, useExisting: token));
+        }
+      });
+    });
+  }
+  return providers;
 }

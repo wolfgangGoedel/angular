@@ -17,7 +17,11 @@
  *
  * @Pipe({name: 'repeat'})
  * export class RepeatPipe implements PipeTransform {
- *   transform(value: any, times: number) {
+ *   transform(value: any, args: any[] = []) {
+ *     if (args.length == 0) {
+ *       throw new Error('repeat pipe requires one argument');
+ *     }
+ *     let times: number = args[0];
  *     return value.repeat(times);
  *   }
  * }
@@ -26,8 +30,8 @@
  * Invoking `{{ 'ok' | repeat:3 }}` in a template produces `okokok`.
  *
  */
+library angular2.src.core.change_detection.pipe_transform;
+
 abstract class PipeTransform {
-  // Note: Dart does not support varargs,
-  // so we can't type the `transform` method...
-  // dynamic transform(dynamic value, List<dynamic> ...args): any;
+  dynamic transform(dynamic value, List<dynamic> args);
 }

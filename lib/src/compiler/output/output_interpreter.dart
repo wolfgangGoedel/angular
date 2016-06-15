@@ -210,6 +210,8 @@ class StatementInterpreter implements o.StatementVisitor, o.ExpressionVisitor {
         case o.BuiltinVar.CatchStack:
           varName = CATCH_STACK_VAR;
           break;
+        case o.BuiltinVar.MetadataMap:
+          return null;
         default:
           throw new BaseException(
               '''Unknown builtin variable ${ ast . builtin}''');
@@ -261,13 +263,6 @@ class StatementInterpreter implements o.StatementVisitor, o.ExpressionVisitor {
           break;
         case o.BuiltinMethod.SubscribeObservable:
           result = ObservableWrapper.subscribe(receiver, args[0]);
-          break;
-        case o.BuiltinMethod.bind:
-          if (IS_DART) {
-            result = receiver;
-          } else {
-            result = receiver.bind(args[0]);
-          }
           break;
         default:
           throw new BaseException(
@@ -442,8 +437,6 @@ class StatementInterpreter implements o.StatementVisitor, o.ExpressionVisitor {
         result = di.props[ast.name];
       } else if (di.getters.containsKey(ast.name)) {
         result = di.getters[ast.name]();
-      } else if (di.methods.containsKey(ast.name)) {
-        result = di.methods[ast.name];
       } else {
         result = reflector.getter(ast.name)(receiver);
       }

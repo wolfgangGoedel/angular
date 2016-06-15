@@ -7,8 +7,7 @@ import "compile_view.dart" show CompileView;
 import "package:angular2/src/facade/lang.dart" show isPresent, isBlank;
 import "package:angular2/src/facade/collection.dart"
     show ListWrapper, StringMapWrapper;
-import "../template_ast.dart"
-    show TemplateAst, ProviderAst, ProviderAstType, ReferenceAst;
+import "../template_ast.dart" show TemplateAst, ProviderAst, ProviderAstType;
 import "../compile_metadata.dart"
     show
         CompileTokenMap,
@@ -23,7 +22,8 @@ import "util.dart"
     show
         getPropertyInView,
         createDiTokenExpression,
-        injectFromViewParentInjector;
+        injectFromViewParentInjector,
+        convertValueToOutputAst;
 import "compile_query.dart"
     show CompileQuery, createQueryList, addQueryToTokenMap;
 import "compile_method.dart" show CompileMethod;
@@ -51,9 +51,10 @@ class CompileElement extends CompileNode {
   List<ProviderAst> _resolvedProvidersArray;
   bool hasViewContainer;
   bool hasEmbeddedView;
+  Map<String, CompileTokenMetadata> variableTokens;
   static CompileElement createNull() {
     return new CompileElement(
-        null, null, null, null, null, null, [], [], false, false, []);
+        null, null, null, null, null, null, [], [], false, false, {});
   }
 
   o.Expression _compViewExpr = null;
@@ -68,7 +69,6 @@ class CompileElement extends CompileNode {
   List<List<o.Expression>> contentNodesByNgContentIndex = null;
   CompileView embeddedView;
   List<o.Expression> directiveInstances;
-  Map<String, CompileTokenMetadata> referenceTokens;
   CompileElement(
       CompileElement parent,
       CompileView view,
@@ -80,11 +80,9 @@ class CompileElement extends CompileNode {
       this._resolvedProvidersArray,
       this.hasViewContainer,
       this.hasEmbeddedView,
-      List<ReferenceAst> references)
+      this.variableTokens)
       : super(parent, view, nodeIndex, renderNode, sourceAst) {
     /* super call moved to initializer */;
-    this.referenceTokens = {};
-    references.forEach((ref) => this.referenceTokens[ref.name] = ref.value);
     this.elementRef =
         o.importExpr(Identifiers.ElementRef).instantiate([this.renderNode]);
     this
@@ -163,8 +161,9 @@ class CompileElement extends CompileNode {
     // some as getters. We rely on the fact that they are already sorted topologically.
     this._resolvedProviders.values().forEach((resolvedProvider) {
       var providerValueExpressions = resolvedProvider.providers.map((provider) {
+        o.Expression providerValue;
         if (isPresent(provider.useExisting)) {
-          return this._getDependency(resolvedProvider.providerType,
+          providerValue = this._getDependency(resolvedProvider.providerType,
               new CompileDiDependencyMetadata(token: provider.useExisting));
         } else if (isPresent(provider.useFactory)) {
           var deps = isPresent(provider.deps)
@@ -174,7 +173,7 @@ class CompileElement extends CompileNode {
               .map((dep) =>
                   this._getDependency(resolvedProvider.providerType, dep))
               .toList();
-          return o.importExpr(provider.useFactory).callFn(depsExpr);
+          providerValue = o.importExpr(provider.useFactory).callFn(depsExpr);
         } else if (isPresent(provider.useClass)) {
           var deps = isPresent(provider.deps)
               ? provider.deps
@@ -183,18 +182,16 @@ class CompileElement extends CompileNode {
               .map((dep) =>
                   this._getDependency(resolvedProvider.providerType, dep))
               .toList();
-          return o
+          providerValue = o
               .importExpr(provider.useClass)
               .instantiate(depsExpr, o.importType(provider.useClass));
         } else {
-          if (provider.useValue is CompileIdentifierMetadata) {
-            return o.importExpr(provider.useValue);
-          } else if (provider.useValue is o.Expression) {
-            return provider.useValue;
-          } else {
-            return o.literal(provider.useValue);
-          }
+          providerValue = convertValueToOutputAst(provider.useValue);
         }
+        if (isPresent(provider.useProperty)) {
+          providerValue = providerValue.prop(provider.useProperty);
+        }
+        return providerValue;
       }).toList();
       var propName =
           '''_${ resolvedProvider . token . name}_${ this . nodeIndex}_${ this . _instances . size}''';
@@ -228,15 +225,15 @@ class CompileElement extends CompileNode {
               .map((query) => new _QueryWithRead(query, resolvedProvider.token))
               .toList());
     });
-    StringMapWrapper.forEach(this.referenceTokens, (_, varName) {
-      var token = this.referenceTokens[varName];
+    StringMapWrapper.forEach(this.variableTokens, (_, varName) {
+      var token = this.variableTokens[varName];
       var varValue;
       if (isPresent(token)) {
         varValue = this._instances.get(token);
       } else {
         varValue = this.renderNode;
       }
-      this.view.locals[varName] = varValue;
+      this.view.variables[varName] = varValue;
       var varToken = new CompileTokenMetadata(value: varName);
       ListWrapper.addAll(
           queriesWithReads,
@@ -251,8 +248,8 @@ class CompileElement extends CompileNode {
         // query for an identifier
         value = this._instances.get(queryWithRead.read);
       } else {
-        // query for a reference
-        var token = this.referenceTokens[queryWithRead.read.value];
+        // query for a variable
+        var token = this.variableTokens[queryWithRead.read.value];
         if (isPresent(token)) {
           value = this._instances.get(token);
         } else {
@@ -325,6 +322,14 @@ class CompileElement extends CompileNode {
         .map((resolvedProvider) =>
             createDiTokenExpression(resolvedProvider.token))
         .toList();
+  }
+
+  List<String> getDeclaredVariablesNames() {
+    var res = [];
+    StringMapWrapper.forEach(this.variableTokens, (_, key) {
+      res.add(key);
+    });
+    return res;
   }
 
   List<CompileQuery> _getQueriesFor(CompileTokenMetadata token) {
@@ -404,6 +409,7 @@ class CompileElement extends CompileNode {
   o.Expression _getDependency(
       ProviderAstType requestingProviderType, CompileDiDependencyMetadata dep) {
     CompileElement currElement = this;
+    var currView = currElement.view;
     var result = null;
     if (dep.isValue) {
       result = o.literal(dep.value);
@@ -411,9 +417,14 @@ class CompileElement extends CompileNode {
     if (isBlank(result) && !dep.isSkipSelf) {
       result = this._getLocalDependency(requestingProviderType, dep);
     }
+    var resultViewPath = [];
     // check parent elements
     while (isBlank(result) && !currElement.parent.isNull()) {
       currElement = currElement.parent;
+      while (!identical(currElement.view, currView) && currView != null) {
+        currView = currView.declarationElement.view;
+        resultViewPath.add(currView);
+      }
       result = currElement._getLocalDependency(ProviderAstType.PublicService,
           new CompileDiDependencyMetadata(token: dep.token));
     }
@@ -423,7 +434,7 @@ class CompileElement extends CompileNode {
     if (isBlank(result)) {
       result = o.NULL_EXPR;
     }
-    return getPropertyInView(result, this.view, currElement.view);
+    return getPropertyInView(result, resultViewPath);
   }
 }
 

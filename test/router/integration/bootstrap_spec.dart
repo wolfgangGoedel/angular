@@ -43,7 +43,6 @@ import "package:angular2/src/mock/mock_application_ref.dart"
 
 class DummyConsole implements Console {
   log(message) {}
-  warn(message) {}
 }
 
 main() {

@@ -35,7 +35,7 @@ main() {
         inject([TestComponentBuilder, AsyncTestCompleter],
             (TestComponentBuilder tcb, async) {
           var template =
-              "<div *ngFor=\"let item of items\" [ngClass]=\"item\"></div>";
+              "<div *ngFor=\"var item of items\" [ngClass]=\"item\"></div>";
           tcb
               .overrideTemplate(TestComponent, template)
               .createAsync(TestComponent)

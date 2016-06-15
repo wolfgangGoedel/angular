@@ -140,9 +140,9 @@ class ConditionalParentComp {
 @Component(
     selector: "using-for",
     viewProviders: const [Logger],
-    template: '''<span *ngFor="let thing of stuff" [innerHtml]="thing"></span>
+    template: '''<span *ngFor="#thing of stuff" [innerHtml]="thing"></span>
             <ul message="list">
-              <li *ngFor="let item of stuff" [innerHtml]="item"></li>
+              <li *ngFor="#item of stuff" [innerHtml]="item"></li>
             </ul>''',
     directives: const [NgFor, MessageDir])
 @Injectable()

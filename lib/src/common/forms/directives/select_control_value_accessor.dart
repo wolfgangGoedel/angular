@@ -101,7 +101,7 @@ class SelectControlValueAccessor implements ControlValueAccessor {
  *
  * ```
  * <select ngControl="city">
- *   <option *ngFor="let c of cities" [value]="c"></option>
+ *   <option *ngFor="#c of cities" [value]="c"></option>
  * </select>
  * ```
  */

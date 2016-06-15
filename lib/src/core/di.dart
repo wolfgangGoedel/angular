@@ -17,7 +17,7 @@ export "di/metadata.dart"
 // we have to reexport * because Dart and TS export two different sets of types
 export "di/decorators.dart";
 export "di/forward_ref.dart" show forwardRef, resolveForwardRef, ForwardRefFn;
-export "di/injector.dart" show Injector;
+export "di/injector.dart" show Injector, MapInjector;
 export "di/reflective_injector.dart" show ReflectiveInjector;
 export "di/provider.dart"
     show Binding, ProviderBuilder, bind, Provider, provide;

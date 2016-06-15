@@ -97,14 +97,7 @@ main() {
           expect(expressions["concatedArray"]).toEqual([0, 1]);
           expect(expressions["invokeMethodExternalInstance"])
               .toEqual({"data": "someValue", "param": "someParam"});
-          expect(expressions["invokeMethodExternalInstanceViaBind"])
-              .toEqual({"data": "someValue", "param": "someParam"});
           expect(expressions["invokeMethodDynamicInstance"]).toEqual({
-            "data": "someValue",
-            "dynamicProp": "dynamicValue",
-            "param": "someParam"
-          });
-          expect(expressions["invokeMethodDynamicInstanceViaBind"]).toEqual({
             "data": "someValue",
             "dynamicProp": "dynamicValue",
             "param": "someParam"
@@ -127,6 +120,14 @@ main() {
               .toBeAnInstanceOf(ExternalClass);
           // Note: toBeAnInstanceOf does not check super classes in Dart...
           expect(expressions["dynamicInstance"] is ExternalClass).toBe(true);
+        });
+        it("should support reading metadataMap", () {
+          if (IS_DART && outputDef["name"] == "typed") {
+            expect(expressions["metadataMap"])
+                .toEqual(["someKey", "someValue"]);
+          } else {
+            expect(expressions["metadataMap"]).toBe(null);
+          }
         });
         describe("operators", () {
           var ops;

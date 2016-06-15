@@ -30,13 +30,14 @@ class CompileQuery {
   addValue(o.Expression value, CompileView view) {
     var currentView = view;
     List<CompileElement> elPath = [];
+    List<CompileView> viewPath = [];
     while (isPresent(currentView) && !identical(currentView, this.view)) {
       var parentEl = currentView.declarationElement;
       (elPath..insert(0, parentEl)).length;
       currentView = parentEl.view;
+      viewPath.add(currentView);
     }
-    var queryListForDirtyExpr =
-        getPropertyInView(this.queryList, view, this.view);
+    var queryListForDirtyExpr = getPropertyInView(this.queryList, viewPath);
     var viewValues = this._values;
     elPath.forEach((el) {
       var last = viewValues.values.length > 0
@@ -68,7 +69,8 @@ class CompileQuery {
     return isStatic;
   }
 
-  afterChildren(targetStaticMethod, CompileMethod targetDynamicMethod) {
+  afterChildren(
+      CompileMethod targetStaticMethod, CompileMethod targetDynamicMethod) {
     var values = createQueryValues(this._values);
     var updateStmts = [
       this.queryList.callMethod("reset", [o.literalArr(values)]).toStmt()

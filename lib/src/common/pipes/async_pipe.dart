@@ -6,7 +6,13 @@ import "package:angular2/src/facade/lang.dart"
 import "package:angular2/src/facade/async.dart"
     show ObservableWrapper, Stream, EventEmitter;
 import "package:angular2/core.dart"
-    show Pipe, Injectable, ChangeDetectorRef, OnDestroy, WrappedValue;
+    show
+        Pipe,
+        Injectable,
+        ChangeDetectorRef,
+        OnDestroy,
+        PipeTransform,
+        WrappedValue;
 import "invalid_pipe_argument_exception.dart" show InvalidPipeArgumentException;
 
 class ObservableStrategy {
@@ -59,7 +65,7 @@ Future<dynamic> ___unused;
  */
 @Pipe(name: "async", pure: false)
 @Injectable()
-class AsyncPipe implements OnDestroy {
+class AsyncPipe implements PipeTransform, OnDestroy {
   /** @internal */
   Object _latestValue = null;
   /** @internal */
@@ -82,7 +88,8 @@ class AsyncPipe implements OnDestroy {
   }
 
   dynamic transform(
-      dynamic /* Stream< dynamic > | Future< dynamic > | EventEmitter< dynamic > */ obj) {
+      dynamic /* Stream< dynamic > | Future< dynamic > | EventEmitter< dynamic > */ obj,
+      [List<dynamic> args]) {
     if (isBlank(this._obj)) {
       if (isPresent(obj)) {
         this._subscribe(obj);

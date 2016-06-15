@@ -1,7 +1,6 @@
 library angular2.src.compiler.view_compiler.view_builder;
 
-import "package:angular2/src/facade/lang.dart"
-    show isPresent, isBlank, StringWrapper;
+import "package:angular2/src/facade/lang.dart" show isPresent, StringWrapper;
 import "package:angular2/src/facade/collection.dart"
     show ListWrapper, StringMapWrapper, SetWrapper;
 import "../output/output_ast.dart" as o;
@@ -26,7 +25,6 @@ import "../template_ast.dart"
         NgContentAst,
         EmbeddedTemplateAst,
         ElementAst,
-        ReferenceAst,
         VariableAst,
         BoundEventAst,
         BoundElementPropertyAst,
@@ -217,6 +215,8 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
     var renderNode = o.THIS_EXPR.prop(fieldName);
     var directives =
         ast.directives.map((directiveAst) => directiveAst.directive).toList();
+    var variables = _readHtmlAndDirectiveVariables(
+        ast.exportAsVars, ast.directives, this.view.viewType);
     var component = directives.firstWhere((directive) => directive.isComponent,
         orElse: () => null);
     var htmlAttrs = _readHtmlAttrs(ast.attrs);
@@ -239,7 +239,7 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
         ast.providers,
         ast.hasViewContainer,
         false,
-        ast.references);
+        variables);
     this.view.nodes.add(compileElement);
     o.ReadVarExpr compViewExpr = null;
     if (isPresent(component)) {
@@ -294,7 +294,7 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
         ]))
         .toStmt());
     var renderNode = o.THIS_EXPR.prop(fieldName);
-    var templateVariableBindings = ast.variables
+    var templateVariableBindings = ast.vars
         .map((varAst) => [
               varAst.value.length > 0 ? varAst.value : IMPLICIT_TEMPLATE_VAR,
               varAst.name
@@ -312,8 +312,7 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
         directives,
         ast.providers,
         ast.hasViewContainer,
-        true,
-        ast.references);
+        true, {});
     this.view.nodes.add(compileElement);
     this.nestedViewCount++;
     var embeddedView = new CompileView(
@@ -342,10 +341,6 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
 
   dynamic visitEvent(
       BoundEventAst ast, Map<String, BoundEventAst> eventTargetAndNames) {
-    return null;
-  }
-
-  dynamic visitReference(ReferenceAst ast, dynamic ctx) {
     return null;
   }
 
@@ -387,6 +382,27 @@ Map<String, String> _readHtmlAttrs(List<AttrAst> attrs) {
     htmlAttrs[ast.name] = ast.value;
   });
   return htmlAttrs;
+}
+
+Map<String, CompileTokenMetadata> _readHtmlAndDirectiveVariables(
+    List<VariableAst> elementExportAsVars,
+    List<DirectiveAst> directives,
+    ViewType viewType) {
+  Map<String, CompileTokenMetadata> variables = {};
+  CompileDirectiveMetadata component = null;
+  directives.forEach((directive) {
+    if (directive.directive.isComponent) {
+      component = directive.directive;
+    }
+    directive.exportAsVars.forEach((varAst) {
+      variables[varAst.name] = identifierToken(directive.directive.type);
+    });
+  });
+  elementExportAsVars.forEach((varAst) {
+    variables[varAst.name] =
+        isPresent(component) ? identifierToken(component.type) : null;
+  });
+  return variables;
 }
 
 String mergeAttributeValue(
@@ -450,7 +466,7 @@ o.Expression createStaticNodeDebugInfo(CompileNode node) {
       componentToken = createDiTokenExpression(
           identifierToken(compileElement.component.type));
     }
-    StringMapWrapper.forEach(compileElement.referenceTokens, (token, varName) {
+    StringMapWrapper.forEach(compileElement.variableTokens, (token, varName) {
       varTokenEntries.add([
         varName,
         isPresent(token) ? createDiTokenExpression(token) : o.NULL_EXPR
@@ -490,7 +506,9 @@ o.ClassStmt createViewClass(CompileView view, o.ReadVarExpr renderCompTypeVar,
     ViewConstructorVars.viewUtils,
     ViewConstructorVars.parentInjector,
     ViewConstructorVars.declarationEl,
-    ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view))
+    ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view)),
+    o.literal(view.literalArrayCount),
+    o.literal(view.literalMapCount)
   ];
   if (view.genConfig.genDebugInfo) {
     superConstructorArgs.add(nodeDebugInfosVar);

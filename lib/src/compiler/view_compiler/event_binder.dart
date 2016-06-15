@@ -103,9 +103,12 @@ class CompileEventListener {
   listenToRenderer() {
     var listenExpr;
     var eventListener = o.THIS_EXPR.callMethod("eventHandler", [
-      o.THIS_EXPR
-          .prop(this._methodName)
-          .callMethod(o.BuiltinMethod.bind, [o.THIS_EXPR])
+      o.fn([
+        this._eventParam
+      ], [
+        new o.ReturnStatement(
+            o.THIS_EXPR.callMethod(this._methodName, [EventHandlerVars.event]))
+      ])
     ]);
     if (isPresent(this.eventTarget)) {
       listenExpr = ViewProperties.renderer.callMethod("listenGlobal", [
@@ -133,9 +136,12 @@ class CompileEventListener {
         '''subscription_${ this . compileElement . view . subscriptions . length}''');
     this.compileElement.view.subscriptions.add(subscription);
     var eventListener = o.THIS_EXPR.callMethod("eventHandler", [
-      o.THIS_EXPR
-          .prop(this._methodName)
-          .callMethod(o.BuiltinMethod.bind, [o.THIS_EXPR])
+      o.fn([
+        this._eventParam
+      ], [
+        o.THIS_EXPR
+            .callMethod(this._methodName, [EventHandlerVars.event]).toStmt()
+      ])
     ]);
     this.compileElement.view.createMethod.addStmt(subscription
         .set(directiveInstance

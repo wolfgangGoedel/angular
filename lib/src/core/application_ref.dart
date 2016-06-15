@@ -41,7 +41,7 @@ NgZone createNgZone() {
   return new NgZone(enableLongStackTrace: assertionsEnabled());
 }
 
-PlatformRef _platform;
+PlatformRef_ _platform;
 bool _inPlatformCreate = false;
 /**
  * Creates a platform.
@@ -59,6 +59,7 @@ PlatformRef createPlatform(Injector injector) {
   _inPlatformCreate = true;
   try {
     _platform = injector.get(PlatformRef);
+    _platform.init(injector);
   } finally {
     _inPlatformCreate = false;
   }
@@ -157,22 +158,23 @@ abstract class PlatformRef {
 
 @Injectable()
 class PlatformRef_ extends PlatformRef {
-  Injector _injector;
   /** @internal */
   List<ApplicationRef> _applications = [];
   /** @internal */
   List<Function> _disposeListeners = [];
   bool _disposed = false;
-  PlatformRef_(this._injector) : super() {
-    /* super call moved to initializer */;
+  Injector _injector;
+  init(Injector injector) {
     if (!_inPlatformCreate) {
       throw new BaseException(
-          "Platforms have to be created via `createPlatform`!");
+          "Platforms have to be initialized via `createPlatform`!");
     }
+    this._injector = injector;
     List<Function> inits =
-        (_injector.get(PLATFORM_INITIALIZER, null) as List<Function>);
+        (injector.get(PLATFORM_INITIALIZER, null) as List<Function>);
     if (isPresent(inits)) inits.forEach((init) => init());
   }
+
   void registerDisposeListener(void dispose()) {
     this._disposeListeners.add(dispose);
   }
@@ -274,6 +276,13 @@ abstract class ApplicationRef {
   List<Type> get componentTypes {
     return (unimplemented() as List<Type>);
   }
+
+  /**
+   * Get a list of component factories registered to this application.
+   */
+  List<ComponentFactory> get componentFactories {
+    return (unimplemented() as List<ComponentFactory>);
+  }
 }
 
 @Injectable()
@@ -290,7 +299,7 @@ class ApplicationRef_ extends ApplicationRef {
   /** @internal */
   List<ComponentRef> _rootComponents = [];
   /** @internal */
-  List<Type> _rootComponentTypes = [];
+  List<ComponentFactory> _rootComponentFactories = [];
   /** @internal */
   List<ChangeDetectorRef> _changeDetectorRefs = [];
   /** @internal */
@@ -397,7 +406,7 @@ class ApplicationRef_ extends ApplicationRef {
           "Cannot bootstrap as there are still asynchronous initializers running. Wait for them using waitForAsyncInitializers().");
     }
     return this.run(() {
-      this._rootComponentTypes.add(componentFactory.componentType);
+      this._rootComponentFactories.add(componentFactory);
       var compRef = componentFactory.create(
           this._injector, [], componentFactory.selector);
       compRef.onDestroy(() {
@@ -471,7 +480,14 @@ class ApplicationRef_ extends ApplicationRef {
   }
 
   List<Type> get componentTypes {
-    return this._rootComponentTypes;
+    return this
+        ._rootComponentFactories
+        .map((factory) => factory.componentType)
+        .toList();
+  }
+
+  List<ComponentFactory> get componentFactories {
+    return this._rootComponentFactories;
   }
 }
 

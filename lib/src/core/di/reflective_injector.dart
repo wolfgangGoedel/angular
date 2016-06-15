@@ -698,9 +698,9 @@ class ReflectiveInjector_ implements ReflectiveInjector {
   }
 
   dynamic _instantiate(ResolvedReflectiveProvider provider,
-      ResolvedReflectiveFactory ResolvedReflectiveFactory) {
-    var factory = ResolvedReflectiveFactory.factory;
-    var deps = ResolvedReflectiveFactory.dependencies;
+      ResolvedReflectiveFactory resolvedFactory) {
+    var factory = resolvedFactory.factory;
+    var deps = resolvedFactory.dependencies;
     var length = deps.length;
     dynamic d0;
     dynamic d1;
@@ -869,7 +869,7 @@ class ReflectiveInjector_ implements ReflectiveInjector {
     } catch (e, e_stack) {
       throw new InstantiationError(this, e, e_stack, provider.key);
     }
-    return obj;
+    return resolvedFactory.postProcess(obj);
   }
 
   dynamic _getByReflectiveDependency(

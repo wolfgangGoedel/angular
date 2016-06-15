@@ -8,7 +8,6 @@ import "../template_ast.dart"
         NgContentAst,
         EmbeddedTemplateAst,
         ElementAst,
-        ReferenceAst,
         VariableAst,
         BoundEventAst,
         BoundElementPropertyAst,
@@ -41,9 +40,6 @@ import "compile_element.dart" show CompileElement, CompileNode;
 void bindView(CompileView view, List<TemplateAst> parsedTemplate) {
   var visitor = new ViewBinderVisitor(view);
   templateVisitAll(visitor, parsedTemplate);
-  view.pipes.forEach((pipe) {
-    bindPipeDestroyLifecycleCallbacks(pipe.meta, pipe.instance, pipe.view);
-  });
 }
 
 class ViewBinderVisitor implements TemplateAstVisitor {
@@ -127,10 +123,6 @@ class ViewBinderVisitor implements TemplateAstVisitor {
 
   dynamic visitEvent(
       BoundEventAst ast, Map<String, BoundEventAst> eventTargetAndNames) {
-    return null;
-  }
-
-  dynamic visitReference(ReferenceAst ast, dynamic ctx) {
     return null;
   }
 

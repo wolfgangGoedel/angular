@@ -15,7 +15,8 @@ import "package:angular2/core.dart"
         RootRenderer,
         reflector,
         APPLICATION_COMMON_PROVIDERS,
-        PLATFORM_COMMON_PROVIDERS;
+        PLATFORM_COMMON_PROVIDERS,
+        TestabilityRegistry;
 import "package:angular2/common.dart"
     show COMMON_DIRECTIVES, COMMON_PIPES, FORM_PROVIDERS;
 import "package:angular2/src/core/testability/testability.dart"
@@ -70,7 +71,10 @@ const BROWSER_PLATFORM_MARKER = const OpaqueToken("BrowserPlatformMarker");
 const List<dynamic> BROWSER_PROVIDERS = const [
   const Provider(BROWSER_PLATFORM_MARKER, useValue: true),
   PLATFORM_COMMON_PROVIDERS,
-  const Provider(PLATFORM_INITIALIZER, useValue: initDomAdapter, multi: true)
+  const Provider(PLATFORM_INITIALIZER,
+      useFactory: createInitDomAdapter,
+      multi: true,
+      deps: const [TestabilityRegistry])
 ];
 ExceptionHandler exceptionHandler() {
   // !IS_DART is required because we must rethrow exceptions in JS,
@@ -114,8 +118,10 @@ const List<dynamic> BROWSER_APP_COMMON_PROVIDERS = const [
 const List<dynamic> CACHED_TEMPLATE_PROVIDER = const [
   const Provider(XHR, useClass: CachedXHR)
 ];
-initDomAdapter() {
-  BrowserDomAdapter.makeCurrent();
-  wtfInit();
-  BrowserGetTestability.init();
+Function createInitDomAdapter(TestabilityRegistry testabilityRegistry) {
+  return () {
+    BrowserDomAdapter.makeCurrent();
+    wtfInit();
+    testabilityRegistry.setTestabilityGetter(new BrowserGetTestability());
+  };
 }

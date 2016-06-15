@@ -194,17 +194,13 @@ class RouterLinkTransform implements TemplateAstVisitor {
         ast.attrs,
         updatedInputs,
         ast.outputs,
-        ast.references,
+        ast.exportAsVars,
         updatedDirectives,
         ast.providers,
         ast.hasViewContainer,
         updatedChildren,
         ast.ngContentIndex,
         ast.sourceSpan);
-  }
-
-  dynamic visitReference(dynamic ast, dynamic context) {
-    return ast;
   }
 
   dynamic visitVariable(dynamic ast, dynamic context) {
@@ -234,7 +230,7 @@ class RouterLinkTransform implements TemplateAstVisitor {
   dynamic visitDirective(DirectiveAst ast, dynamic context) {
     var updatedInputs = ast.inputs.map((c) => c.visit(this, context)).toList();
     return new DirectiveAst(ast.directive, updatedInputs, ast.hostProperties,
-        ast.hostEvents, ast.sourceSpan);
+        ast.hostEvents, ast.exportAsVars, ast.sourceSpan);
   }
 
   dynamic visitDirectiveProperty(

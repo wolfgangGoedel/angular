@@ -71,7 +71,7 @@ abstract class ChangeDetectorRef {
    * @Component({
    *   selector: 'giant-list',
    *   template: `
-   *     <li *ngFor="let d of dataProvider.data">Data {{d}}</lig>
+   *     <li *ngFor="#d of dataProvider.data">Data {{d}}</lig>
    *   `,
    *   directives: [NgFor]
    * })
