@@ -1,3 +1,5 @@
+import { Type } from 'angular2/src/facade/lang';
+import { ComponentFactory } from 'angular2/core';
 export declare class TouchMap {
     map: {
         [key: string]: string;
@@ -14,3 +16,6 @@ export declare class TouchMap {
     };
 }
 export declare function normalizeString(obj: any): string;
+export declare function getComponentAnnotations(comp: Type | ComponentFactory): any[];
+export declare function getComponentType(comp: Type | ComponentFactory): Type;
+export declare function getCanActivateHook(component: any): Function;

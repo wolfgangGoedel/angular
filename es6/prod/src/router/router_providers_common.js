@@ -17,14 +17,14 @@ export const ROUTER_PROVIDERS_COMMON = CONST_EXPR([
     })),
     CONST_EXPR(new Provider(ROUTER_PRIMARY_COMPONENT, { useFactory: routerPrimaryComponentFactory, deps: CONST_EXPR([ApplicationRef]) }))
 ]);
-function routerFactory(registry, location, primaryComponent, appRef) {
+function routerFactory(registry, location, primaryComponent /*Type | ComponentFactory*/, appRef) {
     var rootRouter = new RootRouter(registry, location, primaryComponent);
     appRef.registerDisposeListener(() => rootRouter.dispose());
     return rootRouter;
 }
 function routerPrimaryComponentFactory(app) {
-    if (app.componentTypes.length == 0) {
+    if (app.componentFactories.length == 0) {
         throw new BaseException("Bootstrap at least one component before injecting Router.");
     }
-    return app.componentTypes[0];
+    return app.componentFactories[0];
 }

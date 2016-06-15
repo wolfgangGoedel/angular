@@ -13,6 +13,8 @@ export declare class Identifiers {
     static TemplateRef_: CompileIdentifierMetadata;
     static ValueUnwrapper: CompileIdentifierMetadata;
     static Injector: CompileIdentifierMetadata;
+    static InjectorFactory: CompileIdentifierMetadata;
+    static CodegenInjector: CompileIdentifierMetadata;
     static ViewEncapsulation: CompileIdentifierMetadata;
     static ViewType: CompileIdentifierMetadata;
     static ChangeDetectionStrategy: CompileIdentifierMetadata;
@@ -26,9 +28,5 @@ export declare class Identifiers {
     static flattenNestedViewRenderNodes: CompileIdentifierMetadata;
     static devModeEqual: CompileIdentifierMetadata;
     static interpolate: CompileIdentifierMetadata;
-    static castByValue: CompileIdentifierMetadata;
-    static EMPTY_ARRAY: CompileIdentifierMetadata;
-    static EMPTY_MAP: CompileIdentifierMetadata;
-    static pureProxies: CompileIdentifierMetadata[];
 }
 export declare function identifierToken(identifier: CompileIdentifierMetadata): CompileTokenMetadata;

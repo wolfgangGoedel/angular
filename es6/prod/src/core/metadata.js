@@ -2,10 +2,10 @@
  * This indirection is needed to free up Component, etc symbols in the public API
  * to be used by the decorator versions of these annotations.
  */
-export { QueryMetadata, ContentChildrenMetadata, ContentChildMetadata, ViewChildrenMetadata, ViewQueryMetadata, ViewChildMetadata, AttributeMetadata } from './metadata/di';
+export { QueryMetadata, ContentChildrenMetadata, ContentChildMetadata, ViewChildrenMetadata, ViewQueryMetadata, ViewChildMetadata, AttributeMetadata, ProviderPropertyMetadata, InjectorModuleMetadata } from './metadata/di';
 export { ComponentMetadata, DirectiveMetadata, PipeMetadata, InputMetadata, OutputMetadata, HostBindingMetadata, HostListenerMetadata } from './metadata/directives';
 export { ViewMetadata, ViewEncapsulation } from './metadata/view';
-import { QueryMetadata, ContentChildrenMetadata, ContentChildMetadata, ViewChildrenMetadata, ViewChildMetadata, ViewQueryMetadata, AttributeMetadata } from './metadata/di';
+import { QueryMetadata, ContentChildrenMetadata, ContentChildMetadata, ViewChildrenMetadata, ViewChildMetadata, ViewQueryMetadata, AttributeMetadata, InjectorModuleMetadata, ProviderPropertyMetadata } from './metadata/di';
 import { ComponentMetadata, DirectiveMetadata, PipeMetadata, InputMetadata, OutputMetadata, HostBindingMetadata, HostListenerMetadata } from './metadata/directives';
 import { ViewMetadata } from './metadata/view';
 import { makeDecorator, makeParamDecorator, makePropDecorator } from './util/decorators';
@@ -476,7 +476,7 @@ export var Attribute = makeParamDecorator(AttributeMetadata);
  * ```html
  * <tabs>
  *   <pane title="Overview">...</pane>
- *   <pane *ngFor="let o of objects" [title]="o.title">{{o.text}}</pane>
+ *   <pane *ngFor="#o of objects" [title]="o.title">{{o.text}}</pane>
  * </tabs>
  * ```
  *
@@ -495,7 +495,7 @@ export var Attribute = makeParamDecorator(AttributeMetadata);
  *  selector: 'tabs',
  *  template: `
  *    <ul>
- *      <li *ngFor="let pane of panes">{{pane.title}}</li>
+ *      <li *ngFor="#pane of panes">{{pane.title}}</li>
  *    </ul>
  *    <ng-content></ng-content>
  *  `
@@ -974,3 +974,33 @@ export var HostBinding = makePropDecorator(HostBindingMetadata);
  * ```
  */
 export var HostListener = makePropDecorator(HostListenerMetadata);
+/**
+ * Defines an injector module from which an injector can be generated.
+ *
+ * ### Example
+ *
+ * ```
+ * @InjectorModule({
+ *   providers: [SomeService]
+ * })
+ * class MyModule {}
+ *
+ * ```
+ * @experimental
+ */
+export var InjectorModule = makeDecorator(InjectorModuleMetadata);
+/**
+ * Defines an injectable whose value is given by a property on an InjectorModule class.
+ *
+ * ### Example
+ *
+ * ```
+ * @InjectorModule()
+ * class MyModule {
+ *   @Provides(SomeToken)
+ *   someProp: string = 'Hello world';
+ * }
+ * ```
+ * @experimental
+ */
+export var Provides = makePropDecorator(ProviderPropertyMetadata);

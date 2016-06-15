@@ -1,4 +1,3 @@
-import { Type } from 'angular2/src/facade/lang';
 import { Location } from 'angular2/platform/common';
 import { RouteRegistry } from './route_registry';
 import { Instruction } from './instruction';
@@ -142,7 +141,7 @@ export declare class Router {
     generate(linkParams: any[]): Instruction;
 }
 export declare class RootRouter extends Router {
-    constructor(registry: RouteRegistry, location: Location, primaryComponent: Type);
+    constructor(registry: RouteRegistry, location: Location, primaryComponent: any);
     commit(instruction: Instruction, _skipLocationChange?: boolean): Promise<any>;
     dispose(): void;
 }

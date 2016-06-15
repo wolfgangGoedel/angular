@@ -1,4 +1,4 @@
-import {isPresent, isBlank, StringWrapper} from 'angular2/src/facade/lang';
+import {isPresent, StringWrapper} from 'angular2/src/facade/lang';
 import {ListWrapper, StringMapWrapper, SetWrapper} from 'angular2/src/facade/collection';
 
 import * as o from '../output/output_ast';
@@ -26,7 +26,6 @@ import {
   NgContentAst,
   EmbeddedTemplateAst,
   ElementAst,
-  ReferenceAst,
   VariableAst,
   BoundEventAst,
   BoundElementPropertyAst,
@@ -201,6 +200,8 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
     var renderNode = o.THIS_EXPR.prop(fieldName);
 
     var directives = ast.directives.map(directiveAst => directiveAst.directive);
+    var variables =
+        _readHtmlAndDirectiveVariables(ast.exportAsVars, ast.directives, this.view.viewType);
     var component = directives.find(directive => directive.isComponent);
     var htmlAttrs = _readHtmlAttrs(ast.attrs);
     var attrNameAndValues = _mergeHtmlAndDirectiveAttrs(htmlAttrs, directives);
@@ -215,7 +216,7 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
     }
     var compileElement =
         new CompileElement(parent, this.view, nodeIndex, renderNode, ast, component, directives,
-                           ast.providers, ast.hasViewContainer, false, ast.references);
+                           ast.providers, ast.hasViewContainer, false, variables);
     this.view.nodes.push(compileElement);
     var compViewExpr: o.ReadVarExpr = null;
     if (isPresent(component)) {
@@ -268,13 +269,13 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
             .toStmt());
     var renderNode = o.THIS_EXPR.prop(fieldName);
 
-    var templateVariableBindings = ast.variables.map(
+    var templateVariableBindings = ast.vars.map(
         varAst => [varAst.value.length > 0 ? varAst.value : IMPLICIT_TEMPLATE_VAR, varAst.name]);
 
     var directives = ast.directives.map(directiveAst => directiveAst.directive);
     var compileElement =
         new CompileElement(parent, this.view, nodeIndex, renderNode, ast, null, directives,
-                           ast.providers, ast.hasViewContainer, true, ast.references);
+                           ast.providers, ast.hasViewContainer, true, {});
     this.view.nodes.push(compileElement);
 
     this.nestedViewCount++;
@@ -296,7 +297,6 @@ class ViewBuilderVisitor implements TemplateAstVisitor {
     return null;
   }
 
-  visitReference(ast: ReferenceAst, ctx: any): any { return null; }
   visitVariable(ast: VariableAst, ctx: any): any { return null; }
   visitDirectiveProperty(ast: BoundDirectivePropertyAst, context: any): any { return null; }
   visitElementProperty(ast: BoundElementPropertyAst, context: any): any { return null; }
@@ -319,6 +319,24 @@ function _readHtmlAttrs(attrs: AttrAst[]): {[key: string]: string} {
   var htmlAttrs: {[key: string]: string} = {};
   attrs.forEach((ast) => { htmlAttrs[ast.name] = ast.value; });
   return htmlAttrs;
+}
+
+function _readHtmlAndDirectiveVariables(elementExportAsVars: VariableAst[],
+                                        directives: DirectiveAst[],
+                                        viewType: ViewType): {[key: string]: CompileTokenMetadata} {
+  var variables: {[key: string]: CompileTokenMetadata} = {};
+  var component: CompileDirectiveMetadata = null;
+  directives.forEach((directive) => {
+    if (directive.directive.isComponent) {
+      component = directive.directive;
+    }
+    directive.exportAsVars.forEach(
+        varAst => { variables[varAst.name] = identifierToken(directive.directive.type); });
+  });
+  elementExportAsVars.forEach((varAst) => {
+    variables[varAst.name] = isPresent(component) ? identifierToken(component.type) : null;
+  });
+  return variables;
 }
 
 function mergeAttributeValue(attrName: string, attrValue1: string, attrValue2: string): string {
@@ -374,7 +392,7 @@ function createStaticNodeDebugInfo(node: CompileNode): o.Expression {
     if (isPresent(compileElement.component)) {
       componentToken = createDiTokenExpression(identifierToken(compileElement.component.type));
     }
-    StringMapWrapper.forEach(compileElement.referenceTokens, (token, varName) => {
+    StringMapWrapper.forEach(compileElement.variableTokens, (token, varName) => {
       varTokenEntries.push(
           [varName, isPresent(token) ? createDiTokenExpression(token) : o.NULL_EXPR]);
     });
@@ -407,6 +425,8 @@ function createViewClass(view: CompileView, renderCompTypeVar: o.ReadVarExpr,
     ViewConstructorVars.parentInjector,
     ViewConstructorVars.declarationEl,
     ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view)),
+    o.literal(view.literalArrayCount),
+    o.literal(view.literalMapCount),
   ];
   if (view.genConfig.genDebugInfo) {
     superConstructorArgs.push(nodeDebugInfosVar);

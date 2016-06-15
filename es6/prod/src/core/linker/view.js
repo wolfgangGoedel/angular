@@ -1,10 +1,10 @@
 import { ListWrapper, StringMapWrapper } from 'angular2/src/facade/collection';
 import { AppElement } from './element';
-import { isPresent, CONST_EXPR } from 'angular2/src/facade/lang';
+import { isPresent, isBlank, CONST_EXPR } from 'angular2/src/facade/lang';
 import { ObservableWrapper } from 'angular2/src/facade/async';
 import { ViewRef_ } from './view_ref';
 import { ViewType } from './view_type';
-import { flattenNestedViewRenderNodes, ensureSlotCount } from './view_utils';
+import { flattenNestedViewRenderNodes, ensureSlotCount, arrayLooseIdentical, mapLooseIdentical } from './view_utils';
 import { ChangeDetectionStrategy, ChangeDetectorState } from 'angular2/src/core/change_detection/change_detection';
 import { wtfCreateScope, wtfLeave } from '../profile/profile';
 import { ExpressionChangedAfterItHasBeenCheckedException, ViewDestroyedException, ViewWrappedException } from './exceptions';
@@ -17,7 +17,7 @@ var _scope_check = wtfCreateScope(`AppView#check(ascii id)`);
  *
  */
 export class AppView {
-    constructor(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode) {
+    constructor(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize) {
         this.clazz = clazz;
         this.componentType = componentType;
         this.type = type;
@@ -45,6 +45,8 @@ export class AppView {
         else {
             this.renderer = declarationAppElement.parentView.renderer;
         }
+        this._literalArrayCache = ListWrapper.createFixedSize(literalArrayCacheSize);
+        this._literalMapCache = ListWrapper.createFixedSize(literalMapCacheSize);
     }
     create(givenProjectableNodes, rootSelectorOrNode) {
         var context;
@@ -155,9 +157,6 @@ export class AppView {
      */
     destroyInternal() { }
     get changeDetectorRef() { return this.ref; }
-    get parent() {
-        return isPresent(this.declarationAppElement) ? this.declarationAppElement.parentView : null;
-    }
     get flatRootNodes() { return flattenNestedViewRenderNodes(this.rootNodesOrAppElements); }
     get lastRootNode() {
         var lastNode = this.rootNodesOrAppElements.length > 0 ?
@@ -215,6 +214,26 @@ export class AppView {
         this.dirtyParentQueriesInternal();
         this.viewContainerElement = null;
     }
+    literalArray(id, value) {
+        var prevValue = this._literalArrayCache[id];
+        if (isBlank(value)) {
+            return value;
+        }
+        if (isBlank(prevValue) || !arrayLooseIdentical(prevValue, value)) {
+            prevValue = this._literalArrayCache[id] = value;
+        }
+        return prevValue;
+    }
+    literalMap(id, value) {
+        var prevValue = this._literalMapCache[id];
+        if (isBlank(value)) {
+            return value;
+        }
+        if (isBlank(prevValue) || !mapLooseIdentical(prevValue, value)) {
+            prevValue = this._literalMapCache[id] = value;
+        }
+        return prevValue;
+    }
     markAsCheckOnce() { this.cdMode = ChangeDetectionStrategy.CheckOnce; }
     markPathToRootAsCheckOnce() {
         let c = this;
@@ -230,8 +249,8 @@ export class AppView {
     throwDestroyedError(details) { throw new ViewDestroyedException(details); }
 }
 export class DebugAppView extends AppView {
-    constructor(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, staticNodeDebugInfos) {
-        super(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode);
+    constructor(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize, staticNodeDebugInfos) {
+        super(clazz, componentType, type, locals, viewUtils, parentInjector, declarationAppElement, cdMode, literalArrayCacheSize, literalMapCacheSize);
         this.staticNodeDebugInfos = staticNodeDebugInfos;
         this._currentDebugContext = null;
     }

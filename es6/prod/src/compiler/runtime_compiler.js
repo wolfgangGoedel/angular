@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { IS_DART, isBlank } from 'angular2/src/facade/lang';
+import { IS_DART, isBlank, CONST_EXPR } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
 import { ListWrapper } from 'angular2/src/facade/collection';
 import { PromiseWrapper } from 'angular2/src/facade/async';
@@ -15,6 +15,7 @@ import { createHostComponentMeta, CompileIdentifierMetadata } from './compile_me
 import { Injectable } from 'angular2/src/core/di';
 import { StyleCompiler } from './style_compiler';
 import { ViewCompiler } from './view_compiler/view_compiler';
+import { InjectorCompiler } from './view_compiler/injector_compiler';
 import { TemplateParser } from './template_parser';
 import { DirectiveNormalizer } from './directive_normalizer';
 import { RuntimeMetadataResolver } from './runtime_metadata';
@@ -24,25 +25,39 @@ import * as ir from './output/output_ast';
 import { jitStatements } from './output/output_jit';
 import { interpretStatements } from './output/output_interpreter';
 import { InterpretiveAppViewInstanceFactory } from './output/interpretive_view';
-import { XHR } from 'angular2/src/compiler/xhr';
+import { InterpretiveInjectorInstanceFactory } from './output/interpretive_injector';
+import { XHR } from './xhr';
 /**
  * An internal module of the Angular compiler that begins with component types,
  * extracts templates, and eventually produces a compiled version of the component
  * ready for linking into an application.
  */
 export let RuntimeCompiler = class RuntimeCompiler {
-    constructor(_runtimeMetadataResolver, _templateNormalizer, _templateParser, _styleCompiler, _viewCompiler, _xhr, _genConfig) {
+    constructor(_runtimeMetadataResolver, _templateNormalizer, _templateParser, _styleCompiler, _viewCompiler, _xhr, _injectorCompiler, _genConfig) {
         this._runtimeMetadataResolver = _runtimeMetadataResolver;
         this._templateNormalizer = _templateNormalizer;
         this._templateParser = _templateParser;
         this._styleCompiler = _styleCompiler;
         this._viewCompiler = _viewCompiler;
         this._xhr = _xhr;
+        this._injectorCompiler = _injectorCompiler;
         this._genConfig = _genConfig;
         this._styleCache = new Map();
         this._hostCacheKeys = new Map();
         this._compiledTemplateCache = new Map();
         this._compiledTemplateDone = new Map();
+    }
+    createInjectorFactory(moduleClass, extraProviders = CONST_EXPR([])) {
+        var injectorModuleMeta = this._runtimeMetadataResolver.getInjectorModuleMetadata(moduleClass, extraProviders);
+        var compileResult = this._injectorCompiler.compileInjector(injectorModuleMeta);
+        var factory;
+        if (IS_DART || !this._genConfig.useJit) {
+            factory = interpretStatements(compileResult.statements, compileResult.injectorFactoryVar, new InterpretiveInjectorInstanceFactory());
+        }
+        else {
+            factory = jitStatements(`${injectorModuleMeta.type.name}.ngfactory.js`, compileResult.statements, compileResult.injectorFactoryVar);
+        }
+        return factory;
     }
     resolveComponent(componentType) {
         var compMeta = this._runtimeMetadataResolver.getDirectiveMetadata(componentType);
@@ -152,7 +167,7 @@ export let RuntimeCompiler = class RuntimeCompiler {
 };
 RuntimeCompiler = __decorate([
     Injectable(), 
-    __metadata('design:paramtypes', [RuntimeMetadataResolver, DirectiveNormalizer, TemplateParser, StyleCompiler, ViewCompiler, XHR, CompilerConfig])
+    __metadata('design:paramtypes', [RuntimeMetadataResolver, DirectiveNormalizer, TemplateParser, StyleCompiler, ViewCompiler, XHR, InjectorCompiler, CompilerConfig])
 ], RuntimeCompiler);
 class CompiledTemplate {
     constructor() {

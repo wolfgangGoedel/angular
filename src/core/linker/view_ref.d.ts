@@ -23,7 +23,7 @@ export declare abstract class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <li *ngFor="let  item of items">{{item}}</li>
+ *   <li *ngFor="var item of items">{{item}}</li>
  * </ul>
  * ```
  *
@@ -33,7 +33,7 @@ export declare abstract class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <template ngFor let-item [ngForOf]="items"></template>
+ *   <template ngFor var-item [ngForOf]="items"></template>
  * </ul>
  * ```
  *

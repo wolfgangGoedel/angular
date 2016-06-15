@@ -2,11 +2,10 @@ import { ListWrapper } from 'angular2/src/facade/collection';
 import { templateVisitAll } from '../template_ast';
 import { bindRenderText, bindRenderInputs, bindDirectiveInputs, bindDirectiveHostProps } from './property_binder';
 import { bindRenderOutputs, collectEventListeners, bindDirectiveOutputs } from './event_binder';
-import { bindDirectiveAfterContentLifecycleCallbacks, bindDirectiveAfterViewLifecycleCallbacks, bindDirectiveDestroyLifecycleCallbacks, bindPipeDestroyLifecycleCallbacks, bindDirectiveDetectChangesLifecycleCallbacks } from './lifecycle_binder';
+import { bindDirectiveAfterContentLifecycleCallbacks, bindDirectiveAfterViewLifecycleCallbacks, bindDirectiveDestroyLifecycleCallbacks, bindDirectiveDetectChangesLifecycleCallbacks } from './lifecycle_binder';
 export function bindView(view, parsedTemplate) {
     var visitor = new ViewBinderVisitor(view);
     templateVisitAll(visitor, parsedTemplate);
-    view.pipes.forEach((pipe) => { bindPipeDestroyLifecycleCallbacks(pipe.meta, pipe.instance, pipe.view); });
 }
 class ViewBinderVisitor {
     constructor(view) {
@@ -66,7 +65,6 @@ class ViewBinderVisitor {
     visitEvent(ast, eventTargetAndNames) {
         return null;
     }
-    visitReference(ast, ctx) { return null; }
     visitVariable(ast, ctx) { return null; }
     visitDirectiveProperty(ast, context) { return null; }
     visitElementProperty(ast, context) { return null; }

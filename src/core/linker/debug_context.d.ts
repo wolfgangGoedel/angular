@@ -4,10 +4,10 @@ import { DebugAppView } from './view';
 export declare class StaticNodeDebugInfo {
     providerTokens: any[];
     componentToken: any;
-    refTokens: {
+    varTokens: {
         [key: string]: any;
     };
-    constructor(providerTokens: any[], componentToken: any, refTokens: {
+    constructor(providerTokens: any[], componentToken: any, varTokens: {
         [key: string]: any;
     });
 }

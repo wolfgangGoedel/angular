@@ -595,9 +595,9 @@ export class ReflectiveInjector_ {
             return this._instantiate(provider, provider.resolvedFactories[0]);
         }
     }
-    _instantiate(provider, ResolvedReflectiveFactory) {
-        var factory = ResolvedReflectiveFactory.factory;
-        var deps = ResolvedReflectiveFactory.dependencies;
+    _instantiate(provider, resolvedFactory) {
+        var factory = resolvedFactory.factory;
+        var deps = resolvedFactory.dependencies;
         var length = deps.length;
         var d0;
         var d1;
@@ -720,7 +720,7 @@ export class ReflectiveInjector_ {
         catch (e) {
             throw new InstantiationError(this, e, e.stack, provider.key);
         }
-        return obj;
+        return resolvedFactory.postProcess(obj);
     }
     _getByReflectiveDependency(provider, dep) {
         return this._getByKey(dep.key, dep.lowerBoundVisibility, dep.upperBoundVisibility, dep.optional ? null : THROW_IF_NOT_FOUND);

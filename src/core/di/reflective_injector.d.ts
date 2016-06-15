@@ -340,7 +340,7 @@ export declare class ReflectiveInjector_ implements ReflectiveInjector {
     resolveAndInstantiate(provider: Type | Provider): any;
     instantiateResolved(provider: ResolvedReflectiveProvider): any;
     private _instantiateProvider(provider);
-    private _instantiate(provider, ResolvedReflectiveFactory);
+    private _instantiate(provider, resolvedFactory);
     private _getByReflectiveDependency(provider, dep);
     private _getByKey(key, lowerBoundVisibility, upperBoundVisibility, notFoundValue);
     displayName: string;

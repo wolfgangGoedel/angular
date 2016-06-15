@@ -75,14 +75,16 @@ export declare class CompileProviderMetadata {
     useValue: any;
     useExisting: CompileTokenMetadata;
     useFactory: CompileFactoryMetadata;
+    useProperty: string;
     deps: CompileDiDependencyMetadata[];
     multi: boolean;
-    constructor({token, useClass, useValue, useExisting, useFactory, deps, multi}: {
+    constructor({token, useClass, useValue, useExisting, useFactory, useProperty, deps, multi}: {
         token?: CompileTokenMetadata;
         useClass?: CompileTypeMetadata;
         useValue?: any;
         useExisting?: CompileTokenMetadata;
         useFactory?: CompileFactoryMetadata;
+        useProperty?: string;
         deps?: CompileDiDependencyMetadata[];
         multi?: boolean;
     });
@@ -139,8 +141,10 @@ export declare class CompileTokenMetadata implements CompileMetadataWithIdentifi
 export declare class CompileTokenMap<VALUE> {
     private _valueMap;
     private _values;
+    private _tokens;
     add(token: CompileTokenMetadata, value: VALUE): void;
     get(token: CompileTokenMetadata): VALUE;
+    keys(): CompileTokenMetadata[];
     values(): VALUE[];
     size: number;
 }
@@ -321,6 +325,36 @@ export declare class CompilePipeMetadata implements CompileMetadataWithType {
     static fromJson(data: {
         [key: string]: any;
     }): CompilePipeMetadata;
+    toJson(): {
+        [key: string]: any;
+    };
+}
+/**
+ * Metadata regarding compilation of an InjectorModule.
+ */
+export declare class CompileInjectorModuleMetadata implements CompileMetadataWithType, CompileTypeMetadata {
+    runtime: Type;
+    name: string;
+    prefix: string;
+    moduleUrl: string;
+    isHost: boolean;
+    value: any;
+    diDeps: CompileDiDependencyMetadata[];
+    providers: Array<CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | any[]>;
+    constructor({runtime, name, moduleUrl, prefix, value, diDeps, providers}?: {
+        runtime?: Type;
+        name?: string;
+        moduleUrl?: string;
+        prefix?: string;
+        value?: any;
+        diDeps?: CompileDiDependencyMetadata[];
+        providers?: Array<CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | any[]>;
+    });
+    static fromJson(data: {
+        [key: string]: any;
+    }): CompileInjectorModuleMetadata;
+    identifier: CompileIdentifierMetadata;
+    type: CompileInjectorModuleMetadata;
     toJson(): {
         [key: string]: any;
     };

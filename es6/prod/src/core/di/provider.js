@@ -25,12 +25,13 @@ import { BaseException } from 'angular2/src/facade/exceptions';
  * ```
  */
 export let Provider = class Provider {
-    constructor(token, { useClass, useValue, useExisting, useFactory, deps, multi }) {
+    constructor(token, { useClass, useValue, useExisting, useFactory, useProperty, deps, multi }) {
         this.token = token;
         this.useClass = useClass;
         this.useValue = useValue;
         this.useExisting = useExisting;
         this.useFactory = useFactory;
+        this.useProperty = useProperty;
         this.dependencies = deps;
         this._multi = multi;
     }

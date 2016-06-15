@@ -3,11 +3,13 @@ import { CompileQuery } from './compile_query';
 import { NameResolver } from './expression_converter';
 import { CompileElement, CompileNode } from './compile_element';
 import { CompileMethod } from './compile_method';
-import { CompilePipe } from './compile_pipe';
 import { ViewType } from 'angular2/src/core/linker/view_type';
 import { CompileDirectiveMetadata, CompilePipeMetadata, CompileTokenMap } from '../compile_metadata';
 import { CompilerConfig } from '../config';
 import { CompileBinding } from './compile_binding';
+export declare class CompilePipe {
+    constructor();
+}
 export declare class CompileView implements NameResolver {
     component: CompileDirectiveMetadata;
     genConfig: CompilerConfig;
@@ -38,19 +40,17 @@ export declare class CompileView implements NameResolver {
     disposables: o.Expression[];
     subscriptions: o.Expression[];
     componentView: CompileView;
-    purePipes: Map<string, CompilePipe>;
-    pipes: CompilePipe[];
-    locals: Map<string, o.Expression>;
+    pipes: Map<string, o.Expression>;
+    variables: Map<string, o.Expression>;
     className: string;
     classType: o.Type;
     viewFactory: o.ReadVarExpr;
     literalArrayCount: number;
     literalMapCount: number;
-    pipeCount: number;
     constructor(component: CompileDirectiveMetadata, genConfig: CompilerConfig, pipeMetas: CompilePipeMetadata[], styles: o.Expression, viewIndex: number, declarationElement: CompileElement, templateVariableBindings: string[][]);
-    callPipe(name: string, input: o.Expression, args: o.Expression[]): o.Expression;
-    getLocal(name: string): o.Expression;
+    createPipe(name: string): o.Expression;
+    getVariable(name: string): o.Expression;
     createLiteralArray(values: o.Expression[]): o.Expression;
-    createLiteralMap(entries: Array<Array<string | o.Expression>>): o.Expression;
+    createLiteralMap(values: Array<Array<string | o.Expression>>): o.Expression;
     afterNodes(): void;
 }

@@ -1,6 +1,11 @@
 export declare const THROW_IF_NOT_FOUND: Object;
+/**
+ * The Injector interface. This class can also be used
+ * to get hold of an Injector.
+ */
 export declare abstract class Injector {
     static THROW_IF_NOT_FOUND: Object;
+    static NULL: Injector;
     /**
      * Retrieves an instance from the injector based on the provided token.
      * If not found:
@@ -25,5 +30,14 @@ export declare abstract class Injector {
      * expect(injector.get(Injector)).toBe(injector);
      * ```
      */
+    get(token: any, notFoundValue?: any): any;
+}
+/**
+ * An simple injector based on a Map of values.
+ */
+export declare class MapInjector implements Injector {
+    private _parent;
+    private _values;
+    constructor(_parent: Injector, _values: Map<any, any>);
     get(token: any, notFoundValue?: any): any;
 }

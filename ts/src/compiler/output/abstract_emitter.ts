@@ -197,11 +197,6 @@ export abstract class AbstractEmitterVisitor implements o.StatementVisitor, o.Ex
     var name = expr.name;
     if (isPresent(expr.builtin)) {
       name = this.getBuiltinMethodName(expr.builtin);
-      if (isBlank(name)) {
-        // some builtins just mean to skip the call.
-        // e.g. `bind` in Dart.
-        return null;
-      }
     }
     ctx.print(`.${name}(`);
     this.visitAllExpressions(expr.args, ctx, `,`);
@@ -233,6 +228,9 @@ export abstract class AbstractEmitterVisitor implements o.StatementVisitor, o.Ex
           break;
         case o.BuiltinVar.CatchStack:
           varName = CATCH_STACK_VAR.name;
+          break;
+        case o.BuiltinVar.MetadataMap:
+          varName = 'null';
           break;
         default:
           throw new BaseException(`Unknown builtin variable ${ast.builtin}`);

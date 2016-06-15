@@ -41,6 +41,7 @@ export function createPlatform(injector) {
     _inPlatformCreate = true;
     try {
         _platform = injector.get(PlatformRef);
+        _platform.init(injector);
     }
     finally {
         _inPlatformCreate = false;
@@ -115,18 +116,20 @@ export class PlatformRef {
     get disposed() { throw unimplemented(); }
 }
 export let PlatformRef_ = class PlatformRef_ extends PlatformRef {
-    constructor(_injector) {
-        super();
-        this._injector = _injector;
+    constructor(...args) {
+        super(...args);
         /** @internal */
         this._applications = [];
         /** @internal */
         this._disposeListeners = [];
         this._disposed = false;
+    }
+    init(injector) {
         if (!_inPlatformCreate) {
-            throw new BaseException('Platforms have to be created via `createPlatform`!');
+            throw new BaseException('Platforms have to be initialized via `createPlatform`!');
         }
-        let inits = _injector.get(PLATFORM_INITIALIZER, null);
+        this._injector = injector;
+        let inits = injector.get(PLATFORM_INITIALIZER, null);
         if (isPresent(inits))
             inits.forEach(init => init());
     }
@@ -144,7 +147,7 @@ export let PlatformRef_ = class PlatformRef_ extends PlatformRef {
 };
 PlatformRef_ = __decorate([
     Injectable(), 
-    __metadata('design:paramtypes', [Injector])
+    __metadata('design:paramtypes', [])
 ], PlatformRef_);
 /**
  * A reference to an Angular application running on a page.
@@ -167,6 +170,11 @@ export class ApplicationRef {
      */
     get componentTypes() { return unimplemented(); }
     ;
+    /**
+     * Get a list of component factories registered to this application.
+     */
+    get componentFactories() { return unimplemented(); }
+    ;
 }
 let ApplicationRef_1;
 export let ApplicationRef_ = ApplicationRef_1 = class ApplicationRef_ extends ApplicationRef {
@@ -182,7 +190,7 @@ export let ApplicationRef_ = ApplicationRef_1 = class ApplicationRef_ extends Ap
         /** @internal */
         this._rootComponents = [];
         /** @internal */
-        this._rootComponentTypes = [];
+        this._rootComponentFactories = [];
         /** @internal */
         this._changeDetectorRefs = [];
         /** @internal */
@@ -262,7 +270,7 @@ export let ApplicationRef_ = ApplicationRef_1 = class ApplicationRef_ extends Ap
             throw new BaseException('Cannot bootstrap as there are still asynchronous initializers running. Wait for them using waitForAsyncInitializers().');
         }
         return this.run(() => {
-            this._rootComponentTypes.push(componentFactory.componentType);
+            this._rootComponentFactories.push(componentFactory);
             var compRef = componentFactory.create(this._injector, [], componentFactory.selector);
             compRef.onDestroy(() => { this._unloadComponent(compRef); });
             var testability = compRef.injector.get(Testability, null);
@@ -318,7 +326,11 @@ export let ApplicationRef_ = ApplicationRef_1 = class ApplicationRef_ extends Ap
         this._disposeListeners.forEach((dispose) => dispose());
         this._platform._applicationDisposed(this);
     }
-    get componentTypes() { return this._rootComponentTypes; }
+    get componentTypes() {
+        return this._rootComponentFactories.map(factory => factory.componentType);
+    }
+    get componentFactories() { return this._rootComponentFactories; }
+    ;
 };
 /** @internal */
 ApplicationRef_._tickScope = wtfCreateScope('ApplicationRef#tick()');

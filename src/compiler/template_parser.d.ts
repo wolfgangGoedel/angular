@@ -1,10 +1,9 @@
 import { OpaqueToken } from 'angular2/core';
-import { Console } from 'angular2/src/core/console';
 import { RecursiveAstVisitor, BindingPipe } from './expression_parser/ast';
 import { Parser } from './expression_parser/parser';
 import { CompileDirectiveMetadata, CompilePipeMetadata } from './compile_metadata';
 import { HtmlParser } from './html_parser';
-import { ParseSourceSpan, ParseError, ParseErrorLevel } from './parse_util';
+import { ParseSourceSpan, ParseError } from './parse_util';
 import { TemplateAst, TemplateAstVisitor } from './template_ast';
 import { ElementSchemaRegistry } from 'angular2/src/compiler/schema/element_schema_registry';
 /**
@@ -16,7 +15,7 @@ import { ElementSchemaRegistry } from 'angular2/src/compiler/schema/element_sche
  */
 export declare const TEMPLATE_TRANSFORMS: OpaqueToken;
 export declare class TemplateParseError extends ParseError {
-    constructor(message: string, span: ParseSourceSpan, level: ParseErrorLevel);
+    constructor(message: string, span: ParseSourceSpan);
 }
 export declare class TemplateParseResult {
     templateAst: TemplateAst[];
@@ -27,9 +26,8 @@ export declare class TemplateParser {
     private _exprParser;
     private _schemaRegistry;
     private _htmlParser;
-    private _console;
     transforms: TemplateAstVisitor[];
-    constructor(_exprParser: Parser, _schemaRegistry: ElementSchemaRegistry, _htmlParser: HtmlParser, _console: Console, transforms: TemplateAstVisitor[]);
+    constructor(_exprParser: Parser, _schemaRegistry: ElementSchemaRegistry, _htmlParser: HtmlParser, transforms: TemplateAstVisitor[]);
     parse(component: CompileDirectiveMetadata, template: string, directives: CompileDirectiveMetadata[], pipes: CompilePipeMetadata[], templateUrl: string): TemplateAst[];
     tryParse(component: CompileDirectiveMetadata, template: string, directives: CompileDirectiveMetadata[], pipes: CompilePipeMetadata[], templateUrl: string): TemplateParseResult;
 }

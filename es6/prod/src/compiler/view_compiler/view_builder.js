@@ -139,6 +139,7 @@ class ViewBuilderVisitor {
         this.view.createMethod.addStmt(o.THIS_EXPR.prop(fieldName).set(createRenderNodeExpr).toStmt());
         var renderNode = o.THIS_EXPR.prop(fieldName);
         var directives = ast.directives.map(directiveAst => directiveAst.directive);
+        var variables = _readHtmlAndDirectiveVariables(ast.exportAsVars, ast.directives, this.view.viewType);
         var component = directives.find(directive => directive.isComponent);
         var htmlAttrs = _readHtmlAttrs(ast.attrs);
         var attrNameAndValues = _mergeHtmlAndDirectiveAttrs(htmlAttrs, directives);
@@ -148,7 +149,7 @@ class ViewBuilderVisitor {
             this.view.createMethod.addStmt(ViewProperties.renderer.callMethod('setElementAttribute', [renderNode, o.literal(attrName), o.literal(attrValue)])
                 .toStmt());
         }
-        var compileElement = new CompileElement(parent, this.view, nodeIndex, renderNode, ast, component, directives, ast.providers, ast.hasViewContainer, false, ast.references);
+        var compileElement = new CompileElement(parent, this.view, nodeIndex, renderNode, ast, component, directives, ast.providers, ast.hasViewContainer, false, variables);
         this.view.nodes.push(compileElement);
         var compViewExpr = null;
         if (isPresent(component)) {
@@ -191,9 +192,9 @@ class ViewBuilderVisitor {
         ]))
             .toStmt());
         var renderNode = o.THIS_EXPR.prop(fieldName);
-        var templateVariableBindings = ast.variables.map(varAst => [varAst.value.length > 0 ? varAst.value : IMPLICIT_TEMPLATE_VAR, varAst.name]);
+        var templateVariableBindings = ast.vars.map(varAst => [varAst.value.length > 0 ? varAst.value : IMPLICIT_TEMPLATE_VAR, varAst.name]);
         var directives = ast.directives.map(directiveAst => directiveAst.directive);
-        var compileElement = new CompileElement(parent, this.view, nodeIndex, renderNode, ast, null, directives, ast.providers, ast.hasViewContainer, true, ast.references);
+        var compileElement = new CompileElement(parent, this.view, nodeIndex, renderNode, ast, null, directives, ast.providers, ast.hasViewContainer, true, {});
         this.view.nodes.push(compileElement);
         this.nestedViewCount++;
         var embeddedView = new CompileView(this.view.component, this.view.genConfig, this.view.pipeMetas, o.NULL_EXPR, this.view.viewIndex + this.nestedViewCount, compileElement, templateVariableBindings);
@@ -208,7 +209,6 @@ class ViewBuilderVisitor {
     visitEvent(ast, eventTargetAndNames) {
         return null;
     }
-    visitReference(ast, ctx) { return null; }
     visitVariable(ast, ctx) { return null; }
     visitDirectiveProperty(ast, context) { return null; }
     visitElementProperty(ast, context) { return null; }
@@ -228,6 +228,20 @@ function _readHtmlAttrs(attrs) {
     var htmlAttrs = {};
     attrs.forEach((ast) => { htmlAttrs[ast.name] = ast.value; });
     return htmlAttrs;
+}
+function _readHtmlAndDirectiveVariables(elementExportAsVars, directives, viewType) {
+    var variables = {};
+    var component = null;
+    directives.forEach((directive) => {
+        if (directive.directive.isComponent) {
+            component = directive.directive;
+        }
+        directive.exportAsVars.forEach(varAst => { variables[varAst.name] = identifierToken(directive.directive.type); });
+    });
+    elementExportAsVars.forEach((varAst) => {
+        variables[varAst.name] = isPresent(component) ? identifierToken(component.type) : null;
+    });
+    return variables;
 }
 function mergeAttributeValue(attrName, attrValue1, attrValue2) {
     if (attrName == CLASS_ATTR || attrName == STYLE_ATTR) {
@@ -274,7 +288,7 @@ function createStaticNodeDebugInfo(node) {
         if (isPresent(compileElement.component)) {
             componentToken = createDiTokenExpression(identifierToken(compileElement.component.type));
         }
-        StringMapWrapper.forEach(compileElement.referenceTokens, (token, varName) => {
+        StringMapWrapper.forEach(compileElement.variableTokens, (token, varName) => {
             varTokenEntries.push([varName, isPresent(token) ? createDiTokenExpression(token) : o.NULL_EXPR]);
         });
     }
@@ -301,6 +315,8 @@ function createViewClass(view, renderCompTypeVar, nodeDebugInfosVar) {
         ViewConstructorVars.parentInjector,
         ViewConstructorVars.declarationEl,
         ChangeDetectionStrategyEnum.fromValue(getChangeDetectionMode(view)),
+        o.literal(view.literalArrayCount),
+        o.literal(view.literalMapCount),
     ];
     if (view.genConfig.genDebugInfo) {
         superConstructorArgs.push(nodeDebugInfosVar);

@@ -4,7 +4,7 @@ import {InjectMethodVars} from './constants';
 import {CompileView} from './compile_view';
 import {isPresent, isBlank} from 'angular2/src/facade/lang';
 import {ListWrapper, StringMapWrapper} from 'angular2/src/facade/collection';
-import {TemplateAst, ProviderAst, ProviderAstType, ReferenceAst} from '../template_ast';
+import {TemplateAst, ProviderAst, ProviderAstType} from '../template_ast';
 import {
   CompileTokenMap,
   CompileDirectiveMetadata,
@@ -13,9 +13,14 @@ import {
   CompileProviderMetadata,
   CompileDiDependencyMetadata,
   CompileIdentifierMetadata,
-  CompileTypeMetadata,
+  CompileTypeMetadata
 } from '../compile_metadata';
-import {getPropertyInView, createDiTokenExpression, injectFromViewParentInjector} from './util';
+import {
+  getPropertyInView,
+  createDiTokenExpression,
+  injectFromViewParentInjector,
+  convertValueToOutputAst
+} from './util';
 import {CompileQuery, createQueryList, addQueryToTokenMap} from './compile_query';
 import {CompileMethod} from './compile_method';
 
@@ -30,7 +35,7 @@ export class CompileNode {
 
 export class CompileElement extends CompileNode {
   static createNull(): CompileElement {
-    return new CompileElement(null, null, null, null, null, null, [], [], false, false, []);
+    return new CompileElement(null, null, null, null, null, null, [], [], false, false, {});
   }
 
   private _compViewExpr: o.Expression = null;
@@ -47,18 +52,15 @@ export class CompileElement extends CompileNode {
   public contentNodesByNgContentIndex: Array<o.Expression>[] = null;
   public embeddedView: CompileView;
   public directiveInstances: o.Expression[];
-  public referenceTokens: {[key: string]: CompileTokenMetadata};
 
   constructor(parent: CompileElement, view: CompileView, nodeIndex: number,
               renderNode: o.Expression, sourceAst: TemplateAst,
               public component: CompileDirectiveMetadata,
               private _directives: CompileDirectiveMetadata[],
               private _resolvedProvidersArray: ProviderAst[], public hasViewContainer: boolean,
-              public hasEmbeddedView: boolean, references: ReferenceAst[]) {
+              public hasEmbeddedView: boolean,
+              public variableTokens: {[key: string]: CompileTokenMetadata}) {
     super(parent, view, nodeIndex, renderNode, sourceAst);
-    this.referenceTokens = {};
-    references.forEach(ref => this.referenceTokens[ref.name] = ref.value);
-
     this.elementRef = o.importExpr(Identifiers.ElementRef).instantiate([this.renderNode]);
     this._instances.add(identifierToken(Identifiers.ElementRef), this.elementRef);
     this.injector = o.THIS_EXPR.callMethod('injector', [o.literal(this.nodeIndex)]);
@@ -126,28 +128,27 @@ export class CompileElement extends CompileNode {
     // some as getters. We rely on the fact that they are already sorted topologically.
     this._resolvedProviders.values().forEach((resolvedProvider) => {
       var providerValueExpressions = resolvedProvider.providers.map((provider) => {
+        var providerValue: o.Expression;
         if (isPresent(provider.useExisting)) {
-          return this._getDependency(
-              resolvedProvider.providerType,
-              new CompileDiDependencyMetadata({token: provider.useExisting}));
+          providerValue =
+              this._getDependency(resolvedProvider.providerType,
+                                  new CompileDiDependencyMetadata({token: provider.useExisting}));
         } else if (isPresent(provider.useFactory)) {
           var deps = isPresent(provider.deps) ? provider.deps : provider.useFactory.diDeps;
           var depsExpr = deps.map((dep) => this._getDependency(resolvedProvider.providerType, dep));
-          return o.importExpr(provider.useFactory).callFn(depsExpr);
+          providerValue = o.importExpr(provider.useFactory).callFn(depsExpr);
         } else if (isPresent(provider.useClass)) {
           var deps = isPresent(provider.deps) ? provider.deps : provider.useClass.diDeps;
           var depsExpr = deps.map((dep) => this._getDependency(resolvedProvider.providerType, dep));
-          return o.importExpr(provider.useClass)
-              .instantiate(depsExpr, o.importType(provider.useClass));
+          providerValue = o.importExpr(provider.useClass)
+                              .instantiate(depsExpr, o.importType(provider.useClass));
         } else {
-          if (provider.useValue instanceof CompileIdentifierMetadata) {
-            return o.importExpr(provider.useValue);
-          } else if (provider.useValue instanceof o.Expression) {
-            return provider.useValue;
-          } else {
-            return o.literal(provider.useValue);
-          }
+          providerValue = convertValueToOutputAst(provider.useValue);
         }
+        if (isPresent(provider.useProperty)) {
+          providerValue = providerValue.prop(provider.useProperty);
+        }
+        return providerValue;
       });
       var propName = `_${resolvedProvider.token.name}_${this.nodeIndex}_${this._instances.size}`;
       var instance =
@@ -170,15 +171,15 @@ export class CompileElement extends CompileNode {
           queriesWithReads,
           queriesForProvider.map(query => new _QueryWithRead(query, resolvedProvider.token)));
     });
-    StringMapWrapper.forEach(this.referenceTokens, (_, varName) => {
-      var token = this.referenceTokens[varName];
+    StringMapWrapper.forEach(this.variableTokens, (_, varName) => {
+      var token = this.variableTokens[varName];
       var varValue;
       if (isPresent(token)) {
         varValue = this._instances.get(token);
       } else {
         varValue = this.renderNode;
       }
-      this.view.locals.set(varName, varValue);
+      this.view.variables.set(varName, varValue);
       var varToken = new CompileTokenMetadata({value: varName});
       ListWrapper.addAll(queriesWithReads, this._getQueriesFor(varToken)
                                                .map(query => new _QueryWithRead(query, varToken)));
@@ -189,8 +190,8 @@ export class CompileElement extends CompileNode {
         // query for an identifier
         value = this._instances.get(queryWithRead.read);
       } else {
-        // query for a reference
-        var token = this.referenceTokens[queryWithRead.read.value];
+        // query for a variable
+        var token = this.variableTokens[queryWithRead.read.value];
         if (isPresent(token)) {
           value = this._instances.get(token);
         } else {
@@ -249,6 +250,12 @@ export class CompileElement extends CompileNode {
   getProviderTokens(): o.Expression[] {
     return this._resolvedProviders.values().map(
         (resolvedProvider) => createDiTokenExpression(resolvedProvider.token));
+  }
+
+  getDeclaredVariablesNames(): string[] {
+    var res = [];
+    StringMapWrapper.forEach(this.variableTokens, (_, key) => { res.push(key); });
+    return res;
   }
 
   private _getQueriesFor(token: CompileTokenMetadata): CompileQuery[] {
@@ -322,6 +329,7 @@ export class CompileElement extends CompileNode {
   private _getDependency(requestingProviderType: ProviderAstType,
                          dep: CompileDiDependencyMetadata): o.Expression {
     var currElement: CompileElement = this;
+    var currView = currElement.view;
     var result = null;
     if (dep.isValue) {
       result = o.literal(dep.value);
@@ -329,9 +337,14 @@ export class CompileElement extends CompileNode {
     if (isBlank(result) && !dep.isSkipSelf) {
       result = this._getLocalDependency(requestingProviderType, dep);
     }
+    var resultViewPath = [];
     // check parent elements
     while (isBlank(result) && !currElement.parent.isNull()) {
       currElement = currElement.parent;
+      while (currElement.view !== currView && currView != null) {
+        currView = currView.declarationElement.view;
+        resultViewPath.push(currView);
+      }
       result = currElement._getLocalDependency(ProviderAstType.PublicService,
                                                new CompileDiDependencyMetadata({token: dep.token}));
     }
@@ -342,7 +355,7 @@ export class CompileElement extends CompileNode {
     if (isBlank(result)) {
       result = o.NULL_EXPR;
     }
-    return getPropertyInView(result, this.view, currElement.view);
+    return getPropertyInView(result, resultViewPath);
   }
 }
 

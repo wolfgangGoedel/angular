@@ -2,11 +2,11 @@
  * This indirection is needed to free up Component, etc symbols in the public API
  * to be used by the decorator versions of these annotations.
  */
-export { QueryMetadata, ContentChildrenMetadata, ContentChildMetadata, ViewChildrenMetadata, ViewQueryMetadata, ViewChildMetadata, AttributeMetadata } from './metadata/di';
+export { QueryMetadata, ContentChildrenMetadata, ContentChildMetadata, ViewChildrenMetadata, ViewQueryMetadata, ViewChildMetadata, AttributeMetadata, ProviderPropertyMetadata, InjectorModuleMetadata } from './metadata/di';
 export { ComponentMetadata, DirectiveMetadata, PipeMetadata, InputMetadata, OutputMetadata, HostBindingMetadata, HostListenerMetadata } from './metadata/directives';
 export { ViewMetadata, ViewEncapsulation } from './metadata/view';
 export { AfterContentInit, AfterContentChecked, AfterViewInit, AfterViewChecked, OnChanges, OnDestroy, OnInit, DoCheck } from './metadata/lifecycle_hooks';
-import { QueryMetadata, ContentChildrenMetadata, ViewChildrenMetadata, AttributeMetadata } from './metadata/di';
+import { QueryMetadata, ContentChildrenMetadata, ViewChildrenMetadata, AttributeMetadata, InjectorModuleMetadata } from './metadata/di';
 import { ComponentMetadata, DirectiveMetadata } from './metadata/directives';
 import { ViewMetadata, ViewEncapsulation } from './metadata/view';
 import { ChangeDetectionStrategy } from 'angular2/src/core/change_detection/change_detection';
@@ -890,7 +890,7 @@ export declare var Attribute: AttributeMetadataFactory;
  * ```html
  * <tabs>
  *   <pane title="Overview">...</pane>
- *   <pane *ngFor="let o of objects" [title]="o.title">{{o.text}}</pane>
+ *   <pane *ngFor="#o of objects" [title]="o.title">{{o.text}}</pane>
  * </tabs>
  * ```
  *
@@ -909,7 +909,7 @@ export declare var Attribute: AttributeMetadataFactory;
  *  selector: 'tabs',
  *  template: `
  *    <ul>
- *      <li *ngFor="let pane of panes">{{pane.title}}</li>
+ *      <li *ngFor="#pane of panes">{{pane.title}}</li>
  *    </ul>
  *    <ng-content></ng-content>
  *  `
@@ -1378,3 +1378,68 @@ export declare var HostBinding: HostBindingMetadataFactory;
  * ```
  */
 export declare var HostListener: HostListenerMetadataFactory;
+/**
+ * Interface for the {@link InjectorModuleMetadata} decorator function.
+ *
+ * See {@link InjectorModule}.
+ */
+export interface InjectorModuleDecorator extends TypeDecorator {
+}
+/**
+ * Defines an injector module from which an injector can be generated.
+ *
+ * ### Example
+ *
+ * ```
+ * @InjectorModule({
+ *   providers: [SomeService]
+ * })
+ * class MyModule {}
+ *
+ * ```
+ * @experimental
+ */
+export declare var InjectorModule: InjectorModuleMetadataFactory;
+/**
+ * {@link InjectorModuleMetadata} factory for creating decorators.
+ *
+ * See {@link InjectorModuleMetadata}.
+ * @experimental
+ */
+export interface InjectorModuleMetadataFactory {
+    (obj?: {
+        providers?: any[];
+    }): InjectorModuleDecorator;
+    new (obj: {
+        properties?: string[];
+    }): InjectorModuleMetadata;
+}
+/**
+ * Defines an injectable whose value is given by a property on an InjectorModule class.
+ *
+ * ### Example
+ *
+ * ```
+ * @InjectorModule()
+ * class MyModule {
+ *   @Provides(SomeToken)
+ *   someProp: string = 'Hello world';
+ * }
+ * ```
+ * @experimental
+ */
+export declare var Provides: ProviderPropertyMetadataFactory;
+/**
+ * {@link ConfigProviderPropertyMetadata} factory for creating decorators.
+ *
+ * See {@link ConfigProviderPropertyMetadata}.
+ * @experimental
+ */
+export interface ProviderPropertyMetadataFactory {
+    (token: any, obj?: {
+        multi?: boolean;
+    }): any;
+    new (token: any, obj?: {
+        multi?: boolean;
+    }): any;
+}

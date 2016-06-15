@@ -70,6 +70,10 @@ export declare class ResolvedReflectiveFactory {
      * Arguments (dependencies) to the `factory` function.
      */
     dependencies: ReflectiveDependency[];
+    /**
+     * A function to use to post process the factory value (might be null).
+     */
+    postProcess: Function;
     constructor(
         /**
          * Factory function which can return an instance of an object represented by a key.
@@ -78,7 +82,11 @@ export declare class ResolvedReflectiveFactory {
         /**
          * Arguments (dependencies) to the `factory` function.
          */
-        dependencies: ReflectiveDependency[]);
+        dependencies: ReflectiveDependency[], 
+        /**
+         * A function to use to post process the factory value (might be null).
+         */
+        postProcess: Function);
 }
 /**
  * Resolve a single provider.
@@ -102,3 +110,7 @@ export declare function resolveReflectiveProviders(providers: Array<Type | Provi
  */
 export declare function mergeResolvedReflectiveProviders(providers: ResolvedReflectiveProvider[], normalizedProvidersMap: Map<number, ResolvedReflectiveProvider>): Map<number, ResolvedReflectiveProvider>;
 export declare function constructDependencies(typeOrFunc: any, dependencies: any[]): ReflectiveDependency[];
+/**
+ * Retruns {@link InjectorModuleMetadata} providers for a given token if possible.
+ */
+export declare function getInjectorModuleProviders(token: any): any[];

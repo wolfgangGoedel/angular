@@ -62,9 +62,9 @@ export declare abstract class PlatformRef {
     disposed: boolean;
 }
 export declare class PlatformRef_ extends PlatformRef {
-    private _injector;
     private _disposed;
-    constructor(_injector: Injector);
+    private _injector;
+    init(injector: Injector): void;
     registerDisposeListener(dispose: () => void): void;
     injector: Injector;
     disposed: boolean;
@@ -136,6 +136,10 @@ export declare abstract class ApplicationRef {
      * Get a list of component types registered to this application.
      */
     componentTypes: Type[];
+    /**
+     * Get a list of component factories registered to this application.
+     */
+    componentFactories: ComponentFactory[];
 }
 export declare class ApplicationRef_ extends ApplicationRef {
     private _platform;
@@ -157,4 +161,5 @@ export declare class ApplicationRef_ extends ApplicationRef {
     tick(): void;
     dispose(): void;
     componentTypes: Type[];
+    componentFactories: ComponentFactory[];
 }

@@ -7,7 +7,7 @@ export { InjectMetadata, OptionalMetadata, InjectableMetadata, SelfMetadata, Hos
 // we have to reexport * because Dart and TS export two different sets of types
 export * from './di/decorators';
 export { forwardRef, resolveForwardRef } from './di/forward_ref';
-export { Injector } from './di/injector';
+export { Injector, MapInjector } from './di/injector';
 export { ReflectiveInjector } from './di/reflective_injector';
 export { Binding, ProviderBuilder, bind, Provider, provide } from './di/provider';
 export { ResolvedReflectiveFactory, ReflectiveDependency } from './di/reflective_provider';

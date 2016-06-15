@@ -53,10 +53,7 @@ export class Token {
     }
     isIdentifier() { return (this.type == TokenType.Identifier); }
     isKeyword() { return (this.type == TokenType.Keyword); }
-    isKeywordDeprecatedVar() {
-        return (this.type == TokenType.Keyword && this.strValue == "var");
-    }
-    isKeywordLet() { return (this.type == TokenType.Keyword && this.strValue == "let"); }
+    isKeywordVar() { return (this.type == TokenType.Keyword && this.strValue == "var"); }
     isKeywordNull() { return (this.type == TokenType.Keyword && this.strValue == "null"); }
     isKeywordUndefined() {
         return (this.type == TokenType.Keyword && this.strValue == "undefined");
@@ -435,4 +432,4 @@ var OPERATORS = SetWrapper.createFromList([
     '#',
     '?.'
 ]);
-var KEYWORDS = SetWrapper.createFromList(['var', 'let', 'null', 'undefined', 'true', 'false', 'if', 'else']);
+var KEYWORDS = SetWrapper.createFromList(['var', 'null', 'undefined', 'true', 'false', 'if', 'else']);

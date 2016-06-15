@@ -46,11 +46,7 @@ export class Token {
 
   isKeyword(): boolean { return (this.type == TokenType.Keyword); }
 
-  isKeywordDeprecatedVar(): boolean {
-    return (this.type == TokenType.Keyword && this.strValue == "var");
-  }
-
-  isKeywordLet(): boolean { return (this.type == TokenType.Keyword && this.strValue == "let"); }
+  isKeywordVar(): boolean { return (this.type == TokenType.Keyword && this.strValue == "var"); }
 
   isKeywordNull(): boolean { return (this.type == TokenType.Keyword && this.strValue == "null"); }
 
@@ -468,4 +464,4 @@ var OPERATORS = SetWrapper.createFromList([
 
 
 var KEYWORDS =
-    SetWrapper.createFromList(['var', 'let', 'null', 'undefined', 'true', 'false', 'if', 'else']);
+    SetWrapper.createFromList(['var', 'null', 'undefined', 'true', 'false', 'if', 'else']);

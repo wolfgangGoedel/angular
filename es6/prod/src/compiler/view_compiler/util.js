@@ -1,27 +1,22 @@
-import { isPresent, isBlank } from 'angular2/src/facade/lang';
-import { BaseException } from 'angular2/src/facade/exceptions';
+import { isPresent } from 'angular2/src/facade/lang';
 import * as o from '../output/output_ast';
-import { Identifiers } from '../identifiers';
-export function getPropertyInView(property, callingView, definedView) {
-    if (callingView === definedView) {
+import { CompileIdentifierMetadata } from '../compile_metadata';
+export function getPropertyInView(property, viewPath) {
+    if (viewPath.length === 0) {
         return property;
     }
     else {
         var viewProp = o.THIS_EXPR;
-        var currView = callingView;
-        while (currView !== definedView && isPresent(currView.declarationElement.view)) {
-            currView = currView.declarationElement.view;
-            viewProp = viewProp.prop('parent');
-        }
-        if (currView !== definedView) {
-            throw new BaseException(`Internal error: Could not calculate a property in a parent view: ${property}`);
+        for (var i = 0; i < viewPath.length; i++) {
+            viewProp = viewProp.prop('declarationAppElement').prop('parentView');
         }
         if (property instanceof o.ReadPropExpr) {
+            var lastView = viewPath[viewPath.length - 1];
             let readPropExpr = property;
             // Note: Don't cast for members of the AppView base class...
-            if (definedView.fields.some((field) => field.name == readPropExpr.name) ||
-                definedView.getters.some((field) => field.name == readPropExpr.name)) {
-                viewProp = viewProp.cast(definedView.classType);
+            if (lastView.fields.some((field) => field.name == readPropExpr.name) ||
+                lastView.getters.some((field) => field.name == readPropExpr.name)) {
+                viewProp = viewProp.cast(lastView.classType);
             }
         }
         return o.replaceVarInExpression(o.THIS_EXPR.name, viewProp, property);
@@ -72,11 +67,14 @@ export function createFlatArray(expressions) {
     }
     return result;
 }
-export function createPureProxy(fn, argCount, pureProxyProp, view) {
-    view.fields.push(new o.ClassField(pureProxyProp.name, null, [o.StmtModifier.Private]));
-    var pureProxyId = argCount < Identifiers.pureProxies.length ? Identifiers.pureProxies[argCount] : null;
-    if (isBlank(pureProxyId)) {
-        throw new BaseException(`Unsupported number of argument for pure functions: ${argCount}`);
+export function convertValueToOutputAst(value) {
+    if (value instanceof CompileIdentifierMetadata) {
+        return o.importExpr(value);
     }
-    view.createMethod.addStmt(o.THIS_EXPR.prop(pureProxyProp.name).set(o.importExpr(pureProxyId).callFn([fn])).toStmt());
+    else if (value instanceof o.Expression) {
+        return value;
+    }
+    else {
+        return o.literal(value);
+    }
 }

@@ -30,12 +30,14 @@ export class CompileQuery {
   addValue(value: o.Expression, view: CompileView) {
     var currentView = view;
     var elPath: CompileElement[] = [];
+    var viewPath: CompileView[] = [];
     while (isPresent(currentView) && currentView !== this.view) {
       var parentEl = currentView.declarationElement;
       elPath.unshift(parentEl);
       currentView = parentEl.view;
+      viewPath.push(currentView);
     }
-    var queryListForDirtyExpr = getPropertyInView(this.queryList, view, this.view);
+    var queryListForDirtyExpr = getPropertyInView(this.queryList, viewPath);
 
     var viewValues = this._values;
     elPath.forEach((el) => {
@@ -68,7 +70,7 @@ export class CompileQuery {
     return isStatic;
   }
 
-  afterChildren(targetStaticMethod, targetDynamicMethod: CompileMethod) {
+  afterChildren(targetStaticMethod: CompileMethod, targetDynamicMethod: CompileMethod) {
     var values = createQueryValues(this._values);
     var updateStmts = [this.queryList.callMethod('reset', [o.literalArr(values)]).toStmt()];
     if (isPresent(this.ownerDirectiveExpression)) {

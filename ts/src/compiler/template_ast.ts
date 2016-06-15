@@ -82,18 +82,7 @@ export class BoundEventAst implements TemplateAst {
 }
 
 /**
- * A reference declaration on an element (e.g. `let someName="expression"`).
- */
-export class ReferenceAst implements TemplateAst {
-  constructor(public name: string, public value: CompileTokenMetadata,
-              public sourceSpan: ParseSourceSpan) {}
-  visit(visitor: TemplateAstVisitor, context: any): any {
-    return visitor.visitReference(this, context);
-  }
-}
-
-/**
- * A variable declaration on a <template> (e.g. `var-someName="someLocalName"`).
+ * A variable declaration on an element (e.g. `#var="expression"`).
  */
 export class VariableAst implements TemplateAst {
   constructor(public name: string, public value: string, public sourceSpan: ParseSourceSpan) {}
@@ -108,7 +97,7 @@ export class VariableAst implements TemplateAst {
 export class ElementAst implements TemplateAst {
   constructor(public name: string, public attrs: AttrAst[],
               public inputs: BoundElementPropertyAst[], public outputs: BoundEventAst[],
-              public references: ReferenceAst[], public directives: DirectiveAst[],
+              public exportAsVars: VariableAst[], public directives: DirectiveAst[],
               public providers: ProviderAst[], public hasViewContainer: boolean,
               public children: TemplateAst[], public ngContentIndex: number,
               public sourceSpan: ParseSourceSpan) {}
@@ -122,8 +111,7 @@ export class ElementAst implements TemplateAst {
  * A `<template>` element included in an Angular template.
  */
 export class EmbeddedTemplateAst implements TemplateAst {
-  constructor(public attrs: AttrAst[], public outputs: BoundEventAst[],
-              public references: ReferenceAst[], public variables: VariableAst[],
+  constructor(public attrs: AttrAst[], public outputs: BoundEventAst[], public vars: VariableAst[],
               public directives: DirectiveAst[], public providers: ProviderAst[],
               public hasViewContainer: boolean, public children: TemplateAst[],
               public ngContentIndex: number, public sourceSpan: ParseSourceSpan) {}
@@ -151,7 +139,7 @@ export class DirectiveAst implements TemplateAst {
   constructor(public directive: CompileDirectiveMetadata,
               public inputs: BoundDirectivePropertyAst[],
               public hostProperties: BoundElementPropertyAst[], public hostEvents: BoundEventAst[],
-              public sourceSpan: ParseSourceSpan) {}
+              public exportAsVars: VariableAst[], public sourceSpan: ParseSourceSpan) {}
   visit(visitor: TemplateAstVisitor, context: any): any {
     return visitor.visitDirective(this, context);
   }
@@ -223,7 +211,6 @@ export interface TemplateAstVisitor {
   visitNgContent(ast: NgContentAst, context: any): any;
   visitEmbeddedTemplate(ast: EmbeddedTemplateAst, context: any): any;
   visitElement(ast: ElementAst, context: any): any;
-  visitReference(ast: ReferenceAst, context: any): any;
   visitVariable(ast: VariableAst, context: any): any;
   visitEvent(ast: BoundEventAst, context: any): any;
   visitElementProperty(ast: BoundElementPropertyAst, context: any): any;

@@ -1,7 +1,7 @@
 import { CONST_EXPR, IS_DART } from 'angular2/src/facade/lang';
 import { MessageBus } from 'angular2/src/web_workers/shared/message_bus';
 import { NgZone } from 'angular2/src/core/zone/ng_zone';
-import { ExceptionHandler, APPLICATION_COMMON_PROVIDERS, PLATFORM_COMMON_PROVIDERS, RootRenderer, PLATFORM_INITIALIZER } from 'angular2/core';
+import { ExceptionHandler, APPLICATION_COMMON_PROVIDERS, PLATFORM_COMMON_PROVIDERS, RootRenderer, PLATFORM_INITIALIZER, TestabilityRegistry } from 'angular2/core';
 import { EVENT_MANAGER_PLUGINS, EventManager } from 'angular2/platform/common_dom';
 import { Provider, OpaqueToken } from 'angular2/src/core/di';
 import { DOM } from 'angular2/src/platform/dom/dom_adapter';
@@ -36,7 +36,7 @@ export const WORKER_RENDER_PLATFORM_MARKER = CONST_EXPR(new OpaqueToken('WorkerR
 export const WORKER_RENDER_PLATFORM = CONST_EXPR([
     PLATFORM_COMMON_PROVIDERS,
     CONST_EXPR(new Provider(WORKER_RENDER_PLATFORM_MARKER, { useValue: true })),
-    new Provider(PLATFORM_INITIALIZER, { useValue: initWebWorkerRenderPlatform, multi: true })
+    new Provider(PLATFORM_INITIALIZER, { useFactory: initWebWorkerRenderPlatform, multi: true, deps: [TestabilityRegistry] })
 ]);
 /**
  * A list of {@link Provider}s. To use the router in a Worker enabled application you must
@@ -78,10 +78,12 @@ export function initializeGenericWorkerRenderer(injector) {
         WORKER_RENDER_MESSAGING_PROVIDERS.forEach((token) => { injector.get(token).start(); });
     });
 }
-export function initWebWorkerRenderPlatform() {
-    BrowserDomAdapter.makeCurrent();
-    wtfInit();
-    BrowserGetTestability.init();
+export function initWebWorkerRenderPlatform(registry) {
+    return () => {
+        BrowserDomAdapter.makeCurrent();
+        wtfInit();
+        registry.setTestabilityGetter(new BrowserGetTestability());
+    };
 }
 function exceptionHandler() {
     return new ExceptionHandler(DOM, !IS_DART);

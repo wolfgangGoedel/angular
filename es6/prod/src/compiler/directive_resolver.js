@@ -17,6 +17,11 @@ import { ReflectorReader } from 'angular2/src/core/reflection/reflector_reader';
 function _isDirectiveMetadata(type) {
     return type instanceof DirectiveMetadata;
 }
+export class NoDirectiveAnnotationError extends BaseException {
+    constructor(type) {
+        super(`No Directive annotation found on ${stringify(type)}`);
+    }
+}
 /*
  * Resolve a `Type` for {@link DirectiveMetadata}.
  *
@@ -45,7 +50,7 @@ export let DirectiveResolver = class DirectiveResolver {
                 return this._mergeWithPropertyMetadata(metadata, propertyMetadata, type);
             }
         }
-        throw new BaseException(`No Directive annotation found on ${stringify(type)}`);
+        throw new NoDirectiveAnnotationError(type);
     }
     _mergeWithPropertyMetadata(dm, propertyMetadata, directiveType) {
         var inputs = [];
@@ -145,4 +150,3 @@ DirectiveResolver = __decorate([
     Injectable(), 
     __metadata('design:paramtypes', [ReflectorReader])
 ], DirectiveResolver);
-export var CODEGEN_DIRECTIVE_RESOLVER = new DirectiveResolver(reflector);

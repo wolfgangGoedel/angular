@@ -30,6 +30,8 @@ export declare abstract class AppView<T> {
     viewChildren: AppView<any>[];
     renderParent: AppView<any>;
     viewContainerElement: AppElement;
+    private _literalArrayCache;
+    private _literalMapCache;
     cdState: ChangeDetectorState;
     /**
      * The context against which data-binding expressions in this view are evaluated against.
@@ -42,7 +44,7 @@ export declare abstract class AppView<T> {
     private _hasExternalHostElement;
     constructor(clazz: any, componentType: RenderComponentType, type: ViewType, locals: {
         [key: string]: any;
-    }, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy);
+    }, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, literalArrayCacheSize: number, literalMapCacheSize: number);
     create(givenProjectableNodes: Array<any | any[]>, rootSelectorOrNode: string | any): AppElement;
     /**
      * Overwritten by implementations.
@@ -65,7 +67,6 @@ export declare abstract class AppView<T> {
      */
     destroyInternal(): void;
     changeDetectorRef: ChangeDetectorRef;
-    parent: AppView<any>;
     flatRootNodes: any[];
     lastRootNode: any;
     hasLocal(contextName: string): boolean;
@@ -83,6 +84,12 @@ export declare abstract class AppView<T> {
     detectViewChildrenChanges(throwOnChange: boolean): void;
     addToContentChildren(renderAppElement: AppElement): void;
     removeFromContentChildren(renderAppElement: AppElement): void;
+    literalArray(id: number, value: any[]): any[];
+    literalMap(id: number, value: {
+        [key: string]: any;
+    }): {
+        [key: string]: any;
+    };
     markAsCheckOnce(): void;
     markPathToRootAsCheckOnce(): void;
     eventHandler(cb: Function): Function;
@@ -93,7 +100,7 @@ export declare class DebugAppView<T> extends AppView<T> {
     private _currentDebugContext;
     constructor(clazz: any, componentType: RenderComponentType, type: ViewType, locals: {
         [key: string]: any;
-    }, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, staticNodeDebugInfos: StaticNodeDebugInfo[]);
+    }, viewUtils: ViewUtils, parentInjector: Injector, declarationAppElement: AppElement, cdMode: ChangeDetectionStrategy, literalArrayCacheSize: number, literalMapCacheSize: number, staticNodeDebugInfos: StaticNodeDebugInfo[]);
     create(givenProjectableNodes: Array<any | any[]>, rootSelector: string): AppElement;
     injectorGet(token: any, nodeIndex: number, notFoundResult: any): any;
     destroyLocal(): void;

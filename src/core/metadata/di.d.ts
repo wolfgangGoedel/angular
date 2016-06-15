@@ -35,7 +35,7 @@ export declare class AttributeMetadata extends DependencyMetadata {
  * ```html
  * <tabs>
  *   <pane title="Overview">...</pane>
- *   <pane *ngFor="let o of objects" [title]="o.title">{{o.text}}</pane>
+ *   <pane *ngFor="#o of objects" [title]="o.title">{{o.text}}</pane>
  * </tabs>
  * ```
  *
@@ -54,7 +54,7 @@ export declare class AttributeMetadata extends DependencyMetadata {
  *  selector: 'tabs',
  *  template: `
  *    <ul>
- *      <li *ngFor="let pane of panes">{{pane.title}}</li>
+ *      <li *ngFor="#pane of panes">{{pane.title}}</li>
  *    </ul>
  *    <ng-content></ng-content>
  *  `
@@ -420,4 +420,47 @@ export declare class ViewChildMetadata extends ViewQueryMetadata {
     constructor(_selector: Type | string, {read}?: {
         read?: any;
     });
+}
+/**
+ * Defines an injectable whose value is given by a property on an InjectorModule class.
+ *
+ * ### Example
+ *
+ * ```
+ * @InjectorModule()
+ * class MyModule {
+ *   @Provides(SomeToken)
+ *   someProp: string = 'Hello world';
+ * }
+ * ```
+ * @experimental
+ */
+export declare class ProviderPropertyMetadata {
+    token: any;
+    private _multi;
+    constructor(token: any, {multi}?: {
+        multi?: boolean;
+    });
+    multi: boolean;
+}
+/**
+ * Defines an injector module from which an injector can be generated.
+ *
+ * ### Example
+ *
+ * ```
+ * @InjectorModule({
+ *   providers: [SomeService]
+ * })
+ * class MyModule {}
+ *
+ * ```
+ * @experimental
+ */
+export declare class InjectorModuleMetadata {
+    private _providers;
+    constructor({providers}?: {
+        providers?: any[];
+    });
+    providers: any[];
 }

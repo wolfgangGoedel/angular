@@ -184,10 +184,7 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       var updatedDirectives = ast.directives.map(function(c) {
         return c.visit(_this, context);
       });
-      return new compiler_1.ElementAst(ast.name, ast.attrs, updatedInputs, ast.outputs, ast.references, updatedDirectives, ast.providers, ast.hasViewContainer, updatedChildren, ast.ngContentIndex, ast.sourceSpan);
-    };
-    RouterLinkTransform.prototype.visitReference = function(ast, context) {
-      return ast;
+      return new compiler_1.ElementAst(ast.name, ast.attrs, updatedInputs, ast.outputs, ast.exportAsVars, updatedDirectives, ast.providers, ast.hasViewContainer, updatedChildren, ast.ngContentIndex, ast.sourceSpan);
     };
     RouterLinkTransform.prototype.visitVariable = function(ast, context) {
       return ast;
@@ -212,7 +209,7 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       var updatedInputs = ast.inputs.map(function(c) {
         return c.visit(_this, context);
       });
-      return new compiler_1.DirectiveAst(ast.directive, updatedInputs, ast.hostProperties, ast.hostEvents, ast.sourceSpan);
+      return new compiler_1.DirectiveAst(ast.directive, updatedInputs, ast.hostProperties, ast.hostEvents, ast.exportAsVars, ast.sourceSpan);
     };
     RouterLinkTransform.prototype.visitDirectiveProperty = function(ast, context) {
       var transformedValue = ast.value.visit(this.astTransformer);
@@ -1218,49 +1215,49 @@ System.register("angular2/src/router/rules/route_handlers/sync_route_handler", [
   return module.exports;
 });
 
-System.register("angular2/src/router/utils", ["angular2/src/facade/lang", "angular2/src/facade/collection"], true, function(require, exports, module) {
+System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", ["angular2/src/facade/lang"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
   var lang_1 = require("angular2/src/facade/lang");
-  var collection_1 = require("angular2/src/facade/collection");
-  var TouchMap = (function() {
-    function TouchMap(map) {
-      var _this = this;
-      this.map = {};
-      this.keys = {};
-      if (lang_1.isPresent(map)) {
-        collection_1.StringMapWrapper.forEach(map, function(value, key) {
-          _this.map[key] = lang_1.isPresent(value) ? value.toString() : null;
-          _this.keys[key] = true;
-        });
-      }
+  var RouteLifecycleHook = (function() {
+    function RouteLifecycleHook(name) {
+      this.name = name;
     }
-    TouchMap.prototype.get = function(key) {
-      collection_1.StringMapWrapper.delete(this.keys, key);
-      return this.map[key];
-    };
-    TouchMap.prototype.getUnused = function() {
-      var _this = this;
-      var unused = {};
-      var keys = collection_1.StringMapWrapper.keys(this.keys);
-      keys.forEach(function(key) {
-        return unused[key] = collection_1.StringMapWrapper.get(_this.map, key);
-      });
-      return unused;
-    };
-    return TouchMap;
+    RouteLifecycleHook = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], RouteLifecycleHook);
+    return RouteLifecycleHook;
   }());
-  exports.TouchMap = TouchMap;
-  function normalizeString(obj) {
-    if (lang_1.isBlank(obj)) {
-      return null;
-    } else {
-      return obj.toString();
+  exports.RouteLifecycleHook = RouteLifecycleHook;
+  var CanActivate = (function() {
+    function CanActivate(fn) {
+      this.fn = fn;
     }
-  }
-  exports.normalizeString = normalizeString;
+    CanActivate = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], CanActivate);
+    return CanActivate;
+  }());
+  exports.CanActivate = CanActivate;
+  exports.routerCanReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
+  exports.routerCanDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
+  exports.routerOnActivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
+  exports.routerOnReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
+  exports.routerOnDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));
   global.define = __define;
   return module.exports;
 });
@@ -1352,53 +1349,6 @@ System.register("angular2/src/router/route_config/route_config_decorator", ["ang
   return module.exports;
 });
 
-System.register("angular2/src/router/lifecycle/lifecycle_annotations_impl", ["angular2/src/facade/lang"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var lang_1 = require("angular2/src/facade/lang");
-  var RouteLifecycleHook = (function() {
-    function RouteLifecycleHook(name) {
-      this.name = name;
-    }
-    RouteLifecycleHook = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [String])], RouteLifecycleHook);
-    return RouteLifecycleHook;
-  }());
-  exports.RouteLifecycleHook = RouteLifecycleHook;
-  var CanActivate = (function() {
-    function CanActivate(fn) {
-      this.fn = fn;
-    }
-    CanActivate = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], CanActivate);
-    return CanActivate;
-  }());
-  exports.CanActivate = CanActivate;
-  exports.routerCanReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanReuse"));
-  exports.routerCanDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerCanDeactivate"));
-  exports.routerOnActivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnActivate"));
-  exports.routerOnReuse = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnReuse"));
-  exports.routerOnDeactivate = lang_1.CONST_EXPR(new RouteLifecycleHook("routerOnDeactivate"));
-  global.define = __define;
-  return module.exports;
-});
-
 System.register("angular2/src/router/lifecycle/lifecycle_annotations", ["angular2/src/core/util/decorators", "angular2/src/router/lifecycle/lifecycle_annotations_impl", "angular2/src/router/lifecycle/lifecycle_annotations_impl"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -1413,6 +1363,19 @@ System.register("angular2/src/router/lifecycle/lifecycle_annotations", ["angular
   exports.routerOnReuse = lifecycle_annotations_impl_2.routerOnReuse;
   exports.routerOnDeactivate = lifecycle_annotations_impl_2.routerOnDeactivate;
   exports.CanActivate = decorators_1.makeDecorator(lifecycle_annotations_impl_1.CanActivate);
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/router/lifecycle/route_lifecycle_reflector", [], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  function hasLifecycleHook(e, instance) {
+    return e.name in instance;
+  }
+  exports.hasLifecycleHook = hasLifecycleHook;
   global.define = __define;
   return module.exports;
 });
@@ -1520,10 +1483,10 @@ System.register("angular2/src/router/router_providers_common", ["angular2/platfo
     return rootRouter;
   }
   function routerPrimaryComponentFactory(app) {
-    if (app.componentTypes.length == 0) {
+    if (app.componentFactories.length == 0) {
       throw new exceptions_1.BaseException("Bootstrap at least one component before injecting Router.");
     }
-    return app.componentTypes[0];
+    return app.componentFactories[0];
   }
   global.define = __define;
   return module.exports;
@@ -1754,6 +1717,429 @@ System.register("angular2/src/router/rules/rules", ["angular2/src/facade/lang", 
     return RouteRule;
   }());
   exports.RouteRule = RouteRule;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/router/utils", ["angular2/src/facade/lang", "angular2/src/facade/collection", "angular2/core", "angular2/src/core/reflection/reflection", "angular2/src/router/lifecycle/lifecycle_annotations_impl"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var lang_1 = require("angular2/src/facade/lang");
+  var collection_1 = require("angular2/src/facade/collection");
+  var core_1 = require("angular2/core");
+  var reflection_1 = require("angular2/src/core/reflection/reflection");
+  var lifecycle_annotations_impl_1 = require("angular2/src/router/lifecycle/lifecycle_annotations_impl");
+  var TouchMap = (function() {
+    function TouchMap(map) {
+      var _this = this;
+      this.map = {};
+      this.keys = {};
+      if (lang_1.isPresent(map)) {
+        collection_1.StringMapWrapper.forEach(map, function(value, key) {
+          _this.map[key] = lang_1.isPresent(value) ? value.toString() : null;
+          _this.keys[key] = true;
+        });
+      }
+    }
+    TouchMap.prototype.get = function(key) {
+      collection_1.StringMapWrapper.delete(this.keys, key);
+      return this.map[key];
+    };
+    TouchMap.prototype.getUnused = function() {
+      var _this = this;
+      var unused = {};
+      var keys = collection_1.StringMapWrapper.keys(this.keys);
+      keys.forEach(function(key) {
+        return unused[key] = collection_1.StringMapWrapper.get(_this.map, key);
+      });
+      return unused;
+    };
+    return TouchMap;
+  }());
+  exports.TouchMap = TouchMap;
+  function normalizeString(obj) {
+    if (lang_1.isBlank(obj)) {
+      return null;
+    } else {
+      return obj.toString();
+    }
+  }
+  exports.normalizeString = normalizeString;
+  function getComponentAnnotations(comp) {
+    if (comp instanceof core_1.ComponentFactory) {
+      return comp.metadata;
+    } else {
+      return reflection_1.reflector.annotations(comp);
+    }
+  }
+  exports.getComponentAnnotations = getComponentAnnotations;
+  function getComponentType(comp) {
+    return comp instanceof core_1.ComponentFactory ? comp.componentType : comp;
+  }
+  exports.getComponentType = getComponentType;
+  function getCanActivateHook(component) {
+    var annotations = getComponentAnnotations(component);
+    for (var i = 0; i < annotations.length; i += 1) {
+      var annotation = annotations[i];
+      if (annotation instanceof lifecycle_annotations_impl_1.CanActivate) {
+        return annotation.fn;
+      }
+    }
+    return null;
+  }
+  exports.getCanActivateHook = getCanActivateHook;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/router/route_config/route_config_normalizer", ["angular2/src/router/route_config/route_config_decorator", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/core"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var route_config_decorator_1 = require("angular2/src/router/route_config/route_config_decorator");
+  var lang_1 = require("angular2/src/facade/lang");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
+  var core_1 = require("angular2/core");
+  function normalizeRouteConfig(config, registry) {
+    if (config instanceof route_config_decorator_1.AsyncRoute) {
+      var wrappedLoader = wrapLoaderToReconfigureRegistry(config.loader, registry);
+      return new route_config_decorator_1.AsyncRoute({
+        path: config.path,
+        loader: wrappedLoader,
+        name: config.name,
+        data: config.data,
+        useAsDefault: config.useAsDefault
+      });
+    }
+    if (config instanceof route_config_decorator_1.Route || config instanceof route_config_decorator_1.Redirect || config instanceof route_config_decorator_1.AuxRoute) {
+      return config;
+    }
+    if ((+!!config.component) + (+!!config.redirectTo) + (+!!config.loader) != 1) {
+      throw new exceptions_1.BaseException("Route config should contain exactly one \"component\", \"loader\", or \"redirectTo\" property.");
+    }
+    if (config.as && config.name) {
+      throw new exceptions_1.BaseException("Route config should contain exactly one \"as\" or \"name\" property.");
+    }
+    if (config.as) {
+      config.name = config.as;
+    }
+    if (config.loader) {
+      var wrappedLoader = wrapLoaderToReconfigureRegistry(config.loader, registry);
+      return new route_config_decorator_1.AsyncRoute({
+        path: config.path,
+        loader: wrappedLoader,
+        name: config.name,
+        data: config.data,
+        useAsDefault: config.useAsDefault
+      });
+    }
+    if (config.aux) {
+      return new route_config_decorator_1.AuxRoute({
+        path: config.aux,
+        component: config.component,
+        name: config.name
+      });
+    }
+    if (config.component) {
+      if (typeof config.component == 'object') {
+        var componentDefinitionObject = config.component;
+        if (componentDefinitionObject.type == 'constructor') {
+          return new route_config_decorator_1.Route({
+            path: config.path,
+            component: componentDefinitionObject.constructor,
+            name: config.name,
+            data: config.data,
+            useAsDefault: config.useAsDefault
+          });
+        } else if (componentDefinitionObject.type == 'loader') {
+          return new route_config_decorator_1.AsyncRoute({
+            path: config.path,
+            loader: componentDefinitionObject.loader,
+            name: config.name,
+            data: config.data,
+            useAsDefault: config.useAsDefault
+          });
+        } else {
+          throw new exceptions_1.BaseException("Invalid component type \"" + componentDefinitionObject.type + "\". Valid types are \"constructor\" and \"loader\".");
+        }
+      }
+      return new route_config_decorator_1.Route(config);
+    }
+    if (config.redirectTo) {
+      return new route_config_decorator_1.Redirect({
+        path: config.path,
+        redirectTo: config.redirectTo
+      });
+    }
+    return config;
+  }
+  exports.normalizeRouteConfig = normalizeRouteConfig;
+  function wrapLoaderToReconfigureRegistry(loader, registry) {
+    return function() {
+      return loader().then(function(componentType) {
+        registry.configFromComponent(componentType);
+        return componentType;
+      });
+    };
+  }
+  function assertComponentExists(component, path) {
+    if (!lang_1.isType(component) && !(component instanceof core_1.ComponentFactory)) {
+      throw new exceptions_1.BaseException("Component for route \"" + path + "\" is not defined, or is not a class.");
+    }
+  }
+  exports.assertComponentExists = assertComponentExists;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/router/directives/router_outlet", ["angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/core", "angular2/src/router/router", "angular2/src/router/instruction", "angular2/src/router/lifecycle/lifecycle_annotations", "angular2/src/router/lifecycle/route_lifecycle_reflector"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var __param = (this && this.__param) || function(paramIndex, decorator) {
+    return function(target, key) {
+      decorator(target, key, paramIndex);
+    };
+  };
+  var async_1 = require("angular2/src/facade/async");
+  var collection_1 = require("angular2/src/facade/collection");
+  var lang_1 = require("angular2/src/facade/lang");
+  var core_1 = require("angular2/core");
+  var routerMod = require("angular2/src/router/router");
+  var instruction_1 = require("angular2/src/router/instruction");
+  var hookMod = require("angular2/src/router/lifecycle/lifecycle_annotations");
+  var route_lifecycle_reflector_1 = require("angular2/src/router/lifecycle/route_lifecycle_reflector");
+  var _resolveToTrue = async_1.PromiseWrapper.resolve(true);
+  var RouterOutlet = (function() {
+    function RouterOutlet(_viewContainerRef, _loader, _parentRouter, nameAttr) {
+      this._viewContainerRef = _viewContainerRef;
+      this._loader = _loader;
+      this._parentRouter = _parentRouter;
+      this.name = null;
+      this._componentRef = null;
+      this._currentInstruction = null;
+      this.activateEvents = new async_1.EventEmitter();
+      if (lang_1.isPresent(nameAttr)) {
+        this.name = nameAttr;
+        this._parentRouter.registerAuxOutlet(this);
+      } else {
+        this._parentRouter.registerPrimaryOutlet(this);
+      }
+    }
+    RouterOutlet.prototype.activate = function(nextInstruction) {
+      var _this = this;
+      var previousInstruction = this._currentInstruction;
+      this._currentInstruction = nextInstruction;
+      var componentType = nextInstruction.componentType;
+      var childRouter = this._parentRouter.childRouter(componentType);
+      var providers = new Map();
+      providers.set(instruction_1.RouteData, nextInstruction.routeData);
+      providers.set(instruction_1.RouteParams, new instruction_1.RouteParams(nextInstruction.params));
+      providers.set(routerMod.Router, childRouter);
+      var injector = new core_1.MapInjector(this._viewContainerRef.parentInjector, providers);
+      var componentFactoryPromise;
+      if (componentType instanceof core_1.ComponentFactory) {
+        componentFactoryPromise = async_1.PromiseWrapper.resolve(componentType);
+      } else {
+        componentFactoryPromise = this._loader.resolveComponent(componentType);
+      }
+      this._componentRef = componentFactoryPromise.then(function(componentFactory) {
+        return _this._viewContainerRef.createComponent(componentFactory, 0, injector);
+      });
+      return this._componentRef.then(function(componentRef) {
+        _this.activateEvents.emit(componentRef.instance);
+        if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnActivate, componentRef.instance)) {
+          return componentRef.instance.routerOnActivate(nextInstruction, previousInstruction);
+        } else {
+          return componentRef;
+        }
+      });
+    };
+    RouterOutlet.prototype.reuse = function(nextInstruction) {
+      var previousInstruction = this._currentInstruction;
+      this._currentInstruction = nextInstruction;
+      if (lang_1.isBlank(this._componentRef)) {
+        return this.activate(nextInstruction);
+      } else {
+        return this._componentRef.then(function(ref) {
+          return route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnReuse, ref.instance) ? ref.instance.routerOnReuse(nextInstruction, previousInstruction) : true;
+        });
+      }
+    };
+    RouterOutlet.prototype.deactivate = function(nextInstruction) {
+      var _this = this;
+      var next = _resolveToTrue;
+      if (lang_1.isPresent(this._componentRef)) {
+        next = this._componentRef.then(function(ref) {
+          return route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnDeactivate, ref.instance) ? ref.instance.routerOnDeactivate(nextInstruction, _this._currentInstruction) : true;
+        });
+      }
+      return next.then(function(_) {
+        if (lang_1.isPresent(_this._componentRef)) {
+          var onDispose = _this._componentRef.then(function(ref) {
+            return ref.destroy();
+          });
+          _this._componentRef = null;
+          return onDispose;
+        }
+      });
+    };
+    RouterOutlet.prototype.routerCanDeactivate = function(nextInstruction) {
+      var _this = this;
+      if (lang_1.isBlank(this._currentInstruction)) {
+        return _resolveToTrue;
+      }
+      return this._componentRef.then(function(ref) {
+        return route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerCanDeactivate, ref.instance) ? ref.instance.routerCanDeactivate(nextInstruction, _this._currentInstruction) : true;
+      });
+    };
+    RouterOutlet.prototype.routerCanReuse = function(nextInstruction) {
+      var _this = this;
+      var result;
+      if (lang_1.isBlank(this._currentInstruction) || this._currentInstruction.componentType != nextInstruction.componentType) {
+        result = async_1.PromiseWrapper.resolve(false);
+      } else {
+        result = this._componentRef.then(function(ref) {
+          if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerCanReuse, ref.instance)) {
+            return ref.instance.routerCanReuse(nextInstruction, _this._currentInstruction);
+          } else {
+            return nextInstruction == _this._currentInstruction || (lang_1.isPresent(nextInstruction.params) && lang_1.isPresent(_this._currentInstruction.params) && collection_1.StringMapWrapper.equals(nextInstruction.params, _this._currentInstruction.params));
+          }
+        });
+      }
+      return result;
+    };
+    RouterOutlet.prototype.ngOnDestroy = function() {
+      this._parentRouter.unregisterPrimaryOutlet(this);
+    };
+    __decorate([core_1.Output('activate'), __metadata('design:type', Object)], RouterOutlet.prototype, "activateEvents", void 0);
+    RouterOutlet = __decorate([core_1.Directive({selector: 'router-outlet'}), __param(3, core_1.Attribute('name')), __metadata('design:paramtypes', [core_1.ViewContainerRef, core_1.ComponentResolver, routerMod.Router, String])], RouterOutlet);
+    return RouterOutlet;
+  }());
+  exports.RouterOutlet = RouterOutlet;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/platform/browser/location/browser_platform_location", ["angular2/src/core/di/decorators", "angular2/src/platform/browser/location/platform_location", "angular2/src/platform/dom/dom_adapter"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var decorators_1 = require("angular2/src/core/di/decorators");
+  var platform_location_1 = require("angular2/src/platform/browser/location/platform_location");
+  var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
+  var BrowserPlatformLocation = (function(_super) {
+    __extends(BrowserPlatformLocation, _super);
+    function BrowserPlatformLocation() {
+      _super.call(this);
+      this._init();
+    }
+    BrowserPlatformLocation.prototype._init = function() {
+      this._location = dom_adapter_1.DOM.getLocation();
+      this._history = dom_adapter_1.DOM.getHistory();
+    };
+    Object.defineProperty(BrowserPlatformLocation.prototype, "location", {
+      get: function() {
+        return this._location;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    BrowserPlatformLocation.prototype.getBaseHrefFromDOM = function() {
+      return dom_adapter_1.DOM.getBaseHref();
+    };
+    BrowserPlatformLocation.prototype.onPopState = function(fn) {
+      dom_adapter_1.DOM.getGlobalEventTarget('window').addEventListener('popstate', fn, false);
+    };
+    BrowserPlatformLocation.prototype.onHashChange = function(fn) {
+      dom_adapter_1.DOM.getGlobalEventTarget('window').addEventListener('hashchange', fn, false);
+    };
+    Object.defineProperty(BrowserPlatformLocation.prototype, "pathname", {
+      get: function() {
+        return this._location.pathname;
+      },
+      set: function(newPath) {
+        this._location.pathname = newPath;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BrowserPlatformLocation.prototype, "search", {
+      get: function() {
+        return this._location.search;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    Object.defineProperty(BrowserPlatformLocation.prototype, "hash", {
+      get: function() {
+        return this._location.hash;
+      },
+      enumerable: true,
+      configurable: true
+    });
+    BrowserPlatformLocation.prototype.pushState = function(state, title, url) {
+      this._history.pushState(state, title, url);
+    };
+    BrowserPlatformLocation.prototype.replaceState = function(state, title, url) {
+      this._history.replaceState(state, title, url);
+    };
+    BrowserPlatformLocation.prototype.forward = function() {
+      this._history.forward();
+    };
+    BrowserPlatformLocation.prototype.back = function() {
+      this._history.back();
+    };
+    BrowserPlatformLocation = __decorate([decorators_1.Injectable(), __metadata('design:paramtypes', [])], BrowserPlatformLocation);
+    return BrowserPlatformLocation;
+  }(platform_location_1.PlatformLocation));
+  exports.BrowserPlatformLocation = BrowserPlatformLocation;
   global.define = __define;
   return module.exports;
 });
@@ -2003,370 +2389,18 @@ System.register("angular2/src/router/rules/route_paths/param_route_path", ["angu
   return module.exports;
 });
 
-System.register("angular2/src/router/route_config/route_config_normalizer", ["angular2/src/router/route_config/route_config_decorator", "angular2/src/facade/lang", "angular2/src/facade/exceptions"], true, function(require, exports, module) {
+System.register("angular2/src/router/router_providers", ["angular2/src/router/router_providers_common", "angular2/core", "angular2/src/platform/browser/location/browser_platform_location", "angular2/platform/common", "angular2/src/facade/lang"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
-  var route_config_decorator_1 = require("angular2/src/router/route_config/route_config_decorator");
-  var lang_1 = require("angular2/src/facade/lang");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  function normalizeRouteConfig(config, registry) {
-    if (config instanceof route_config_decorator_1.AsyncRoute) {
-      var wrappedLoader = wrapLoaderToReconfigureRegistry(config.loader, registry);
-      return new route_config_decorator_1.AsyncRoute({
-        path: config.path,
-        loader: wrappedLoader,
-        name: config.name,
-        data: config.data,
-        useAsDefault: config.useAsDefault
-      });
-    }
-    if (config instanceof route_config_decorator_1.Route || config instanceof route_config_decorator_1.Redirect || config instanceof route_config_decorator_1.AuxRoute) {
-      return config;
-    }
-    if ((+!!config.component) + (+!!config.redirectTo) + (+!!config.loader) != 1) {
-      throw new exceptions_1.BaseException("Route config should contain exactly one \"component\", \"loader\", or \"redirectTo\" property.");
-    }
-    if (config.as && config.name) {
-      throw new exceptions_1.BaseException("Route config should contain exactly one \"as\" or \"name\" property.");
-    }
-    if (config.as) {
-      config.name = config.as;
-    }
-    if (config.loader) {
-      var wrappedLoader = wrapLoaderToReconfigureRegistry(config.loader, registry);
-      return new route_config_decorator_1.AsyncRoute({
-        path: config.path,
-        loader: wrappedLoader,
-        name: config.name,
-        data: config.data,
-        useAsDefault: config.useAsDefault
-      });
-    }
-    if (config.aux) {
-      return new route_config_decorator_1.AuxRoute({
-        path: config.aux,
-        component: config.component,
-        name: config.name
-      });
-    }
-    if (config.component) {
-      if (typeof config.component == 'object') {
-        var componentDefinitionObject = config.component;
-        if (componentDefinitionObject.type == 'constructor') {
-          return new route_config_decorator_1.Route({
-            path: config.path,
-            component: componentDefinitionObject.constructor,
-            name: config.name,
-            data: config.data,
-            useAsDefault: config.useAsDefault
-          });
-        } else if (componentDefinitionObject.type == 'loader') {
-          return new route_config_decorator_1.AsyncRoute({
-            path: config.path,
-            loader: componentDefinitionObject.loader,
-            name: config.name,
-            data: config.data,
-            useAsDefault: config.useAsDefault
-          });
-        } else {
-          throw new exceptions_1.BaseException("Invalid component type \"" + componentDefinitionObject.type + "\". Valid types are \"constructor\" and \"loader\".");
-        }
-      }
-      return new route_config_decorator_1.Route(config);
-    }
-    if (config.redirectTo) {
-      return new route_config_decorator_1.Redirect({
-        path: config.path,
-        redirectTo: config.redirectTo
-      });
-    }
-    return config;
-  }
-  exports.normalizeRouteConfig = normalizeRouteConfig;
-  function wrapLoaderToReconfigureRegistry(loader, registry) {
-    return function() {
-      return loader().then(function(componentType) {
-        registry.configFromComponent(componentType);
-        return componentType;
-      });
-    };
-  }
-  function assertComponentExists(component, path) {
-    if (!lang_1.isType(component)) {
-      throw new exceptions_1.BaseException("Component for route \"" + path + "\" is not defined, or is not a class.");
-    }
-  }
-  exports.assertComponentExists = assertComponentExists;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/router/lifecycle/route_lifecycle_reflector", ["angular2/src/facade/lang", "angular2/src/router/lifecycle/lifecycle_annotations_impl", "angular2/src/core/reflection/reflection"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var lang_1 = require("angular2/src/facade/lang");
-  var lifecycle_annotations_impl_1 = require("angular2/src/router/lifecycle/lifecycle_annotations_impl");
-  var reflection_1 = require("angular2/src/core/reflection/reflection");
-  function hasLifecycleHook(e, type) {
-    if (!(type instanceof lang_1.Type))
-      return false;
-    return e.name in type.prototype;
-  }
-  exports.hasLifecycleHook = hasLifecycleHook;
-  function getCanActivateHook(type) {
-    var annotations = reflection_1.reflector.annotations(type);
-    for (var i = 0; i < annotations.length; i += 1) {
-      var annotation = annotations[i];
-      if (annotation instanceof lifecycle_annotations_impl_1.CanActivate) {
-        return annotation.fn;
-      }
-    }
-    return null;
-  }
-  exports.getCanActivateHook = getCanActivateHook;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/router/directives/router_outlet", ["angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/core", "angular2/src/router/router", "angular2/src/router/instruction", "angular2/src/router/lifecycle/lifecycle_annotations", "angular2/src/router/lifecycle/route_lifecycle_reflector"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var __param = (this && this.__param) || function(paramIndex, decorator) {
-    return function(target, key) {
-      decorator(target, key, paramIndex);
-    };
-  };
-  var async_1 = require("angular2/src/facade/async");
-  var collection_1 = require("angular2/src/facade/collection");
-  var lang_1 = require("angular2/src/facade/lang");
+  var router_providers_common_1 = require("angular2/src/router/router_providers_common");
   var core_1 = require("angular2/core");
-  var routerMod = require("angular2/src/router/router");
-  var instruction_1 = require("angular2/src/router/instruction");
-  var hookMod = require("angular2/src/router/lifecycle/lifecycle_annotations");
-  var route_lifecycle_reflector_1 = require("angular2/src/router/lifecycle/route_lifecycle_reflector");
-  var _resolveToTrue = async_1.PromiseWrapper.resolve(true);
-  var RouterOutlet = (function() {
-    function RouterOutlet(_viewContainerRef, _loader, _parentRouter, nameAttr) {
-      this._viewContainerRef = _viewContainerRef;
-      this._loader = _loader;
-      this._parentRouter = _parentRouter;
-      this.name = null;
-      this._componentRef = null;
-      this._currentInstruction = null;
-      this.activateEvents = new async_1.EventEmitter();
-      if (lang_1.isPresent(nameAttr)) {
-        this.name = nameAttr;
-        this._parentRouter.registerAuxOutlet(this);
-      } else {
-        this._parentRouter.registerPrimaryOutlet(this);
-      }
-    }
-    RouterOutlet.prototype.activate = function(nextInstruction) {
-      var _this = this;
-      var previousInstruction = this._currentInstruction;
-      this._currentInstruction = nextInstruction;
-      var componentType = nextInstruction.componentType;
-      var childRouter = this._parentRouter.childRouter(componentType);
-      var providers = core_1.ReflectiveInjector.resolve([core_1.provide(instruction_1.RouteData, {useValue: nextInstruction.routeData}), core_1.provide(instruction_1.RouteParams, {useValue: new instruction_1.RouteParams(nextInstruction.params)}), core_1.provide(routerMod.Router, {useValue: childRouter})]);
-      this._componentRef = this._loader.loadNextToLocation(componentType, this._viewContainerRef, providers);
-      return this._componentRef.then(function(componentRef) {
-        _this.activateEvents.emit(componentRef.instance);
-        if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
-          return componentRef.instance.routerOnActivate(nextInstruction, previousInstruction);
-        } else {
-          return componentRef;
-        }
-      });
-    };
-    RouterOutlet.prototype.reuse = function(nextInstruction) {
-      var previousInstruction = this._currentInstruction;
-      this._currentInstruction = nextInstruction;
-      if (lang_1.isBlank(this._componentRef)) {
-        return this.activate(nextInstruction);
-      } else {
-        return async_1.PromiseWrapper.resolve(route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnReuse, this._currentInstruction.componentType) ? this._componentRef.then(function(ref) {
-          return ref.instance.routerOnReuse(nextInstruction, previousInstruction);
-        }) : true);
-      }
-    };
-    RouterOutlet.prototype.deactivate = function(nextInstruction) {
-      var _this = this;
-      var next = _resolveToTrue;
-      if (lang_1.isPresent(this._componentRef) && lang_1.isPresent(this._currentInstruction) && route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerOnDeactivate, this._currentInstruction.componentType)) {
-        next = this._componentRef.then(function(ref) {
-          return ref.instance.routerOnDeactivate(nextInstruction, _this._currentInstruction);
-        });
-      }
-      return next.then(function(_) {
-        if (lang_1.isPresent(_this._componentRef)) {
-          var onDispose = _this._componentRef.then(function(ref) {
-            return ref.destroy();
-          });
-          _this._componentRef = null;
-          return onDispose;
-        }
-      });
-    };
-    RouterOutlet.prototype.routerCanDeactivate = function(nextInstruction) {
-      var _this = this;
-      if (lang_1.isBlank(this._currentInstruction)) {
-        return _resolveToTrue;
-      }
-      if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerCanDeactivate, this._currentInstruction.componentType)) {
-        return this._componentRef.then(function(ref) {
-          return ref.instance.routerCanDeactivate(nextInstruction, _this._currentInstruction);
-        });
-      } else {
-        return _resolveToTrue;
-      }
-    };
-    RouterOutlet.prototype.routerCanReuse = function(nextInstruction) {
-      var _this = this;
-      var result;
-      if (lang_1.isBlank(this._currentInstruction) || this._currentInstruction.componentType != nextInstruction.componentType) {
-        result = false;
-      } else if (route_lifecycle_reflector_1.hasLifecycleHook(hookMod.routerCanReuse, this._currentInstruction.componentType)) {
-        result = this._componentRef.then(function(ref) {
-          return ref.instance.routerCanReuse(nextInstruction, _this._currentInstruction);
-        });
-      } else {
-        result = nextInstruction == this._currentInstruction || (lang_1.isPresent(nextInstruction.params) && lang_1.isPresent(this._currentInstruction.params) && collection_1.StringMapWrapper.equals(nextInstruction.params, this._currentInstruction.params));
-      }
-      return async_1.PromiseWrapper.resolve(result);
-    };
-    RouterOutlet.prototype.ngOnDestroy = function() {
-      this._parentRouter.unregisterPrimaryOutlet(this);
-    };
-    __decorate([core_1.Output('activate'), __metadata('design:type', Object)], RouterOutlet.prototype, "activateEvents", void 0);
-    RouterOutlet = __decorate([core_1.Directive({selector: 'router-outlet'}), __param(3, core_1.Attribute('name')), __metadata('design:paramtypes', [core_1.ViewContainerRef, core_1.DynamicComponentLoader, routerMod.Router, String])], RouterOutlet);
-    return RouterOutlet;
-  }());
-  exports.RouterOutlet = RouterOutlet;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/platform/browser/location/browser_platform_location", ["angular2/src/core/di/decorators", "angular2/src/platform/browser/location/platform_location", "angular2/src/platform/dom/dom_adapter"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var decorators_1 = require("angular2/src/core/di/decorators");
-  var platform_location_1 = require("angular2/src/platform/browser/location/platform_location");
-  var dom_adapter_1 = require("angular2/src/platform/dom/dom_adapter");
-  var BrowserPlatformLocation = (function(_super) {
-    __extends(BrowserPlatformLocation, _super);
-    function BrowserPlatformLocation() {
-      _super.call(this);
-      this._init();
-    }
-    BrowserPlatformLocation.prototype._init = function() {
-      this._location = dom_adapter_1.DOM.getLocation();
-      this._history = dom_adapter_1.DOM.getHistory();
-    };
-    Object.defineProperty(BrowserPlatformLocation.prototype, "location", {
-      get: function() {
-        return this._location;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    BrowserPlatformLocation.prototype.getBaseHrefFromDOM = function() {
-      return dom_adapter_1.DOM.getBaseHref();
-    };
-    BrowserPlatformLocation.prototype.onPopState = function(fn) {
-      dom_adapter_1.DOM.getGlobalEventTarget('window').addEventListener('popstate', fn, false);
-    };
-    BrowserPlatformLocation.prototype.onHashChange = function(fn) {
-      dom_adapter_1.DOM.getGlobalEventTarget('window').addEventListener('hashchange', fn, false);
-    };
-    Object.defineProperty(BrowserPlatformLocation.prototype, "pathname", {
-      get: function() {
-        return this._location.pathname;
-      },
-      set: function(newPath) {
-        this._location.pathname = newPath;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BrowserPlatformLocation.prototype, "search", {
-      get: function() {
-        return this._location.search;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(BrowserPlatformLocation.prototype, "hash", {
-      get: function() {
-        return this._location.hash;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    BrowserPlatformLocation.prototype.pushState = function(state, title, url) {
-      this._history.pushState(state, title, url);
-    };
-    BrowserPlatformLocation.prototype.replaceState = function(state, title, url) {
-      this._history.replaceState(state, title, url);
-    };
-    BrowserPlatformLocation.prototype.forward = function() {
-      this._history.forward();
-    };
-    BrowserPlatformLocation.prototype.back = function() {
-      this._history.back();
-    };
-    BrowserPlatformLocation = __decorate([decorators_1.Injectable(), __metadata('design:paramtypes', [])], BrowserPlatformLocation);
-    return BrowserPlatformLocation;
-  }(platform_location_1.PlatformLocation));
-  exports.BrowserPlatformLocation = BrowserPlatformLocation;
+  var browser_platform_location_1 = require("angular2/src/platform/browser/location/browser_platform_location");
+  var common_1 = require("angular2/platform/common");
+  var lang_1 = require("angular2/src/facade/lang");
+  exports.ROUTER_PROVIDERS = lang_1.CONST_EXPR([router_providers_common_1.ROUTER_PROVIDERS_COMMON, lang_1.CONST_EXPR(new core_1.Provider(common_1.PlatformLocation, {useClass: browser_platform_location_1.BrowserPlatformLocation}))]);
+  exports.ROUTER_BINDINGS = lang_1.CONST_EXPR(exports.ROUTER_PROVIDERS);
   global.define = __define;
   return module.exports;
 });
@@ -2511,23 +2545,7 @@ System.register("angular2/src/router/rules/rule_set", ["angular2/src/facade/lang
   return module.exports;
 });
 
-System.register("angular2/src/router/router_providers", ["angular2/src/router/router_providers_common", "angular2/core", "angular2/src/platform/browser/location/browser_platform_location", "angular2/platform/common", "angular2/src/facade/lang"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var router_providers_common_1 = require("angular2/src/router/router_providers_common");
-  var core_1 = require("angular2/core");
-  var browser_platform_location_1 = require("angular2/src/platform/browser/location/browser_platform_location");
-  var common_1 = require("angular2/platform/common");
-  var lang_1 = require("angular2/src/facade/lang");
-  exports.ROUTER_PROVIDERS = lang_1.CONST_EXPR([router_providers_common_1.ROUTER_PROVIDERS_COMMON, lang_1.CONST_EXPR(new core_1.Provider(common_1.PlatformLocation, {useClass: browser_platform_location_1.BrowserPlatformLocation}))]);
-  exports.ROUTER_BINDINGS = lang_1.CONST_EXPR(exports.ROUTER_PROVIDERS);
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/router/route_registry", ["angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/core/reflection/reflection", "angular2/core", "angular2/src/router/route_config/route_config_impl", "angular2/src/router/rules/rules", "angular2/src/router/rules/rule_set", "angular2/src/router/instruction", "angular2/src/router/route_config/route_config_normalizer", "angular2/src/router/url_parser"], true, function(require, exports, module) {
+System.register("angular2/src/router/route_registry", ["angular2/src/facade/collection", "angular2/src/facade/async", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/core", "angular2/src/router/route_config/route_config_impl", "angular2/src/router/rules/rules", "angular2/src/router/rules/rule_set", "angular2/src/router/instruction", "angular2/src/router/route_config/route_config_normalizer", "angular2/src/router/url_parser", "angular2/src/router/utils"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -2557,7 +2575,6 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
   var async_1 = require("angular2/src/facade/async");
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
-  var reflection_1 = require("angular2/src/core/reflection/reflection");
   var core_1 = require("angular2/core");
   var route_config_impl_1 = require("angular2/src/router/route_config/route_config_impl");
   var rules_1 = require("angular2/src/router/rules/rules");
@@ -2565,6 +2582,7 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
   var instruction_1 = require("angular2/src/router/instruction");
   var route_config_normalizer_1 = require("angular2/src/router/route_config/route_config_normalizer");
   var url_parser_1 = require("angular2/src/router/url_parser");
+  var utils_1 = require("angular2/src/router/utils");
   var _resolveToNull = async_1.PromiseWrapper.resolve(null);
   exports.ROUTER_PRIMARY_COMPONENT = lang_1.CONST_EXPR(new core_1.OpaqueToken('RouterPrimaryComponent'));
   var RouteRegistry = (function() {
@@ -2595,13 +2613,13 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
     };
     RouteRegistry.prototype.configFromComponent = function(component) {
       var _this = this;
-      if (!lang_1.isType(component)) {
+      if (!lang_1.isType(component) && !(component instanceof core_1.ComponentFactory)) {
         return ;
       }
       if (this._rules.has(component)) {
         return ;
       }
-      var annotations = reflection_1.reflector.annotations(component);
+      var annotations = utils_1.getComponentAnnotations(component);
       if (lang_1.isPresent(annotations)) {
         for (var i = 0; i < annotations.length; i++) {
           var annotation = annotations[i];
@@ -2763,7 +2781,7 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
       }
       var rules = this._rules.get(parentComponentType);
       if (lang_1.isBlank(rules)) {
-        throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(parentComponentType) + "\" has no route config.");
+        throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(utils_1.getComponentType(parentComponentType)) + "\" has no route config.");
       }
       var linkParamIndex = 0;
       var routeParams = {};
@@ -2782,7 +2800,7 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
         }
         var routeRecognizer = (_aux ? rules.auxRulesByName : rules.rulesByName).get(routeName);
         if (lang_1.isBlank(routeRecognizer)) {
-          throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(parentComponentType) + "\" has no route named \"" + routeName + "\".");
+          throw new exceptions_1.BaseException("Component \"" + lang_1.getTypeNameForDebugging(utils_1.getComponentType(parentComponentType)) + "\" has no route named \"" + routeName + "\".");
         }
         if (lang_1.isBlank(routeRecognizer.handler.componentType)) {
           var generatedUrl = routeRecognizer.generateComponentPathValues(routeParams);
@@ -2844,7 +2862,7 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
         });
       });
     };
-    RouteRegistry = __decorate([core_1.Injectable(), __param(0, core_1.Inject(exports.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [lang_1.Type])], RouteRegistry);
+    RouteRegistry = __decorate([core_1.Injectable(), __param(0, core_1.Inject(exports.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [Object])], RouteRegistry);
     return RouteRegistry;
   }());
   exports.RouteRegistry = RouteRegistry;
@@ -2892,10 +2910,10 @@ System.register("angular2/src/router/route_registry", ["angular2/src/facade/coll
     return a.length - b.length;
   }
   function assertTerminalComponent(component, path) {
-    if (!lang_1.isType(component)) {
+    if (!lang_1.isType(component) && !(component instanceof core_1.ComponentFactory)) {
       return ;
     }
-    var annotations = reflection_1.reflector.annotations(component);
+    var annotations = utils_1.getComponentAnnotations(component);
     if (lang_1.isPresent(annotations)) {
       for (var i = 0; i < annotations.length; i++) {
         var annotation = annotations[i];
@@ -2960,7 +2978,7 @@ System.register("angular2/platform/common", ["angular2/src/platform/location"], 
   return module.exports;
 });
 
-System.register("angular2/src/router/router", ["angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/platform/common", "angular2/core", "angular2/src/router/route_registry", "angular2/src/router/lifecycle/route_lifecycle_reflector"], true, function(require, exports, module) {
+System.register("angular2/src/router/router", ["angular2/src/facade/async", "angular2/src/facade/collection", "angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/platform/common", "angular2/core", "angular2/src/router/route_registry", "angular2/src/router/utils"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -3002,7 +3020,7 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
   var common_1 = require("angular2/platform/common");
   var core_1 = require("angular2/core");
   var route_registry_1 = require("angular2/src/router/route_registry");
-  var route_lifecycle_reflector_1 = require("angular2/src/router/lifecycle/route_lifecycle_reflector");
+  var utils_1 = require("angular2/src/router/utils");
   var _resolveToTrue = async_1.PromiseWrapper.resolve(true);
   var _resolveToFalse = async_1.PromiseWrapper.resolve(false);
   var Router = (function() {
@@ -3366,7 +3384,7 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
         this._locationSub = null;
       }
     };
-    RootRouter = __decorate([core_1.Injectable(), __param(2, core_1.Inject(route_registry_1.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [route_registry_1.RouteRegistry, common_1.Location, lang_1.Type])], RootRouter);
+    RootRouter = __decorate([core_1.Injectable(), __param(2, core_1.Inject(route_registry_1.ROUTER_PRIMARY_COMPONENT)), __metadata('design:paramtypes', [route_registry_1.RouteRegistry, common_1.Location, Object])], RootRouter);
     return RootRouter;
   }(Router));
   exports.RootRouter = RootRouter;
@@ -3405,7 +3423,7 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
       if (nextInstruction.component.reuse) {
         return true;
       }
-      var hook = route_lifecycle_reflector_1.getCanActivateHook(nextInstruction.component.componentType);
+      var hook = utils_1.getCanActivateHook(nextInstruction.component.componentType);
       if (lang_1.isPresent(hook)) {
         return hook(nextInstruction.component, lang_1.isPresent(prevInstruction) ? prevInstruction.component : null);
       }

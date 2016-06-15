@@ -100,9 +100,10 @@ export declare enum BuiltinVar {
     Super = 1,
     CatchError = 2,
     CatchStack = 3,
+    MetadataMap = 4,
 }
 export declare class ReadVarExpr extends Expression {
-    name: any;
+    name: string;
     builtin: BuiltinVar;
     constructor(name: string | BuiltinVar, type?: Type);
     visitExpression(visitor: ExpressionVisitor, context: any): any;
@@ -132,7 +133,6 @@ export declare class WritePropExpr extends Expression {
 export declare enum BuiltinMethod {
     ConcatArray = 0,
     SubscribeObservable = 1,
-    bind = 2,
 }
 export declare class InvokeMethodExpr extends Expression {
     receiver: Expression;
@@ -250,6 +250,7 @@ export declare var THIS_EXPR: ReadVarExpr;
 export declare var SUPER_EXPR: ReadVarExpr;
 export declare var CATCH_ERROR_VAR: ReadVarExpr;
 export declare var CATCH_STACK_VAR: ReadVarExpr;
+export declare var METADATA_MAP: ReadVarExpr;
 export declare var NULL_EXPR: LiteralExpr;
 export declare enum StmtModifier {
     Final = 0,

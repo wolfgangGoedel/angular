@@ -158,6 +158,7 @@ export var BuiltinVar;
     BuiltinVar[BuiltinVar["Super"] = 1] = "Super";
     BuiltinVar[BuiltinVar["CatchError"] = 2] = "CatchError";
     BuiltinVar[BuiltinVar["CatchStack"] = 3] = "CatchStack";
+    BuiltinVar[BuiltinVar["MetadataMap"] = 4] = "MetadataMap";
 })(BuiltinVar || (BuiltinVar = {}));
 export class ReadVarExpr extends Expression {
     constructor(name, type = null) {
@@ -215,7 +216,6 @@ export var BuiltinMethod;
 (function (BuiltinMethod) {
     BuiltinMethod[BuiltinMethod["ConcatArray"] = 0] = "ConcatArray";
     BuiltinMethod[BuiltinMethod["SubscribeObservable"] = 1] = "SubscribeObservable";
-    BuiltinMethod[BuiltinMethod["bind"] = 2] = "bind";
 })(BuiltinMethod || (BuiltinMethod = {}));
 export class InvokeMethodExpr extends Expression {
     constructor(receiver, method, args, type = null) {
@@ -386,6 +386,7 @@ export var THIS_EXPR = new ReadVarExpr(BuiltinVar.This);
 export var SUPER_EXPR = new ReadVarExpr(BuiltinVar.Super);
 export var CATCH_ERROR_VAR = new ReadVarExpr(BuiltinVar.CatchError);
 export var CATCH_STACK_VAR = new ReadVarExpr(BuiltinVar.CatchStack);
+export var METADATA_MAP = new ReadVarExpr(BuiltinVar.MetadataMap);
 export var NULL_EXPR = new LiteralExpr(null, null);
 //// Statements
 export var StmtModifier;

@@ -1,5 +1,5 @@
 import { Type } from 'angular2/src/facade/lang';
-import { OpaqueToken } from 'angular2/core';
+import { OpaqueToken, ComponentFactory } from 'angular2/core';
 import { RouteDefinition } from './route_config/route_config_impl';
 import { Instruction } from './instruction';
 /**
@@ -36,7 +36,7 @@ export declare const ROUTER_PRIMARY_COMPONENT: OpaqueToken;
 export declare class RouteRegistry {
     private _rootComponent;
     private _rules;
-    constructor(_rootComponent: Type);
+    constructor(_rootComponent: Type | ComponentFactory);
     /**
      * Given a component and a configuration object, add the route to this registry
      */
@@ -65,5 +65,5 @@ export declare class RouteRegistry {
     generate(linkParams: any[], ancestorInstructions: Instruction[], _aux?: boolean): Instruction;
     private _generate(linkParams, ancestorInstructions, prevInstruction, _aux, _originalLink);
     hasRoute(name: string, parentComponent: any): boolean;
-    generateDefault(componentCursor: Type): Instruction;
+    generateDefault(componentCursor: Type | ComponentFactory): Instruction;
 }

@@ -1,4 +1,5 @@
 import { OpaqueToken } from 'angular2/src/core/di';
+import { TestabilityRegistry } from "angular2/core";
 export { DOCUMENT } from 'angular2/src/platform/dom/dom_tokens';
 export { Title } from 'angular2/src/platform/browser/title';
 export { ELEMENT_PROBE_PROVIDERS, ELEMENT_PROBE_PROVIDERS_PROD_MODE, inspectNativeElement, By } from 'angular2/platform/common_dom';
@@ -19,4 +20,4 @@ export declare const BROWSER_PROVIDERS: Array<any>;
  */
 export declare const BROWSER_APP_COMMON_PROVIDERS: Array<any>;
 export declare const CACHED_TEMPLATE_PROVIDER: Array<any>;
-export declare function initDomAdapter(): void;
+export declare function createInitDomAdapter(testabilityRegistry: TestabilityRegistry): Function;

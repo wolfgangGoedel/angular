@@ -6,7 +6,7 @@
 export { InjectMetadata, OptionalMetadata, InjectableMetadata, SelfMetadata, HostMetadata, SkipSelfMetadata, DependencyMetadata } from './di/metadata';
 export * from './di/decorators';
 export { forwardRef, resolveForwardRef, ForwardRefFn } from './di/forward_ref';
-export { Injector } from './di/injector';
+export { Injector, MapInjector } from './di/injector';
 export { ReflectiveInjector } from './di/reflective_injector';
 export { Binding, ProviderBuilder, bind, Provider, provide } from './di/provider';
 export { ResolvedReflectiveBinding, ResolvedReflectiveFactory, ReflectiveDependency, ResolvedReflectiveProvider } from './di/reflective_provider';
