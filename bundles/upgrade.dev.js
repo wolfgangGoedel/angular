@@ -128,7 +128,7 @@ System.register("angular2/src/upgrade/downgrade_ng2_adapter", ["angular2/core", 
       this.childNodes = element.contents();
     }
     DowngradeNg2ComponentAdapter.prototype.bootstrapNg2 = function() {
-      var childInjector = this.parentInjector.resolveAndCreateChild([core_1.provide(constants_1.NG1_SCOPE, {useValue: this.componentScope})]);
+      var childInjector = core_1.ReflectiveInjector.resolveAndCreate([core_1.provide(constants_1.NG1_SCOPE, {useValue: this.componentScope})], this.parentInjector);
       this.contentInsertionPoint = document.createComment('ng1 insertion point');
       this.componentRef = this.componentFactory.create(childInjector, [[this.contentInsertionPoint]], '#' + this.id);
       this.changeDetector = this.componentRef.changeDetectorRef;
@@ -638,12 +638,12 @@ System.register("angular2/src/upgrade/upgrade_adapter", ["angular2/core", "angul
       var _this = this;
       var upgrade = new UpgradeAdapterRef();
       var ng1Injector = null;
-      var platformRef = core_1.platform(browser_1.BROWSER_PROVIDERS);
-      var applicationRef = platformRef.application([browser_1.BROWSER_APP_PROVIDERS, core_1.provide(constants_1.NG1_INJECTOR, {useFactory: function() {
+      var platformRef = browser_1.browserPlatform();
+      var applicationRef = core_1.ReflectiveInjector.resolveAndCreate([browser_1.BROWSER_APP_PROVIDERS, core_1.provide(constants_1.NG1_INJECTOR, {useFactory: function() {
           return ng1Injector;
         }}), core_1.provide(constants_1.NG1_COMPILE, {useFactory: function() {
           return ng1Injector.get(constants_1.NG1_COMPILE);
-        }}), this.providers]);
+        }}), this.providers], platformRef.injector).get(core_1.ApplicationRef);
       var injector = applicationRef.injector;
       var ngZone = injector.get(core_1.NgZone);
       var compiler = injector.get(core_1.ComponentResolver);

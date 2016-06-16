@@ -323,7 +323,7 @@ function createViewClass(view, renderCompTypeVar, nodeDebugInfosVar) {
     }
     var viewConstructor = new o.ClassMethod(null, viewConstructorArgs, [o.SUPER_EXPR.callFn(superConstructorArgs).toStmt()]);
     var viewMethods = [
-        new o.ClassMethod('createInternal', [new o.FnParam(rootSelectorVar.name, o.STRING_TYPE)], generateCreateMethod(view), o.importType(Identifiers.AppElement)),
+        new o.ClassMethod('createInternal', [new o.FnParam(rootSelectorVar.name, o.DYNAMIC_TYPE)], generateCreateMethod(view), o.importType(Identifiers.AppElement)),
         new o.ClassMethod('injectorGetInternal', [
             new o.FnParam(InjectMethodVars.token.name, o.DYNAMIC_TYPE),
             // Note: Can't use o.INT_TYPE here as the method in AppView uses number

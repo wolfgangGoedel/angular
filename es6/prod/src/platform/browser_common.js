@@ -1,7 +1,7 @@
 import { CONST_EXPR, IS_DART } from 'angular2/src/facade/lang';
-import { Provider } from 'angular2/src/core/di';
+import { Provider, OpaqueToken } from 'angular2/src/core/di';
 import { XHR } from 'angular2/src/compiler/xhr';
-import { PLATFORM_INITIALIZER, PLATFORM_DIRECTIVES, PLATFORM_PIPES, ExceptionHandler, RootRenderer, APPLICATION_COMMON_PROVIDERS, PLATFORM_COMMON_PROVIDERS } from "angular2/core";
+import { PLATFORM_INITIALIZER, PLATFORM_DIRECTIVES, PLATFORM_PIPES, ExceptionHandler, RootRenderer, APPLICATION_COMMON_PROVIDERS, PLATFORM_COMMON_PROVIDERS, TestabilityRegistry } from "angular2/core";
 import { COMMON_DIRECTIVES, COMMON_PIPES, FORM_PROVIDERS } from "angular2/common";
 import { Testability } from 'angular2/src/core/testability/testability';
 import { DOM } from 'angular2/src/platform/dom/dom_adapter';
@@ -27,14 +27,16 @@ export { ELEMENT_PROBE_PROVIDERS, ELEMENT_PROBE_PROVIDERS_PROD_MODE, inspectNati
 export { BrowserDomAdapter } from './browser/browser_adapter';
 export { enableDebugTools, disableDebugTools } from 'angular2/src/platform/browser/tools/tools';
 export { HAMMER_GESTURE_CONFIG, HammerGestureConfig } from './dom/events/hammer_gestures';
+export const BROWSER_PLATFORM_MARKER = CONST_EXPR(new OpaqueToken('BrowserPlatformMarker'));
 /**
  * A set of providers to initialize the Angular platform in a web browser.
  *
  * Used automatically by `bootstrap`, or can be passed to {@link platform}.
  */
 export const BROWSER_PROVIDERS = CONST_EXPR([
+    new Provider(BROWSER_PLATFORM_MARKER, { useValue: true }),
     PLATFORM_COMMON_PROVIDERS,
-    new Provider(PLATFORM_INITIALIZER, { useValue: initDomAdapter, multi: true }),
+    new Provider(PLATFORM_INITIALIZER, { useFactory: createInitDomAdapter, multi: true, deps: [TestabilityRegistry] }),
 ]);
 function exceptionHandler() {
     // !IS_DART is required because we must rethrow exceptions in JS,
@@ -71,8 +73,10 @@ export const BROWSER_APP_COMMON_PROVIDERS = CONST_EXPR([
     ELEMENT_PROBE_PROVIDERS
 ]);
 export const CACHED_TEMPLATE_PROVIDER = CONST_EXPR([new Provider(XHR, { useClass: CachedXHR })]);
-export function initDomAdapter() {
-    BrowserDomAdapter.makeCurrent();
-    wtfInit();
-    BrowserGetTestability.init();
+export function createInitDomAdapter(testabilityRegistry) {
+    return () => {
+        BrowserDomAdapter.makeCurrent();
+        wtfInit();
+        testabilityRegistry.setTestabilityGetter(new BrowserGetTestability());
+    };
 }

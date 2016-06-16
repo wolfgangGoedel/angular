@@ -1,5 +1,5 @@
 import { EventEmitter } from 'angular2/src/facade/async';
-import { DynamicComponentLoader, ViewContainerRef, OnDestroy } from 'angular2/core';
+import { ComponentResolver, ViewContainerRef, OnDestroy } from 'angular2/core';
 import * as routerMod from '../router';
 import { ComponentInstruction } from '../instruction';
 /**
@@ -19,7 +19,7 @@ export declare class RouterOutlet implements OnDestroy {
     private _componentRef;
     private _currentInstruction;
     activateEvents: EventEmitter<any>;
-    constructor(_viewContainerRef: ViewContainerRef, _loader: DynamicComponentLoader, _parentRouter: routerMod.Router, nameAttr: string);
+    constructor(_viewContainerRef: ViewContainerRef, _loader: ComponentResolver, _parentRouter: routerMod.Router, nameAttr: string);
     /**
      * Called by the Router to instantiate a new component during the commit phase of a navigation.
      * This method in turn is responsible for calling the `routerOnActivate` hook of its child.

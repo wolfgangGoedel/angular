@@ -7,9 +7,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Type, CONST, isBlank } from 'angular2/src/facade/lang';
+import { Type, CONST, isPresent, isBlank } from 'angular2/src/facade/lang';
 import { unimplemented } from 'angular2/src/facade/exceptions';
 import { ViewUtils } from './view_utils';
+import { reflector } from 'angular2/src/core/reflection/reflection';
 /**
  * Represents an instance of a Component created via a {@link ComponentFactory}.
  *
@@ -46,10 +47,11 @@ export class ComponentRef {
     get componentType() { return unimplemented(); }
 }
 export class ComponentRef_ extends ComponentRef {
-    constructor(_hostElement, _componentType) {
+    constructor(_hostElement, _componentType, _metadata) {
         super();
         this._hostElement = _hostElement;
         this._componentType = _componentType;
+        this._metadata = _metadata;
     }
     get location() { return this._hostElement.elementRef; }
     get injector() { return this._hostElement.injector; }
@@ -60,16 +62,37 @@ export class ComponentRef_ extends ComponentRef {
     get changeDetectorRef() { return this._hostElement.parentView.ref; }
     ;
     get componentType() { return this._componentType; }
+    get metadata() { return this._metadata; }
     destroy() { this._hostElement.parentView.destroy(); }
     onDestroy(callback) { this.hostView.onDestroy(callback); }
 }
-export let ComponentFactory = class ComponentFactory {
-    constructor(selector, _viewFactory, _componentType) {
+let ComponentFactory_1;
+export let ComponentFactory = ComponentFactory_1 = class ComponentFactory {
+    // Note: can't use a Map for the metadata due to
+    // https://github.com/dart-lang/sdk/issues/21553
+    constructor(selector, _viewFactory, _componentType, _metadataPairs = null) {
         this.selector = selector;
         this._viewFactory = _viewFactory;
         this._componentType = _componentType;
+        this._metadataPairs = _metadataPairs;
+    }
+    static cloneWithMetadata(original, metadata) {
+        return new ComponentFactory_1(original.selector, original._viewFactory, original._componentType, [original.componentType, metadata]);
     }
     get componentType() { return this._componentType; }
+    get metadata() {
+        if (isPresent(this._metadataPairs)) {
+            for (var i = 0; i < this._metadataPairs.length; i += 2) {
+                if (this._metadataPairs[i] === this._componentType) {
+                    return this._metadataPairs[i + 1];
+                }
+            }
+            return [];
+        }
+        else {
+            return reflector.annotations(this._componentType);
+        }
+    }
     /**
      * Creates a new component.
      */
@@ -81,10 +104,10 @@ export let ComponentFactory = class ComponentFactory {
         // Note: Host views don't need a declarationAppElement!
         var hostView = this._viewFactory(vu, injector, null);
         var hostElement = hostView.create(projectableNodes, rootSelectorOrNode);
-        return new ComponentRef_(hostElement, this._componentType);
+        return new ComponentRef_(hostElement, this.componentType, this.metadata);
     }
 };
-ComponentFactory = __decorate([
+ComponentFactory = ComponentFactory_1 = __decorate([
     CONST(), 
-    __metadata('design:paramtypes', [String, Function, Type])
+    __metadata('design:paramtypes', [String, Function, Type, Array])
 ], ComponentFactory);

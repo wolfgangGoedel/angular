@@ -19,7 +19,11 @@ export declare class Testability {
  * A global registry of {@link Testability} instances for specific elements.
  */
 export declare class TestabilityRegistry {
-    constructor();
+    private _testabilityGetter;
+    /**
+     * Set the {@link GetTestability} implementation used by the Angular testing framework.
+     */
+    setTestabilityGetter(getter: GetTestability): void;
     registerApplication(token: any, testability: Testability): void;
     getTestability(elem: any): Testability;
     getAllTestabilities(): Testability[];
@@ -34,7 +38,3 @@ export interface GetTestability {
     addToWindow(registry: TestabilityRegistry): void;
     findTestabilityInTree(registry: TestabilityRegistry, elem: any, findInAncestors: boolean): Testability;
 }
-/**
- * Set the {@link GetTestability} implementation used by the Angular testing framework.
- */
-export declare function setTestabilityGetter(getter: GetTestability): void;

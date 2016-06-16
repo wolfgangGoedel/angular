@@ -1,4 +1,4 @@
-import { provide } from 'angular2/core';
+import { provide, ReflectiveInjector } from 'angular2/core';
 import { NG1_SCOPE } from './constants';
 const INITIAL_VALUE = {
     __UNINITIALIZED__: true
@@ -24,7 +24,7 @@ export class DowngradeNg2ComponentAdapter {
         this.childNodes = element.contents();
     }
     bootstrapNg2() {
-        var childInjector = this.parentInjector.resolveAndCreateChild([provide(NG1_SCOPE, { useValue: this.componentScope })]);
+        var childInjector = ReflectiveInjector.resolveAndCreate([provide(NG1_SCOPE, { useValue: this.componentScope })], this.parentInjector);
         this.contentInsertionPoint = document.createComment('ng1 insertion point');
         this.componentRef =
             this.componentFactory.create(childInjector, [[this.contentInsertionPoint]], '#' + this.id);

@@ -6,3 +6,4 @@ export declare function injectFromViewParentInjector(token: CompileTokenMetadata
 export declare function getViewFactoryName(component: CompileDirectiveMetadata, embeddedTemplateIndex: number): string;
 export declare function createDiTokenExpression(token: CompileTokenMetadata): o.Expression;
 export declare function createFlatArray(expressions: o.Expression[]): o.Expression;
+export declare function convertValueToOutputAst(value: any): o.Expression;

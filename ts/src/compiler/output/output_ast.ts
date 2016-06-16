@@ -175,11 +175,12 @@ export enum BuiltinVar {
   This,
   Super,
   CatchError,
-  CatchStack
+  CatchStack,
+  MetadataMap
 }
 
 export class ReadVarExpr extends Expression {
-  public name;
+  public name: string;
   public builtin: BuiltinVar;
 
   constructor(name: string | BuiltinVar, type: Type = null) {
@@ -437,6 +438,7 @@ export var THIS_EXPR = new ReadVarExpr(BuiltinVar.This);
 export var SUPER_EXPR = new ReadVarExpr(BuiltinVar.Super);
 export var CATCH_ERROR_VAR = new ReadVarExpr(BuiltinVar.CatchError);
 export var CATCH_STACK_VAR = new ReadVarExpr(BuiltinVar.CatchStack);
+export var METADATA_MAP = new ReadVarExpr(BuiltinVar.MetadataMap);
 export var NULL_EXPR = new LiteralExpr(null, null);
 
 //// Statements

@@ -1,17 +1,19 @@
 /**
- * A unique object used for retrieving items from the {@link Injector}.
+ * A unique object used for retrieving items from the {@link ReflectiveInjector}.
  *
  * Keys have:
  * - a system-wide unique `id`.
  * - a `token`.
  *
- * `Key` is used internally by {@link Injector} because its system-wide unique `id` allows the
+ * `Key` is used internally by {@link ReflectiveInjector} because its system-wide unique `id` allows
+ * the
  * injector to store created objects in a more efficient way.
  *
- * `Key` should not be created directly. {@link Injector} creates keys automatically when resolving
+ * `Key` should not be created directly. {@link ReflectiveInjector} creates keys automatically when
+ * resolving
  * providers.
  */
-export declare class Key {
+export declare class ReflectiveKey {
     token: Object;
     id: number;
     /**
@@ -25,7 +27,7 @@ export declare class Key {
     /**
      * Retrieves a `Key` for a token.
      */
-    static get(token: Object): Key;
+    static get(token: Object): ReflectiveKey;
     /**
      * @returns the number of keys registered in the system.
      */

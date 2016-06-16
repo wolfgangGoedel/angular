@@ -864,7 +864,7 @@ System.register("angular2/src/testing/test_injector", ["angular2/core", "angular
       this._providers = collection_1.ListWrapper.concat(this._providers, providers);
     };
     TestInjector.prototype.createInjector = function() {
-      var rootInjector = core_1.Injector.resolveAndCreate(this.platformProviders);
+      var rootInjector = core_1.ReflectiveInjector.resolveAndCreate(this.platformProviders);
       this._injector = rootInjector.resolveAndCreateChild(collection_1.ListWrapper.concat(this.applicationProviders, this._providers));
       this._instantiated = true;
       return this._injector;
@@ -898,7 +898,7 @@ System.register("angular2/src/testing/test_injector", ["angular2/core", "angular
     testInjector.platformProviders = platformProviders;
     testInjector.applicationProviders = applicationProviders;
     var injector = testInjector.createInjector();
-    var inits = injector.getOptional(core_1.PLATFORM_INITIALIZER);
+    var inits = injector.get(core_1.PLATFORM_INITIALIZER, null);
     if (lang_1.isPresent(inits)) {
       inits.forEach(function(init) {
         return init();
@@ -2080,7 +2080,7 @@ System.register("angular2/src/mock/mock_application_ref", ["angular2/src/core/ap
     }
     MockApplicationRef.prototype.registerBootstrapListener = function(listener) {};
     MockApplicationRef.prototype.registerDisposeListener = function(dispose) {};
-    MockApplicationRef.prototype.bootstrap = function(componentType, bindings) {
+    MockApplicationRef.prototype.bootstrap = function(componentFactory) {
       return null;
     };
     Object.defineProperty(MockApplicationRef.prototype, "injector", {
@@ -2099,6 +2099,12 @@ System.register("angular2/src/mock/mock_application_ref", ["angular2/src/core/ap
       configurable: true
     });
     ;
+    MockApplicationRef.prototype.run = function(callback) {
+      return null;
+    };
+    MockApplicationRef.prototype.waitForAsyncInitializers = function() {
+      return null;
+    };
     MockApplicationRef.prototype.dispose = function() {};
     MockApplicationRef.prototype.tick = function() {};
     Object.defineProperty(MockApplicationRef.prototype, "componentTypes", {

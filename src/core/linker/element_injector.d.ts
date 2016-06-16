@@ -4,6 +4,5 @@ export declare class ElementInjector extends Injector {
     private _view;
     private _nodeIndex;
     constructor(_view: AppView<any>, _nodeIndex: number);
-    get(token: any): any;
-    getOptional(token: any): any;
+    get(token: any, notFoundValue?: any): any;
 }

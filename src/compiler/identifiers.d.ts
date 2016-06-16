@@ -13,6 +13,8 @@ export declare class Identifiers {
     static TemplateRef_: CompileIdentifierMetadata;
     static ValueUnwrapper: CompileIdentifierMetadata;
     static Injector: CompileIdentifierMetadata;
+    static InjectorFactory: CompileIdentifierMetadata;
+    static CodegenInjector: CompileIdentifierMetadata;
     static ViewEncapsulation: CompileIdentifierMetadata;
     static ViewType: CompileIdentifierMetadata;
     static ChangeDetectionStrategy: CompileIdentifierMetadata;

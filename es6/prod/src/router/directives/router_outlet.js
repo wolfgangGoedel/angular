@@ -13,7 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 import { PromiseWrapper, EventEmitter } from 'angular2/src/facade/async';
 import { StringMapWrapper } from 'angular2/src/facade/collection';
 import { isBlank, isPresent } from 'angular2/src/facade/lang';
-import { Directive, Attribute, DynamicComponentLoader, ViewContainerRef, Injector, provide, Output } from 'angular2/core';
+import { Directive, Attribute, ComponentResolver, ComponentFactory, ViewContainerRef, Output, MapInjector } from 'angular2/core';
 import * as routerMod from '../router';
 import { RouteParams, RouteData } from '../instruction';
 import * as hookMod from '../lifecycle/lifecycle_annotations';
@@ -54,16 +54,23 @@ export let RouterOutlet = class RouterOutlet {
         this._currentInstruction = nextInstruction;
         var componentType = nextInstruction.componentType;
         var childRouter = this._parentRouter.childRouter(componentType);
-        var providers = Injector.resolve([
-            provide(RouteData, { useValue: nextInstruction.routeData }),
-            provide(RouteParams, { useValue: new RouteParams(nextInstruction.params) }),
-            provide(routerMod.Router, { useValue: childRouter })
-        ]);
+        var providers = new Map();
+        providers.set(RouteData, nextInstruction.routeData);
+        providers.set(RouteParams, new RouteParams(nextInstruction.params));
+        providers.set(routerMod.Router, childRouter);
+        var injector = new MapInjector(this._viewContainerRef.parentInjector, providers);
+        var componentFactoryPromise;
+        if (componentType instanceof ComponentFactory) {
+            componentFactoryPromise = PromiseWrapper.resolve(componentType);
+        }
+        else {
+            componentFactoryPromise = this._loader.resolveComponent(componentType);
+        }
         this._componentRef =
-            this._loader.loadNextToLocation(componentType, this._viewContainerRef, providers);
+            componentFactoryPromise.then((componentFactory) => this._viewContainerRef.createComponent(componentFactory, 0, injector));
         return this._componentRef.then((componentRef) => {
             this.activateEvents.emit(componentRef.instance);
-            if (hasLifecycleHook(hookMod.routerOnActivate, componentType)) {
+            if (hasLifecycleHook(hookMod.routerOnActivate, componentRef.instance)) {
                 return componentRef.instance
                     .routerOnActivate(nextInstruction, previousInstruction);
             }
@@ -87,8 +94,8 @@ export let RouterOutlet = class RouterOutlet {
             return this.activate(nextInstruction);
         }
         else {
-            return PromiseWrapper.resolve(hasLifecycleHook(hookMod.routerOnReuse, this._currentInstruction.componentType) ?
-                this._componentRef.then((ref) => ref.instance.routerOnReuse(nextInstruction, previousInstruction)) :
+            return this._componentRef.then((ref) => hasLifecycleHook(hookMod.routerOnReuse, ref.instance) ?
+                ref.instance.routerOnReuse(nextInstruction, previousInstruction) :
                 true);
         }
     }
@@ -98,10 +105,11 @@ export let RouterOutlet = class RouterOutlet {
      */
     deactivate(nextInstruction) {
         var next = _resolveToTrue;
-        if (isPresent(this._componentRef) && isPresent(this._currentInstruction) &&
-            hasLifecycleHook(hookMod.routerOnDeactivate, this._currentInstruction.componentType)) {
-            next = this._componentRef.then((ref) => ref.instance
-                .routerOnDeactivate(nextInstruction, this._currentInstruction));
+        if (isPresent(this._componentRef)) {
+            next = this._componentRef.then((ref) => hasLifecycleHook(hookMod.routerOnDeactivate, ref.instance) ?
+                ref.instance
+                    .routerOnDeactivate(nextInstruction, this._currentInstruction) :
+                true);
         }
         return next.then((_) => {
             if (isPresent(this._componentRef)) {
@@ -123,13 +131,10 @@ export let RouterOutlet = class RouterOutlet {
         if (isBlank(this._currentInstruction)) {
             return _resolveToTrue;
         }
-        if (hasLifecycleHook(hookMod.routerCanDeactivate, this._currentInstruction.componentType)) {
-            return this._componentRef.then((ref) => ref.instance
-                .routerCanDeactivate(nextInstruction, this._currentInstruction));
-        }
-        else {
-            return _resolveToTrue;
-        }
+        return this._componentRef.then((ref) => hasLifecycleHook(hookMod.routerCanDeactivate, ref.instance) ?
+            ref.instance
+                .routerCanDeactivate(nextInstruction, this._currentInstruction) :
+            true);
     }
     /**
      * Called by the {@link Router} during recognition phase of a navigation.
@@ -145,17 +150,21 @@ export let RouterOutlet = class RouterOutlet {
         var result;
         if (isBlank(this._currentInstruction) ||
             this._currentInstruction.componentType != nextInstruction.componentType) {
-            result = false;
-        }
-        else if (hasLifecycleHook(hookMod.routerCanReuse, this._currentInstruction.componentType)) {
-            result = this._componentRef.then((ref) => ref.instance.routerCanReuse(nextInstruction, this._currentInstruction));
+            result = PromiseWrapper.resolve(false);
         }
         else {
-            result = nextInstruction == this._currentInstruction ||
-                (isPresent(nextInstruction.params) && isPresent(this._currentInstruction.params) &&
-                    StringMapWrapper.equals(nextInstruction.params, this._currentInstruction.params));
+            result = this._componentRef.then((ref) => {
+                if (hasLifecycleHook(hookMod.routerCanReuse, ref.instance)) {
+                    return ref.instance.routerCanReuse(nextInstruction, this._currentInstruction);
+                }
+                else {
+                    return nextInstruction == this._currentInstruction ||
+                        (isPresent(nextInstruction.params) && isPresent(this._currentInstruction.params) &&
+                            StringMapWrapper.equals(nextInstruction.params, this._currentInstruction.params));
+                }
+            });
         }
-        return PromiseWrapper.resolve(result);
+        return result;
     }
     ngOnDestroy() { this._parentRouter.unregisterPrimaryOutlet(this); }
 };
@@ -166,5 +175,5 @@ __decorate([
 RouterOutlet = __decorate([
     Directive({ selector: 'router-outlet' }),
     __param(3, Attribute('name')), 
-    __metadata('design:paramtypes', [ViewContainerRef, DynamicComponentLoader, routerMod.Router, String])
+    __metadata('design:paramtypes', [ViewContainerRef, ComponentResolver, routerMod.Router, String])
 ], RouterOutlet);
