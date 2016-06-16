@@ -14,6 +14,8 @@ import "package:angular2/src/compiler/html_parser.dart" show HtmlParser;
 import "package:angular2/src/compiler/style_compiler.dart" show StyleCompiler;
 import "package:angular2/src/compiler/view_compiler/view_compiler.dart"
     show ViewCompiler;
+import "package:angular2/src/compiler/view_compiler/injector_compiler.dart"
+    show InjectorCompiler;
 import "package:angular2/src/compiler/directive_normalizer.dart"
     show DirectiveNormalizer;
 import "package:angular2/src/compiler/config.dart" show CompilerConfig;
@@ -53,6 +55,7 @@ OfflineCompiler _createOfflineCompiler(MockXHR xhr, OutputEmitter emitter) {
           new MockSchemaRegistry({}, {}), htmlParser, []),
       new StyleCompiler(urlResolver),
       new ViewCompiler(new CompilerConfig(true, true, true)),
+      new InjectorCompiler(),
       emitter);
 }
 
@@ -61,8 +64,9 @@ Future<String> compileComp(
   var xhr = new MockXHR();
   var compiler = _createOfflineCompiler(xhr, emitter);
   var result = compiler.normalizeDirectiveMetadata(comp).then((normComp) {
-    return compiler.compileTemplates(
-        [new NormalizedComponentWithViewDirectives(normComp, [], [])]).source;
+    return compiler.compile(
+        [new NormalizedComponentWithViewDirectives(normComp, [], [])],
+        []).source;
   });
   xhr.flush();
   return result;

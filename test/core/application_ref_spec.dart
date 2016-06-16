@@ -1,5 +1,6 @@
 library angular2.test.core.application_ref_spec;
 
+import "dart:async";
 import "package:angular2/testing_internal.dart"
     show
         ddescribe,
@@ -16,145 +17,200 @@ import "package:angular2/testing_internal.dart"
         tick,
         inject,
         SpyObject;
+import "package:angular2/src/facade/lang.dart" show Type;
 import "spies.dart" show SpyChangeDetectorRef;
 import "package:angular2/src/core/application_ref.dart"
-    show ApplicationRef_, ApplicationRef, PlatformRef_;
-import "package:angular2/core.dart" show Injector, Provider, APP_INITIALIZER;
+    show
+        ApplicationRef_,
+        ApplicationRef,
+        PLATFORM_CORE_PROVIDERS,
+        APPLICATION_CORE_PROVIDERS;
+import "package:angular2/core.dart"
+    show
+        Injector,
+        Provider,
+        APP_INITIALIZER,
+        Component,
+        ReflectiveInjector,
+        coreLoadAndBootstrap,
+        coreBootstrap,
+        PlatformRef,
+        createPlatform,
+        disposePlatform,
+        ComponentResolver,
+        ChangeDetectorRef;
+import "package:angular2/src/core/console.dart" show Console;
+import "package:angular2/src/facade/exceptions.dart"
+    show BaseException, unimplemented;
 import "package:angular2/src/facade/async.dart"
     show PromiseWrapper, PromiseCompleter, TimerWrapper;
-import "package:angular2/src/facade/collection.dart" show ListWrapper;
+import "package:angular2/src/core/linker/component_factory.dart"
+    show ComponentFactory, ComponentRef_, ComponentRef;
+import "package:angular2/src/core/linker/injector_factory.dart"
+    show InjectorFactory;
 import "package:angular2/src/facade/exception_handler.dart"
     show ExceptionHandler;
-import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 
 main() {
-  describe("ApplicationRef", () {
-    it("should throw when reentering tick", () {
-      var cdRef = (new SpyChangeDetectorRef() as dynamic);
-      var ref = new ApplicationRef_(null, null, null);
-      ref.registerChangeDetector(cdRef);
-      cdRef.spy("detectChanges").andCallFake(() => ref.tick());
-      expect(() => ref.tick())
-          .toThrowError("ApplicationRef.tick is called recursively");
+  describe("bootstrap", () {
+    PlatformRef platform;
+    _ArrayLogger errorLogger;
+    ComponentFactory someCompFactory;
+    beforeEach(() {
+      errorLogger = new _ArrayLogger();
+      disposePlatform();
+      platform = createPlatform(
+          ReflectiveInjector.resolveAndCreate(PLATFORM_CORE_PROVIDERS));
+      someCompFactory = new _MockComponentFactory(
+          new _MockComponentRef(ReflectiveInjector.resolveAndCreate([])));
     });
-  });
-  describe("PlatformRef", () {
-    var exceptionHandler = new Provider(ExceptionHandler,
-        useValue: new ExceptionHandler(DOM, true));
-    describe("asyncApplication", () {
-      void expectProviders(Injector injector, List<dynamic> providers) {
-        for (var i = 0; i < providers.length; i++) {
-          var provider = providers[i];
-          expect(injector.get(provider.token)).toBe(provider.useValue);
+    afterEach(() {
+      disposePlatform();
+    });
+    ApplicationRef_ createApplication(List<dynamic> providers) {
+      var appInjector = ReflectiveInjector.resolveAndCreate([
+        APPLICATION_CORE_PROVIDERS,
+        new Provider(Console, useValue: new _MockConsole()),
+        new Provider(ExceptionHandler,
+            useValue: new ExceptionHandler(errorLogger, false)),
+        new Provider(ComponentResolver,
+            useValue: new _MockComponentResolver(someCompFactory)),
+        providers
+      ], platform.injector);
+      return appInjector.get(ApplicationRef);
+    }
+    describe("ApplicationRef", () {
+      it("should throw when reentering tick", () {
+        var cdRef = (new SpyChangeDetectorRef() as dynamic);
+        var ref = createApplication([]);
+        try {
+          ref.registerChangeDetector(cdRef);
+          cdRef.spy("detectChanges").andCallFake(() => ref.tick());
+          expect(() => ref.tick())
+              .toThrowError("ApplicationRef.tick is called recursively");
+        } finally {
+          ref.unregisterChangeDetector(cdRef);
         }
-      }
+      });
+      describe("run", () {
+        it("should rethrow errors even if the exceptionHandler is not rethrowing",
+            () {
+          var ref = createApplication([]);
+          expect(() => ref.run(() {
+                throw new BaseException("Test");
+              })).toThrowError("Test");
+        });
+        it(
+            "should return a promise with rejected errors even if the exceptionHandler is not rethrowing",
+            inject([AsyncTestCompleter, Injector], (async, injector) {
+              var ref = createApplication([]);
+              var promise = ref.run(() => PromiseWrapper.reject("Test", null));
+              PromiseWrapper.catchError(promise, (e) {
+                expect(e).toEqual("Test");
+                async.done();
+              });
+            }));
+      });
+    });
+    describe("coreLoadAndBootstrap", () {
       it(
-          "should merge syncronous and asyncronous providers",
+          "should wait for asynchronous app initializers",
           inject([AsyncTestCompleter, Injector], (async, injector) {
-            var ref = new PlatformRef_(injector, null);
-            var ASYNC_PROVIDERS = [
-              new Provider(Foo, useValue: new Foo()),
-              exceptionHandler
-            ];
-            var SYNC_PROVIDERS = [new Provider(Bar, useValue: new Bar())];
-            ref
-                .asyncApplication(
-                    (zone) => PromiseWrapper.resolve(ASYNC_PROVIDERS),
-                    SYNC_PROVIDERS)
-                .then((appRef) {
-              var providers =
-                  ListWrapper.concat(ASYNC_PROVIDERS, SYNC_PROVIDERS);
-              expectProviders(appRef.injector, providers);
-              async.done();
-            });
-          }));
-      it(
-          "should allow function to be null",
-          inject([AsyncTestCompleter, Injector], (async, injector) {
-            var ref = new PlatformRef_(injector, null);
-            var SYNC_PROVIDERS = [
-              new Provider(Bar, useValue: new Bar()),
-              exceptionHandler
-            ];
-            ref.asyncApplication(null, SYNC_PROVIDERS).then((appRef) {
-              expectProviders(appRef.injector, SYNC_PROVIDERS);
-              async.done();
-            });
-          }));
-      mockAsyncAppInitializer(PromiseCompleter<dynamic> completer,
-          [List<dynamic> providers = null, Injector injector]) {
-        return () {
-          if (providers != null) {
-            expectProviders(injector, providers);
-          }
-          TimerWrapper.setTimeout(() => completer.resolve(true), 1);
-          return completer.promise;
-        };
-      }
-      it(
-          "should wait for asyncronous app initializers",
-          inject([AsyncTestCompleter, Injector], (async, injector) {
-            var ref = new PlatformRef_(injector, null);
             PromiseCompleter<dynamic> completer = PromiseWrapper.completer();
-            var SYNC_PROVIDERS = [
-              new Provider(Bar, useValue: new Bar()),
+            var initializerDone = false;
+            TimerWrapper.setTimeout(() {
+              completer.resolve(true);
+              initializerDone = true;
+            }, 1);
+            var app = createApplication([
               new Provider(APP_INITIALIZER,
-                  useValue: mockAsyncAppInitializer(completer), multi: true)
-            ];
-            ref.asyncApplication(null, [SYNC_PROVIDERS, exceptionHandler]).then(
-                (appRef) {
-              expectProviders(
-                  appRef.injector,
-                  ListWrapper.slice(
-                      SYNC_PROVIDERS, 0, SYNC_PROVIDERS.length - 1));
-              completer.promise.then((_) => async.done());
-            });
-          }));
-      it(
-          "should wait for async providers and then async app initializers",
-          inject([AsyncTestCompleter, Injector], (async, injector) {
-            var ref = new PlatformRef_(injector, null);
-            var ASYNC_PROVIDERS = [new Provider(Foo, useValue: new Foo())];
-            PromiseCompleter<dynamic> completer = PromiseWrapper.completer();
-            var SYNC_PROVIDERS = [
-              new Provider(Bar, useValue: new Bar()),
-              new Provider(APP_INITIALIZER,
-                  useFactory: (injector) => mockAsyncAppInitializer(
-                      (completer as dynamic), ASYNC_PROVIDERS, injector),
-                  multi: true,
-                  deps: [Injector])
-            ];
-            ref.asyncApplication(
-                (zone) => PromiseWrapper.resolve(ASYNC_PROVIDERS),
-                [SYNC_PROVIDERS, exceptionHandler]).then((appRef) {
-              expectProviders(
-                  appRef.injector,
-                  ListWrapper.slice(
-                      SYNC_PROVIDERS, 0, SYNC_PROVIDERS.length - 1));
-              completer.promise.then((_) => async.done());
+                  useValue: () => completer.promise, multi: true)
+            ]);
+            coreLoadAndBootstrap(app.injector, MyComp).then((compRef) {
+              expect(initializerDone).toBe(true);
+              async.done();
             });
           }));
     });
-    describe("application", () {
+    describe("coreBootstrap", () {
       it(
-          "should throw if an APP_INITIIALIZER returns a promise",
+          "should throw if an APP_INITIIALIZER is not yet resolved",
           inject([Injector], (injector) {
-            var ref = new PlatformRef_(injector, null);
-            var appInitializer = new Provider(APP_INITIALIZER,
-                useValue: () => PromiseWrapper.resolve([]), multi: true);
-            expect(() => ref
-                .application(
-                    [appInitializer, exceptionHandler])).toThrowError(
-                "Cannot use asyncronous app initializers with application. Use asyncApplication instead.");
+            var app = createApplication([
+              new Provider(APP_INITIALIZER,
+                  useValue: () => PromiseWrapper.completer().promise,
+                  multi: true)
+            ]);
+            expect(() => app.bootstrap(someCompFactory)).toThrowError(
+                "Cannot bootstrap as there are still asynchronous initializers running. Wait for them using waitForAsyncInitializers().");
           }));
     });
   });
 }
 
-class Foo {
-  Foo() {}
+@Component(selector: "my-comp", template: "")
+class MyComp {}
+
+class _ArrayLogger {
+  List<dynamic> res = [];
+  void log(dynamic s) {
+    this.res.add(s);
+  }
+
+  void logError(dynamic s) {
+    this.res.add(s);
+  }
+
+  void logGroup(dynamic s) {
+    this.res.add(s);
+  }
+
+  logGroupEnd() {}
 }
 
-class Bar {
-  Bar() {}
+class _MockComponentFactory extends ComponentFactory {
+  ComponentRef _compRef;
+  _MockComponentFactory(this._compRef) : super(null, null, null) {
+    /* super call moved to initializer */;
+  }
+  ComponentRef create(Injector injector,
+      [List<List<dynamic>> projectableNodes = null,
+      dynamic /* String | dynamic */ rootSelectorOrNode = null]) {
+    return this._compRef;
+  }
+}
+
+class _MockComponentResolver implements ComponentResolver {
+  ComponentFactory _compFactory;
+  _MockComponentResolver(this._compFactory) {}
+  Future<ComponentFactory> resolveComponent(Type type) {
+    return PromiseWrapper.resolve(this._compFactory);
+  }
+
+  InjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
+      [List<dynamic> extraProviders]) {
+    return unimplemented();
+  }
+
+  clearCache() {}
+}
+
+class _MockComponentRef extends ComponentRef_ {
+  Injector _injector;
+  _MockComponentRef(this._injector) : super(null, null, null) {
+    /* super call moved to initializer */;
+  }
+  Injector get injector {
+    return this._injector;
+  }
+
+  ChangeDetectorRef get changeDetectorRef {
+    return (new SpyChangeDetectorRef() as dynamic);
+  }
+
+  onDestroy(Function cb) {}
+}
+
+class _MockConsole implements Console {
+  log(message) {}
 }

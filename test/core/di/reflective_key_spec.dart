@@ -1,8 +1,9 @@
-library angular2.test.core.di.key_spec;
+library angular2.test.core.di.reflective_key_spec;
 
 import "package:angular2/testing_internal.dart"
     show describe, iit, it, expect, beforeEach;
-import "package:angular2/src/core/di/key.dart" show Key, KeyRegistry;
+import "package:angular2/src/core/di/reflective_key.dart"
+    show ReflectiveKey, KeyRegistry;
 
 main() {
   describe("key", () {

@@ -38,7 +38,7 @@ class _View_CompA0 extends import3.DebugAppView<import4.CompA> {
             0,
             0,
             nodeDebugInfos_CompA0) {}
-  import7.AppElement createInternal(String rootSelector) {
+  import7.AppElement createInternal(dynamic rootSelector) {
     final parentRenderNode =
         this.renderer.createViewRoot(this.declarationAppElement.nativeElement);
     this._text_0 =
@@ -98,7 +98,7 @@ class _View_CompA_Host0 extends import3.DebugAppView<dynamic> {
             0,
             0,
             nodeDebugInfos_CompA_Host0) {}
-  import7.AppElement createInternal(String rootSelector) {
+  import7.AppElement createInternal(dynamic rootSelector) {
     this._el_0 = this
         .selectOrCreateHostElement('comp-a', rootSelector, this.debug(0, 0, 0));
     this._appEl_0 = new import7.AppElement(0, null, this, this._el_0);
@@ -131,4 +131,5 @@ import3.AppView<dynamic> viewFactory_CompA_Host0(import5.ViewUtils viewUtils,
 
 const import11.ComponentFactory CompANgFactory =
     const import11.ComponentFactory(
-        'comp-a', viewFactory_CompA_Host0, import4.CompA);
+        'comp-a', viewFactory_CompA_Host0, import4.CompA, _METADATA);
+const _METADATA = const [];

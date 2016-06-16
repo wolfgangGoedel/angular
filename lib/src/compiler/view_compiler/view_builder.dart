@@ -518,7 +518,7 @@ o.ClassStmt createViewClass(CompileView view, o.ReadVarExpr renderCompTypeVar,
   var viewMethods = (new List.from([
     new o.ClassMethod(
         "createInternal",
-        [new o.FnParam(rootSelectorVar.name, o.STRING_TYPE)],
+        [new o.FnParam(rootSelectorVar.name, o.DYNAMIC_TYPE)],
         generateCreateMethod(view),
         o.importType(Identifiers.AppElement)),
     new o.ClassMethod(

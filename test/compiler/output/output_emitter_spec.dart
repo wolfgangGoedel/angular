@@ -121,6 +121,14 @@ main() {
           // Note: toBeAnInstanceOf does not check super classes in Dart...
           expect(expressions["dynamicInstance"] is ExternalClass).toBe(true);
         });
+        it("should support reading metadataMap", () {
+          if (IS_DART && outputDef["name"] == "typed") {
+            expect(expressions["metadataMap"])
+                .toEqual(["someKey", "someValue"]);
+          } else {
+            expect(expressions["metadataMap"]).toBe(null);
+          }
+        });
         describe("operators", () {
           var ops;
           var aObj, bObj;

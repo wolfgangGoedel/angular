@@ -49,7 +49,8 @@ import "package:angular2/core.dart"
         Host,
         SkipSelf,
         SkipSelfMetadata,
-        OnDestroy;
+        OnDestroy,
+        ReflectiveInjector;
 import "package:angular2/common.dart" show NgIf, NgFor;
 import "package:angular2/common.dart" show AsyncPipe;
 import "package:angular2/src/core/change_detection/change_detection.dart"
@@ -1542,7 +1543,7 @@ declareTests(bool isJit) {
               var c = e.context;
               expect(DOM.nodeName(c.componentRenderElement).toUpperCase())
                   .toEqual("DIV");
-              expect(c.injector.getOptional).toBeTruthy();
+              expect(((c.injector as Injector)).get).toBeTruthy();
               async.done();
               return null;
             });
@@ -1565,12 +1566,12 @@ declareTests(bool isJit) {
                     .toEqual("INPUT");
                 expect(DOM.nodeName(c.componentRenderElement).toUpperCase())
                     .toEqual("DIV");
-                expect(c.injector.getOptional).toBeTruthy();
+                expect(((c.injector as Injector)).get).toBeTruthy();
                 expect(c.source).toContain(":0:7");
                 expect(c.context).toBe(fixture.debugElement.componentInstance);
                 expect(c.locals["local"]).toBeDefined();
+                async.done();
               }
-              async.done();
             });
           }));
       it(
@@ -1587,8 +1588,8 @@ declareTests(bool isJit) {
                 var c = e.context;
                 expect(c.renderNode).toBeTruthy();
                 expect(c.source).toContain(":0:5");
+                async.done();
               }
-              async.done();
             });
           }));
       if (DOM.supportsDOMEvents()) {
@@ -1596,15 +1597,6 @@ declareTests(bool isJit) {
             "should provide an error context when an error happens in an event handler",
             fakeAsync(
                 inject([TestComponentBuilder], (TestComponentBuilder tcb) {
-              tcb = tcb.overrideView(
-                  MyComp,
-                  new ViewMetadata(
-                      template:
-                          '''<span emitter listener (event)="throwError()" #local></span>''',
-                      directives: [
-                        DirectiveEmittingEvent,
-                        DirectiveListeningEvent
-                      ]));
               tcb = tcb.overrideView(
                   MyComp,
                   new ViewMetadata(
@@ -1631,6 +1623,7 @@ declareTests(bool isJit) {
                     .toEqual("SPAN");
                 expect(DOM.nodeName(c.componentRenderElement).toUpperCase())
                     .toEqual("DIV");
+                expect(((c.injector as Injector)).get).toBeTruthy();
                 expect(c.context).toBe(fixture.debugElement.componentInstance);
                 expect(c.locals["local"]).toBeDefined();
               }
@@ -2134,11 +2127,11 @@ class DynamicViewport {
   DynamicViewport(ViewContainerRef vc, ComponentResolver compiler) {
     var myService = new MyService();
     myService.greeting = "dynamic greet";
-    var bindings = Injector.resolve([provide(MyService, useValue: myService)]);
-    this.done =
-        compiler.resolveComponent(ChildCompUsingService).then((compFactory) {
-      vc.createComponent(compFactory, 0, bindings);
-    });
+    var injector = ReflectiveInjector.resolveAndCreate(
+        [provide(MyService, useValue: myService)], vc.injector);
+    this.done = compiler.resolveComponent(ChildCompUsingService).then(
+        (componentFactory) =>
+            vc.createComponent(componentFactory, 0, injector));
   }
 }
 

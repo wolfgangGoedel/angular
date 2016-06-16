@@ -82,6 +82,7 @@ dynamic getExpressions() {
     'dynamicInstance': dynamicInstance,
     'throwError': throwError,
     'catchError': catchError,
+    'metadataMap': _METADATA,
     'operators': {
       '==': (a, b) {
         return (a == b);
@@ -131,3 +132,5 @@ dynamic getExpressions() {
     }
   };
 }
+
+var _METADATA = const ["someKey", "someValue"];
