@@ -161,7 +161,7 @@ main() {
           var exceptionHandler = new ExceptionHandler(logger, false);
           var refPromise = bootstrap(HelloRootCmp,
               [provide(ExceptionHandler, useValue: exceptionHandler)]);
-          PromiseWrapper.then(refPromise, null, (reason) {
+          PromiseWrapper.catchError(refPromise, (reason) {
             expect(reason.message).toContain(
                 "The selector \"hello-app\" did not match any elements");
             async.done();
@@ -177,10 +177,11 @@ main() {
             var exceptionHandler = new ExceptionHandler(logger, false);
             var refPromise = bootstrap(HelloRootCmp,
                 [provide(ExceptionHandler, useValue: exceptionHandler)]);
-            PromiseWrapper.then(refPromise, null, (dynamic reason) {
+            PromiseWrapper.catchError(refPromise, (dynamic reason) {
               expect(reason.message).toContain(
                   "The selector \"hello-app\" did not match any elements");
               async.done();
+              return null;
             });
           }));
       it(
@@ -190,7 +191,7 @@ main() {
             var exceptionHandler = new ExceptionHandler(logger, false);
             var refPromise = bootstrap(HelloRootCmp,
                 [provide(ExceptionHandler, useValue: exceptionHandler)]);
-            PromiseWrapper.then(refPromise, null, (reason) {
+            PromiseWrapper.catchError(refPromise, (reason) {
               expect(logger.res.join("")).toContain(
                   "The selector \"hello-app\" did not match any elements");
               async.done();
