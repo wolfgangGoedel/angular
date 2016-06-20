@@ -30,7 +30,7 @@ import "package:angular2/src/core/linker/template_ref.dart"
     show TemplateRef, TemplateRef_;
 import "util.dart" show MODULE_SUFFIX;
 import "package:angular2/src/core/linker/injector_factory.dart"
-    show CodegenInjector, InjectorFactory;
+    show CodegenInjector, CodegenInjectorFactory;
 
 var APP_VIEW_MODULE_URL =
     "asset:angular2/lib/src/core/linker/view" + MODULE_SUFFIX;
@@ -59,7 +59,7 @@ var impTemplateRef_ = TemplateRef_;
 var impValueUnwrapper = ValueUnwrapper;
 var impInjector = Injector;
 var impCodegenInjector = CodegenInjector;
-var impInjectorFactory = InjectorFactory;
+var impCodegenInjectorFactory = CodegenInjectorFactory;
 var impViewEncapsulation = ViewEncapsulation;
 var impViewType = ViewType;
 var impChangeDetectionStrategy = ChangeDetectionStrategy;
@@ -133,10 +133,10 @@ class Identifiers {
       moduleUrl: '''asset:angular2/lib/src/core/di/injector${ MODULE_SUFFIX}''',
       runtime: impInjector);
   static var InjectorFactory = new CompileIdentifierMetadata(
-      name: "InjectorFactory",
+      name: "CodegenInjectorFactory",
       moduleUrl:
           '''asset:angular2/lib/src/core/linker/injector_factory${ MODULE_SUFFIX}''',
-      runtime: impInjectorFactory);
+      runtime: impCodegenInjectorFactory);
   static var CodegenInjector = new CompileIdentifierMetadata(
       name: "CodegenInjector",
       moduleUrl:

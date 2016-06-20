@@ -11,4 +11,3 @@ export "linker/view_container_ref.dart" show ViewContainerRef;
 export "linker/component_factory.dart" show ComponentRef, ComponentFactory;
 export "linker/exceptions.dart"
     show ExpressionChangedAfterItHasBeenCheckedException;
-export "linker/injector_factory.dart" show InjectorFactory;

@@ -52,7 +52,7 @@ import "runtime_metadata.dart" show RuntimeMetadataResolver;
 import "package:angular2/src/core/linker/component_factory.dart"
     show ComponentFactory;
 import "package:angular2/src/core/linker/injector_factory.dart"
-    show InjectorFactory;
+    show CodegenInjectorFactory;
 import "package:angular2/src/core/linker/component_resolver.dart"
     show ComponentResolver, ReflectorComponentResolver;
 import "config.dart" show CompilerConfig;
@@ -92,7 +92,7 @@ class RuntimeCompiler implements ComponentResolver {
       this._xhr,
       this._injectorCompiler,
       this._genConfig) {}
-  InjectorFactory<dynamic> createInjectorFactory(Type moduleClass,
+  CodegenInjectorFactory<dynamic> createInjectorFactory(Type moduleClass,
       [List<dynamic> extraProviders = const []]) {
     var injectorModuleMeta = this
         ._runtimeMetadataResolver

@@ -24,9 +24,9 @@ abstract class CodegenInjector<MODULE> implements Injector {
   dynamic getInternal(dynamic token, dynamic notFoundValue);
 }
 
-class InjectorFactory<MODULE> {
+class CodegenInjectorFactory<MODULE> {
   final dynamic /* (parent: Injector, mainModule: MODULE) => Injector */ _injectorFactory;
-  const InjectorFactory(this._injectorFactory);
+  const CodegenInjectorFactory(this._injectorFactory);
   Injector create([Injector parent = null, MODULE mainModule = null]) {
     if (isBlank(parent)) {
       parent = Injector.NULL;

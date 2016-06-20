@@ -52,23 +52,17 @@ abstract class Injector {
   }
 }
 
+class _EmptyInjectorFactory implements InjectorFactory<dynamic> {
+  Injector create([Injector parent = null, dynamic context = null]) {
+    return isBlank(parent) ? Injector.NULL : parent;
+  }
+}
+
 /**
- * An simple injector based on a Map of values.
+ * A factory for an injector.
  */
-class MapInjector implements Injector {
-  Injector _parent;
-  Map<dynamic, dynamic> _values;
-  MapInjector(this._parent, this._values) {
-    if (isBlank(this._parent)) {
-      this._parent = Injector.NULL;
-    }
-  }
-  dynamic get(dynamic token, [dynamic notFoundValue = _THROW_IF_NOT_FOUND]) {
-    if (identical(token, Injector)) {
-      return this;
-    }
-    return this._values.containsKey(token)
-        ? this._values[token]
-        : this._parent.get(token, notFoundValue);
-  }
+abstract class InjectorFactory<CONTEXT> {
+  // An InjectorFactory that will always delegate to the parent.
+  static InjectorFactory<dynamic> EMPTY = new _EmptyInjectorFactory();
+  Injector create([Injector parent, CONTEXT context]);
 }

@@ -798,6 +798,7 @@ class CompileInjectorModuleMetadata
   var isHost = false;
   dynamic value;
   List<CompileDiDependencyMetadata> diDeps;
+  bool injectable;
   List<dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ >
       providers;
   CompileInjectorModuleMetadata(
@@ -808,7 +809,8 @@ class CompileInjectorModuleMetadata
       dynamic value,
       List<CompileDiDependencyMetadata> diDeps,
       List<
-          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > providers}) {
+          dynamic /* CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | List < dynamic > */ > providers,
+      bool injectable}) {
     this.runtime = runtime;
     this.name = name;
     this.moduleUrl = moduleUrl;
@@ -816,6 +818,7 @@ class CompileInjectorModuleMetadata
     this.value = value;
     this.diDeps = _normalizeArray(diDeps);
     this.providers = _normalizeArray(providers);
+    this.injectable = normalizeBool(injectable);
   }
   static CompileInjectorModuleMetadata fromJson(Map<String, dynamic> data) {
     return new CompileInjectorModuleMetadata(
@@ -825,7 +828,8 @@ class CompileInjectorModuleMetadata
         value: data["value"],
         diDeps: _arrayFromJson(
             data["diDeps"], CompileDiDependencyMetadata.fromJson),
-        providers: _arrayFromJson(data["providers"], metadataFromJson));
+        providers: _arrayFromJson(data["providers"], metadataFromJson),
+        injectable: data["injectable"]);
   }
 
   CompileIdentifierMetadata get identifier {
@@ -846,7 +850,8 @@ class CompileInjectorModuleMetadata
       "isHost": this.isHost,
       "value": this.value,
       "diDeps": _arrayToJson(this.diDeps),
-      "providers": _arrayToJson(this.providers)
+      "providers": _arrayToJson(this.providers),
+      "injectable": this.injectable
     };
   }
 }

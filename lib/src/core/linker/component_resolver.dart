@@ -9,7 +9,7 @@ import "package:angular2/src/facade/exceptions.dart"
 import "package:angular2/src/facade/async.dart" show PromiseWrapper;
 import "package:angular2/src/core/reflection/reflection.dart" show reflector;
 import "component_factory.dart" show ComponentFactory;
-import "injector_factory.dart" show InjectorFactory;
+import "injector_factory.dart" show CodegenInjectorFactory;
 
 /**
  * Low-level service for loading [ComponentFactory]s, which
@@ -17,7 +17,7 @@ import "injector_factory.dart" show InjectorFactory;
  */
 abstract class ComponentResolver {
   Future<ComponentFactory> resolveComponent(Type componentType);
-  InjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
+  CodegenInjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
       [List<dynamic> extraProviders]);
   clearCache();
 }
@@ -39,7 +39,7 @@ class ReflectorComponentResolver extends ComponentResolver {
     return PromiseWrapper.resolve(componentFactory);
   }
 
-  InjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
+  CodegenInjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
       [List<dynamic> extraProviders]) {
     return unimplemented();
   }

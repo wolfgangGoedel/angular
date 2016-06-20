@@ -47,7 +47,7 @@ import "package:angular2/src/facade/async.dart"
 import "package:angular2/src/core/linker/component_factory.dart"
     show ComponentFactory, ComponentRef_, ComponentRef;
 import "package:angular2/src/core/linker/injector_factory.dart"
-    show InjectorFactory;
+    show CodegenInjectorFactory;
 import "package:angular2/src/facade/exception_handler.dart"
     show ExceptionHandler;
 
@@ -187,7 +187,7 @@ class _MockComponentResolver implements ComponentResolver {
     return PromiseWrapper.resolve(this._compFactory);
   }
 
-  InjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
+  CodegenInjectorFactory<dynamic> createInjectorFactory(Type injectorModule,
       [List<dynamic> extraProviders]) {
     return unimplemented();
   }
