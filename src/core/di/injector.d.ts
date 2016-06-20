@@ -33,11 +33,9 @@ export declare abstract class Injector {
     get(token: any, notFoundValue?: any): any;
 }
 /**
- * An simple injector based on a Map of values.
+ * A factory for an injector.
  */
-export declare class MapInjector implements Injector {
-    private _parent;
-    private _values;
-    constructor(_parent: Injector, _values: Map<any, any>);
-    get(token: any, notFoundValue?: any): any;
+export declare abstract class InjectorFactory<CONTEXT> {
+    static EMPTY: InjectorFactory<any>;
+    abstract create(parent?: Injector, context?: CONTEXT): Injector;
 }

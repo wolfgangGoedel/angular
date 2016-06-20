@@ -521,7 +521,7 @@ export class CompilePipeMetadata {
  * Metadata regarding compilation of an InjectorModule.
  */
 export class CompileInjectorModuleMetadata {
-    constructor({ runtime, name, moduleUrl, prefix, value, diDeps, providers } = {}) {
+    constructor({ runtime, name, moduleUrl, prefix, value, diDeps, providers, injectable } = {}) {
         this.isHost = false;
         this.runtime = runtime;
         this.name = name;
@@ -530,6 +530,7 @@ export class CompileInjectorModuleMetadata {
         this.value = value;
         this.diDeps = _normalizeArray(diDeps);
         this.providers = _normalizeArray(providers);
+        this.injectable = normalizeBool(injectable);
     }
     static fromJson(data) {
         return new CompileInjectorModuleMetadata({
@@ -538,7 +539,8 @@ export class CompileInjectorModuleMetadata {
             prefix: data['prefix'],
             value: data['value'],
             diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson),
-            providers: _arrayFromJson(data['providers'], metadataFromJson)
+            providers: _arrayFromJson(data['providers'], metadataFromJson),
+            injectable: data['injectable']
         });
     }
     get identifier() { return this; }
@@ -553,7 +555,8 @@ export class CompileInjectorModuleMetadata {
             'isHost': this.isHost,
             'value': this.value,
             'diDeps': _arrayToJson(this.diDeps),
-            'providers': _arrayToJson(this.providers)
+            'providers': _arrayToJson(this.providers),
+            'injectable': this.injectable
         };
     }
 }

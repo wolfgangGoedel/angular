@@ -43,22 +43,15 @@ export class Injector {
 }
 Injector.THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
 Injector.NULL = new _NullInjector();
-/**
- * An simple injector based on a Map of values.
- */
-export class MapInjector {
-    constructor(_parent, _values) {
-        this._parent = _parent;
-        this._values = _values;
-        if (isBlank(this._parent)) {
-            this._parent = Injector.NULL;
-        }
-    }
-    get(token, notFoundValue = _THROW_IF_NOT_FOUND) {
-        if (token === Injector) {
-            return this;
-        }
-        return this._values.has(token) ? this._values.get(token) :
-            this._parent.get(token, notFoundValue);
+class _EmptyInjectorFactory {
+    create(parent = null, context = null) {
+        return isBlank(parent) ? Injector.NULL : parent;
     }
 }
+/**
+ * A factory for an injector.
+ */
+export class InjectorFactory {
+}
+// An InjectorFactory that will always delegate to the parent.
+InjectorFactory.EMPTY = new _EmptyInjectorFactory();

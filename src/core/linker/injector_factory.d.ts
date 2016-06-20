@@ -6,7 +6,7 @@ export declare abstract class CodegenInjector<MODULE> implements Injector {
     get(token: any, notFoundValue?: any): any;
     abstract getInternal(token: any, notFoundValue: any): any;
 }
-export declare class InjectorFactory<MODULE> {
+export declare class CodegenInjectorFactory<MODULE> {
     private _injectorFactory;
     constructor(_injectorFactory: (parent: Injector, mainModule: MODULE) => Injector);
     create(parent?: Injector, mainModule?: MODULE): Injector;

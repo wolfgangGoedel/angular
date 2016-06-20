@@ -1775,26 +1775,25 @@ System.register("angular2/src/core/di/injector", ["angular2/src/facade/lang", "a
     return Injector;
   }());
   exports.Injector = Injector;
-  var MapInjector = (function() {
-    function MapInjector(_parent, _values) {
-      this._parent = _parent;
-      this._values = _values;
-      if (lang_1.isBlank(this._parent)) {
-        this._parent = Injector.NULL;
+  var _EmptyInjectorFactory = (function() {
+    function _EmptyInjectorFactory() {}
+    _EmptyInjectorFactory.prototype.create = function(parent, context) {
+      if (parent === void 0) {
+        parent = null;
       }
-    }
-    MapInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = _THROW_IF_NOT_FOUND;
+      if (context === void 0) {
+        context = null;
       }
-      if (token === Injector) {
-        return this;
-      }
-      return this._values.has(token) ? this._values.get(token) : this._parent.get(token, notFoundValue);
+      return lang_1.isBlank(parent) ? Injector.NULL : parent;
     };
-    return MapInjector;
+    return _EmptyInjectorFactory;
   }());
-  exports.MapInjector = MapInjector;
+  var InjectorFactory = (function() {
+    function InjectorFactory() {}
+    InjectorFactory.EMPTY = new _EmptyInjectorFactory();
+    return InjectorFactory;
+  }());
+  exports.InjectorFactory = InjectorFactory;
   global.define = __define;
   return module.exports;
 });
@@ -2441,6 +2440,91 @@ System.register("angular2/src/core/di/opaque_token", ["angular2/src/facade/lang"
     return OpaqueToken;
   }());
   exports.OpaqueToken = OpaqueToken;
+  global.define = __define;
+  return module.exports;
+});
+
+System.register("angular2/src/core/di/map_injector", ["angular2/src/facade/lang", "angular2/src/core/di/injector"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var lang_1 = require("angular2/src/facade/lang");
+  var injector_1 = require("angular2/src/core/di/injector");
+  var MapInjector = (function() {
+    function MapInjector(_parent, values, factories) {
+      if (_parent === void 0) {
+        _parent = null;
+      }
+      if (values === void 0) {
+        values = null;
+      }
+      if (factories === void 0) {
+        factories = null;
+      }
+      this._parent = _parent;
+      this._instances = new Map();
+      if (lang_1.isBlank(values)) {
+        values = new Map();
+      }
+      this._values = values;
+      if (lang_1.isBlank(factories)) {
+        factories = new Map();
+      }
+      this._factories = factories;
+      if (lang_1.isBlank(this._parent)) {
+        this._parent = injector_1.Injector.NULL;
+      }
+    }
+    MapInjector.createFactory = function(values, factories) {
+      return new MapInjectorFactory(values, factories);
+    };
+    MapInjector.prototype.get = function(token, notFoundValue) {
+      if (notFoundValue === void 0) {
+        notFoundValue = injector_1.THROW_IF_NOT_FOUND;
+      }
+      if (token === injector_1.Injector) {
+        return this;
+      }
+      if (this._values.has(token)) {
+        return this._values.get(token);
+      }
+      if (this._instances.has(token)) {
+        return this._instances.get(token);
+      }
+      if (this._factories.has(token)) {
+        var instance = this._factories.get(token)(this);
+        this._instances.set(token, instance);
+        return instance;
+      }
+      return this._parent.get(token, notFoundValue);
+    };
+    return MapInjector;
+  }());
+  exports.MapInjector = MapInjector;
+  var MapInjectorFactory = (function() {
+    function MapInjectorFactory(_values, _factories) {
+      if (_values === void 0) {
+        _values = null;
+      }
+      if (_factories === void 0) {
+        _factories = null;
+      }
+      this._values = _values;
+      this._factories = _factories;
+    }
+    MapInjectorFactory.prototype.create = function(parent, context) {
+      if (parent === void 0) {
+        parent = null;
+      }
+      if (context === void 0) {
+        context = null;
+      }
+      return new MapInjector(parent, this._values, this._factories);
+    };
+    return MapInjectorFactory;
+  }());
+  exports.MapInjectorFactory = MapInjectorFactory;
   global.define = __define;
   return module.exports;
 });
@@ -4353,73 +4437,6 @@ System.register("angular2/src/core/linker/view_ref", ["angular2/src/facade/excep
     return ViewRef_;
   }());
   exports.ViewRef_ = ViewRef_;
-  global.define = __define;
-  return module.exports;
-});
-
-System.register("angular2/src/core/linker/injector_factory", ["angular2/src/core/di/injector", "angular2/src/facade/exceptions", "angular2/src/facade/lang"], true, function(require, exports, module) {
-  var global = System.global,
-      __define = global.define;
-  global.define = undefined;
-  "use strict";
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var injector_1 = require("angular2/src/core/di/injector");
-  var exceptions_1 = require("angular2/src/facade/exceptions");
-  var lang_1 = require("angular2/src/facade/lang");
-  var _UNDEFINED = lang_1.CONST_EXPR(new Object());
-  var CodegenInjector = (function() {
-    function CodegenInjector(parent, _needsMainModule, mainModule) {
-      this.parent = parent;
-      this.mainModule = mainModule;
-      if (_needsMainModule && lang_1.isBlank(mainModule)) {
-        throw new exceptions_1.BaseException('This injector needs a main module instance!');
-      }
-    }
-    CodegenInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = injector_1.THROW_IF_NOT_FOUND;
-      }
-      var result = this.getInternal(token, _UNDEFINED);
-      return result === _UNDEFINED ? this.parent.get(token, notFoundValue) : result;
-    };
-    return CodegenInjector;
-  }());
-  exports.CodegenInjector = CodegenInjector;
-  var InjectorFactory = (function() {
-    function InjectorFactory(_injectorFactory) {
-      this._injectorFactory = _injectorFactory;
-    }
-    InjectorFactory.prototype.create = function(parent, mainModule) {
-      if (parent === void 0) {
-        parent = null;
-      }
-      if (mainModule === void 0) {
-        mainModule = null;
-      }
-      if (lang_1.isBlank(parent)) {
-        parent = injector_1.Injector.NULL;
-      }
-      return this._injectorFactory(parent, mainModule);
-    };
-    InjectorFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], InjectorFactory);
-    return InjectorFactory;
-  }());
-  exports.InjectorFactory = InjectorFactory;
   global.define = __define;
   return module.exports;
 });
@@ -17474,6 +17491,73 @@ System.register("angular2/src/core/linker/element_injector", ["angular2/src/faca
   return module.exports;
 });
 
+System.register("angular2/src/core/linker/injector_factory", ["angular2/src/core/di/injector", "angular2/src/facade/exceptions", "angular2/src/facade/lang"], true, function(require, exports, module) {
+  var global = System.global,
+      __define = global.define;
+  global.define = undefined;
+  "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var injector_1 = require("angular2/src/core/di/injector");
+  var exceptions_1 = require("angular2/src/facade/exceptions");
+  var lang_1 = require("angular2/src/facade/lang");
+  var _UNDEFINED = lang_1.CONST_EXPR(new Object());
+  var CodegenInjector = (function() {
+    function CodegenInjector(parent, _needsMainModule, mainModule) {
+      this.parent = parent;
+      this.mainModule = mainModule;
+      if (_needsMainModule && lang_1.isBlank(mainModule)) {
+        throw new exceptions_1.BaseException('This injector needs a main module instance!');
+      }
+    }
+    CodegenInjector.prototype.get = function(token, notFoundValue) {
+      if (notFoundValue === void 0) {
+        notFoundValue = injector_1.THROW_IF_NOT_FOUND;
+      }
+      var result = this.getInternal(token, _UNDEFINED);
+      return result === _UNDEFINED ? this.parent.get(token, notFoundValue) : result;
+    };
+    return CodegenInjector;
+  }());
+  exports.CodegenInjector = CodegenInjector;
+  var CodegenInjectorFactory = (function() {
+    function CodegenInjectorFactory(_injectorFactory) {
+      this._injectorFactory = _injectorFactory;
+    }
+    CodegenInjectorFactory.prototype.create = function(parent, mainModule) {
+      if (parent === void 0) {
+        parent = null;
+      }
+      if (mainModule === void 0) {
+        mainModule = null;
+      }
+      if (lang_1.isBlank(parent)) {
+        parent = injector_1.Injector.NULL;
+      }
+      return this._injectorFactory(parent, mainModule);
+    };
+    CodegenInjectorFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [Function])], CodegenInjectorFactory);
+    return CodegenInjectorFactory;
+  }());
+  exports.CodegenInjectorFactory = CodegenInjectorFactory;
+  global.define = __define;
+  return module.exports;
+});
+
 System.register("angular2/src/compiler/config", ["angular2/src/facade/lang", "angular2/src/facade/exceptions", "angular2/src/compiler/identifiers"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
@@ -24231,7 +24315,7 @@ System.register("angular2/src/core/profile/profile", ["angular2/src/core/profile
   return module.exports;
 });
 
-System.register("angular2/src/core/linker", ["angular2/src/core/linker/component_resolver", "angular2/src/core/linker/query_list", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/core/linker/element_ref", "angular2/src/core/linker/template_ref", "angular2/src/core/linker/view_ref", "angular2/src/core/linker/view_container_ref", "angular2/src/core/linker/component_factory", "angular2/src/core/linker/exceptions", "angular2/src/core/linker/injector_factory"], true, function(require, exports, module) {
+System.register("angular2/src/core/linker", ["angular2/src/core/linker/component_resolver", "angular2/src/core/linker/query_list", "angular2/src/core/linker/dynamic_component_loader", "angular2/src/core/linker/element_ref", "angular2/src/core/linker/template_ref", "angular2/src/core/linker/view_ref", "angular2/src/core/linker/view_container_ref", "angular2/src/core/linker/component_factory", "angular2/src/core/linker/exceptions"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -24256,8 +24340,6 @@ System.register("angular2/src/core/linker", ["angular2/src/core/linker/component
   exports.ComponentFactory = component_factory_1.ComponentFactory;
   var exceptions_1 = require("angular2/src/core/linker/exceptions");
   exports.ExpressionChangedAfterItHasBeenCheckedException = exceptions_1.ExpressionChangedAfterItHasBeenCheckedException;
-  var injector_factory_1 = require("angular2/src/core/linker/injector_factory");
-  exports.InjectorFactory = injector_factory_1.InjectorFactory;
   global.define = __define;
   return module.exports;
 });
@@ -27796,7 +27878,8 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
           prefix = _b.prefix,
           value = _b.value,
           diDeps = _b.diDeps,
-          providers = _b.providers;
+          providers = _b.providers,
+          injectable = _b.injectable;
       this.isHost = false;
       this.runtime = runtime;
       this.name = name;
@@ -27805,6 +27888,7 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
       this.value = value;
       this.diDeps = _normalizeArray(diDeps);
       this.providers = _normalizeArray(providers);
+      this.injectable = lang_1.normalizeBool(injectable);
     }
     CompileInjectorModuleMetadata.fromJson = function(data) {
       return new CompileInjectorModuleMetadata({
@@ -27813,7 +27897,8 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
         prefix: data['prefix'],
         value: data['value'],
         diDeps: _arrayFromJson(data['diDeps'], CompileDiDependencyMetadata.fromJson),
-        providers: _arrayFromJson(data['providers'], metadataFromJson)
+        providers: _arrayFromJson(data['providers'], metadataFromJson),
+        injectable: data['injectable']
       });
     };
     Object.defineProperty(CompileInjectorModuleMetadata.prototype, "identifier", {
@@ -27839,7 +27924,8 @@ System.register("angular2/src/compiler/compile_metadata", ["angular2/src/facade/
         'isHost': this.isHost,
         'value': this.value,
         'diDeps': _arrayToJson(this.diDeps),
-        'providers': _arrayToJson(this.providers)
+        'providers': _arrayToJson(this.providers),
+        'injectable': this.injectable
       };
     };
     return CompileInjectorModuleMetadata;
@@ -32964,7 +33050,7 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
   var impValueUnwrapper = change_detection_1.ValueUnwrapper;
   var impInjector = injector_1.Injector;
   var impCodegenInjector = injector_factory_1.CodegenInjector;
-  var impInjectorFactory = injector_factory_1.InjectorFactory;
+  var impCodegenInjectorFactory = injector_factory_1.CodegenInjectorFactory;
   var impViewEncapsulation = view_2.ViewEncapsulation;
   var impViewType = view_type_1.ViewType;
   var impChangeDetectionStrategy = change_detection_1.ChangeDetectionStrategy;
@@ -33045,9 +33131,9 @@ System.register("angular2/src/compiler/identifiers", ["angular2/src/compiler/com
       runtime: impInjector
     });
     Identifiers.InjectorFactory = new compile_metadata_1.CompileIdentifierMetadata({
-      name: 'InjectorFactory',
+      name: 'CodegenInjectorFactory',
       moduleUrl: "asset:angular2/lib/src/core/linker/injector_factory" + util_1.MODULE_SUFFIX,
-      runtime: impInjectorFactory
+      runtime: impCodegenInjectorFactory
     });
     Identifiers.CodegenInjector = new compile_metadata_1.CompileIdentifierMetadata({
       name: 'CodegenInjector',
@@ -39840,7 +39926,7 @@ System.register("rxjs/Observable", ["rxjs/util/root", "rxjs/util/SymbolShim", "r
   return module.exports;
 });
 
-System.register("angular2/src/core/di", ["angular2/src/core/di/metadata", "angular2/src/core/di/decorators", "angular2/src/core/di/forward_ref", "angular2/src/core/di/injector", "angular2/src/core/di/reflective_injector", "angular2/src/core/di/provider", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/reflective_key", "angular2/src/core/di/reflective_exceptions", "angular2/src/core/di/opaque_token"], true, function(require, exports, module) {
+System.register("angular2/src/core/di", ["angular2/src/core/di/metadata", "angular2/src/core/di/decorators", "angular2/src/core/di/forward_ref", "angular2/src/core/di/injector", "angular2/src/core/di/reflective_injector", "angular2/src/core/di/provider", "angular2/src/core/di/reflective_provider", "angular2/src/core/di/reflective_key", "angular2/src/core/di/reflective_exceptions", "angular2/src/core/di/opaque_token", "angular2/src/core/di/map_injector"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
@@ -39864,7 +39950,7 @@ System.register("angular2/src/core/di", ["angular2/src/core/di/metadata", "angul
   exports.resolveForwardRef = forward_ref_1.resolveForwardRef;
   var injector_1 = require("angular2/src/core/di/injector");
   exports.Injector = injector_1.Injector;
-  exports.MapInjector = injector_1.MapInjector;
+  exports.InjectorFactory = injector_1.InjectorFactory;
   var reflective_injector_1 = require("angular2/src/core/di/reflective_injector");
   exports.ReflectiveInjector = reflective_injector_1.ReflectiveInjector;
   var provider_1 = require("angular2/src/core/di/provider");
@@ -39888,6 +39974,9 @@ System.register("angular2/src/core/di", ["angular2/src/core/di/metadata", "angul
   exports.OutOfBoundsError = reflective_exceptions_1.OutOfBoundsError;
   var opaque_token_1 = require("angular2/src/core/di/opaque_token");
   exports.OpaqueToken = opaque_token_1.OpaqueToken;
+  var map_injector_1 = require("angular2/src/core/di/map_injector");
+  exports.MapInjector = map_injector_1.MapInjector;
+  exports.MapInjectorFactory = map_injector_1.MapInjectorFactory;
   global.define = __define;
   return module.exports;
 });

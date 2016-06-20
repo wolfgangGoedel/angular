@@ -24,7 +24,7 @@ export class CodegenInjector {
         return result === _UNDEFINED ? this.parent.get(token, notFoundValue) : result;
     }
 }
-export let InjectorFactory = class InjectorFactory {
+export let CodegenInjectorFactory = class CodegenInjectorFactory {
     constructor(_injectorFactory) {
         this._injectorFactory = _injectorFactory;
     }
@@ -35,7 +35,7 @@ export let InjectorFactory = class InjectorFactory {
         return this._injectorFactory(parent, mainModule);
     }
 };
-InjectorFactory = __decorate([
+CodegenInjectorFactory = __decorate([
     CONST(), 
     __metadata('design:paramtypes', [Function])
-], InjectorFactory);
+], CodegenInjectorFactory);

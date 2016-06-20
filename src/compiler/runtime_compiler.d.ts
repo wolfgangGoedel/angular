@@ -6,7 +6,7 @@ import { TemplateParser } from './template_parser';
 import { DirectiveNormalizer } from './directive_normalizer';
 import { RuntimeMetadataResolver } from './runtime_metadata';
 import { ComponentFactory } from 'angular2/src/core/linker/component_factory';
-import { InjectorFactory } from 'angular2/src/core/linker/injector_factory';
+import { CodegenInjectorFactory } from 'angular2/src/core/linker/injector_factory';
 import { ComponentResolver } from 'angular2/src/core/linker/component_resolver';
 import { CompilerConfig } from './config';
 import { XHR } from './xhr';
@@ -29,7 +29,7 @@ export declare class RuntimeCompiler implements ComponentResolver {
     private _compiledTemplateCache;
     private _compiledTemplateDone;
     constructor(_runtimeMetadataResolver: RuntimeMetadataResolver, _templateNormalizer: DirectiveNormalizer, _templateParser: TemplateParser, _styleCompiler: StyleCompiler, _viewCompiler: ViewCompiler, _xhr: XHR, _injectorCompiler: InjectorCompiler, _genConfig: CompilerConfig);
-    createInjectorFactory(moduleClass: Type, extraProviders?: any[]): InjectorFactory<any>;
+    createInjectorFactory(moduleClass: Type, extraProviders?: any[]): CodegenInjectorFactory<any>;
     resolveComponent(componentType: Type): Promise<ComponentFactory>;
     clearCache(): void;
     private _loadAndCompileComponent(cacheKey, compMeta, viewDirectives, pipes, compilingComponentsPath);

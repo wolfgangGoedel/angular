@@ -340,14 +340,16 @@ export declare class CompileInjectorModuleMetadata implements CompileMetadataWit
     isHost: boolean;
     value: any;
     diDeps: CompileDiDependencyMetadata[];
+    injectable: boolean;
     providers: Array<CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | any[]>;
-    constructor({runtime, name, moduleUrl, prefix, value, diDeps, providers}?: {
+    constructor({runtime, name, moduleUrl, prefix, value, diDeps, providers, injectable}?: {
         runtime?: Type;
         name?: string;
         moduleUrl?: string;
         prefix?: string;
         value?: any;
         diDeps?: CompileDiDependencyMetadata[];
+        injectable?: boolean;
         providers?: Array<CompileProviderMetadata | CompileTypeMetadata | CompileIdentifierMetadata | any[]>;
     });
     static fromJson(data: {
