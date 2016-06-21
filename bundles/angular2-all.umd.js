@@ -4665,6 +4665,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
 	var lang_1 = __webpack_require__(5);
 	var exceptions_1 = __webpack_require__(12);
 	var _THROW_IF_NOT_FOUND = lang_1.CONST_EXPR(new Object());
@@ -4726,6 +4735,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (context === void 0) { context = null; }
 	        return lang_1.isBlank(parent) ? Injector.NULL : parent;
 	    };
+	    _EmptyInjectorFactory = __decorate([
+	        lang_1.CONST(), 
+	        __metadata('design:paramtypes', [])
+	    ], _EmptyInjectorFactory);
 	    return _EmptyInjectorFactory;
 	}());
 	/**
@@ -4734,11 +4747,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	var InjectorFactory = (function () {
 	    function InjectorFactory() {
 	    }
+	    /**
+	     * Binds an InjectorFactory to a fixed context
+	     */
+	    InjectorFactory.bind = function (factory, context) {
+	        return new _BoundInjectorFactory(factory, context);
+	    };
 	    // An InjectorFactory that will always delegate to the parent.
-	    InjectorFactory.EMPTY = new _EmptyInjectorFactory();
+	    InjectorFactory.EMPTY = lang_1.CONST_EXPR(new _EmptyInjectorFactory());
 	    return InjectorFactory;
 	}());
 	exports.InjectorFactory = InjectorFactory;
+	var _BoundInjectorFactory = (function () {
+	    function _BoundInjectorFactory(_delegate, _context) {
+	        this._delegate = _delegate;
+	        this._context = _context;
+	    }
+	    _BoundInjectorFactory.prototype.create = function (parent, context) {
+	        if (parent === void 0) { parent = null; }
+	        if (context === void 0) { context = null; }
+	        return this._delegate.create(parent, this._context);
+	    };
+	    return _BoundInjectorFactory;
+	}());
 
 
 /***/ },
@@ -6971,26 +7002,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * An simple injector based on a Map of values.
 	 */
 	var MapInjector = (function () {
-	    function MapInjector(_parent, values, factories) {
+	    function MapInjector(_parent, values) {
 	        if (_parent === void 0) { _parent = null; }
 	        if (values === void 0) { values = null; }
-	        if (factories === void 0) { factories = null; }
 	        this._parent = _parent;
-	        this._instances = new Map();
 	        if (lang_1.isBlank(values)) {
 	            values = new Map();
 	        }
 	        this._values = values;
-	        if (lang_1.isBlank(factories)) {
-	            factories = new Map();
-	        }
-	        this._factories = factories;
 	        if (lang_1.isBlank(this._parent)) {
 	            this._parent = injector_1.Injector.NULL;
 	        }
 	    }
-	    MapInjector.createFactory = function (values, factories) {
-	        return new MapInjectorFactory(values, factories);
+	    MapInjector.createFactory = function (values) {
+	        return new MapInjectorFactory(values);
 	    };
 	    MapInjector.prototype.get = function (token, notFoundValue) {
 	        if (notFoundValue === void 0) { notFoundValue = injector_1.THROW_IF_NOT_FOUND; }
@@ -6999,14 +7024,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        if (this._values.has(token)) {
 	            return this._values.get(token);
-	        }
-	        if (this._instances.has(token)) {
-	            return this._instances.get(token);
-	        }
-	        if (this._factories.has(token)) {
-	            var instance = this._factories.get(token)(this);
-	            this._instances.set(token, instance);
-	            return instance;
 	        }
 	        return this._parent.get(token, notFoundValue);
 	    };
@@ -7017,16 +7034,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * InjectorFactory for MapInjector.
 	 */
 	var MapInjectorFactory = (function () {
-	    function MapInjectorFactory(_values, _factories) {
+	    function MapInjectorFactory(_values) {
 	        if (_values === void 0) { _values = null; }
-	        if (_factories === void 0) { _factories = null; }
 	        this._values = _values;
-	        this._factories = _factories;
 	    }
 	    MapInjectorFactory.prototype.create = function (parent, context) {
 	        if (parent === void 0) { parent = null; }
 	        if (context === void 0) { context = null; }
-	        return new MapInjector(parent, this._values, this._factories);
+	        return new MapInjector(parent, this._values);
 	    };
 	    return MapInjectorFactory;
 	}());
@@ -11680,15 +11695,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return componentRef;
 	        });
 	    };
-	    DynamicComponentLoader_.prototype.loadNextToLocation = function (type, location, providers, projectableNodes) {
-	        if (providers === void 0) { providers = null; }
+	    DynamicComponentLoader_.prototype.loadNextToLocation = function (type, location, injector, projectableNodes) {
+	        if (injector === void 0) { injector = null; }
 	        if (projectableNodes === void 0) { projectableNodes = null; }
 	        return this._compiler.resolveComponent(type).then(function (componentFactory) {
-	            var contextInjector = location.parentInjector;
-	            var childInjector = lang_1.isPresent(providers) && providers.length > 0 ?
-	                di_1.ReflectiveInjector.fromResolvedProviders(providers, contextInjector) :
-	                contextInjector;
-	            return location.createComponent(componentFactory, location.length, childInjector, projectableNodes);
+	            return location.createComponent(componentFactory, location.length, injector, projectableNodes);
 	        });
 	    };
 	    DynamicComponentLoader_ = __decorate([
@@ -28888,7 +28899,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
 	var lang_1 = __webpack_require__(5);
+	var core_1 = __webpack_require__(2);
 	var compile_metadata_1 = __webpack_require__(156);
 	var identifiers_1 = __webpack_require__(159);
 	var o = __webpack_require__(166);
@@ -28931,6 +28952,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            .toDeclStmt(null, [o.StmtModifier.Final]);
 	        return new InjectorCompileResult([injectorClass, injectorFactoryFn, injectorFactoryStmt], injectorFactoryVar);
 	    };
+	    InjectorCompiler = __decorate([
+	        core_1.Injectable(), 
+	        __metadata('design:paramtypes', [])
+	    ], InjectorCompiler);
 	    return InjectorCompiler;
 	}());
 	exports.InjectorCompiler = InjectorCompiler;

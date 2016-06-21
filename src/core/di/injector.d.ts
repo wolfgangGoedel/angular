@@ -37,5 +37,9 @@ export declare abstract class Injector {
  */
 export declare abstract class InjectorFactory<CONTEXT> {
     static EMPTY: InjectorFactory<any>;
+    /**
+     * Binds an InjectorFactory to a fixed context
+     */
+    static bind(factory: InjectorFactory<any>, context: any): InjectorFactory<any>;
     abstract create(parent?: Injector, context?: CONTEXT): Injector;
 }

@@ -1748,6 +1748,22 @@ System.register("angular2/src/core/di/injector", ["angular2/src/facade/lang", "a
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
   var lang_1 = require("angular2/src/facade/lang");
   var exceptions_1 = require("angular2/src/facade/exceptions");
   var _THROW_IF_NOT_FOUND = lang_1.CONST_EXPR(new Object());
@@ -1786,14 +1802,34 @@ System.register("angular2/src/core/di/injector", ["angular2/src/facade/lang", "a
       }
       return lang_1.isBlank(parent) ? Injector.NULL : parent;
     };
+    _EmptyInjectorFactory = __decorate([lang_1.CONST(), __metadata('design:paramtypes', [])], _EmptyInjectorFactory);
     return _EmptyInjectorFactory;
   }());
   var InjectorFactory = (function() {
     function InjectorFactory() {}
-    InjectorFactory.EMPTY = new _EmptyInjectorFactory();
+    InjectorFactory.bind = function(factory, context) {
+      return new _BoundInjectorFactory(factory, context);
+    };
+    InjectorFactory.EMPTY = lang_1.CONST_EXPR(new _EmptyInjectorFactory());
     return InjectorFactory;
   }());
   exports.InjectorFactory = InjectorFactory;
+  var _BoundInjectorFactory = (function() {
+    function _BoundInjectorFactory(_delegate, _context) {
+      this._delegate = _delegate;
+      this._context = _context;
+    }
+    _BoundInjectorFactory.prototype.create = function(parent, context) {
+      if (parent === void 0) {
+        parent = null;
+      }
+      if (context === void 0) {
+        context = null;
+      }
+      return this._delegate.create(parent, this._context);
+    };
+    return _BoundInjectorFactory;
+  }());
   global.define = __define;
   return module.exports;
 });
@@ -2452,32 +2488,24 @@ System.register("angular2/src/core/di/map_injector", ["angular2/src/facade/lang"
   var lang_1 = require("angular2/src/facade/lang");
   var injector_1 = require("angular2/src/core/di/injector");
   var MapInjector = (function() {
-    function MapInjector(_parent, values, factories) {
+    function MapInjector(_parent, values) {
       if (_parent === void 0) {
         _parent = null;
       }
       if (values === void 0) {
         values = null;
       }
-      if (factories === void 0) {
-        factories = null;
-      }
       this._parent = _parent;
-      this._instances = new Map();
       if (lang_1.isBlank(values)) {
         values = new Map();
       }
       this._values = values;
-      if (lang_1.isBlank(factories)) {
-        factories = new Map();
-      }
-      this._factories = factories;
       if (lang_1.isBlank(this._parent)) {
         this._parent = injector_1.Injector.NULL;
       }
     }
-    MapInjector.createFactory = function(values, factories) {
-      return new MapInjectorFactory(values, factories);
+    MapInjector.createFactory = function(values) {
+      return new MapInjectorFactory(values);
     };
     MapInjector.prototype.get = function(token, notFoundValue) {
       if (notFoundValue === void 0) {
@@ -2489,29 +2517,17 @@ System.register("angular2/src/core/di/map_injector", ["angular2/src/facade/lang"
       if (this._values.has(token)) {
         return this._values.get(token);
       }
-      if (this._instances.has(token)) {
-        return this._instances.get(token);
-      }
-      if (this._factories.has(token)) {
-        var instance = this._factories.get(token)(this);
-        this._instances.set(token, instance);
-        return instance;
-      }
       return this._parent.get(token, notFoundValue);
     };
     return MapInjector;
   }());
   exports.MapInjector = MapInjector;
   var MapInjectorFactory = (function() {
-    function MapInjectorFactory(_values, _factories) {
+    function MapInjectorFactory(_values) {
       if (_values === void 0) {
         _values = null;
       }
-      if (_factories === void 0) {
-        _factories = null;
-      }
       this._values = _values;
-      this._factories = _factories;
     }
     MapInjectorFactory.prototype.create = function(parent, context) {
       if (parent === void 0) {
@@ -2520,7 +2536,7 @@ System.register("angular2/src/core/di/map_injector", ["angular2/src/facade/lang"
       if (context === void 0) {
         context = null;
       }
-      return new MapInjector(parent, this._values, this._factories);
+      return new MapInjector(parent, this._values);
     };
     return MapInjectorFactory;
   }());
@@ -4256,17 +4272,15 @@ System.register("angular2/src/core/linker/dynamic_component_loader", ["angular2/
         return componentRef;
       });
     };
-    DynamicComponentLoader_.prototype.loadNextToLocation = function(type, location, providers, projectableNodes) {
-      if (providers === void 0) {
-        providers = null;
+    DynamicComponentLoader_.prototype.loadNextToLocation = function(type, location, injector, projectableNodes) {
+      if (injector === void 0) {
+        injector = null;
       }
       if (projectableNodes === void 0) {
         projectableNodes = null;
       }
       return this._compiler.resolveComponent(type).then(function(componentFactory) {
-        var contextInjector = location.parentInjector;
-        var childInjector = lang_1.isPresent(providers) && providers.length > 0 ? di_1.ReflectiveInjector.fromResolvedProviders(providers, contextInjector) : contextInjector;
-        return location.createComponent(componentFactory, location.length, childInjector, projectableNodes);
+        return location.createComponent(componentFactory, location.length, injector, projectableNodes);
       });
     };
     DynamicComponentLoader_ = __decorate([di_1.Injectable(), __metadata('design:paramtypes', [component_resolver_1.ComponentResolver])], DynamicComponentLoader_);
@@ -20303,12 +20317,29 @@ System.register("angular2/src/compiler/view_compiler/event_binder", ["angular2/s
   return module.exports;
 });
 
-System.register("angular2/src/compiler/view_compiler/injector_compiler", ["angular2/src/facade/lang", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/identifiers", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/parse_util", "angular2/src/compiler/provider_parser", "angular2/src/compiler/view_compiler/constants", "angular2/src/compiler/view_compiler/util"], true, function(require, exports, module) {
+System.register("angular2/src/compiler/view_compiler/injector_compiler", ["angular2/src/facade/lang", "angular2/core", "angular2/src/compiler/compile_metadata", "angular2/src/compiler/identifiers", "angular2/src/compiler/output/output_ast", "angular2/src/compiler/parse_util", "angular2/src/compiler/provider_parser", "angular2/src/compiler/view_compiler/constants", "angular2/src/compiler/view_compiler/util"], true, function(require, exports, module) {
   var global = System.global,
       __define = global.define;
   global.define = undefined;
   "use strict";
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
   var lang_1 = require("angular2/src/facade/lang");
+  var core_1 = require("angular2/core");
   var compile_metadata_1 = require("angular2/src/compiler/compile_metadata");
   var identifiers_1 = require("angular2/src/compiler/identifiers");
   var o = require("angular2/src/compiler/output/output_ast");
@@ -20345,6 +20376,7 @@ System.register("angular2/src/compiler/view_compiler/injector_compiler", ["angul
       var injectorFactoryStmt = o.variable(injectorFactoryVar).set(o.importExpr(identifiers_1.Identifiers.InjectorFactory, [o.importType(injectorModuleMeta)]).instantiate([o.variable(injectorFactoryFnVar)], o.importType(identifiers_1.Identifiers.InjectorFactory, [o.importType(injectorModuleMeta)], [o.TypeModifier.Const]))).toDeclStmt(null, [o.StmtModifier.Final]);
       return new InjectorCompileResult([injectorClass, injectorFactoryFn, injectorFactoryStmt], injectorFactoryVar);
     };
+    InjectorCompiler = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], InjectorCompiler);
     return InjectorCompiler;
   }());
   exports.InjectorCompiler = InjectorCompiler;
