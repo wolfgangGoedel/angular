@@ -9,27 +9,16 @@ import "injector.dart" show Injector, InjectorFactory, THROW_IF_NOT_FOUND;
 class MapInjector implements Injector {
   Injector _parent;
   static InjectorFactory<dynamic> createFactory(
-      [Map<dynamic, dynamic> values,
-      Map<dynamic, dynamic /* (injector: Injector) => any */ > factories]) {
-    return new MapInjectorFactory(values, factories);
+      [Map<dynamic, dynamic> values]) {
+    return new MapInjectorFactory(values);
   }
 
-  Map<dynamic, dynamic> _instances = new Map<dynamic, dynamic>();
-  Map<dynamic, dynamic /* (injector: Injector) => any */ > _factories;
   Map<dynamic, dynamic> _values;
-  MapInjector(
-      [this._parent = null,
-      Map<dynamic, dynamic> values = null,
-      Map<dynamic, dynamic /* (injector: Injector) => any */ > factories =
-          null]) {
+  MapInjector([this._parent = null, Map<dynamic, dynamic> values = null]) {
     if (isBlank(values)) {
       values = new Map<dynamic, dynamic>();
     }
     this._values = values;
-    if (isBlank(factories)) {
-      factories = new Map<dynamic, dynamic>();
-    }
-    this._factories = factories;
     if (isBlank(this._parent)) {
       this._parent = Injector.NULL;
     }
@@ -41,14 +30,6 @@ class MapInjector implements Injector {
     if (this._values.containsKey(token)) {
       return this._values[token];
     }
-    if (this._instances.containsKey(token)) {
-      return this._instances[token];
-    }
-    if (this._factories.containsKey(token)) {
-      var instance = this._factories[token](this);
-      this._instances[token] = instance;
-      return instance;
-    }
     return this._parent.get(token, notFoundValue);
   }
 }
@@ -58,9 +39,8 @@ class MapInjector implements Injector {
  */
 class MapInjectorFactory implements InjectorFactory<dynamic> {
   Map<dynamic, dynamic> _values;
-  Map<dynamic, dynamic /* (injector: Injector) => any */ > _factories;
-  MapInjectorFactory([this._values = null, this._factories = null]) {}
+  MapInjectorFactory([this._values = null]) {}
   Injector create([Injector parent = null, dynamic context = null]) {
-    return new MapInjector(parent, this._values, this._factories);
+    return new MapInjector(parent, this._values);
   }
 }

@@ -1,8 +1,7 @@
 library angular2.src.core.linker.dynamic_component_loader;
 
 import "dart:async";
-import "package:angular2/src/core/di.dart"
-    show Injector, ResolvedReflectiveProvider, Injectable, ReflectiveInjector;
+import "package:angular2/src/core/di.dart" show Injector, Injectable;
 import "component_resolver.dart" show ComponentResolver;
 import "package:angular2/src/facade/lang.dart"
     show isType, Type, stringify, isPresent;
@@ -106,8 +105,7 @@ abstract class DynamicComponentLoader {
    * ```
    */
   Future<ComponentRef> loadNextToLocation(Type type, ViewContainerRef location,
-      [List<ResolvedReflectiveProvider> providers,
-      List<List<dynamic>> projectableNodes]);
+      [Injector injector, List<List<dynamic>> projectableNodes]);
 }
 
 @Injectable()
@@ -134,15 +132,10 @@ class DynamicComponentLoader_ extends DynamicComponentLoader {
   }
 
   Future<ComponentRef> loadNextToLocation(Type type, ViewContainerRef location,
-      [List<ResolvedReflectiveProvider> providers = null,
-      List<List<dynamic>> projectableNodes = null]) {
+      [Injector injector = null, List<List<dynamic>> projectableNodes = null]) {
     return this._compiler.resolveComponent(type).then((componentFactory) {
-      var contextInjector = location.parentInjector;
-      var childInjector = isPresent(providers) && providers.length > 0
-          ? ReflectiveInjector.fromResolvedProviders(providers, contextInjector)
-          : contextInjector;
       return location.createComponent(
-          componentFactory, location.length, childInjector, projectableNodes);
+          componentFactory, location.length, injector, projectableNodes);
     });
   }
 }

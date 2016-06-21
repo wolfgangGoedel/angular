@@ -56,6 +56,8 @@ class _EmptyInjectorFactory implements InjectorFactory<dynamic> {
   Injector create([Injector parent = null, dynamic context = null]) {
     return isBlank(parent) ? Injector.NULL : parent;
   }
+
+  const _EmptyInjectorFactory();
 }
 
 /**
@@ -63,6 +65,23 @@ class _EmptyInjectorFactory implements InjectorFactory<dynamic> {
  */
 abstract class InjectorFactory<CONTEXT> {
   // An InjectorFactory that will always delegate to the parent.
-  static InjectorFactory<dynamic> EMPTY = new _EmptyInjectorFactory();
+  static InjectorFactory<dynamic> EMPTY = const _EmptyInjectorFactory();
+  /**
+   * Binds an InjectorFactory to a fixed context
+   */
+  static InjectorFactory<dynamic> bind(
+      InjectorFactory<dynamic> factory, dynamic context) {
+    return new _BoundInjectorFactory(factory, context);
+  }
+
   Injector create([Injector parent, CONTEXT context]);
+}
+
+class _BoundInjectorFactory implements InjectorFactory<dynamic> {
+  InjectorFactory<dynamic> _delegate;
+  dynamic _context;
+  _BoundInjectorFactory(this._delegate, this._context) {}
+  Injector create([Injector parent = null, dynamic context = null]) {
+    return this._delegate.create(parent, this._context);
+  }
 }

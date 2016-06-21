@@ -1,6 +1,7 @@
 library angular2.src.compiler.view_compiler.injector_compiler;
 
 import "package:angular2/src/facade/lang.dart" show isPresent, isBlank;
+import "package:angular2/core.dart" show Injectable;
 import "../compile_metadata.dart"
     show
         CompileInjectorModuleMetadata,
@@ -27,6 +28,7 @@ class InjectorCompileResult {
   InjectorCompileResult(this.statements, this.injectorFactoryVar) {}
 }
 
+@Injectable()
 class InjectorCompiler {
   InjectorCompileResult compileInjector(
       CompileInjectorModuleMetadata injectorModuleMeta) {
