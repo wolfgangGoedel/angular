@@ -9,7 +9,8 @@ import "package:angular2/src/facade/lang.dart"
     show isBlank, isString, isPresent, Type, isArray;
 import "package:angular2/src/facade/exceptions.dart"
     show BaseException, WrappedException;
-import "package:angular2/platform/common.dart" show Location;
+import "package:angular2/platform/common.dart"
+    show Location, PathLocationStrategy;
 import "package:angular2/core.dart" show Inject, Injectable;
 import "route_registry.dart" show RouteRegistry, ROUTER_PRIMARY_COMPONENT;
 import "instruction.dart" show ComponentInstruction, Instruction;
@@ -521,6 +522,12 @@ class RootRouter extends Router {
     var emitQuery = instruction.toUrlQuery();
     if (emitPath.length > 0 && emitPath[0] != "/") {
       emitPath = "/" + emitPath;
+    }
+    var hash = this._location.hash();
+    if (isPresent(this._location.platformStrategy) &&
+        this._location.platformStrategy is PathLocationStrategy &&
+        hash.length > 0) {
+      emitPath += "#" + hash;
     }
     var promise = super.commit(instruction);
     if (!_skipLocationChange) {

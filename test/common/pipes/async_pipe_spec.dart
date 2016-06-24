@@ -187,13 +187,13 @@ main() {
     describe("null", () {
       it("should return null when given null", () {
         var pipe = new AsyncPipe(null);
-        expect(pipe.transform(null, [])).toEqual(null);
+        expect(pipe.transform(null)).toEqual(null);
       });
     });
     describe("other types", () {
       it("should throw when given an invalid object", () {
         var pipe = new AsyncPipe(null);
-        expect(() => pipe.transform(("some bogus object" as dynamic), []))
+        expect(() => pipe.transform(("some bogus object" as dynamic)))
             .toThrowError();
       });
     });

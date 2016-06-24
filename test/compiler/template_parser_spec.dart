@@ -13,6 +13,7 @@ import "package:angular2/testing_internal.dart"
         inject,
         beforeEachProviders;
 import "package:angular2/src/core/di.dart" show provide;
+import "package:angular2/src/core/console.dart" show Console;
 import "test_bindings.dart" show TEST_PROVIDERS;
 import "package:angular2/src/facade/lang.dart" show isPresent;
 import "package:angular2/src/compiler/template_parser.dart"
@@ -35,6 +36,7 @@ import "package:angular2/src/compiler/template_ast.dart"
         NgContentAst,
         EmbeddedTemplateAst,
         ElementAst,
+        ReferenceAst,
         VariableAst,
         BoundEventAst,
         BoundElementPropertyAst,
@@ -45,6 +47,8 @@ import "package:angular2/src/compiler/template_ast.dart"
         PropertyBindingType,
         DirectiveAst,
         ProviderAstType;
+import "package:angular2/src/compiler/identifiers.dart"
+    show identifierToken, Identifiers;
 import "package:angular2/src/compiler/schema/element_schema_registry.dart"
     show ElementSchemaRegistry;
 import "schema_registry_mock.dart" show MockSchemaRegistry;
@@ -60,7 +64,12 @@ var MOCK_SCHEMA_REGISTRY = [
 main() {
   var ngIf;
   var parse;
+  ArrayConsole console;
   commonBeforeEach() {
+    beforeEachProviders(() {
+      console = new ArrayConsole();
+      return [provide(Console, useValue: console)];
+    });
     beforeEach(inject([TemplateParser], (parser) {
       var component = CompileDirectiveMetadata.create(
           selector: "root",
@@ -365,7 +374,7 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
         });
       });
       describe("directives", () {
-        it("should locate directives components first and ordered by the directives array in the View",
+        it("should order directives by the directives array in the View and match them only once",
             () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "[a]",
@@ -379,19 +388,14 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
               selector: "[c]",
               type: new CompileTypeMetadata(
                   moduleUrl: someModuleUrl, name: "DirC"));
-          var comp = CompileDirectiveMetadata.create(
-              selector: "div",
-              isComponent: true,
-              type: new CompileTypeMetadata(
-                  moduleUrl: someModuleUrl, name: "ZComp"),
-              template: new CompileTemplateMetadata(ngContentSelectors: []));
-          expect(humanizeTplAst(parse("<div a c b>", [dirA, dirB, dirC, comp])))
+          expect(humanizeTplAst(parse("<div a c b a b>", [dirA, dirB, dirC])))
               .toEqual([
             [ElementAst, "div"],
             [AttrAst, "a", ""],
             [AttrAst, "c", ""],
             [AttrAst, "b", ""],
-            [DirectiveAst, comp],
+            [AttrAst, "a", ""],
+            [AttrAst, "b", ""],
             [DirectiveAst, dirA],
             [DirectiveAst, dirB],
             [DirectiveAst, dirC]
@@ -803,34 +807,47 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
           expect(elAst.providers[0].providers[0].deps[0].value).toBe(null);
         });
       });
-      describe("variables", () {
-        it("should parse variables via #... and not report them as attributes",
+      describe("references", () {
+        it("should parse references via #... and not report them as attributes",
             () {
           expect(humanizeTplAst(parse("<div #a>", []))).toEqual([
             [ElementAst, "div"],
-            [VariableAst, "a", ""]
+            [ReferenceAst, "a", null]
           ]);
         });
-        it("should parse variables via var-... and not report them as attributes",
+        it("should parse references via ref-... and not report them as attributes",
+            () {
+          expect(humanizeTplAst(parse("<div ref-a>", []))).toEqual([
+            [ElementAst, "div"],
+            [ReferenceAst, "a", null]
+          ]);
+        });
+        it("should parse references via var-... and report them as deprecated",
             () {
           expect(humanizeTplAst(parse("<div var-a>", []))).toEqual([
             [ElementAst, "div"],
-            [VariableAst, "a", ""]
+            [ReferenceAst, "a", null]
+          ]);
+          expect(console.warnings).toEqual([
+            [
+              "Template parse warnings:",
+              "\"var-\" on non <template> elements is deprecated. Use \"ref-\" instead! (\"<div [ERROR ->]var-a>\"): TestComp@0:5"
+            ].join("\n")
           ]);
         });
-        it("should parse camel case variables", () {
-          expect(humanizeTplAst(parse("<div var-someA>", []))).toEqual([
+        it("should parse camel case references", () {
+          expect(humanizeTplAst(parse("<div ref-someA>", []))).toEqual([
             [ElementAst, "div"],
-            [VariableAst, "someA", ""]
+            [ReferenceAst, "someA", null]
           ]);
         });
-        it("should assign variables with empty value to the element", () {
+        it("should assign references with empty value to the element", () {
           expect(humanizeTplAst(parse("<div #a></div>", []))).toEqual([
             [ElementAst, "div"],
-            [VariableAst, "a", ""]
+            [ReferenceAst, "a", null]
           ]);
         });
-        it("should assign variables to directives via exportAs", () {
+        it("should assign references to directives via exportAs", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "[a]",
               type: new CompileTypeMetadata(
@@ -840,30 +857,27 @@ Invalid property name \'bar.foo\' ("<p [ERROR ->][bar.foo]>"): TestComp@0:3''');
               .toEqual([
             [ElementAst, "div"],
             [AttrAst, "a", ""],
-            [DirectiveAst, dirA],
-            [VariableAst, "a", "dirA"]
+            [ReferenceAst, "a", identifierToken(dirA.type)],
+            [DirectiveAst, dirA]
           ]);
         });
-        it("should report variables with values that dont match a directive as errors",
+        it("should report references with values that dont match a directive as errors",
             () {
           expect(() => parse("<div #a=\"dirA\"></div>", []))
               .toThrowError('''Template parse errors:
 There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"></div>"): TestComp@0:5''');
         });
-        it("should report invalid variable names", () {
+        it("should report invalid reference names", () {
           expect(() => parse("<div #a-b></div>", []))
               .toThrowError('''Template parse errors:
-"-" is not allowed in variable names ("<div [ERROR ->]#a-b></div>"): TestComp@0:5''');
+"-" is not allowed in reference names ("<div [ERROR ->]#a-b></div>"): TestComp@0:5''');
         });
-        it("should allow variables with values that dont match a directive on embedded template elements",
-            () {
-          expect(humanizeTplAst(parse("<template #a=\"b\"></template>", [])))
-              .toEqual([
-            [EmbeddedTemplateAst],
-            [VariableAst, "a", "b"]
-          ]);
+        it("should report variables as errors", () {
+          expect(() => parse("<div let-a></div>", []))
+              .toThrowError('''Template parse errors:
+"let-" is only supported on template elements. ("<div [ERROR ->]let-a></div>"): TestComp@0:5''');
         });
-        it("should assign variables with empty value to components", () {
+        it("should assign references with empty value to components", () {
           var dirA = CompileDirectiveMetadata.create(
               selector: "[a]",
               isComponent: true,
@@ -874,9 +888,18 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
           expect(humanizeTplAst(parse("<div a #a></div>", [dirA]))).toEqual([
             [ElementAst, "div"],
             [AttrAst, "a", ""],
-            [VariableAst, "a", ""],
-            [DirectiveAst, dirA],
-            [VariableAst, "a", ""]
+            [ReferenceAst, "a", identifierToken(dirA.type)],
+            [DirectiveAst, dirA]
+          ]);
+        });
+        it("should not locate directives in references", () {
+          var dirA = CompileDirectiveMetadata.create(
+              selector: "[a]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"));
+          expect(humanizeTplAst(parse("<div ref-a>", [dirA]))).toEqual([
+            [ElementAst, "div"],
+            [ReferenceAst, "a", null]
           ]);
         });
       });
@@ -897,6 +920,48 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
             [EmbeddedTemplateAst]
           ]);
         });
+        it("should support references via #...", () {
+          expect(humanizeTplAst(parse("<template #a>", []))).toEqual([
+            [EmbeddedTemplateAst],
+            [ReferenceAst, "a", identifierToken(Identifiers.TemplateRef)]
+          ]);
+        });
+        it("should support references via ref-...", () {
+          expect(humanizeTplAst(parse("<template ref-a>", []))).toEqual([
+            [EmbeddedTemplateAst],
+            [ReferenceAst, "a", identifierToken(Identifiers.TemplateRef)]
+          ]);
+        });
+        it("should parse variables via let-...", () {
+          expect(humanizeTplAst(parse("<template let-a=\"b\">", []))).toEqual([
+            [EmbeddedTemplateAst],
+            [VariableAst, "a", "b"]
+          ]);
+        });
+        it("should parse variables via var-... and report them as deprecated",
+            () {
+          expect(humanizeTplAst(parse("<template var-a=\"b\">", []))).toEqual([
+            [EmbeddedTemplateAst],
+            [VariableAst, "a", "b"]
+          ]);
+          expect(console.warnings).toEqual([
+            [
+              "Template parse warnings:",
+              "\"var-\" on <template> elements is deprecated. Use \"let-\" instead! (\"<template [ERROR ->]var-a=\"b\">\"): TestComp@0:10"
+            ].join("\n")
+          ]);
+        });
+        it("should not locate directives in variables", () {
+          var dirA = CompileDirectiveMetadata.create(
+              selector: "[a]",
+              type: new CompileTypeMetadata(
+                  moduleUrl: someModuleUrl, name: "DirA"));
+          expect(humanizeTplAst(
+              parse("<template let-a=\"b\"></template>", [dirA]))).toEqual([
+            [EmbeddedTemplateAst],
+            [VariableAst, "a", "b"]
+          ]);
+        });
       });
       describe("inline templates", () {
         it("should wrap the element into an EmbeddedTemplateAST", () {
@@ -914,17 +979,35 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
             [ElementAst, "div"]
           ]);
         });
-        it("should parse variables via #...", () {
-          expect(humanizeTplAst(parse("<div template=\"ngIf #a=b\">", [])))
-              .toEqual([
+        it("should parse variables via #... and report them as deprecated", () {
+          expect(humanizeTplAst(parse("<div *ngIf=\"#a=b\">", []))).toEqual([
             [EmbeddedTemplateAst],
             [VariableAst, "a", "b"],
             [ElementAst, "div"]
           ]);
+          expect(console.warnings).toEqual([
+            [
+              "Template parse warnings:",
+              "\"#\" inside of expressions is deprecated. Use \"let\" instead! (\"<div [ERROR ->]*ngIf=\"#a=b\">\"): TestComp@0:5"
+            ].join("\n")
+          ]);
         });
-        it("should parse variables via var ...", () {
-          expect(humanizeTplAst(parse("<div template=\"ngIf var a=b\">", [])))
-              .toEqual([
+        it("should parse variables via var ... and report them as deprecated",
+            () {
+          expect(humanizeTplAst(parse("<div *ngIf=\"var a=b\">", []))).toEqual([
+            [EmbeddedTemplateAst],
+            [VariableAst, "a", "b"],
+            [ElementAst, "div"]
+          ]);
+          expect(console.warnings).toEqual([
+            [
+              "Template parse warnings:",
+              "\"var\" inside of expressions is deprecated. Use \"let\" instead! (\"<div [ERROR ->]*ngIf=\"var a=b\">\"): TestComp@0:5"
+            ].join("\n")
+          ]);
+        });
+        it("should parse variables via let ...", () {
+          expect(humanizeTplAst(parse("<div *ngIf=\"let a=b\">", []))).toEqual([
             [EmbeddedTemplateAst],
             [VariableAst, "a", "b"],
             [ElementAst, "div"]
@@ -951,23 +1034,26 @@ There is no directive with "exportAs" set to "dirA" ("<div [ERROR ->]#a="dirA"><
               [DirectiveAst, dirB]
             ]);
           });
-          it("should locate directives in variable bindings", () {
+          it("should not locate directives in variables", () {
             var dirA = CompileDirectiveMetadata.create(
-                selector: "[a=b]",
+                selector: "[a]",
                 type: new CompileTypeMetadata(
                     moduleUrl: someModuleUrl, name: "DirA"));
-            var dirB = CompileDirectiveMetadata.create(
-                selector: "[b]",
-                type: new CompileTypeMetadata(
-                    moduleUrl: someModuleUrl, name: "DirB"));
-            expect(humanizeTplAst(
-                parse("<div template=\"#a=b\" b>", [dirA, dirB]))).toEqual([
+            expect(humanizeTplAst(parse("<div template=\"let a=b\">", [dirA])))
+                .toEqual([
               [EmbeddedTemplateAst],
               [VariableAst, "a", "b"],
-              [DirectiveAst, dirA],
+              [ElementAst, "div"]
+            ]);
+          });
+          it("should not locate directives in references", () {
+            var dirA = CompileDirectiveMetadata.create(
+                selector: "[a]",
+                type: new CompileTypeMetadata(
+                    moduleUrl: someModuleUrl, name: "DirA"));
+            expect(humanizeTplAst(parse("<div ref-a>", [dirA]))).toEqual([
               [ElementAst, "div"],
-              [AttrAst, "b", ""],
-              [DirectiveAst, dirB]
+              [ReferenceAst, "a", null]
             ]);
           });
         });
@@ -1418,21 +1504,20 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
           [AttrAst, "key", "value", "key=value"]
         ]);
       });
-      it("should support variables", () {
-        var dirA = CompileDirectiveMetadata.create(
-            selector: "[a]",
-            type:
-                new CompileTypeMetadata(moduleUrl: someModuleUrl, name: "DirA"),
-            exportAs: "dirA");
-        expect(humanizeTplAstSourceSpans(
-            parse("<div a #a=\"dirA\"></div>", [dirA]))).toEqual([
-          [ElementAst, "div", "<div a #a=\"dirA\">"],
-          [AttrAst, "a", "", "a"],
-          [DirectiveAst, dirA, "<div a #a=\"dirA\">"],
-          [VariableAst, "a", "dirA", "#a=\"dirA\""]
+      it("should support references", () {
+        expect(humanizeTplAstSourceSpans(parse("<div #a></div>", []))).toEqual([
+          [ElementAst, "div", "<div #a>"],
+          [ReferenceAst, "a", null, "#a"]
         ]);
       });
-      it("should support event", () {
+      it("should support variables", () {
+        expect(humanizeTplAstSourceSpans(
+            parse("<template let-a=\"b\"></template>", []))).toEqual([
+          [EmbeddedTemplateAst, "<template let-a=\"b\">"],
+          [VariableAst, "a", "b", "let-a=\"b\""]
+        ]);
+      });
+      it("should support events", () {
         expect(humanizeTplAstSourceSpans(
             parse("<div (window:event)=\"v\">", []))).toEqual([
           [ElementAst, "div", "<div (window:event)=\"v\">"],
@@ -1478,8 +1563,8 @@ Property binding a not used by any directive on an embedded template ("[ERROR ->
             .toEqual([
           [ElementAst, "div", "<div a>"],
           [AttrAst, "a", "", "a"],
-          [DirectiveAst, comp, "<div a>"],
-          [DirectiveAst, dirA, "<div a>"]
+          [DirectiveAst, dirA, "<div a>"],
+          [DirectiveAst, comp, "<div a>"]
         ]);
       });
       it("should support directive in namespace", () {
@@ -1561,7 +1646,8 @@ class TemplateHumanizer implements TemplateAstVisitor {
     this.result.add(this._appendContext(ast, res));
     templateVisitAll(this, ast.attrs);
     templateVisitAll(this, ast.outputs);
-    templateVisitAll(this, ast.vars);
+    templateVisitAll(this, ast.references);
+    templateVisitAll(this, ast.variables);
     templateVisitAll(this, ast.directives);
     templateVisitAll(this, ast.children);
     return null;
@@ -1573,9 +1659,15 @@ class TemplateHumanizer implements TemplateAstVisitor {
     templateVisitAll(this, ast.attrs);
     templateVisitAll(this, ast.inputs);
     templateVisitAll(this, ast.outputs);
-    templateVisitAll(this, ast.exportAsVars);
+    templateVisitAll(this, ast.references);
     templateVisitAll(this, ast.directives);
     templateVisitAll(this, ast.children);
+    return null;
+  }
+
+  dynamic visitReference(ReferenceAst ast, dynamic context) {
+    var res = [ReferenceAst, ast.name, ast.value];
+    this.result.add(this._appendContext(ast, res));
     return null;
   }
 
@@ -1632,7 +1724,6 @@ class TemplateHumanizer implements TemplateAstVisitor {
     templateVisitAll(this, ast.inputs);
     templateVisitAll(this, ast.hostProperties);
     templateVisitAll(this, ast.hostEvents);
-    templateVisitAll(this, ast.exportAsVars);
     return null;
   }
 
@@ -1680,6 +1771,10 @@ class TemplateContentProjectionHumanizer implements TemplateAstVisitor {
   dynamic visitElement(ElementAst ast, dynamic context) {
     this.result.add([ast.name, ast.ngContentIndex]);
     templateVisitAll(this, ast.children);
+    return null;
+  }
+
+  dynamic visitReference(ReferenceAst ast, dynamic context) {
     return null;
   }
 
@@ -1737,6 +1832,10 @@ class FooAstTransformer implements TemplateAstVisitor {
         ast.ngContentIndex, ast.sourceSpan);
   }
 
+  dynamic visitReference(ReferenceAst ast, dynamic context) {
+    throw "not implemented";
+  }
+
   dynamic visitVariable(VariableAst ast, dynamic context) {
     throw "not implemented";
   }
@@ -1776,5 +1875,17 @@ class BarAstTransformer extends FooAstTransformer {
     if (ast.name != "foo") return ast;
     return new ElementAst("bar", [], [], [], [], [], [], false, [],
         ast.ngContentIndex, ast.sourceSpan);
+  }
+}
+
+class ArrayConsole implements Console {
+  List<String> logs = [];
+  List<String> warnings = [];
+  log(String msg) {
+    this.logs.add(msg);
+  }
+
+  warn(String msg) {
+    this.warnings.add(msg);
   }
 }

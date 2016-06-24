@@ -20,7 +20,8 @@ import "package:angular2/src/facade/async.dart"
 import "package:angular2/src/facade/collection.dart" show ListWrapper;
 import "package:angular2/src/router/router.dart" show Router, RootRouter;
 import "package:angular2/src/mock/location_mock.dart" show SpyLocation;
-import "package:angular2/platform/common.dart" show Location;
+import "package:angular2/platform/common.dart"
+    show Location, PathLocationStrategy;
 import "package:angular2/src/router/route_registry.dart"
     show RouteRegistry, ROUTER_PRIMARY_COMPONENT;
 import "package:angular2/src/router/route_config/route_config_decorator.dart"
@@ -332,6 +333,34 @@ main() {
         expect(path).toEqual("first/min/second;author=max");
       });
     });
+    describe("wildcards", () {
+      it(
+          "should not append empty StarPathSegment to the url",
+          inject([AsyncTestCompleter], (async) {
+            router.config([
+              new Route(
+                  path: "/wild/*any", component: DummyComponent, name: "Wild")
+            ]);
+            router.navigate(["/Wild"]).then((s) {
+              expect(location.path()).toEqual("/wild");
+              async.done();
+            });
+          }));
+    });
+    it(
+        "should not modify hash fragment when using path location strategy",
+        inject([AsyncTestCompleter], (async) {
+          location.platformStrategy =
+              new PathLocationStrategy(null, "someHref");
+          ((location as dynamic)).setHash("hashValue");
+          router.config([
+            new Route(path: "/test", component: DummyComponent, name: "Test")
+          ]);
+          router.navigate(["/Test"]).then((s) {
+            expect(location.path()).toEqual("/test#hashValue");
+            async.done();
+          });
+        }));
   });
 }
 

@@ -50,7 +50,7 @@ import "package:angular2/core.dart"
         SkipSelfMetadata,
         InjectorModule,
         Provides;
-import "package:angular2/common.dart" show NgIf;
+import "package:angular2/common.dart" show NgIf, NgFor;
 import "package:angular2/src/platform/dom/dom_adapter.dart" show DOM;
 
 const ALL_DIRECTIVES = const [
@@ -84,7 +84,8 @@ const ALL_DIRECTIVES = const [
   DirectiveNeedsChangeDetectorRef,
   PushComponentNeedsChangeDetectorRef,
   NeedsHostAppService,
-  NgIf
+  NgIf,
+  NgFor
 ];
 const ALL_PIPES = const [
   PipeNeedsChangeDetectorRef,
@@ -269,17 +270,17 @@ class PushComponentNeedsChangeDetectorRef {
 }
 
 @Pipe(name: "purePipe", pure: true)
-class PurePipe {
+class PurePipe implements PipeTransform {
   PurePipe() {}
-  dynamic transform(dynamic value, [List<dynamic> args = null]) {
+  dynamic transform(dynamic value) {
     return this;
   }
 }
 
 @Pipe(name: "impurePipe", pure: false)
-class ImpurePipe {
+class ImpurePipe implements PipeTransform {
   ImpurePipe() {}
-  dynamic transform(dynamic value, [List<dynamic> args = null]) {
+  dynamic transform(dynamic value) {
     return this;
   }
 }
@@ -288,7 +289,7 @@ class ImpurePipe {
 class PipeNeedsChangeDetectorRef {
   ChangeDetectorRef changeDetectorRef;
   PipeNeedsChangeDetectorRef(this.changeDetectorRef) {}
-  dynamic transform(dynamic value, [List<dynamic> args = null]) {
+  dynamic transform(dynamic value) {
     return this;
   }
 }
@@ -299,21 +300,21 @@ class PipeNeedsService implements PipeTransform {
   PipeNeedsService(@Inject("service") service) {
     this.service = service;
   }
-  dynamic transform(dynamic value, [List<dynamic> args = null]) {
+  dynamic transform(dynamic value) {
     return this;
   }
 }
 
 @Pipe(name: "duplicatePipe")
 class DuplicatePipe1 implements PipeTransform {
-  dynamic transform(dynamic value, [List<dynamic> args = null]) {
+  dynamic transform(dynamic value) {
     return this;
   }
 }
 
 @Pipe(name: "duplicatePipe")
 class DuplicatePipe2 implements PipeTransform {
-  dynamic transform(dynamic value, [List<dynamic> args = null]) {
+  dynamic transform(dynamic value) {
     return this;
   }
 }
@@ -737,22 +738,34 @@ No provider for SimpleDirective ("[ERROR ->]<div needsDirectiveFromHost></div>")
       }));
       it("should cache pure pipes", fakeAsync(() {
         var el = createComp(
-            "<div [simpleDirective]=\"true | purePipe\"></div><div [simpleDirective]=\"true | purePipe\"></div>",
+            "<div [simpleDirective]=\"true | purePipe\"></div><div [simpleDirective]=\"true | purePipe\"></div>" +
+                "<div *ngFor=\"let x of [1,2]\" [simpleDirective]=\"true | purePipe\"></div>",
             tcb);
         var purePipe1 = el.children[0].inject(SimpleDirective).value;
         var purePipe2 = el.children[1].inject(SimpleDirective).value;
+        var purePipe3 = el.children[2].inject(SimpleDirective).value;
+        var purePipe4 = el.children[3].inject(SimpleDirective).value;
         expect(purePipe1).toBeAnInstanceOf(PurePipe);
-        expect(purePipe1).toBe(purePipe2);
+        expect(purePipe2).toBe(purePipe1);
+        expect(purePipe3).toBe(purePipe1);
+        expect(purePipe4).toBe(purePipe1);
       }));
-      it("should not cache pure pipes", fakeAsync(() {
+      it("should not cache impure pipes", fakeAsync(() {
         var el = createComp(
-            "<div [simpleDirective]=\"true | impurePipe\"></div><div [simpleDirective]=\"true | impurePipe\"></div>",
+            "<div [simpleDirective]=\"true | impurePipe\"></div><div [simpleDirective]=\"true | impurePipe\"></div>" +
+                "<div *ngFor=\"let x of [1,2]\" [simpleDirective]=\"true | impurePipe\"></div>",
             tcb);
         var purePipe1 = el.children[0].inject(SimpleDirective).value;
         var purePipe2 = el.children[1].inject(SimpleDirective).value;
+        var purePipe3 = el.children[2].inject(SimpleDirective).value;
+        var purePipe4 = el.children[3].inject(SimpleDirective).value;
         expect(purePipe1).toBeAnInstanceOf(ImpurePipe);
         expect(purePipe2).toBeAnInstanceOf(ImpurePipe);
-        expect(purePipe1).not.toBe(purePipe2);
+        expect(purePipe2).not.toBe(purePipe1);
+        expect(purePipe3).toBeAnInstanceOf(ImpurePipe);
+        expect(purePipe3).not.toBe(purePipe1);
+        expect(purePipe4).toBeAnInstanceOf(ImpurePipe);
+        expect(purePipe4).not.toBe(purePipe1);
       }));
     });
     describe("modules", () {

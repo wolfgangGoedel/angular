@@ -222,14 +222,14 @@ class MyComp {
 
 @Pipe(name: "somePipe", pure: true)
 class PlatformPipe implements PipeTransform {
-  dynamic transform(dynamic value, List<dynamic> args) {
+  dynamic transform(dynamic value) {
     return "somePlatformPipe";
   }
 }
 
 @Pipe(name: "somePipe", pure: true)
 class CustomPipe implements PipeTransform {
-  dynamic transform(dynamic value, List<dynamic> args) {
+  dynamic transform(dynamic value) {
     return "someCustomPipe";
   }
 }

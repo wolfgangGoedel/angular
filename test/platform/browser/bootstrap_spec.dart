@@ -120,6 +120,7 @@ class _ArrayLogger {
 
 class DummyConsole implements Console {
   log(message) {}
+  warn(message) {}
 }
 
 main() {
