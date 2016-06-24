@@ -46,6 +46,7 @@ export declare class Location {
      * Returns the normalized URL path.
      */
     path(): string;
+    hash(): string;
     /**
      * Given a string representing a URL, returns the normalized URL path without leading or
      * trailing slashes

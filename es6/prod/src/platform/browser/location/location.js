@@ -66,6 +66,7 @@ export let Location = Location_1 = class Location {
      * Returns the normalized URL path.
      */
     path() { return this.normalize(this.platformStrategy.path()); }
+    hash() { return this.normalize(this.platformStrategy.hash()); }
     /**
      * Given a string representing a URL, returns the normalized URL path without leading or
      * trailing slashes

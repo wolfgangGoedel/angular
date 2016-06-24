@@ -20,6 +20,7 @@ export let MockLocationStrategy = class MockLocationStrategy extends LocationStr
         this.internalBaseHref = '/';
         this.internalPath = '/';
         this.internalTitle = '';
+        this.internalHash = '';
         this.urlChanges = [];
         /** @internal */
         this._subject = new EventEmitter();
@@ -28,6 +29,7 @@ export let MockLocationStrategy = class MockLocationStrategy extends LocationStr
         this.internalPath = url;
         ObservableWrapper.callEmit(this._subject, new _MockPopStateEvent(this.path()));
     }
+    hash() { return this.internalHash; }
     path() { return this.internalPath; }
     prepareExternalUrl(internal) {
         if (internal.startsWith('/') && this.internalBaseHref.endsWith('/')) {

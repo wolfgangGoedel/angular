@@ -84,6 +84,7 @@ export let PathLocationStrategy = class PathLocationStrategy extends LocationStr
     prepareExternalUrl(internal) {
         return Location.joinWithSlash(this._baseHref, internal);
     }
+    hash() { return this._platformLocation.hash; }
     path() {
         return this._platformLocation.pathname +
             Location.normalizeQueryParams(this._platformLocation.search);

@@ -22,7 +22,7 @@ export class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <li *ngFor="var item of items">{{item}}</li>
+ *   <li *ngFor="let  item of items">{{item}}</li>
  * </ul>
  * ```
  *
@@ -32,7 +32,7 @@ export class ViewRef {
  * ```
  * Count: {{items.length}}
  * <ul>
- *   <template ngFor var-item [ngForOf]="items"></template>
+ *   <template ngFor let-item [ngForOf]="items"></template>
  * </ul>
  * ```
  *

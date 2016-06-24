@@ -69,6 +69,7 @@ export let HashLocationStrategy = class HashLocationStrategy extends LocationStr
         this._platformLocation.onHashChange(fn);
     }
     getBaseHref() { return this._baseHref; }
+    hash() { return this._platformLocation.hash; }
     path() {
         // the hash value is always prefixed with a `#`
         // and if it is empty then it will stay empty

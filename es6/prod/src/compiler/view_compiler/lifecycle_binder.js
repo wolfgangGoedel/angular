@@ -48,9 +48,9 @@ export function bindDirectiveDestroyLifecycleCallbacks(directiveMeta, directiveI
         onDestroyMethod.addStmt(directiveInstance.callMethod('ngOnDestroy', []).toStmt());
     }
 }
-export function bindPipeDestroyLifecycleCallbacks(pipeMeta, directiveInstance, view) {
+export function bindPipeDestroyLifecycleCallbacks(pipeMeta, pipeInstance, view) {
     var onDestroyMethod = view.destroyMethod;
     if (pipeMeta.lifecycleHooks.indexOf(LifecycleHooks.OnDestroy) !== -1) {
-        onDestroyMethod.addStmt(directiveInstance.callMethod('ngOnDestroy', []).toStmt());
+        onDestroyMethod.addStmt(pipeInstance.callMethod('ngOnDestroy', []).toStmt());
     }
 }

@@ -23,12 +23,16 @@ export let SpyLocation = class SpyLocation {
         this._subject = new EventEmitter();
         /** @internal */
         this._baseHref = '';
+        /** @internal */
+        this._hash = '';
         // TODO: remove these once Location is an interface, and can be implemented cleanly
         this.platformStrategy = null;
     }
     setInitialPath(url) { this._path = url; }
     setBaseHref(url) { this._baseHref = url; }
+    setHash(hash) { this._hash = hash; }
     path() { return this._path; }
+    hash() { return this._hash; }
     simulateUrlPop(pathname) {
         ObservableWrapper.callEmit(this._subject, { 'url': pathname, 'pop': true });
     }

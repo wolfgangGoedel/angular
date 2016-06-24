@@ -72,7 +72,20 @@ export class BoundEventAst {
     }
 }
 /**
- * A variable declaration on an element (e.g. `#var="expression"`).
+ * A reference declaration on an element (e.g. `let someName="expression"`).
+ */
+export class ReferenceAst {
+    constructor(name, value, sourceSpan) {
+        this.name = name;
+        this.value = value;
+        this.sourceSpan = sourceSpan;
+    }
+    visit(visitor, context) {
+        return visitor.visitReference(this, context);
+    }
+}
+/**
+ * A variable declaration on a <template> (e.g. `var-someName="someLocalName"`).
  */
 export class VariableAst {
     constructor(name, value, sourceSpan) {
@@ -88,12 +101,12 @@ export class VariableAst {
  * An element declaration in a template.
  */
 export class ElementAst {
-    constructor(name, attrs, inputs, outputs, exportAsVars, directives, providers, hasViewContainer, children, ngContentIndex, sourceSpan) {
+    constructor(name, attrs, inputs, outputs, references, directives, providers, hasViewContainer, children, ngContentIndex, sourceSpan) {
         this.name = name;
         this.attrs = attrs;
         this.inputs = inputs;
         this.outputs = outputs;
-        this.exportAsVars = exportAsVars;
+        this.references = references;
         this.directives = directives;
         this.providers = providers;
         this.hasViewContainer = hasViewContainer;
@@ -109,10 +122,11 @@ export class ElementAst {
  * A `<template>` element included in an Angular template.
  */
 export class EmbeddedTemplateAst {
-    constructor(attrs, outputs, vars, directives, providers, hasViewContainer, children, ngContentIndex, sourceSpan) {
+    constructor(attrs, outputs, references, variables, directives, providers, hasViewContainer, children, ngContentIndex, sourceSpan) {
         this.attrs = attrs;
         this.outputs = outputs;
-        this.vars = vars;
+        this.references = references;
+        this.variables = variables;
         this.directives = directives;
         this.providers = providers;
         this.hasViewContainer = hasViewContainer;
@@ -142,12 +156,11 @@ export class BoundDirectivePropertyAst {
  * A directive declared on an element.
  */
 export class DirectiveAst {
-    constructor(directive, inputs, hostProperties, hostEvents, exportAsVars, sourceSpan) {
+    constructor(directive, inputs, hostProperties, hostEvents, sourceSpan) {
         this.directive = directive;
         this.inputs = inputs;
         this.hostProperties = hostProperties;
         this.hostEvents = hostEvents;
-        this.exportAsVars = exportAsVars;
         this.sourceSpan = sourceSpan;
     }
     visit(visitor, context) {

@@ -7,4 +7,4 @@ export declare function bindDirectiveDetectChangesLifecycleCallbacks(directiveAs
 export declare function bindDirectiveAfterContentLifecycleCallbacks(directiveMeta: CompileDirectiveMetadata, directiveInstance: o.Expression, compileElement: CompileElement): void;
 export declare function bindDirectiveAfterViewLifecycleCallbacks(directiveMeta: CompileDirectiveMetadata, directiveInstance: o.Expression, compileElement: CompileElement): void;
 export declare function bindDirectiveDestroyLifecycleCallbacks(directiveMeta: CompileDirectiveMetadata, directiveInstance: o.Expression, compileElement: CompileElement): void;
-export declare function bindPipeDestroyLifecycleCallbacks(pipeMeta: CompilePipeMetadata, directiveInstance: o.Expression, view: CompileView): void;
+export declare function bindPipeDestroyLifecycleCallbacks(pipeMeta: CompilePipeMetadata, pipeInstance: o.Expression, view: CompileView): void;

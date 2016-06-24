@@ -184,7 +184,10 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       var updatedDirectives = ast.directives.map(function(c) {
         return c.visit(_this, context);
       });
-      return new compiler_1.ElementAst(ast.name, ast.attrs, updatedInputs, ast.outputs, ast.exportAsVars, updatedDirectives, ast.providers, ast.hasViewContainer, updatedChildren, ast.ngContentIndex, ast.sourceSpan);
+      return new compiler_1.ElementAst(ast.name, ast.attrs, updatedInputs, ast.outputs, ast.references, updatedDirectives, ast.providers, ast.hasViewContainer, updatedChildren, ast.ngContentIndex, ast.sourceSpan);
+    };
+    RouterLinkTransform.prototype.visitReference = function(ast, context) {
+      return ast;
     };
     RouterLinkTransform.prototype.visitVariable = function(ast, context) {
       return ast;
@@ -209,7 +212,7 @@ System.register("angular2/src/router/directives/router_link_transform", ["angula
       var updatedInputs = ast.inputs.map(function(c) {
         return c.visit(_this, context);
       });
-      return new compiler_1.DirectiveAst(ast.directive, updatedInputs, ast.hostProperties, ast.hostEvents, ast.exportAsVars, ast.sourceSpan);
+      return new compiler_1.DirectiveAst(ast.directive, updatedInputs, ast.hostProperties, ast.hostEvents, ast.sourceSpan);
     };
     RouterLinkTransform.prototype.visitDirectiveProperty = function(ast, context) {
       var transformedValue = ast.value.visit(this.astTransformer);
@@ -318,6 +321,9 @@ System.register("angular2/src/platform/browser/location/location", ["angular2/sr
     }
     Location.prototype.path = function() {
       return this.normalize(this.platformStrategy.path());
+    };
+    Location.prototype.hash = function() {
+      return this.normalize(this.platformStrategy.hash());
     };
     Location.prototype.normalize = function(url) {
       return Location.stripTrailingSlash(_stripBaseHref(this._baseHref, _stripIndexHtml(url)));
@@ -469,6 +475,9 @@ System.register("angular2/src/platform/browser/location/path_location_strategy",
     };
     PathLocationStrategy.prototype.prepareExternalUrl = function(internal) {
       return location_1.Location.joinWithSlash(this._baseHref, internal);
+    };
+    PathLocationStrategy.prototype.hash = function() {
+      return this._platformLocation.hash;
     };
     PathLocationStrategy.prototype.path = function() {
       return this._platformLocation.pathname + location_1.Location.normalizeQueryParams(this._platformLocation.search);
@@ -1549,6 +1558,9 @@ System.register("angular2/src/platform/browser/location/hash_location_strategy",
     HashLocationStrategy.prototype.getBaseHref = function() {
       return this._baseHref;
     };
+    HashLocationStrategy.prototype.hash = function() {
+      return this._platformLocation.hash;
+    };
     HashLocationStrategy.prototype.path = function() {
       var path = this._platformLocation.hash;
       if (!lang_1.isPresent(path))
@@ -2282,7 +2294,10 @@ System.register("angular2/src/router/rules/route_paths/param_route_path", ["angu
       for (var i = 0; i < this._segments.length; i++) {
         var segment = this._segments[i];
         if (!(segment instanceof ContinuationPathSegment)) {
-          path.push(segment.generate(paramTokens));
+          var generated = segment.generate(paramTokens);
+          if (lang_1.isPresent(generated) || !(segment instanceof StarPathSegment)) {
+            path.push(generated);
+          }
         }
       }
       var urlPath = path.join('/');
@@ -3369,6 +3384,10 @@ System.register("angular2/src/router/router", ["angular2/src/facade/async", "ang
       var emitQuery = instruction.toUrlQuery();
       if (emitPath.length > 0 && emitPath[0] != '/') {
         emitPath = '/' + emitPath;
+      }
+      var hash = this._location.hash();
+      if (lang_1.isPresent(this._location.platformStrategy) && this._location.platformStrategy instanceof common_1.PathLocationStrategy && hash.length > 0) {
+        emitPath += '#' + hash;
       }
       var promise = _super.prototype.commit.call(this, instruction);
       if (!_skipLocationChange) {

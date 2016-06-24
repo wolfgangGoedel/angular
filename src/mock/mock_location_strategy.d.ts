@@ -7,9 +7,11 @@ export declare class MockLocationStrategy extends LocationStrategy {
     internalBaseHref: string;
     internalPath: string;
     internalTitle: string;
+    internalHash: string;
     urlChanges: string[];
     constructor();
     simulatePopState(url: string): void;
+    hash(): string;
     path(): string;
     prepareExternalUrl(internal: string): string;
     pushState(ctx: any, title: string, path: string, query: string): void;

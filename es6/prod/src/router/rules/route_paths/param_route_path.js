@@ -142,7 +142,10 @@ export class ParamRoutePath {
         for (var i = 0; i < this._segments.length; i++) {
             let segment = this._segments[i];
             if (!(segment instanceof ContinuationPathSegment)) {
-                path.push(segment.generate(paramTokens));
+                let generated = segment.generate(paramTokens);
+                if (isPresent(generated) || !(segment instanceof StarPathSegment)) {
+                    path.push(generated);
+                }
             }
         }
         var urlPath = path.join('/');

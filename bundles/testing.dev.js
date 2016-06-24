@@ -390,6 +390,9 @@ System.register("angular2/src/platform/browser/location/location", ["angular2/sr
     Location.prototype.path = function() {
       return this.normalize(this.platformStrategy.path());
     };
+    Location.prototype.hash = function() {
+      return this.normalize(this.platformStrategy.hash());
+    };
     Location.prototype.normalize = function(url) {
       return Location.stripTrailingSlash(_stripBaseHref(this._baseHref, _stripIndexHtml(url)));
     };
@@ -540,6 +543,9 @@ System.register("angular2/src/platform/browser/location/path_location_strategy",
     };
     PathLocationStrategy.prototype.prepareExternalUrl = function(internal) {
       return location_1.Location.joinWithSlash(this._baseHref, internal);
+    };
+    PathLocationStrategy.prototype.hash = function() {
+      return this._platformLocation.hash;
     };
     PathLocationStrategy.prototype.path = function() {
       return this._platformLocation.pathname + location_1.Location.normalizeQueryParams(this._platformLocation.search);
@@ -1036,6 +1042,9 @@ System.register("angular2/src/platform/browser/location/hash_location_strategy",
     HashLocationStrategy.prototype.getBaseHref = function() {
       return this._baseHref;
     };
+    HashLocationStrategy.prototype.hash = function() {
+      return this._platformLocation.hash;
+    };
     HashLocationStrategy.prototype.path = function() {
       var path = this._platformLocation.hash;
       if (!lang_1.isPresent(path))
@@ -1385,12 +1394,16 @@ System.register("angular2/src/mock/mock_location_strategy", ["angular2/src/core/
       this.internalBaseHref = '/';
       this.internalPath = '/';
       this.internalTitle = '';
+      this.internalHash = '';
       this.urlChanges = [];
       this._subject = new async_1.EventEmitter();
     }
     MockLocationStrategy.prototype.simulatePopState = function(url) {
       this.internalPath = url;
       async_1.ObservableWrapper.callEmit(this._subject, new _MockPopStateEvent(this.path()));
+    };
+    MockLocationStrategy.prototype.hash = function() {
+      return this.internalHash;
     };
     MockLocationStrategy.prototype.path = function() {
       return this.internalPath;
@@ -1530,6 +1543,7 @@ System.register("angular2/src/mock/location_mock", ["angular2/src/core/di", "ang
       this._query = '';
       this._subject = new async_1.EventEmitter();
       this._baseHref = '';
+      this._hash = '';
       this.platformStrategy = null;
     }
     SpyLocation.prototype.setInitialPath = function(url) {
@@ -1538,8 +1552,14 @@ System.register("angular2/src/mock/location_mock", ["angular2/src/core/di", "ang
     SpyLocation.prototype.setBaseHref = function(url) {
       this._baseHref = url;
     };
+    SpyLocation.prototype.setHash = function(hash) {
+      this._hash = hash;
+    };
     SpyLocation.prototype.path = function() {
       return this._path;
+    };
+    SpyLocation.prototype.hash = function() {
+      return this._hash;
     };
     SpyLocation.prototype.simulateUrlPop = function(pathname) {
       async_1.ObservableWrapper.callEmit(this._subject, {

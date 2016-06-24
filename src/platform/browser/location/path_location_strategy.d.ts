@@ -55,6 +55,7 @@ export declare class PathLocationStrategy extends LocationStrategy {
     onPopState(fn: UrlChangeListener): void;
     getBaseHref(): string;
     prepareExternalUrl(internal: string): string;
+    hash(): string;
     path(): string;
     pushState(state: any, title: string, url: string, queryParams: string): void;
     replaceState(state: any, title: string, url: string, queryParams: string): void;

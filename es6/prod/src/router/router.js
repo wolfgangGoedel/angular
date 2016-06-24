@@ -14,7 +14,7 @@ import { PromiseWrapper, EventEmitter, ObservableWrapper } from 'angular2/src/fa
 import { Map, StringMapWrapper } from 'angular2/src/facade/collection';
 import { isBlank, isPresent } from 'angular2/src/facade/lang';
 import { BaseException } from 'angular2/src/facade/exceptions';
-import { Location } from 'angular2/platform/common';
+import { Location, PathLocationStrategy } from 'angular2/platform/common';
 import { Inject, Injectable } from 'angular2/core';
 import { RouteRegistry, ROUTER_PRIMARY_COMPONENT } from './route_registry';
 import { getCanActivateHook } from './utils';
@@ -456,6 +456,11 @@ export let RootRouter = class RootRouter extends Router {
         var emitQuery = instruction.toUrlQuery();
         if (emitPath.length > 0 && emitPath[0] != '/') {
             emitPath = '/' + emitPath;
+        }
+        var hash = this._location.hash();
+        if (isPresent(this._location.platformStrategy) &&
+            this._location.platformStrategy instanceof PathLocationStrategy && hash.length > 0) {
+            emitPath += '#' + hash;
         }
         var promise = super.commit(instruction);
         if (!_skipLocationChange) {

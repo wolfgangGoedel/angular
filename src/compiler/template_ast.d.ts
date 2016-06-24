@@ -69,7 +69,17 @@ export declare class BoundEventAst implements TemplateAst {
     fullName: string;
 }
 /**
- * A variable declaration on an element (e.g. `#var="expression"`).
+ * A reference declaration on an element (e.g. `let someName="expression"`).
+ */
+export declare class ReferenceAst implements TemplateAst {
+    name: string;
+    value: CompileTokenMetadata;
+    sourceSpan: ParseSourceSpan;
+    constructor(name: string, value: CompileTokenMetadata, sourceSpan: ParseSourceSpan);
+    visit(visitor: TemplateAstVisitor, context: any): any;
+}
+/**
+ * A variable declaration on a <template> (e.g. `var-someName="someLocalName"`).
  */
 export declare class VariableAst implements TemplateAst {
     name: string;
@@ -86,14 +96,14 @@ export declare class ElementAst implements TemplateAst {
     attrs: AttrAst[];
     inputs: BoundElementPropertyAst[];
     outputs: BoundEventAst[];
-    exportAsVars: VariableAst[];
+    references: ReferenceAst[];
     directives: DirectiveAst[];
     providers: ProviderAst[];
     hasViewContainer: boolean;
     children: TemplateAst[];
     ngContentIndex: number;
     sourceSpan: ParseSourceSpan;
-    constructor(name: string, attrs: AttrAst[], inputs: BoundElementPropertyAst[], outputs: BoundEventAst[], exportAsVars: VariableAst[], directives: DirectiveAst[], providers: ProviderAst[], hasViewContainer: boolean, children: TemplateAst[], ngContentIndex: number, sourceSpan: ParseSourceSpan);
+    constructor(name: string, attrs: AttrAst[], inputs: BoundElementPropertyAst[], outputs: BoundEventAst[], references: ReferenceAst[], directives: DirectiveAst[], providers: ProviderAst[], hasViewContainer: boolean, children: TemplateAst[], ngContentIndex: number, sourceSpan: ParseSourceSpan);
     visit(visitor: TemplateAstVisitor, context: any): any;
 }
 /**
@@ -102,14 +112,15 @@ export declare class ElementAst implements TemplateAst {
 export declare class EmbeddedTemplateAst implements TemplateAst {
     attrs: AttrAst[];
     outputs: BoundEventAst[];
-    vars: VariableAst[];
+    references: ReferenceAst[];
+    variables: VariableAst[];
     directives: DirectiveAst[];
     providers: ProviderAst[];
     hasViewContainer: boolean;
     children: TemplateAst[];
     ngContentIndex: number;
     sourceSpan: ParseSourceSpan;
-    constructor(attrs: AttrAst[], outputs: BoundEventAst[], vars: VariableAst[], directives: DirectiveAst[], providers: ProviderAst[], hasViewContainer: boolean, children: TemplateAst[], ngContentIndex: number, sourceSpan: ParseSourceSpan);
+    constructor(attrs: AttrAst[], outputs: BoundEventAst[], references: ReferenceAst[], variables: VariableAst[], directives: DirectiveAst[], providers: ProviderAst[], hasViewContainer: boolean, children: TemplateAst[], ngContentIndex: number, sourceSpan: ParseSourceSpan);
     visit(visitor: TemplateAstVisitor, context: any): any;
 }
 /**
@@ -131,9 +142,8 @@ export declare class DirectiveAst implements TemplateAst {
     inputs: BoundDirectivePropertyAst[];
     hostProperties: BoundElementPropertyAst[];
     hostEvents: BoundEventAst[];
-    exportAsVars: VariableAst[];
     sourceSpan: ParseSourceSpan;
-    constructor(directive: CompileDirectiveMetadata, inputs: BoundDirectivePropertyAst[], hostProperties: BoundElementPropertyAst[], hostEvents: BoundEventAst[], exportAsVars: VariableAst[], sourceSpan: ParseSourceSpan);
+    constructor(directive: CompileDirectiveMetadata, inputs: BoundDirectivePropertyAst[], hostProperties: BoundElementPropertyAst[], hostEvents: BoundEventAst[], sourceSpan: ParseSourceSpan);
     visit(visitor: TemplateAstVisitor, context: any): any;
 }
 /**
@@ -194,6 +204,7 @@ export interface TemplateAstVisitor {
     visitNgContent(ast: NgContentAst, context: any): any;
     visitEmbeddedTemplate(ast: EmbeddedTemplateAst, context: any): any;
     visitElement(ast: ElementAst, context: any): any;
+    visitReference(ast: ReferenceAst, context: any): any;
     visitVariable(ast: VariableAst, context: any): any;
     visitEvent(ast: BoundEventAst, context: any): any;
     visitElementProperty(ast: BoundElementPropertyAst, context: any): any;
