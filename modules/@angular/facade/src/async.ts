@@ -7,6 +7,8 @@
  */
 
 import {Subject} from 'rxjs/Subject';
+import {Subscription} from 'rxjs/Subscription';
+import {NextObserver} from 'rxjs/Observer';
 
 export {Observable} from 'rxjs/Observable';
 export {Subject} from 'rxjs/Subject';
@@ -77,38 +79,41 @@ export class EventEmitter<T> extends Subject<T> {
 
   emit(value?: T) { super.next(value); }
 
-  subscribe(generatorOrNext?: any, error?: any, complete?: any): any {
-    let schedulerFn: any /** TODO #9100 */;
-    let errorFn = (err: any): any /** TODO #9100 */ => null;
-    let completeFn = (): any /** TODO #9100 */ => null;
+  subscribe(generatorOrNext?: NextObserver<T> | ((value: T) => void), error?: (error: any) => void, complete?: () => void): Subscription {
+    let schedulerFn: (value: T) => void;
+    let errorFn: (err: any) => void;
+    let completeFn: () => void;
 
     if (generatorOrNext && typeof generatorOrNext === 'object') {
-      schedulerFn = this.__isAsync ? (value: any /** TODO #9100 */) => {
-        setTimeout(() => generatorOrNext.next(value));
-      } : (value: any /** TODO #9100 */) => { generatorOrNext.next(value); };
+      const generator = <NextObserver<T>>generatorOrNext;
+      schedulerFn = this.__isAsync ? (value: T) => {
+        setTimeout(() => generator.next(value));
+      } : (value: T) => { generator.next(value); };
 
-      if (generatorOrNext.error) {
-        errorFn = this.__isAsync ? (err) => { setTimeout(() => generatorOrNext.error(err)); } :
-                                   (err) => { generatorOrNext.error(err); };
+      if (generator.error) {
+        errorFn = this.__isAsync ? (err) => { setTimeout(() => generator.error(err)); } :
+                                   (err) => { generator.error(err); };
       }
 
-      if (generatorOrNext.complete) {
-        completeFn = this.__isAsync ? () => { setTimeout(() => generatorOrNext.complete()); } :
-                                      () => { generatorOrNext.complete(); };
+      if (generator.complete) {
+        completeFn = this.__isAsync ? () => { setTimeout(() => generator.complete()); } :
+                                      () => { generator.complete(); };
       }
     } else {
-      schedulerFn = this.__isAsync ? (value: any /** TODO #9100 */) => {
-        setTimeout(() => generatorOrNext(value));
-      } : (value: any /** TODO #9100 */) => { generatorOrNext(value); };
+      if (generatorOrNext) {
+        const next = <(value: T) => void>generatorOrNext;
+        schedulerFn =
+            this.__isAsync ? (value: T) => { setTimeout(() => next(value)); } : next ;
+      }
 
       if (error) {
         errorFn =
-            this.__isAsync ? (err) => { setTimeout(() => error(err)); } : (err) => { error(err); };
+            this.__isAsync ? (err) => { setTimeout(() => error(err)); } : error;
       }
 
       if (complete) {
         completeFn =
-            this.__isAsync ? () => { setTimeout(() => complete()); } : () => { complete(); };
+            this.__isAsync ? () => { setTimeout(() => complete()); } : complete;
       }
     }
 
